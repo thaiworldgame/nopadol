@@ -39,8 +39,16 @@ func setup() ([]*Period, []*Person, []*Customer, []*CusRank, []*Employee) {
 	cr[3] = &CusRank{Period: pr[0], Customer: c[3], Rank: A, KI1Continous: 4, KI2PaymentDue: 4, KI3Responsibility: 4, KI4Charactor: 4}
 	cr[4] = &CusRank{Period: pr[0], Customer: c[4], Rank: A, KI1Continous: 4, KI2PaymentDue: 4, KI3Responsibility: 4, KI4Charactor: 4}
 
+	tt := make([]*Title, 5)
+	tt[0] = &Title{TH: "ประธานกรรมการ", EN: "Board of Director"}
+	tt[1] = &Title{TH: "รองประธานกรรมการ", EN: "Director"}
+	tt[2] = &Title{TH: "กรรมการผู้จัดการ", EN: "Managing Director"}
+	tt[3] = &Title{TH: "ผู้อำนวยการขาย", EN: "Sales Director"}
+	tt[4] = &Title{TH: "ผู้อำนวยการบริหารสินค้า", EN: "Merchandise Director"}
+
 	emp := make([]*Employee, 1)
-	emp[0] = &Employee{Person: ps[0], Code: "39001", Title: "MD", salary: decimal.New(40000, 0)}
+	emp[0] = &Employee{Person: ps[0], Title: tt[2], Code: "39001", salary: decimal.New(40000, 0)}
+	emp[1] = &Employee{Person: ps[1], Title: tt[3], Code: "48001", salary: decimal.New(30000, 0)}
 
 	return pr, ps, c, cr, emp
 }
