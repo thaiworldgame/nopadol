@@ -46,7 +46,7 @@ func setup() ([]*Period, []*Person, []*Customer, []*CusRank, []*Employee) {
 	tt[3] = &Title{TH: "ผู้อำนวยการขาย", EN: "Sales Director"}
 	tt[4] = &Title{TH: "ผู้อำนวยการบริหารสินค้า", EN: "Merchandise Director"}
 
-	emp := make([]*Employee, 1)
+	emp := make([]*Employee, 2)
 	emp[0] = &Employee{Person: ps[0], Title: tt[2], Code: "39001", salary: decimal.New(40000, 0)}
 	emp[1] = &Employee{Person: ps[1], Title: tt[3], Code: "48001", salary: decimal.New(30000, 0)}
 
