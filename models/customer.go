@@ -1,4 +1,5 @@
 package models
+
 import (
 	"github.com/shopspring/decimal"
 )
@@ -16,12 +17,14 @@ const (
 
 type Customer struct {
 	CusType
-	Name string
-	debit decimal.Decimal
-	credit decimal.Decimal
+	Contact *Person
+	Name    string
+	debit   decimal.Decimal
+	credit  decimal.Decimal
 }
 
 type Rank int
+
 const (
 	A Rank = iota
 	B
@@ -33,8 +36,8 @@ type CusRank struct {
 	*Period
 	*Customer
 	Rank
-	KI1Continous int
-	KI2PaymentDue int
+	KI1Continous      int
+	KI2PaymentDue     int
 	KI3Responsibility int
-	KI4Charactor int
+	KI4Charactor      int
 }
