@@ -1,6 +1,6 @@
 package models
 
 type Period struct {
-	Year int
+	Year  int
 	Month int
 }
