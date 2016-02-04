@@ -42,3 +42,17 @@ func TestPrintModelsItem(t *testing.T) {
 		fmt.Println("Transaction:", trans[t].ID, trans[t].item.Name, trans[t].locIn.Code, trans[t].locOut.Code, trans[t].qty)
 	}
 }
+
+func TestStock_CalcStockBalanceFromTrans(t *testing.T) {
+	_, items, _, stocks, trans := setupItem()
+
+	i := items[1]
+	fmt.Println("A Stock:", stocks)
+	a := i.Stock(stocks)
+	fmt.Println("B Stock:", i.Stock(a))
+
+	i.Calc(stocks, trans)
+	for _, s := range a {
+		fmt.Println(">>", s.item.Name, s.loc.Code, "Balance=", s.bal)
+	}
+}
