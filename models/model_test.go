@@ -56,3 +56,17 @@ func TestStock_CalcStockBalanceFromTrans(t *testing.T) {
 		fmt.Println(">>", s.item.Name, s.loc.Code, "Balance=", s.bal)
 	}
 }
+
+func TestCat_FindByName(t *testing.T) {
+	cats, _, _, _, _ := setupItem()
+	c := FindByName(cats, "Bev")
+	if c != cats[1] {
+		t.Error("Expected return index 1 but =", c)
+	}
+
+	x := FindByName(cats, "Alcohol")
+	if x != nil {
+		t.Error("Expected no matched category but =", x)
+	}
+	fmt.Println("Pass! TestCat_FindByName return index =", c)
+}
