@@ -1,7 +1,7 @@
 package models
 
 import (
-	"fmt"
+	"errors"
 	"strings"
 )
 
@@ -31,28 +31,55 @@ func (i *Item) Stock(s []*Stock) []*Stock {
 	return r
 }
 
-func (i *Item) Calc(st []*Stock, tx []*Trans) {
+//func (i *Item) Calc(stocks []*Stock, tx []*Trans) {
+//	for _, t := range tx {
+//		if t.item == i {
+//			// ถ้า Trans ไม่มี Location ใน Stock ให้เพิ่มรายการใน Stock ก่อน
+//			for k, s := range stocks {
+//				if s.item == i {
+//					if s.loc == t.locIn {
+//						s.bal += t.qty
+//						fmt.Printf("Item %v Loc: %v qty: %v bal: %v\n", s.item.Name, s.loc.Code, t.qty, s.bal)
+//					} else {
+//
+//					}
+//				} else {
+//					stocks = append(stocks, &Stock{item: i, loc: t.locIn, bal: t.qty})
+//					fmt.Println(">>Append Stock from Loc In:", stocks[k].item.Name, stocks[k].loc.Code, stocks[k].bal)
+//				}
+//				if s.item == i && s.loc == t.locOut {
+//					s.bal -= t.qty
+//					fmt.Printf("Item %v Loc: %v qty:-%v bal: %v\n", s.item.Name, s.loc.Code, t.qty, s.bal)
+//				} else {
+//					stocks = append(stocks, &Stock{item: i, loc: t.locOut, bal: t.qty})
+//					fmt.Println(">>Append Stock from Loc Out:", stocks[k].item.Name, stocks[k].loc.Code, stocks[k].bal)
+//				}
+//			}
+//		}
+//	}
+//}
+
+func (i *Item) Calc(stocks []*Stock, tx []*Tran) []*Stock {
 	for _, t := range tx {
 		if t.item == i {
-			for k, s := range st {
-				// ถ้า Trans ไม่มี Location ใน Stock ให้เพิ่มรายการใน Stock ก่อน
-				if s.item == i && s.loc == t.locIn {
-					s.bal += t.qty
-					fmt.Printf("Item %v Loc: %v qty: %v bal: %v\n", s.item.Name, s.loc.Code, t.qty, s.bal)
-				} else {
-					st = append(st, &Stock{item: i, loc: t.locIn, bal: t.qty})
-					fmt.Println(">>Append Stock from Loc In:", st[k].item.Name, st[k].loc.Code, st[k].bal)
+			countIn := 0
+			countOut := 0
+			for _, s := range stocks {
+				if s.loc == t.locIn {
+					countIn++
+				} else if s.loc == t.locOut {
+					countOut++
 				}
-				if s.item == i && s.loc == t.locOut {
-					s.bal -= t.qty
-					fmt.Printf("Item %v Loc: %v qty:-%v bal: %v\n", s.item.Name, s.loc.Code, t.qty, s.bal)
-				} else {
-					st = append(st, &Stock{item: i, loc: t.locOut, bal: t.qty})
-					fmt.Println(">>Append Stock from Loc Out:", st[k].item.Name, st[k].loc.Code, st[k].bal)
-				}
+			}
+			if countIn == 0 {
+				stocks = append(stocks, &Stock{item: i, loc: t.locIn, bal: t.qty})
+			}
+			if countOut == 0 {
+				stocks = append(stocks, &Stock{item: i, loc: t.locOut, bal: -t.qty})
 			}
 		}
 	}
+	return stocks
 }
 
 // ==== Category ==== //
@@ -111,11 +138,40 @@ func (s *Stock) Move(newLoc *Location) {
 	s.loc = newLoc
 }
 
+func (s *Stock) Calc(trans []*Tran) error {
+	for _, t := range trans {
+		if t.item == s.item {
+			if t.locOut == s.loc {
+				s.bal -= t.qty
+			} else if t.locIn == s.loc {
+				s.bal += t.qty
+			} else {
+				return errors.New("No Item Stock in Transaction")
+			}
+		}
+	}
+	return nil
+}
+
 // ==== Transaction ==== //
-type Trans struct {
+type Tran struct {
 	ID     uint64
 	item   *Item
 	locOut *Location
 	locIn  *Location
 	qty    int64
+}
+
+type Trans []Tran
+
+func (slice Trans) Len() int {
+	return len(slice)
+}
+
+func (slice Trans) Less(i, j int) bool {
+	return slice[i].ID < slice[j].ID
+}
+
+func (slice Trans) Swap(i, j int) {
+	slice[i], slice[j] = slice[j], slice[i]
 }

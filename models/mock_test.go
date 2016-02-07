@@ -22,11 +22,12 @@ func setupPerson() ([]*Period, []*Person, []*Customer, []*CusRank, []*Employee) 
 	pr[11] = &Period{Year: 2015, Month: 12}
 
 	ps := make([]*Person, 5)
-	ps[0] = &Person{Fname: "เกษม", Lname: "อานนทวิลาศ", Nname: "Tom", Bdate: time.Date(1974, time.October, 4, 0, 0, 0, 0, time.UTC)}
-	ps[1] = &Person{Fname: "จิราภรณ์", Lname: "อานนทวิลาศ", Nname: "Jip", Bdate: time.Date(1976, time.August, 12, 0, 0, 0, 0, time.UTC)}
-	ps[2] = &Person{Fname: "ทนัฐพร", Lname: "อานนทวิลาศ", Nname: "Tim", Bdate: time.Date(1976, time.August, 31, 0, 0, 0, 0, time.UTC)}
-	ps[3] = &Person{Fname: "ธนันท์", Lname: "อานนทวิลาศ", Nname: "Tam", Bdate: time.Date(1974, time.June, 7, 0, 0, 0, 0, time.UTC)}
-	ps[4] = &Person{Fname: "สาธิต", Lname: "โฉมวัฒนา", Nname: "น้อย", Bdate: time.Date(1974, time.June, 10, 0, 0, 0, 0, time.UTC)}
+	loc, _ := time.LoadLocation("Asia/Bangkok")
+	ps[0] = &Person{FName: "เกษม", LName: "อานนทวิลาศ", NName: "Tom", BDate: time.Date(1974, time.October, 4, 0, 0, 0, 0, loc)}
+	ps[1] = &Person{FName: "จิราภรณ์", LName: "อานนทวิลาศ", NName: "Jip", BDate: time.Date(1976, time.August, 12, 0, 0, 0, 0, time.Local)}
+	ps[2] = &Person{FName: "ทนัฐพร", LName: "อานนทวิลาศ", NName: "Tim", BDate: time.Date(1976, time.August, 31, 0, 0, 0, 0, time.Local)}
+	ps[3] = &Person{FName: "ธนันท์", LName: "อานนทวิลาศ", NName: "Tam", BDate: time.Date(1974, time.June, 7, 0, 0, 0, 0, time.Local)}
+	ps[4] = &Person{FName: "สาธิต", LName: "โฉมวัฒนา", NName: "น้อย", BDate: time.Date(1974, time.June, 10, 0, 0, 0, 0, time.Local)}
 
 	c := make([]*Customer, 5)
 	c[0] = &Customer{CusType: COMPANY, Contact: ps[0], Name: "Dummy Customer", debit: decimal.Zero, credit: decimal.Zero}
@@ -43,11 +44,11 @@ func setupPerson() ([]*Period, []*Person, []*Customer, []*CusRank, []*Employee) 
 
 	tt := make([]*Title, 7)
 	tt[0] = &Title{TH: "ประธานกรรมการ", EN: "Board of Director"}
-	tt[1] = &Title{TH: "รองประธานกรรมการ", EN: "Director"}
-	tt[2] = &Title{TH: "กรรมการผู้จัดการ", EN: "Managing Director"}
-	tt[3] = &Title{TH: "ผู้อำนวยการขาย", EN: "Sales Director"}
-	tt[4] = &Title{TH: "ผู้อำนวยการบริหารสินค้า", EN: "Merchandise Director"}
-	tt[5] = &Title{TH: "พนักงานขาย", EN: "Sales"}
+	tt[1] = &Title{Parent: tt[0], TH: "รองประธานกรรมการ", EN: "Director"}
+	tt[2] = &Title{Parent: tt[1], TH: "กรรมการผู้จัดการ", EN: "Managing Director"}
+	tt[3] = &Title{Parent: tt[2], TH: "ผู้อำนวยการขาย", EN: "Sales Director"}
+	tt[4] = &Title{Parent: tt[2], TH: "ผู้อำนวยการบริหารสินค้า", EN: "Merchandise Director"}
+	tt[5] = &Title{Parent: tt[3], TH: "พนักงานขาย", EN: "Sales"}
 	fmt.Println("Title")
 
 	emp := make([]*Employee, 5)
@@ -57,10 +58,30 @@ func setupPerson() ([]*Period, []*Person, []*Customer, []*CusRank, []*Employee) 
 	emp[3] = &Employee{Person: ps[3], Title: tt[4], Code: "50001", salary: decimal.New(20000, 0)}
 	emp[4] = &Employee{Person: ps[4], Title: tt[5], Code: "53001", salary: decimal.New(9000, 0)}
 	fmt.Println("Employee")
+
+	o := make([]*Org, 20)
+	o[0] = &Org{TH: "สำนักกรรมการผู้จัดการ", EN: "Managing Director Office", Short: "MD"}
+	o[1] = &Org{Parent: o[0], TH: "ขาย", EN: "Sales", Short: "SA"}
+	o[2] = &Org{Parent: o[1], TH: "หน้าร้านสาขา 1", EN: "Retail Store 1", Short: "S1"}
+	o[3] = &Org{Parent: o[1], TH: "หน้าร้านสาขา 2", EN: "Retail Store 2", Short: "S2"}
+	o[4] = &Org{Parent: o[1], TH: "โครงการ 1", EN: "Project1", Short: "PJ1"}
+	o[5] = &Org{Parent: o[1], TH: "โครงการ 2", EN: "Project2", Short: "PJ2"}
+	o[6] = &Org{Parent: o[1], TH: "ค้าส่ง", EN: "Wholesales", Short: "WS"}
+	o[7] = &Org{Parent: o[0], TH: "บริหารสินค้า", EN: "Merchandising", Short: "MC"}
+	o[8] = &Org{Parent: o[7], TH: "แผนกสินค้า1", EN: "Category1", Short: "CAT1"}
+	o[9] = &Org{Parent: o[7], TH: "แผนกสินค้า2", EN: "Category2", Short: "CAT2"}
+	o[10] = &Org{Parent: o[7], TH: "แผนกสินค้า1", EN: "Category1", Short: "CAT3"}
+	o[11] = &Org{Parent: o[7], TH: "แผนกสินค้า4", EN: "Category4", Short: "CAT4"}
+	o[12] = &Org{Parent: o[7], TH: "การตลาด", EN: "Marketing", Short: "CAT4"}
+	o[13] = &Org{Parent: o[7], TH: "พัฒนาระบบคุณภาพ", EN: "Quality Management Development", Short: "QMD"}
+	o[14] = &Org{Parent: o[7], TH: "พัฒนาระบบสาขา", EN: "Business Development", Short: "QMD"}
+	o[15] = &Org{Parent: o[7], TH: "พัฒนาระบบบริการลูกค้า", EN: "Customer Service Development", Short: "CSD"}
+	o[16] = &Org{Parent: o[7], TH: "Information Technology", EN: "Information Technology", Short: "IT"}
+
 	return pr, ps, c, cr, emp
 }
 
-func setupItem() ([]*Category, []*Item, []*Location, []*Stock, []*Trans) {
+func setupItem() ([]*Category, []*Item, []*Location, []*Stock, []*Tran) {
 	c := make([]*Category, 5)
 	c[0] = &Category{Name: "root"}
 	c[1] = &Category{Parent: c[0], Name: "Beverage"}
@@ -70,10 +91,10 @@ func setupItem() ([]*Category, []*Item, []*Location, []*Stock, []*Trans) {
 
 	i := make([]*Item, 10)
 	i[0] = &Item{Parent: c[0], Name: "Dummy Item"}
-	i[1] = &Item{Parent: c[4], Name: "Coke Can 325ml"}
-	i[2] = &Item{Parent: c[4], Name: "Pepsi Can 325ml"}
-	i[3] = &Item{Parent: c[1], Name: "Ichitan Can 325ml"}
-	i[4] = &Item{Parent: c[1], Name: "Coke Can 325ml"}
+	i[1] = &Item{Parent: c[4], Name: "Coke"}
+	i[2] = &Item{Parent: c[4], Name: "Pepsi"}
+	i[3] = &Item{Parent: c[1], Name: "อิชิตันส้ม รสข้าวคั่ว"}
+	i[4] = &Item{Parent: c[1], Name: "อิชิตันมะนาว"}
 	i[5] = &Item{Parent: c[1], Name: "Coke Can 325ml"}
 	i[6] = &Item{Parent: c[1], Name: "Coke Can 325ml"}
 	i[7] = &Item{Parent: c[1], Name: "Coke Can 325ml"}
@@ -98,23 +119,23 @@ func setupItem() ([]*Category, []*Item, []*Location, []*Stock, []*Trans) {
 	l[14] = &Location{Parent: l[8], LocType: COLUMN, Code: "05"}
 
 	s := make([]*Stock, 5)
-	s[0] = &Stock{item: i[1], loc: l[1], bal: 0, digit: 0}
-	s[1] = &Stock{item: i[1], loc: l[2], bal: 0, digit: 0}
-	s[2] = &Stock{item: i[1], loc: l[3], bal: 0, digit: 0}
-	s[3] = &Stock{item: i[2], loc: l[1], bal: 0, digit: 0}
-	s[4] = &Stock{item: i[2], loc: l[2], bal: 0, digit: 0}
+	s[0] = &Stock{item: i[1], loc: l[1], bal: 0}
+	s[1] = &Stock{item: i[1], loc: l[2], bal: 0}
+	s[2] = &Stock{item: i[2], loc: l[1], bal: 0}
+	s[3] = &Stock{item: i[2], loc: l[2], bal: 0}
+	s[4] = &Stock{item: i[2], loc: l[3], bal: 0}
 
-	t := make([]*Trans, 10)
-	t[0] = &Trans{ID: 1, item: i[1], locOut: l[0], locIn: l[1], qty: 100}
-	t[1] = &Trans{ID: 2, item: i[1], locOut: l[0], locIn: l[1], qty: 10}
-	t[2] = &Trans{ID: 3, item: i[1], locOut: l[0], locIn: l[1], qty: 20}
-	t[3] = &Trans{ID: 4, item: i[1], locOut: l[1], locIn: l[2], qty: 50}
-	t[4] = &Trans{ID: 5, item: i[1], locOut: l[2], locIn: l[3], qty: 10}
-	t[5] = &Trans{ID: 6, item: i[1], locOut: l[1], locIn: l[3], qty: 10}
-	t[6] = &Trans{ID: 7, item: i[1], locOut: l[1], locIn: l[4], qty: 10}
-	t[7] = &Trans{ID: 8, item: i[1], locOut: l[3], locIn: l[5], qty: 1}
-	t[8] = &Trans{ID: 9, item: i[1], locOut: l[4], locIn: l[1], qty: 1}
-	t[9] = &Trans{ID: 10, item: i[1], locOut: l[3], locIn: l[1], qty: 1}
+	t := make([]*Tran, 4)
+	t[0] = &Tran{ID: 1, item: i[1], locOut: l[0], locIn: l[1], qty: 100}
+	t[1] = &Tran{ID: 2, item: i[1], locOut: l[1], locIn: l[2], qty: 10}
+	t[2] = &Tran{ID: 3, item: i[1], locOut: l[1], locIn: l[3], qty: 20}
+	t[3] = &Tran{ID: 4, item: i[1], locOut: l[1], locIn: l[4], qty: 50}
+	//	t[4] = &Trans{ID: 5, item: i[1], locOut: l[4], locIn: l[1], qty: 10}
+	//	t[5] = &Trans{ID: 6, item: i[1], locOut: l[1], locIn: l[3], qty: 10}
+	//	t[6] = &Trans{ID: 7, item: i[1], locOut: l[1], locIn: l[4], qty: 10}
+	//	t[7] = &Trans{ID: 8, item: i[1], locOut: l[3], locIn: l[5], qty: 1}
+	//	t[8] = &Trans{ID: 9, item: i[1], locOut: l[4], locIn: l[1], qty: 1}
+	//	t[9] = &Trans{ID: 10, item: i[1], locOut: l[3], locIn: l[1], qty: 1}
 
 	return c, i, l, s, t
 }

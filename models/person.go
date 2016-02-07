@@ -6,10 +6,10 @@ import (
 )
 
 type Person struct {
-	Fname string
-	Lname string
-	Nname string
-	Bdate time.Time
+	FName string
+	LName string
+	NName string
+	BDate time.Time
 }
 
 type Employee struct {
@@ -20,6 +20,14 @@ type Employee struct {
 }
 
 type Title struct {
-	TH string
-	EN string
+	Parent *Title
+	TH     string
+	EN     string
+}
+
+type Org struct {
+	Parent *Org
+	TH     string
+	EN     string
+	Short  string
 }

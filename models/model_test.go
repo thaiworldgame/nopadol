@@ -17,7 +17,7 @@ func TestPrintModelsPerson(t *testing.T) {
 		fmt.Println("Person:", ps[p])
 	}
 	for e := range emp {
-		fmt.Println("Employee:", emp[e].Fname, emp[e].Title, emp[e].Bdate.Format("01/02/2006"), emp[e].salary)
+		fmt.Println("Employee:", emp[e].FName, emp[e].Title, emp[e].BDate.Format("01/02/2006"), emp[e].salary)
 	}
 	//	for z := range cr {
 	//		fmt.Println("Customr Rank:", cr[z].Period, cr[z].Customer.Name, cr[z].Rank, cr[z].KI1Continous, cr[z].KI2PaymentDue, cr[z].KI3Responsibility, cr[z].KI4Charactor )
@@ -43,19 +43,43 @@ func TestPrintModelsItem(t *testing.T) {
 	}
 }
 
-func TestStock_CalcStockBalanceFromTrans(t *testing.T) {
-	_, items, _, stocks, trans := setupItem()
+func TestItem_CalcBalancefromStockTrans(t *testing.T) {
+	_, items, l, stocks, trans := setupItem()
 
 	i := items[1]
-	fmt.Println("A Stock:", stocks)
-	a := i.Stock(stocks)
-	fmt.Println("B Stock:", i.Stock(a))
-
-	i.Calc(stocks, trans)
-	for _, s := range a {
-		fmt.Println(">>", s.item.Name, s.loc.Code, "Balance=", s.bal)
+	fmt.Println("Start Stock Calc:", stocks)
+	iStock := i.Calc(stocks, trans)
+	fmt.Println("Check Assert balance:")
+	for _, v := range iStock {
+		if v.loc == l[0] && v.bal != -100 {
+			t.Error("Missing Calculation in", v.item.Name, v.loc.Code, v.bal)
+		}
+		if v.loc == l[1] && v.bal != 20 {
+			t.Error("Missing Calculation in", v.item.Name, v.loc.Code, v.bal)
+		}
+		if v.loc == l[2] && v.bal != 10 {
+			t.Error("Missing Calculation in", v.item.Name, v.loc.Code, v.bal)
+		}
+		fmt.Println(">>", v.item.Name, v.loc.Code, "Balance=", v.bal)
 	}
 }
+
+//func TestStock_CalcBalanceByItem(t *testing.T) {
+//	_, items, _, stocks, trans := setupItem()
+//
+//	i := items[1]
+//	for k, _ := range stocks {
+//		if stocks[k].item == i {
+//			err := stocks[k].Calc(trans)
+//			if err != nil {
+//				t.Error("Error in Calc(i)>> ",err)
+//			}
+//		}
+//		if stocks[k].bal != 10 { //Expected value here!
+//			t.Error("Calculate stock balance of", stocks[k].item.Name ,"at location=", stocks[k].loc.Code,"Expected 'bal' = 10 but = ", stocks[k].bal)
+//		}
+//	}
+//}
 
 func TestCat_FindByName(t *testing.T) {
 	cats, _, _, _, _ := setupItem()
