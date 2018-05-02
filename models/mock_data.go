@@ -6,7 +6,7 @@ import (
 	"time"
 )
 
-func setupPerson() ([]*Period, []*Person, []*Customer, []*CusRank, []*Employee) {
+func setupPerson() ([]*Period, []*Person, []*Customer, []*CusRank, []*Title, []*Employee, []*Org) {
 	pr := make([]*Period, 12)
 	pr[0] = &Period{Year: 2015, Month: 1}
 	pr[1] = &Period{Year: 2015, Month: 2}
@@ -78,7 +78,7 @@ func setupPerson() ([]*Period, []*Person, []*Customer, []*CusRank, []*Employee) 
 	o[15] = &Org{Parent: o[7], TH: "พัฒนาระบบบริการลูกค้า", EN: "Customer Service Development", Short: "CSD"}
 	o[16] = &Org{Parent: o[7], TH: "Information Technology", EN: "Information Technology", Short: "IT"}
 
-	return pr, ps, c, cr, emp
+	return pr, ps, c, cr, tt, emp, o
 }
 
 func setupItem() ([]*Category, []*Item, []*Location, []*Stock, []*Tran) {
