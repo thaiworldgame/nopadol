@@ -134,8 +134,8 @@ type Stock struct {
 	digit int8 // ขนาดของทศนิยมที่จะใช้กับสินค้านี้
 }
 
-func (s *Stock) Move(newLoc *Location) {
-	s.loc = newLoc
+func (s *Stock) Move(toLoc *Location) {
+	s.loc = toLoc
 }
 
 func (s *Stock) Calc(trans []*Tran) error {

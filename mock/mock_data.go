@@ -8,26 +8,19 @@ import (
 
 func setupPerson() ([]*Period, []*Person, []*Customer, []*CusRank, []*Title, []*Employee, []*Org) {
 	pr := make([]*Period, 12)
-	pr[0] = &Period{Year: 2015, Month: 1}
-	pr[1] = &Period{Year: 2015, Month: 2}
-	pr[2] = &Period{Year: 2015, Month: 3}
-	pr[3] = &Period{Year: 2015, Month: 4}
-	pr[4] = &Period{Year: 2015, Month: 5}
-	pr[5] = &Period{Year: 2015, Month: 6}
-	pr[6] = &Period{Year: 2015, Month: 7}
-	pr[7] = &Period{Year: 2015, Month: 8}
-	pr[8] = &Period{Year: 2015, Month: 9}
-	pr[9] = &Period{Year: 2015, Month: 10}
-	pr[10] = &Period{Year: 2015, Month: 11}
-	pr[11] = &Period{Year: 2015, Month: 12}
+	year := 2015
+	for i, v := range pr {
+		month := i+1
+		v = &Period{Year: year, Month: month }
+	}
 
 	ps := make([]*Person, 5)
 	loc, _ := time.LoadLocation("Asia/Bangkok")
-	ps[0] = &Person{FName: "เกษม", LName: "อานนทวิลาศ", NName: "Tom", BDate: time.Date(1974, time.October, 4, 0, 0, 0, 0, loc)}
-	ps[1] = &Person{FName: "จิราภรณ์", LName: "อานนทวิลาศ", NName: "Jip", BDate: time.Date(1976, time.August, 12, 0, 0, 0, 0, time.Local)}
-	ps[2] = &Person{FName: "ทนัฐพร", LName: "อานนทวิลาศ", NName: "Tim", BDate: time.Date(1976, time.August, 31, 0, 0, 0, 0, time.Local)}
-	ps[3] = &Person{FName: "ธนันท์", LName: "อานนทวิลาศ", NName: "Tam", BDate: time.Date(1974, time.June, 7, 0, 0, 0, 0, time.Local)}
-	ps[4] = &Person{FName: "สาธิต", LName: "โฉมวัฒนา", NName: "น้อย", BDate: time.Date(1974, time.June, 10, 0, 0, 0, 0, time.Local)}
+	ps[0] = &Person{FirstName: "เกษม", LastName: "อานนทวิลาศ", NickName: "Tom", BirthDate: time.Date(1974, time.October, 4, 0, 0, 0, 0, loc)}
+	ps[1] = &Person{FirstName: "จิราภรณ์", LastName: "อานนทวิลาศ", NickName: "Jip", BirthDate: time.Date(1976, time.August, 12, 0, 0, 0, 0, time.Local)}
+	ps[2] = &Person{FirstName: "ทนัฐพร", LastName: "อานนทวิลาศ", NickName: "Tim", BirthDate: time.Date(1976, time.August, 31, 0, 0, 0, 0, time.Local)}
+	ps[3] = &Person{FirstName: "ธนันท์", LastName: "อานนทวิลาศ", NickName: "Tam", BirthDate: time.Date(1974, time.June, 7, 0, 0, 0, 0, time.Local)}
+	ps[4] = &Person{FirstName: "สาธิต", LastName: "โฉมวัฒนา", NickName: "น้อย", BirthDate: time.Date(1974, time.June, 10, 0, 0, 0, 0, time.Local)}
 
 	c := make([]*Customer, 5)
 	c[0] = &Customer{CusType: COMPANY, Contact: ps[0], Name: "Dummy Customer", debit: decimal.Zero, credit: decimal.Zero}
@@ -44,20 +37,13 @@ func setupPerson() ([]*Period, []*Person, []*Customer, []*CusRank, []*Title, []*
 
 	tt := make([]*Title, 7)
 	tt[0] = &Title{TH: "ประธานกรรมการ", EN: "Board of Director"}
-	tt[1] = &Title{Parent: tt[0], TH: "รองประธานกรรมการ", EN: "Director"}
-	tt[2] = &Title{Parent: tt[1], TH: "กรรมการผู้จัดการ", EN: "Managing Director"}
-	tt[3] = &Title{Parent: tt[2], TH: "ผู้อำนวยการขาย", EN: "Sales Director"}
-	tt[4] = &Title{Parent: tt[2], TH: "ผู้อำนวยการบริหารสินค้า", EN: "Merchandise Director"}
-	tt[5] = &Title{Parent: tt[3], TH: "พนักงานขาย", EN: "Sales"}
+	tt[1] = &Title{Parent: tt[0], ID: 1, TH: "รองประธานกรรมการ", EN: "Director"}
+	tt[2] = &Title{Parent: tt[1], ID: 2, TH: "กรรมการผู้จัดการ", EN: "Managing Director"}
+	tt[3] = &Title{Parent: tt[2], ID: 3, TH: "ผู้อำนวยการขาย", EN: "Sales Director"}
+	tt[4] = &Title{Parent: tt[2], ID: 4, TH: "ผู้อำนวยการบริหารสินค้า", EN: "Merchandise Director"}
+	tt[5] = &Title{Parent: tt[3], ID: 5, TH: "พนักงานขาย", EN: "Sales"}
 	fmt.Println("Title")
 
-	emp := make([]*Employee, 5)
-	emp[0] = &Employee{Person: ps[0], Title: tt[2], Code: "39001", salary: decimal.New(40000, 0)}
-	emp[1] = &Employee{Person: ps[1], Title: tt[3], Code: "48001", salary: decimal.New(30000, 0)}
-	emp[2] = &Employee{Person: ps[2], Title: tt[4], Code: "49001", salary: decimal.New(20000, 0)}
-	emp[3] = &Employee{Person: ps[3], Title: tt[4], Code: "50001", salary: decimal.New(20000, 0)}
-	emp[4] = &Employee{Person: ps[4], Title: tt[5], Code: "53001", salary: decimal.New(9000, 0)}
-	fmt.Println("Employee")
 
 	o := make([]*Org, 20)
 	o[0] = &Org{TH: "สำนักกรรมการผู้จัดการ", EN: "Managing Director Office", Short: "MD"}
@@ -77,6 +63,14 @@ func setupPerson() ([]*Period, []*Person, []*Customer, []*CusRank, []*Title, []*
 	o[14] = &Org{Parent: o[7], TH: "พัฒนาระบบสาขา", EN: "Business Development", Short: "QMD"}
 	o[15] = &Org{Parent: o[7], TH: "พัฒนาระบบบริการลูกค้า", EN: "Customer Service Development", Short: "CSD"}
 	o[16] = &Org{Parent: o[7], TH: "Information Technology", EN: "Information Technology", Short: "IT"}
+
+	emp := make([]*Employee, 5)
+	emp[0] = &Employee{Person: ps[0], PersonID: 1, Titles: []*Title{tt[2], tt[3]}, Code: "39001", salary: decimal.New(40000, 0)}
+	//emp[1] = &Employee{Person: ps[1], PersonID: 2, Titles: &Title{tt[3]}, Code: "48001", salary: decimal.New(30000, 0)}
+	//emp[2] = &Employee{Person: ps[2], PersonID: 3, Titles: &Title{tt[4]}, Code: "49001", salary: decimal.New(20000, 0)}
+	//emp[3] = &Employee{Person: ps[3], PersonID: 4, Titles: &Title{tt[4]}, Code: "50001", salary: decimal.New(20000, 0)}
+	//emp[4] = &Employee{Person: ps[4], PersonID: 5, Titles: &Title{tt[5]}, Code: "53001", salary: decimal.New(9000, 0)}
+	fmt.Println("Employee")
 
 	return pr, ps, c, cr, tt, emp, o
 }

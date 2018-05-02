@@ -32,7 +32,8 @@ const (
 	D
 )
 
-type CusRank struct {
+// CreditScore of customer
+type CreditScore struct {
 	*Period
 	*Customer
 	Rank
