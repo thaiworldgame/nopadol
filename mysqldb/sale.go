@@ -1,4 +1,4 @@
-package mariadb
+package mysqldb
 
 import (
 	"github.com/mrtomyum/nopadol/sale"
@@ -20,4 +20,3 @@ func (saleRepository) Register(ctx context.Context, entity *sale.Entity1) (strin
 func (saleRepository) SetField3(ctx context.Context, entityID string, field3 int) error {
 	return nil
 }
-

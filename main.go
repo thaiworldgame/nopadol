@@ -1,17 +1,29 @@
 package main
 
 import (
-	"github.com/mrtomyum/nopadol/mariadb"
-	"github.com/mrtomyum/nopadol/sale/service"
+	"github.com/mrtomyum/nopadol/sale"
+	saleservice "github.com/mrtomyum/nopadol/sale/service"
+	saleendpoint "github.com/mrtomyum/nopadol/sale/endpoint"
+	salehandler "github.com/mrtomyum/nopadol/sale/handler"
+	"github.com/mrtomyum/nopadol/mysqldb"
+	"net/http"
 )
 
 
 func main() {
+
 	// init repos
-	saleRepo := mariadb.NewWebRepository()
+	saleRepo := mysqldb.NewSaleRepository()
 
 	// init services
-	saleService := saleService.New(saleRepo)
+	saleService := saleservice.New(saleRepo)
 
-	// init
+	// init endpoints
+	saleEndpoint := saleendpoint.New(saleService)
+
+	mux := http.NewServeMux()
+	mux.Handle("/", salehandler.New(saleService))
+	mux.Handle("/sale/", http.StripPrefix("/sale", sale.NewHTTPTransport(saleEndpoint)))
+
+	http.ListenAndServe(":8081", mux)
 }
