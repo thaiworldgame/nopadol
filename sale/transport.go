@@ -22,20 +22,52 @@ func NewHTTPTransport(ep Endpoint) http.Handler {
 		httptransport.EncodeJSON(w, status, &httpError{Message: err.Error()})
 	}
 
-	mux.Handle("/create", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		var req CreateRequest
+	mux.Handle("/search",http.HandlerFunc(func(w http.ResponseWriter, r *http.Request){
+		var req SearchSaleRequest
 		err := httptransport.DecodeJSON(r.Body, &req)
 		if err != nil {
 			errorEncoder(w, err)
 			return
 		}
-		resp, err := ep.Create(r.Context(), &req)
+		resp, err := ep.Search(r.Context(), &req)
 		if err != nil {
 			errorEncoder(w, err)
 			return
 		}
 		httptransport.EncodeJSON(w, http.StatusOK, &resp)
 	}))
+
+	//mux.Handle("/create", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	//	var req CreateRequest
+	//	err := httptransport.DecodeJSON(r.Body, &req)
+	//	if err != nil {
+	//		errorEncoder(w, err)
+	//		return
+	//	}
+	//	resp, err := ep.Create(r.Context(), &req)
+	//	if err != nil {
+	//		errorEncoder(w, err)
+	//		return
+	//	}
+	//	httptransport.EncodeJSON(w, http.StatusOK, &resp)
+	//}))
+	//
+
+	mux.Handle("/new",http.HandlerFunc(func(w http.ResponseWriter, r *http.Request){
+		var req NewRequest
+		err := httptransport.DecodeJSON(r.Body, &req)
+		if err != nil {
+			errorEncoder(w, err)
+			return
+		}
+		resp, err := ep.New(r.Context(), &req)
+		if err != nil {
+			errorEncoder(w, err)
+			return
+		}
+		httptransport.EncodeJSON(w, http.StatusOK, resp)
+	}))
+
 
 	// or use https://github.com/acoshift/hrpc for RPC-HTTP style API
 	// mux.Handle("/create", m.Handler(ep.Create))

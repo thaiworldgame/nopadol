@@ -1,14 +1,11 @@
 package sale
 
-import "github.com/itnopadol/go-ddd-service-boilerplate/domain3"
-
 // Entity1 type
 type Entity1 struct {
 	ID     string
 	Field1 string
 	Field2 Entity2
 	Field3 int
-	Field4 domain3.Entity1
 }
 
 // Entity2 type
@@ -17,14 +14,17 @@ type Entity2 struct {
 	Field2 bool
 }
 
-type SaleOrder struct {
-	DocNo string
-	DocDate string
-	ArCode string
-	Subs []*SaleOrderSub
+type EntitySearch struct {
+	Keyword string `json:"keyword"`
 }
 
-type SaleOrderSub struct {
+type EntitySaleOrder struct {
+	DocNo string `db:"DocNo"`
+	ArCode string `db:"ArCode"`
+	ArName string `db:"ArName"`
+}
+
+type EntitySaleOrderSub struct {
 	ItemCode string
 	ItemName string
 }

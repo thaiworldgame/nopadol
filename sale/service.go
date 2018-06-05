@@ -9,4 +9,7 @@ type Service interface {
 
 	// Update updates Entity1
 	Update(ctx context.Context, entity *Entity1) error
+
+	// Search searchs Entity1
+	Search(ctx context.Context, keyword *EntitySearch) (docno EntitySaleOrder, err error)
 }

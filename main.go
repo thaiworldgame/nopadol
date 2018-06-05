@@ -7,13 +7,25 @@ import (
 	salehandler "github.com/mrtomyum/nopadol/sale/handler"
 	"github.com/mrtomyum/nopadol/mysqldb"
 	"net/http"
+	"github.com/jmoiron/sqlx"
+	_ "github.com/go-sql-driver/mysql"
+	"fmt"
 )
 
+var dbc *sqlx.DB
+
+func init() {
+	db, err := ConnectDB("npdl")
+	if err != nil {
+		fmt.Println(err.Error())
+	}
+	dbc = db
+}
 
 func main() {
 
 	// init repos
-	saleRepo := mysqldb.NewSaleRepository()
+	saleRepo := mysqldb.NewSaleRepository(dbc)
 
 	// init services
 	saleService := saleservice.New(saleRepo)
@@ -27,3 +39,17 @@ func main() {
 
 	http.ListenAndServe(":8081", mux)
 }
+
+func ConnectDB(dbName string) (db *sqlx.DB, err error) {
+	fmt.Println("Connect MySql")
+	dsn := "root:[ibdkifu88@tcp(nopadol.net:3306)/" + dbName + "?parseTime=true&charset=utf8&loc=Local"
+	db, err = sqlx.Connect("mysql", dsn)
+
+	if err != nil {
+		fmt.Println("sql error =",err)
+		return nil, err
+	}
+	return db, err
+}
+
+
