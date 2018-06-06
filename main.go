@@ -1,8 +1,7 @@
 package main
 
 import (
-	"github.com/mrtomyum/nopadol/mariadb"
-	"github.com/mrtomyum/nopadol/incentive"
+	"database/sql"
 )
 
 const (
@@ -15,21 +14,14 @@ const (
 func main() {
 	conn := dbUser + ":" + dbPass + "@tcp(" + dbAddress + ")/" + dbName
 	db, err := sql.Open("mysql", conn)
-	must(err)
+	if err != nil {
+		return
+	}
 	defer db.Close()
 
 	// init repos
-	saleRepo := mariadb.NewIncentiveRepository()
 
 	// init services
-	saleService := sale.Service.New(saleRepo)
 
 	// init
-}
-
-func must(err error) {
-	if err != nil {
-		fmt.Println("Error:", err)
-		log.Fatal(err)
-	}
 }
