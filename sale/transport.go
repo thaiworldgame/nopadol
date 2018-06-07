@@ -36,7 +36,7 @@ func NewHTTPTransport(ep Endpoint) http.Handler {
 		}
 		httptransport.EncodeJSON(w, http.StatusOK, &resp)
 	}))
-
+	//
 	//mux.Handle("/create", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 	//	var req CreateRequest
 	//	err := httptransport.DecodeJSON(r.Body, &req)
@@ -53,14 +53,14 @@ func NewHTTPTransport(ep Endpoint) http.Handler {
 	//}))
 	//
 
-	mux.Handle("/new",http.HandlerFunc(func(w http.ResponseWriter, r *http.Request){
-		var req NewRequest
+	mux.Handle("/so/new",http.HandlerFunc(func(w http.ResponseWriter, r *http.Request){
+		var req NewSORequest
 		err := httptransport.DecodeJSON(r.Body, &req)
 		if err != nil {
 			errorEncoder(w, err)
 			return
 		}
-		resp, err := ep.New(r.Context(), &req)
+		resp, err := ep.NewSO(r.Context(), &req)
 		if err != nil {
 			errorEncoder(w, err)
 			return

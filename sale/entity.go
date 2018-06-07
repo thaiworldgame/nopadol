@@ -18,14 +18,4 @@ type EntitySearch struct {
 	Keyword string `json:"keyword"`
 }
 
-type EntitySaleOrder struct {
-	DocNo string `db:"DocNo"`
-	ArCode string `db:"ArCode"`
-	ArName string `db:"ArName"`
-}
-
-type EntitySaleOrderSub struct {
-	ItemCode string
-	ItemName string
-}
 
