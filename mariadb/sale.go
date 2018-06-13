@@ -5,4 +5,3 @@ func NewSaleRepository() sale.Repository {
 }
 
 type saleRepository struct {}
-
