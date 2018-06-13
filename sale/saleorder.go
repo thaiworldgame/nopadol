@@ -1,14 +1,15 @@
 package sale
 
 type SaleOrder struct {
-	DocNo  string `db:"DocNo"`
-	ArCode string `db:"ArCode"`
-	ArName string `db:"ArName"`
+	DocNo   string `json:"doc_no" db:"DocNo"`
+	DocDate string `json:"doc_date" db:"DocDate"`
+	ArCode  string `json:"ar_code" db:"ArCode"`
+	ArName  string `json:"ar_name" db:"ArName"`
 	Subs []*struct {
-		ItemCode string `db:"ItemCode"`
-		ItemName string  `db:"ItemName"`
-		Qty float64 `db:"Qty"`
-		UnitCode string `db:"UnitCode"`
+		ItemCode string  `json:"item_code" db:"ItemCode"`
+		ItemName string  `json:"item_name" db:"ItemName"`
+		Qty      float64 `json:"qty" db:"Qty"`
+		UnitCode string  `json:"unit_code" db:"UnitCode"`
 	}
 }
 

@@ -16,12 +16,15 @@ type endpoint struct {
 }
 
 func (ep *endpoint) NewSO(ctx context.Context, req *sale.NewSORequest) (*sale.NewSOResponse, error) {
-	id, err := ep.s.NewSO(ctx, &sale.SaleOrder{})
+	fmt.Println("endpoint docno=",req.Sale.DocNo)
+
+	id, err := ep.s.NewSO(ctx, &sale.SaleOrder{DocNo:req.Sale.DocNo,DocDate:req.Sale.DocDate,ArCode:req.Sale.ArCode,ArName:req.Sale.ArName,Subs:req.Sale.Subs})
+
 	if err != nil {
 		return nil,err
 	}
 
-	return &sale.NewSOResponse{Id:id},nil
+	return &sale.NewSOResponse{SOID:id},nil
 }
 
 func (ep *endpoint) Create(ctx context.Context, req *sale.CreateRequest) (*sale.CreateResponse, error) {
@@ -56,9 +59,5 @@ func (ep *endpoint) Search(ctx context.Context, req *sale.SearchSaleRequest) (*s
 
 	return &sale.SearchSaleResponse{
 		Sale: sale_order,
-		//DocNo:so.DocNo,
-		//ArCode:so.ArCode,
-		//ArName:so.ArName,
-		//Subs:so.Subs,//{so.Subs.ItemCode,so.Subs.ItemName,so.Subs.Qty}
 	}, nil
 }

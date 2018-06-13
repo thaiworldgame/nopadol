@@ -53,7 +53,7 @@ func NewHTTPTransport(ep Endpoint) http.Handler {
 	//	httptransport.EncodeJSON(w, http.StatusOK, &resp)
 	//}))
 	//
-	
+
 	mux.Handle("/so/new",http.HandlerFunc(func(w http.ResponseWriter, r *http.Request){
 		var req NewSORequest
 		err := httptransport.DecodeJSON(r.Body, &req)
