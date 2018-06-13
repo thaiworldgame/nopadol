@@ -2,12 +2,12 @@ package main
 
 import (
 	"github.com/mrtomyum/nopadol/incentive"
+	"github.com/mrtomyum/nopadol/sqldb"
 	incentiveService "github.com/mrtomyum/nopadol/incentive/service"
 	incentiveEndpoint "github.com/mrtomyum/nopadol/incentive/endpoint"
 	incentivehandler "github.com/mrtomyum/nopadol/incentive/handler"
 	"net/http"
 	"github.com/jmoiron/sqlx"
-	_ "github.com/go-sql-driver/mysql"
 	"fmt"
 	_ "github.com/denisenkom/go-mssqldb"
 )
@@ -23,7 +23,7 @@ func init() {
 func main() {
 
 	// init repos
-	incentiveRepo := mariadb.NewSaleCodeRepository(dbc)
+	incentiveRepo := sqldb.NewSaleCodeRepository(dbc)
 
 	// init services
 	incentiveService := incentiveservice.New(incentiveRepo)

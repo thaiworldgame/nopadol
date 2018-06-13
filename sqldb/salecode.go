@@ -8,7 +8,9 @@ import (
 	"fmt"
 	_ "github.com/go-sql-driver/mysql"
 )
+var dbc *sqlx.DB
 
+var headerKeys = make(map[string]interface{})
 // NewDomain1Repository creates domain1 repository implements by domain4
 func NewSaleCodeRepository(db *sqlx.DB) incentive.Repository {
 	return &incentiveRepository{db}
@@ -37,4 +39,16 @@ func (icr *incentiveRepository) SearchSaleCode(ctx context.Context, kw *incentiv
 
 	fmt.Println("SaleCode =",ic.SaleCode)
 	return so,nil
+}
+
+func setHeader(){
+
+	headerKeys = map[string]interface{}{
+		"Server":"ProjectCard API",
+		"Host":"nebula",
+		"Content_Type":"application/json",
+		"Access-Control-Allow-Origin":"*",
+		"Access-Control-Allow-Methods":"GET, POST, PUT, DELETE",
+		"Access-Control-Allow-Headers":"Origin, Content-Type, X-Auth-Token",
+	}
 }
