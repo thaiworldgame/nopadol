@@ -61,7 +61,7 @@ func NewHTTPTransport(ep Endpoint) http.Handler {
 			errorEncoder(w, err)
 			return
 		}
-		resp, err := ep.NewSaleOrder(r.Context(), &req)
+		resp, err := ep.NewSaleOrder(r.Context(), req)
 		if err != nil {
 			errorEncoder(w, err)
 			return

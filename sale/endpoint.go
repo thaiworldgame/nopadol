@@ -6,7 +6,7 @@ import "context"
 type Endpoint interface {
 	Create(context.Context, *CreateRequest) (*CreateResponse, error)
 	//Search(context.Context, *SearchSaleOrderRequest) (*SearchSaleOrderResponse, error)
-	NewSaleOrder(context.Context, *NewSaleOrderRequest) (*NewSaleOrderResponse, error)
+	NewSaleOrder(context.Context, NewSaleOrderRequest) (*NewSaleOrderResponse, error)
 	Search(context.Context, *SearchSaleOrderRequest) (*SearchSaleOrderResponse, error)
 }
 
@@ -47,7 +47,14 @@ type (
 		DocDate string                  `json:"doc_date"`
 		ArCode  string                  `json:"ar_code"`
 		ArName  string                  `json:"ar_name"`
-		Subs    []SubsSaleOrderResponse `json:"subs"`
+		Subs    []NewSubsSaleOrderRequest `json:"subs"`
+	}
+
+	NewSubsSaleOrderRequest struct {
+		ItemCode string  `json:"item_code"`
+		ItemName string  `json:"item_name"`
+		Qty      float64 `json:"qty"`
+		UnitCode string  `json:"unit_code"`
 	}
 
 	NewSaleOrderResponse struct {

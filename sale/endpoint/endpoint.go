@@ -15,7 +15,7 @@ type endpoint struct {
 	s sale.Service
 }
 
-func buildsaleorderRequest(x *sale.NewSaleOrderRequest) sale.SaleOrderTemplate{
+func buildsaleorderRequest(x sale.NewSaleOrderRequest) sale.SaleOrderTemplate{
 	var subs []sale.SubsTemplate
 	return sale.SaleOrderTemplate{
 		DocNo:x.DocNo,
@@ -26,7 +26,7 @@ func buildsaleorderRequest(x *sale.NewSaleOrderRequest) sale.SaleOrderTemplate{
 	}
 }
 
-func buildsaleordersubRequest(x *sale.SubsSaleOrderResponse) sale.SubsTemplate {
+func buildsaleordersubRequest(x sale.NewSubsSaleOrderRequest) sale.SubsTemplate {
 	return sale.SubsTemplate{
 		ItemCode:x.ItemCode,
 		ItemName:x.ItemName,
@@ -35,21 +35,19 @@ func buildsaleordersubRequest(x *sale.SubsSaleOrderResponse) sale.SubsTemplate {
 	}
 }
 
-func (ep *endpoint) NewSaleOrder(ctx context.Context, req *sale.NewSaleOrderRequest) (*sale.NewSaleOrderResponse, error) {
+func (ep *endpoint) NewSaleOrder(ctx context.Context, req sale.NewSaleOrderRequest) (*sale.NewSaleOrderResponse, error) {
 	fmt.Println("endpoint docno=",req)
 
 	Resp := buildsaleorderRequest(req)
 
-	for _, v := range req.Subs {
+	for _, v := range req.Subs{
 		//fmt.Println(v)
 		soline := buildsaleordersubRequest(v)
 		Resp.Subs = append(Resp.Subs,soline)
-
-		//fmt.Println("So line = ",soline)
 	}
 
 
-	id, err := ep.s.NewSaleOrder(ctx, &sale.SaleOrderTemplate{DocNo:req.DocNo,DocDate:req.DocDate,ArCode:req.ArCode,ArName:req.ArName,Subs:req.Subs})
+	id, err := ep.s.NewSaleOrder(ctx, &sale.SaleOrderTemplate{DocNo:req.DocNo,DocDate:req.DocDate,ArCode:req.ArCode,ArName:req.ArName,Subs:Resp.Subs})
 
 	if err != nil {
 		return nil,err

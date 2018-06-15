@@ -68,7 +68,7 @@ func (sr *saleRepository) Search(ctx context.Context, kw *sale.EntitySearch) (re
 
 	SO1 := SaleOrderModel{}
 	//sql := `select DocNo,DocDate,ArCode,ArName from SaleOrder where DocNo = ?`
-	sql := `select docNo as DocNo,docDate as DocDate,customerCode as ArCode,'moo' as ArName from Queue where docNo = ?`
+	sql := `select ifnull(docNo,'') as DocNo,ifnull(docDate,'') as DocDate,ifnull(customerCode,'') as ArCode,'moo' as ArName from Queue where docNo = ?`
 	//err = sr.db.Get(&so, sql, kw.Keyword)
 	err = sr.db.Get(&SO1, sql, kw.Keyword)
 	if err != nil {
