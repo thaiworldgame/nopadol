@@ -24,7 +24,7 @@ func NewHTTPTransport(ep Endpoint) http.Handler {
 	}
 
 	mux.Handle("/search", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		var req SearchSaleRequest
+		var req SearchSaleOrderRequest
 		err := httptransport.DecodeJSON(r.Body, &req)
 		if err != nil {
 			errorEncoder(w, err)
@@ -55,13 +55,13 @@ func NewHTTPTransport(ep Endpoint) http.Handler {
 	//
 
 	mux.Handle("/so/new",http.HandlerFunc(func(w http.ResponseWriter, r *http.Request){
-		var req NewSORequest
+		var req NewSaleOrderRequest
 		err := httptransport.DecodeJSON(r.Body, &req)
 		if err != nil {
 			errorEncoder(w, err)
 			return
 		}
-		resp, err := ep.NewSO(r.Context(), &req)
+		resp, err := ep.NewSaleOrder(r.Context(), &req)
 		if err != nil {
 			errorEncoder(w, err)
 			return

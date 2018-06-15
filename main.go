@@ -5,11 +5,11 @@ import (
 	saleservice "github.com/mrtomyum/nopadol/sale/service"
 	saleendpoint "github.com/mrtomyum/nopadol/sale/endpoint"
 	salehandler "github.com/mrtomyum/nopadol/sale/handler"
-	"github.com/mrtomyum/nopadol/mysqldb"
 	"net/http"
 	"github.com/jmoiron/sqlx"
 	_ "github.com/go-sql-driver/mysql"
 	"fmt"
+	"github.com/mrtomyum/nopadol/mysqldb"
 )
 
 var dbc *sqlx.DB
@@ -27,6 +27,7 @@ func main() {
 
 	// init repos
 	saleRepo := mysqldb.NewSaleRepository(dbc)
+	//saleRepo := mock.NewSaleRepository(dbc)
 
 	// init services
 	saleService := saleservice.New(saleRepo)
