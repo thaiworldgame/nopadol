@@ -15,24 +15,32 @@ type endpoint struct {
 	s sale.Service
 }
 
-func buildsaleorderRequest(x sale.NewSaleOrderRequest) sale.SaleOrderTemplate{
-	var subs []sale.SubsTemplate
-	return sale.SaleOrderTemplate{
-		DocNo:x.DocNo,
-		DocDate:x.DocDate,
-		ArCode:x.ArCode,
-		ArName:x.ArName,
-		Subs:subs,
-	}
-}
 
-func buildsaleordersubRequest(x sale.NewSubsSaleOrderRequest) sale.SubsTemplate {
-	return sale.SubsTemplate{
-		ItemCode:x.ItemCode,
-		ItemName:x.ItemName,
-		Qty:x.Qty,
-		UnitCode:x.UnitCode,
+//Sale Order ///////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+func (ep *endpoint) Search(ctx context.Context, req *sale.SearchSaleOrderRequest) (*sale.SearchSaleOrderResponse, error) {
+
+	fmt.Println("keyword endpoint = ",req.Keyword)
+
+	sale_order, err := ep.s.Search(ctx, &sale.EntitySearch{
+		Keyword:req.Keyword,
+	})
+
+	if err != nil {
+		fmt.Println(err.Error())
+		return nil,err
 	}
+
+	Resp := buildsaleorder(sale_order)
+
+	for _, v := range sale_order.Subs {
+		soline := buildsaleordersub(v)
+		Resp.Subs = append(Resp.Subs,soline)
+	}
+
+	return &sale.SearchSaleOrderResponse{
+		DocNo: Resp.DocNo, DocDate: Resp.DocDate, ArCode: Resp.ArCode, ArName: Resp.ArName,Subs:Resp.Subs,
+	},nil
 }
 
 func (ep *endpoint) NewSaleOrder(ctx context.Context, req sale.NewSaleOrderRequest) (*sale.NewSaleOrderResponse, error) {
@@ -41,11 +49,9 @@ func (ep *endpoint) NewSaleOrder(ctx context.Context, req sale.NewSaleOrderReque
 	Resp := buildsaleorderRequest(req)
 
 	for _, v := range req.Subs{
-		//fmt.Println(v)
 		soline := buildsaleordersubRequest(v)
 		Resp.Subs = append(Resp.Subs,soline)
 	}
-
 
 	id, err := ep.s.NewSaleOrder(ctx, &sale.SaleOrderTemplate{DocNo:req.DocNo,DocDate:req.DocDate,ArCode:req.ArCode,ArName:req.ArName,Subs:Resp.Subs})
 
@@ -70,6 +76,25 @@ func (ep *endpoint) Create(ctx context.Context, req *sale.CreateRequest) (*sale.
 	return &sale.CreateResponse{ID: id}, nil
 }
 
+func buildsaleorderRequest(x sale.NewSaleOrderRequest) sale.SaleOrderTemplate{
+	var subs []sale.SubsTemplate
+	return sale.SaleOrderTemplate{
+		DocNo:x.DocNo,
+		DocDate:x.DocDate,
+		ArCode:x.ArCode,
+		ArName:x.ArName,
+		Subs:subs,
+	}
+}
+
+func buildsaleordersubRequest(x sale.NewSubsSaleOrderRequest) sale.SubsTemplate {
+	return sale.SubsTemplate{
+		ItemCode:x.ItemCode,
+		ItemName:x.ItemName,
+		Qty:x.Qty,
+		UnitCode:x.UnitCode,
+	}
+}
 
 func buildsaleorder(x sale.SaleOrderTemplate) sale.SearchSaleOrderResponse{
 	var subs []sale.SubsSaleOrderResponse
@@ -91,42 +116,12 @@ func buildsaleordersub(x sale.SubsTemplate) sale.SubsSaleOrderResponse {
 	}
 }
 
-func (ep *endpoint) Search(ctx context.Context, req *sale.SearchSaleOrderRequest) (*sale.SearchSaleOrderResponse, error) {
-//func (ep *endpoint) Search(ctx context.Context, req *sale.SearchSaleOrderRequest) (interface{}, error) {
+//Pos //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-	fmt.Println("keyword endpoint = ",req.Keyword)
-
-	sale_order, err := ep.s.Search(ctx, &sale.EntitySearch{
-		Keyword:req.Keyword,
-	})
-	//fmt.Println("saleorder = ",sale_order.DocNo)
-	if err != nil {
-		fmt.Println(err.Error())
-		return nil,err
-	}
-
-
-	Resp := buildsaleorder(sale_order)
-
-	for _, v := range sale_order.Subs {
-		//fmt.Println(v)
-		soline := buildsaleordersub(v)
-		Resp.Subs = append(Resp.Subs,soline)
-
-		//fmt.Println("So line = ",soline)
-	}
-
-
-	fmt.Println("DocNo =", sale_order.DocNo)
-	fmt.Println("DocDate =", sale_order.DocDate)
-	fmt.Println("ArCode =", sale_order.ArCode)
-	fmt.Println("so =",sale_order)
-
-	fmt.Println("Search By = ",sale.EntitySearch{}.Keyword)
-
-	//}, nil
-	return &sale.SearchSaleOrderResponse{
-		DocNo: Resp.DocNo, DocDate: Resp.DocDate, ArCode: Resp.ArCode, ArName: Resp.ArName,Subs:Resp.Subs,
-	},nil
-	//return sale_order,nil
-}
+//func(ep *endpoint) NewPos(ctx context.Context, req sale.NewPosRequest)(*sale.NewResponse, error){
+//	err := ep.s.NewPos(ctx, &sale.NewPosRequest{})
+//	if err != nil {
+//		return nil, nil
+//	}
+//	return &sale.NewResponse{Id:0},nil
+//}

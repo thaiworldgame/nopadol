@@ -30,38 +30,6 @@ func NewSaleRepository(db *sqlx.DB) sale.Repository {
 	return &saleRepository{db}
 }
 
-func (sr *saleRepository) NewSaleOrder(ctx context.Context, so *sale.SaleOrderTemplate) (Id int64, err error) {
-	fmt.Println("data = ", so)
-
-	//sql := `insert into SaleOrder(DocNo,DocDate,ArCode,ArName) values(?,?,?,?)`
-	if (so.DocNo != "") {
-		sql := `insert into Queue(docNo,customerCode,customerName) values(?,?,?)`
-		_, err = sr.db.Exec(sql, so.DocNo, so.ArCode, so.ArName)
-		if err != nil {
-			fmt.Println(err.Error())
-			return 0, err
-		}
-
-		for _, sub := range so.Subs {
-			//sqlsub := `insert into SaleOrderSub(DocNo,DocDate,ItemCode,ItemName,Qty,UnitCode) values(?,?,?,?,?,?)`
-			sqlsub := `insert into QItem(docNo,docDate,itemCode,itemName,qty,unitCode) values(?,?,?,?,?,?)`
-			_, err = sr.db.Exec(sqlsub, so.DocNo, so.DocDate, sub.ItemCode, sub.ItemName, sub.Qty, sub.UnitCode)
-			if err != nil {
-				fmt.Println(err.Error())
-				return 0, err
-			}
-		}
-
-	}
-
-	return 0, nil
-}
-
-func (sr *saleRepository) Register(ctx context.Context, entity *sale.Entity1) (string, error) {
-	//sr.db.
-	fmt.Println("Entity1 = ", entity.Field1)
-	return "moo", nil
-}
 
 func (sr *saleRepository) Search(ctx context.Context, kw *sale.EntitySearch) (resp sale.SaleOrderTemplate, err error) {
 	fmt.Println("From API Keyword =", kw.Keyword)
@@ -105,6 +73,40 @@ func (sr *saleRepository) Search(ctx context.Context, kw *sale.EntitySearch) (re
 
 	return Resp, nil
 }
+
+func (sr *saleRepository) NewSaleOrder(ctx context.Context, so *sale.SaleOrderTemplate) (Id int64, err error) {
+	fmt.Println("data = ", so)
+
+	//sql := `insert into SaleOrder(DocNo,DocDate,ArCode,ArName) values(?,?,?,?)`
+	if (so.DocNo != "") {
+		sql := `insert into Queue(docNo,customerCode,customerName) values(?,?,?)`
+		_, err = sr.db.Exec(sql, so.DocNo, so.ArCode, so.ArName)
+		if err != nil {
+			fmt.Println(err.Error())
+			return 0, err
+		}
+
+		for _, sub := range so.Subs {
+			//sqlsub := `insert into SaleOrderSub(DocNo,DocDate,ItemCode,ItemName,Qty,UnitCode) values(?,?,?,?,?,?)`
+			sqlsub := `insert into QItem(docNo,docDate,itemCode,itemName,qty,unitCode) values(?,?,?,?,?,?)`
+			_, err = sr.db.Exec(sqlsub, so.DocNo, so.DocDate, sub.ItemCode, sub.ItemName, sub.Qty, sub.UnitCode)
+			if err != nil {
+				fmt.Println(err.Error())
+				return 0, err
+			}
+		}
+
+	}
+
+	return 0, nil
+}
+
+func (sr *saleRepository) Register(ctx context.Context, entity *sale.Entity1) (string, error) {
+	//sr.db.
+	fmt.Println("Entity1 = ", entity.Field1)
+	return "moo", nil
+}
+
 
 func buildsaleorder(x SaleOrderModel) sale.SaleOrderTemplate {
 	var subs []sale.SubsTemplate
