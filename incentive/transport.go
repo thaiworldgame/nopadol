@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 package incentive
 
 import (
@@ -39,3 +40,6 @@ func NewHTTPTransport(ep Endpoint) http.Handler {
 	}))
 	return mux
 }
+=======
+package incentive
+>>>>>>> 9ac04656f87c91029ac46d7f1357a258638af627
