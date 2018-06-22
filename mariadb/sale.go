@@ -11,6 +11,8 @@ func NewSaleRepository() sale.Repository {
 }
 
 type saleRepository struct {}
+<<<<<<< HEAD
+=======
 
 func (saleRepository) Register(ctx context.Context, entity *sale.Entity1) (string, error) {
 	return "", nil
@@ -21,3 +23,4 @@ func (saleRepository) SetField3(ctx context.Context, entityID string, field3 int
 	return nil
 }
 
+>>>>>>> 9ac04656f87c91029ac46d7f1357a258638af627
