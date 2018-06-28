@@ -25,7 +25,7 @@ func (ep *endpoint)SearchCustomerById(ctx context.Context, req *customer.SearchC
 
 	fmt.Println("Customer DB = ",cust)
 
-	Resp := map_cutomer_data(cust)
+	Resp := map_cutomer_response(cust)
 
 	return &customer.SearchCustomerResponse{
 		CustomerId: Resp.CustomerId, CustomerCode: Resp.CustomerCode, CustomerName: Resp.CustomerName,
@@ -33,7 +33,7 @@ func (ep *endpoint)SearchCustomerById(ctx context.Context, req *customer.SearchC
 
 }
 
-func map_cutomer_data(x customer.CustomerTemplate) customer.SearchCustomerResponse{
+func map_cutomer_response(x customer.CustomerTemplate) customer.SearchCustomerResponse{
 	return customer.SearchCustomerResponse{
 		CustomerId:x.CustomerId,
 		CustomerCode:x.CustomerCode,

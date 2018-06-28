@@ -25,6 +25,8 @@ func init() {
 	_ "github.com/go-sql-driver/mysql"
 	_ "github.com/denisenkom/go-mssqldb"
 	"fmt"
+	"github.com/mrtomyum/nopadol/mysqldb"
+	"github.com/mrtomyum/nopadol/sqldb"
 
 	"github.com/mrtomyum/nopadol/sale"
 	saleservice "github.com/mrtomyum/nopadol/sale/service"
@@ -35,9 +37,9 @@ func init() {
 	customerservice "github.com/mrtomyum/nopadol/customer/service"
 	customerenpoint "github.com/mrtomyum/nopadol/customer/endpoint"
 
-
-	"github.com/mrtomyum/nopadol/mysqldb"
-	"github.com/mrtomyum/nopadol/sqldb"
+	"github.com/mrtomyum/nopadol/employee"
+	employeeservice "github.com/mrtomyum/nopadol/employee/service"
+	employeeendpoint "github.com/mrtomyum/nopadol/employee/endpoint"
 )
 
 var mysql_dbc *sqlx.DB
@@ -124,7 +126,6 @@ func ConnectSql()(msdb *sqlx.DB) {
 	return msdb
 =======
 	saleRepo := mysqldb.NewSaleRepository(mysql_dbc)
-	//saleRepo := mock.NewSaleRepository(dbc)
 
 	// init services
 	saleService := saleservice.New(saleRepo)
@@ -137,10 +138,17 @@ func ConnectSql()(msdb *sqlx.DB) {
 	customerService := customerservice.New(customerRepo)
 	customerEndpoint := customerenpoint.New(customerService)
 
+	// init employee
+	employeeRepo := sqldb.NewEmployeeRepository(sql_dbc)
+	employeeService := employeeservice.New(employeeRepo)
+	employeeEndpoint := employeeendpoint.New(employeeService)
+
 	mux := http.NewServeMux()
 	mux.Handle("/", salehandler.New(saleService))
 	mux.Handle("/sale/", http.StripPrefix("/sale", sale.NewHTTPTransport(saleEndpoint)))
 	mux.Handle("/customer/", http.StripPrefix("/customer", customer.NewHttpTransport(customerEndpoint)))
+
+	mux.Handle("/employee/", http.StripPrefix("/employee",employee.NewHttpTransport(employeeEndpoint)))
 
 	http.ListenAndServe(":8081", mux)
 >>>>>>> 9ac04656f87c91029ac46d7f1357a258638af627
