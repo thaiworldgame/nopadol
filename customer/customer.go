@@ -5,11 +5,11 @@ import (
 )
 
 
-type SearchByKeyword struct {
+type SearchByKeywordTemplate struct {
 	keyword string `json:"keyword"`
 }
 
-type SearchById struct {
+type SearchByIdTemplate struct {
 	Id int64 `json:"id"`
 }
 

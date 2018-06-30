@@ -15,23 +15,23 @@ type endpoint struct {
 }
 
 func (ep *endpoint) SearchEmployeeById(ctx context.Context, req *employee.SearchEmployeeByIdRequest) (*employee.SearchEmployeeResponse, error) {
-	emp, err := ep.s.SearchEmployeeById(ctx, &employee.SearchById{
+	emp, err := ep.s.SearchEmployeeById(ctx, &employee.SearchByIdTemplate{
 		Id: req.Id,
 	})
 	if err != nil {
 		fmt.Println(err.Error())
-		return nil,err
+		return nil, err
 	}
 
 	resp := map_employee_response(emp)
 
-	return &employee.SearchEmployeeResponse{EmployeeId:resp.EmployeeId, EmployeeCode:resp.EmployeeCode, EmployeeName:resp.EmployeeName, }, nil
+	return &resp, nil
 }
 
-func map_employee_response(x employee.EmployeeTemplate) employee.SearchEmployeeResponse{
+func map_employee_response(x employee.EmployeeTemplate) employee.SearchEmployeeResponse {
 	return employee.SearchEmployeeResponse{
-		EmployeeId:x.Id,
-		EmployeeCode:x.SaleCode,
-		EmployeeName:x.SaleName,
+		EmployeeId:   x.Id,
+		EmployeeCode: x.SaleCode,
+		EmployeeName: x.SaleName,
 	}
 }

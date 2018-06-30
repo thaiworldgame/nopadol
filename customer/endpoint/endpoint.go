@@ -15,7 +15,7 @@ type endpoint struct {
 }
 
 func (ep *endpoint)SearchCustomerById(ctx context.Context, req *customer.SearchCustomerByIdRequest) (*customer.SearchCustomerResponse, error){
-	cust, err := ep.s.SearchCustomerById(ctx, &customer.SearchById{
+	cust, err := ep.s.SearchCustomerById(ctx, &customer.SearchByIdTemplate{
 		Id:req.Id,
 	})
 	if err != nil {
@@ -25,11 +25,13 @@ func (ep *endpoint)SearchCustomerById(ctx context.Context, req *customer.SearchC
 
 	fmt.Println("Customer DB = ",cust)
 
-	Resp := map_cutomer_response(cust)
+	resp := map_cutomer_response(cust)
 
-	return &customer.SearchCustomerResponse{
-		CustomerId: Resp.CustomerId, CustomerCode: Resp.CustomerCode, CustomerName: Resp.CustomerName,
-	},nil
+	return &resp, nil
+
+	//return &customer.SearchCustomerResponse{
+	//	CustomerId: Resp.CustomerId, CustomerCode: Resp.CustomerCode, CustomerName: Resp.CustomerName,
+	//},nil
 
 }
 
