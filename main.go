@@ -1,25 +1,6 @@
 package main
 
 import (
-<<<<<<< HEAD
-	"github.com/mrtomyum/nopadol/incentive"
-	"github.com/mrtomyum/nopadol/sqldb"
-	incentiveService "github.com/mrtomyum/nopadol/incentive/service"
-	incentiveEndpoint "github.com/mrtomyum/nopadol/incentive/endpoint"
-	incentivehandler "github.com/mrtomyum/nopadol/incentive/handler"
-	"net/http"
-	"github.com/jmoiron/sqlx"
-	"fmt"
-	_ "github.com/denisenkom/go-mssqldb"
-)
-
-var dbc *sqlx.DB
-
-
-func init() {
-	dbc = ConnectSql()
-
-=======
 	"net/http"
 	"github.com/jmoiron/sqlx"
 	_ "github.com/go-sql-driver/mysql"
@@ -94,45 +75,12 @@ func ConnectSqlDB() (msdb *sqlx.DB, err error) {
 	}
 
 	return msdb, nil
->>>>>>> 9ac04656f87c91029ac46d7f1357a258638af627
 }
 
 
 func main() {
 
 	// init repos
-<<<<<<< HEAD
-	incentiveRepo := sqldb.NewSaleCodeRepository(dbc)
-
-	// init services
-	incentiveService := incentiveservice.New(incentiveRepo)
-
-	// init endpoints
-	incentiveEndpoint := incentiveendpoint.New(incentiveService)
-
-	mux := http.NewServeMux()
-	mux.Handle("/", incentivehandler.New(incentiveService))
-	mux.Handle("/incentive/", http.StripPrefix("/incentive", incentive.NewHTTPTransport(incentiveEndpoint)))
-
-	http.ListenAndServe(":9020", mux)
-}
-
-
-func ConnectSql()(msdb *sqlx.DB) {
-	db_host := "192.168.0.7"
-	db_name := "npdb"
-	db_user := "sa"
-	db_pass := "[ibdkifu"
-	port := "1433"
-	//dsn := fmt.Sprintf("server=%s;user id=%s;password=%s;database=%s", db_host, db_user, db_pass, port, db_name)
-	dsn := fmt.Sprintf("server=%s;user id=%s;password=%s;port=%s;database=%s", db_host, db_user, db_pass, port, db_name)
-	msdb = sqlx.MustConnect("mssql",dsn)
-
-	if (msdb.Ping() != nil) {
-		fmt.Println("Error")
-	}
-	return msdb
-=======
 	saleRepo := mysqldb.NewSaleRepository(mysql_dbc)
 
 	// init services
@@ -170,5 +118,5 @@ func ConnectSql()(msdb *sqlx.DB) {
 	mux.Handle("/pos/", http.StripPrefix("/pos/v1", pos.NewHttpTransport(posEndpoint)))
 
 	http.ListenAndServe(":8081", mux)
->>>>>>> 9ac04656f87c91029ac46d7f1357a258638af627
 }
+
