@@ -14,6 +14,7 @@ type Default struct {
 	PosGLFormat         string  `json:"pos_gl_format"`
 	PosSource           int     `json:"pos_source"`
 	PosMyType           int     `json:"pos_my_type"`
+	PosMachineNo        string  `json:"pos_machine_no"`
 }
 
 func LoadDefaultData(fileName string) (df Default) {

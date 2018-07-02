@@ -9,6 +9,7 @@ import (
 	"strconv"
 	"errors"
 	"github.com/mrtomyum/nopadol/config"
+	"time"
 )
 
 type NewPosModel struct {
@@ -131,8 +132,19 @@ func (repo *posRepository) NewPos(ctx context.Context, req *pos.NewPosTemplate) 
 	count_item_qty = 0
 	count_item_unit = 0
 
+	now := time.Now()
+
+	DocDate := now.AddDate(0, 0, 0).Format("02-01-2006")
+	req.DocDate = DocDate
+
+	fmt.Println("DocDate =", req.DocDate)
+
+	pos_machine_no := def.PosMachineNo
+	fmt.Println("pos_machine_no", pos_machine_no)
+
 	tax_rate = def.TaxRateDefault
 	pos_tax_type = def.PosTaxType
+	req.MachineNo = pos_machine_no
 
 	sum_pay_amount = (req.SumCashAmount + req.SumCreditAmount + req.SumChqAmount + req.SumBankAmount + req.CoupongAmount)
 
@@ -165,15 +177,12 @@ func (repo *posRepository) NewPos(ctx context.Context, req *pos.NewPosTemplate) 
 	fmt.Println("Len Chq =", len(req.ChqIns))
 
 	switch {
-	case req.DocNo == "":
-		fmt.Println("error =", "Docno is null")
-		return resp, errors.New("Docno is null")
-	case req.ArCode == "":
-		fmt.Println("error =", "Arcode is null")
-		return resp, errors.New("Arcode is null")
 	case req.DocDate == "":
 		fmt.Println("error =", "Docdate is null")
 		return resp, errors.New("Docdate is null")
+	case req.ArCode == "":
+		fmt.Println("error =", "Arcode is null")
+		return resp, errors.New("Arcode is null")
 	case count_item == 0:
 		fmt.Println("error =", "Docno is not have item")
 		return resp, errors.New("Docno is not have item")
@@ -195,7 +204,7 @@ func (repo *posRepository) NewPos(ctx context.Context, req *pos.NewPosTemplate) 
 	case sum_item_amount != sum_pay_amount:
 		fmt.Println("error =", "Rec money is less than totalamount")
 		return resp, errors.New("Rec money is less than totalamount")
-	case (req.MachineCode == "" || req.MachineNo == "" || req.ShiftNo == 0 || req.ShiftCode == "" || req.CashierCode == ""):
+	case (req.MachineCode == "" || req.ShiftNo == 0 || req.ShiftCode == "" || req.CashierCode == ""):
 		fmt.Println("error =", "Docno not have pos data", req.MachineCode, req.MachineNo, req.ShiftNo, req.ShiftCode, req.CashierCode)
 		return resp, errors.New("Docno not have pos data")
 	case req.SumChqAmount != 0 && len(req.ChqIns) == 0:
@@ -234,6 +243,16 @@ func (repo *posRepository) NewPos(ctx context.Context, req *pos.NewPosTemplate) 
 	fmt.Println("check_doc_exist = ", check_doc_exist)
 
 	if (check_doc_exist == 0) {
+
+		doc_no := genPosNo(repo.db, pos_machine_no)
+		req.DocNo = doc_no
+
+		switch  {
+		case req.DocNo == "":
+			fmt.Println("error =", "Docno is null")
+			return resp, errors.New("Docno is null")
+		}
+
 		sql := `set dateformat dmy     insert into dbo.bcarinvoice(DocNo,DocDate,ArCode,TaxType,CashierCode,ShiftNo,MachineNo,MachineCode,PosStatus,BillTime,GrandTotal,CoupongAmount,ChangeAmount,DepartCode,SaleCode,TaxRate,SumOfItemAmount,DiscountWord,DiscountAmount,AfterDiscount,BeforeTaxAmount,TaxAmount,TotalAmount,SumCashAmount,SumChqAmount,SumCreditAmount,SumBankAmount,DepositIncTax,NetDebtAmount,HomeAmount,BillBalance,ExchangeRate,IsCompleteSave,CreatorCode,CreateDateTime) values(?,?,?,?,?,?,?,?,?,convert(varchar(10), GETDATE(), 108),?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,getdate())`
 		fmt.Println("sql insert = ", sql)
 		id, err := repo.db.Exec(sql, req.DocNo, req.DocDate, req.ArCode, pos_tax_type, req.CashierCode, req.ShiftNo, req.MachineNo, req.MachineCode, pos_status, total_amount, req.CoupongAmount, req.ChangeAmount, depart_code, req.SaleCode, tax_rate, req.SumOfItemAmount, req.DiscountWord, discount_amount, req.AfterDiscount, before_tax_amount, tax_amount, req.TotalAmount, req.SumCashAmount, req.SumChqAmount, req.SumCreditAmount, req.SumBankAmount, deposit_inc_tax, req.NetDebtAmount, home_amount, bill_balance, exchange_rate, is_complete_save, req.UserCode)
@@ -244,6 +263,12 @@ func (repo *posRepository) NewPos(ctx context.Context, req *pos.NewPosTemplate) 
 
 		resp.Id, err = id.LastInsertId()
 	} else {
+		switch  {
+		case req.DocNo == "":
+			fmt.Println("error =", "Docno is null")
+			return resp, errors.New("Docno is null")
+		}
+
 		sql := `set dateformat dmy     update dbo.bcarinvoice set DocDate=?,ArCode=?,TaxType=?,CashierCode=?,ShiftNo=?,MachineNo=?,MachineCode=?,GrandTotal=?,CoupongAmount=?,ChangeAmount=?,SaleCode=?,TaxRate=?,SumOfItemAmount=?,DiscountWord=?,DiscountAmount=?,AfterDiscount=?,BeforeTaxAmount=?,TaxAmount=?,TotalAmount=?,SumCashAmount=?,SumChqAmount=?,SumCreditAmount=?,SumBankAmount=?,NetDebtAmount=?,HomeAmount=?,BillBalance=?,LastEditorCode=?,LastEditDateT=getdate() where DocNo=?`
 		fmt.Println("sql update = ", sql)
 		id, err := repo.db.Exec(sql, req.DocDate, req.ArCode, pos_tax_type, req.CashierCode, req.ShiftNo, req.MachineNo, req.MachineCode, total_amount, req.CoupongAmount, req.ChangeAmount, req.SaleCode, tax_rate, req.SumOfItemAmount, req.DiscountWord, discount_amount, req.AfterDiscount, before_tax_amount, tax_amount, req.TotalAmount, req.SumCashAmount, req.SumChqAmount, req.SumCreditAmount, req.SumBankAmount, req.NetDebtAmount, home_amount, bill_balance, req.UserCode, req.DocNo)
@@ -282,8 +307,8 @@ func (repo *posRepository) NewPos(ctx context.Context, req *pos.NewPosTemplate) 
 			item_home_amount = item_amount
 			item_net_amount = item_amount
 		case pos_tax_type == 1:
-			taxamount := ToFixed(item_amount-((item_amount*100)/(100+float64(tax_rate))), 2)
-			beforetaxamount := ToFixed(item_amount-taxamount, 2)
+			taxamount := toFixed(item_amount-((item_amount*100)/(100+float64(tax_rate))), 2)
+			beforetaxamount := toFixed(item_amount-taxamount, 2)
 			item_home_amount = beforetaxamount
 			item_net_amount = beforetaxamount
 		case pos_tax_type == 2:
@@ -442,8 +467,9 @@ func (repo *posRepository) NewPos(ctx context.Context, req *pos.NewPosTemplate) 
 				c.DueDate = req.DocDate
 			}
 
-			sqldep := `set dateformat dmy      insert into dbo.bcchqin(BankCode,ChqNumber,DocNo,ArCode,SaleCode,ReceiveDate,DueDate,BookNo,Status,SaveFrom,StatusDate,StatusDocNo,DepartCode,BankBranchCode,Amount,Balance,MyDescription,ExchangeRate,RefChqRowOrder) values(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`
-			_, err = repo.db.Exec(sqldep, c.BankCode, c.ChqNumber, req.DocNo, req.ArCode, req.SaleCode, c.ReceiveDate, c.DueDate, c.BookNo, c.Status, save_form, c.StatusDate, c.StatusDocNo, depart_code, c.BankBranchCode, c.Amount, c.Balance, my_description_recmoney, exchange_rate, c.RefChqRowOrder)
+			sqlchq := `set dateformat dmy      insert into dbo.bcchqin(BankCode,ChqNumber,DocNo,ArCode,SaleCode,ReceiveDate,DueDate,BookNo,Status,SaveFrom,StatusDate,StatusDocNo,DepartCode,BankBranchCode,Amount,Balance,MyDescription,ExchangeRate,RefChqRowOrder) values(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`
+			fmt.Println("sqlchq = ", sqlchq)
+			_, err = repo.db.Exec(sqlchq, c.BankCode, c.ChqNumber, req.DocNo, req.ArCode, req.SaleCode, c.ReceiveDate, c.DueDate, c.BookNo, c.Status, save_form, c.StatusDate, c.StatusDocNo, depart_code, c.BankBranchCode, c.Amount, c.Balance, my_description_recmoney, exchange_rate, c.RefChqRowOrder)
 			if err != nil {
 				fmt.Println("Error = ", err.Error())
 				return resp, err
@@ -487,11 +513,112 @@ func (repo *posRepository) NewPos(ctx context.Context, req *pos.NewPosTemplate) 
 	return resp, nil
 }
 
+func genPosNo(db *sqlx.DB, pos_machine_no string) (doc_no string) {
+	var last_number1 int
+	var last_number string
+	var snumber string
+	var intyear int
+	var vHeader string
+	var vyear string
+
+	var intmonth int
+	var intmonth1 int
+	var vmonth string
+	var vmonth1 string
+	var lenmonth int
+
+	var intday int
+	var intday1 int
+	var vday string
+	var vday1 string
+	var lenday int
+
+	last_number1, _ = getLastPosNo(db, pos_machine_no)
+	last_number = strconv.Itoa(last_number1)
+	fmt.Println("Last No = ", last_number)
+	if (time.Now().Year() >= 2560) {
+		intyear = time.Now().Year()
+	} else {
+		intyear = time.Now().Year() + 543
+	}
+
+	vyear = strconv.Itoa(intyear)
+	vyear1 := vyear[2:len(vyear)]
+
+	fmt.Println("year = ", vyear1)
+
+	intmonth = int(time.Now().Month())
+	intmonth1 = int(intmonth)
+	vmonth = strconv.Itoa(intmonth1)
+
+	fmt.Println("month =", vmonth)
+
+	lenmonth = len(vmonth)
+
+	if (lenmonth == 1) {
+		vmonth1 = "0" + vmonth
+	} else {
+		vmonth1 = vmonth
+	}
+
+	intday = int(time.Now().Day())
+	intday1 = int(intday)
+	vday = strconv.Itoa(intday1)
+
+	fmt.Println("day =", vday)
+
+	lenday = len(vday)
+
+	if (lenday == 1) {
+		vday1 = "0" + vday
+	} else {
+		vday1 = vday
+	}
+
+	if (len(string(last_number)) == 1) {
+		fmt.Println("Last_number =", last_number)
+		snumber = "000" + last_number
+	}
+	if (len(string(last_number)) == 2) {
+		snumber = "00" + last_number
+	}
+	if (len(string(last_number)) == 3) {
+		snumber = "0" + last_number
+	}
+	if (len(string(last_number)) == 4) {
+		snumber = last_number
+	}
+
+	fmt.Println(snumber)
+	fmt.Println(vHeader)
+
+	doc_no = pos_machine_no + vyear1 + vmonth1 + vday1 + "-" + snumber
+	fmt.Println(snumber)
+	fmt.Println(vHeader)
+
+	fmt.Println("NewDocNo = ", doc_no)
+
+	return doc_no
+}
+
+func getLastPosNo(db *sqlx.DB, machine_no string) (last_no int, err error) {
+	sql := `set dateformat dmy     select cast(right(isnull(max(docno),0),4) as int)+1 as maxno from bcarinvoice where machineno = ? and year(docdate) = year(getdate()) and month(docdate) = month(getdate()) and day(docdate) = day(getdate())`
+	fmt.Println("Query = ", sql)
+	err = db.Get(&last_no, sql, machine_no)
+	if err != nil {
+		fmt.Println(err)
+		return 1, err
+	}
+
+	fmt.Println("Last No = ", last_no)
+	return last_no, nil
+}
+
 func round(num float64) int {
 	return int(num + math.Copysign(0.5, num))
 }
 
-func ToFixed(num float64, precision int) float64 {
+func toFixed(num float64, precision int) float64 {
 	output := math.Pow(10, float64(precision))
 	return float64(round(num*output)) / output
 }
@@ -499,17 +626,17 @@ func ToFixed(num float64, precision int) float64 {
 func calcTaxItem(taxtype int, taxrate float64, afterdiscountamount float64) (beforetaxamount float64, taxamount float64, totalamount float64) {
 	switch taxtype {
 	case 0:
-		beforetaxamount = ToFixed(afterdiscountamount, 2)
-		taxamount = ToFixed(((afterdiscountamount*(100+float64(taxrate)))/(100))-afterdiscountamount, 2)
-		totalamount = ToFixed(beforetaxamount+taxamount, 2)
+		beforetaxamount = toFixed(afterdiscountamount, 2)
+		taxamount = toFixed(((afterdiscountamount*(100+float64(taxrate)))/(100))-afterdiscountamount, 2)
+		totalamount = toFixed(beforetaxamount+taxamount, 2)
 	case 1:
-		taxamount = ToFixed(afterdiscountamount-((afterdiscountamount*100)/(100+float64(taxrate))), 2)
-		beforetaxamount = ToFixed(afterdiscountamount-taxamount, 2)
-		totalamount = ToFixed(afterdiscountamount, 2)
+		taxamount = toFixed(afterdiscountamount-((afterdiscountamount*100)/(100+float64(taxrate))), 2)
+		beforetaxamount = toFixed(afterdiscountamount-taxamount, 2)
+		totalamount = toFixed(afterdiscountamount, 2)
 	case 2:
-		beforetaxamount = ToFixed(afterdiscountamount, 2)
+		beforetaxamount = toFixed(afterdiscountamount, 2)
 		taxamount = 0
-		totalamount = ToFixed(afterdiscountamount, 2)
+		totalamount = toFixed(afterdiscountamount, 2)
 	}
 
 	fmt.Println("taxtype,taxrate,beforetaxamount,taxamount,totalamount", taxtype, taxrate, beforetaxamount, taxamount, totalamount)
