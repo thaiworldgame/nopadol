@@ -13,6 +13,6 @@ type service struct {
 	repo customer.Repository
 }
 
-func(s *service) SearchCustomerById(ctx context.Context, req *customer.SearchById) (cust customer.CustomerTemplate, err error){
+func(s *service) SearchCustomerById(ctx context.Context, req *customer.SearchByIdTemplate) (cust customer.CustomerTemplate, err error){
 	return s.repo.SearchCustomerById(ctx, req)
 }

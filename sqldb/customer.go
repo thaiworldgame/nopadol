@@ -19,9 +19,9 @@ func NewCustomerRepository(db *sqlx.DB) customer.Repository {
 	return &customerRepository{db}
 }
 
-func (cr *customerRepository) SearchCustomerById(ctx context.Context, req *customer.SearchById) (resp customer.CustomerTemplate, err error) {
+func (cr *customerRepository) SearchCustomerById(ctx context.Context, req *customer.SearchByIdTemplate) (resp customer.CustomerTemplate, err error) {
 	cust := CustomerModel{}
-	sql := `select roworder as Id,code as ArCode,name1 as ArName from dbo.bcar where code = '45040'`
+	sql := `select roworder as Id,code as ArCode,name1 as ArName from dbo.bcar where code = 'AR540803'`
 	err = cr.db.Get(&cust, sql)
 	if err != nil {
 		fmt.Println("err = ",err.Error())

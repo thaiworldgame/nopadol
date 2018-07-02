@@ -5,5 +5,5 @@ import (
 )
 
 type Repository interface {
-	SearchCustomerById(ctx context.Context, req *SearchById)(CustomerTemplate, error)
+	SearchCustomerById(ctx context.Context, req *SearchByIdTemplate)(CustomerTemplate, error)
 }
