@@ -3,5 +3,6 @@ package pos
 import "context"
 
 type Repository interface {
-	NewPos(context.Context, *NewPosTemplate)(NewPosResponseTemplate, error)
+	New(context.Context, *NewPosTemplate) (NewPosResponseTemplate, error)
+	SearchById(context.Context, *SearchPosByIdRequestTemplate) (SearchPosByIdResponseTemplate, error)
 }

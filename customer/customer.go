@@ -1,10 +1,5 @@
 package customer
 
-import (
-
-)
-
-
 type SearchByKeywordTemplate struct {
 	keyword string `json:"keyword"`
 }

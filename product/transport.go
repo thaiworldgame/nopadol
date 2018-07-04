@@ -37,7 +37,7 @@ func NewHttpTransport(ep Endpoint) http.Handler {
 			errorEncoder(w, err)
 			return
 		}
-		httptransport.EncodeJSON(w, http.StatusOK, &resp)
+		httptransport.EncodeJSON(w, http.StatusInternalServerError, &resp)
 	}))
 
 	fmt.Println("mux = ",mux)

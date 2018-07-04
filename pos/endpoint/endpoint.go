@@ -3,6 +3,7 @@ package endpoint
 import (
 	"github.com/mrtomyum/nopadol/pos"
 	"context"
+	"fmt"
 )
 
 func New(s pos.Service) pos.Endpoint {
@@ -13,7 +14,7 @@ type endpoint struct {
 	s pos.Service
 }
 
-func (ep *endpoint) NewPos(ctx context.Context, req pos.NewPosRequest) (resp *pos.NewPosResponse, err error) {
+func (ep *endpoint) New(ctx context.Context, req pos.NewPosRequest) (resp *pos.NewPosResponse, err error) {
 	p := map_pos_request(req)
 	for _, subs := range req.PosSubs {
 		itemline := map_pos_sub_request(subs)
@@ -28,7 +29,7 @@ func (ep *endpoint) NewPos(ctx context.Context, req pos.NewPosRequest) (resp *po
 		p.ChqIns = append(p.ChqIns, chqline)
 	}
 
-	posdata, err := ep.s.NewPos(ctx, &pos.NewPosTemplate{
+	posdata, err := ep.s.New(ctx, &pos.NewPosTemplate{
 		DocNo:           req.DocNo,
 		DocDate:         req.DocDate,
 		ArCode:          req.ArCode,
@@ -60,6 +61,61 @@ func (ep *endpoint) NewPos(ctx context.Context, req pos.NewPosRequest) (resp *po
 	x := map_pos_response(posdata)
 
 	return &pos.NewPosResponse{Id: x.Id}, nil
+}
+
+func (ep *endpoint) SearchById(ctx context.Context, req *pos.SearchPosByIdRequest) (*pos.SearchPosByIdResponse, error) {
+	data, err := ep.s.SearchById(ctx, &pos.SearchPosByIdRequestTemplate{
+		Id: req.Id,
+	})
+	if err != nil {
+		fmt.Println("error = ", err.Error())
+		return nil, err
+	}
+
+	resp := map_search_pos_response(data)
+
+	fmt.Println("DocNo =", resp.DocNo)
+	return &resp, nil
+}
+
+func map_search_pos_response(x pos.SearchPosByIdResponseTemplate) pos.SearchPosByIdResponse {
+	return pos.SearchPosByIdResponse{
+		Id:              x.Id,
+		DocNo:           x.DocNo,
+		DocDate:         x.DocDate,
+		TaxNo:           x.TaxNo,
+		PosStatus:       x.PosStatus,
+		ArCode:          x.ArCode,
+		ArName:          x.ArName,
+		SaleCode:        x.SaleCode,
+		SaleName:        x.SaleName,
+		CashierCode:     x.CashierCode,
+		ShiftNo:         x.ShiftNo,
+		ShiftCode:       x.ShiftCode,
+		MachineNo:       x.MachineNo,
+		MachineCode:     x.MachineCode,
+		CoupongAmount:   x.CoupongAmount,
+		ChangeAmount:    x.ChangeAmount,
+		ChargeAmount:    x.ChargeAmount,
+		TaxType:         x.TaxType,
+		SumOfItemAmount: x.SumOfItemAmount,
+		DiscountWord:    x.DiscountWord,
+		AfterDiscount:   x.AfterDiscount,
+		BeforeTaxAmount: x.BeforeTaxAmount,
+		TaxAmount:       x.TaxAmount,
+		TotalAmount:     x.TotalAmount,
+		SumCashAmount:   x.SumCashAmount,
+		SumChqAmount:    x.SumChqAmount,
+		SumCreditAmount: x.SumCreditAmount,
+		SumBankAmount:   x.SumBankAmount,
+		NetDebtAmount:   x.NetDebtAmount,
+		IsCancel:        x.IsCancel,
+		IsConfirm:       x.IsConfirm,
+		CreatorCode:     x.CreatorCode,
+		CreateDateTime:  x.CreateDateTime,
+		LastEditorCode:  x.LastEditorCode,
+		LastEditDateT:   x.LastEditDateT,
+	}
 }
 
 func map_pos_request(x pos.NewPosRequest) pos.NewPosTemplate {

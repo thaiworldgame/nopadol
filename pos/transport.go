@@ -32,7 +32,23 @@ func NewHttpTransport(ep Endpoint) http.Handler{
 			return
 		}
 
-		resp, err := ep.NewPos(r.Context(), req)
+		resp, err := ep.New(r.Context(), req)
+		if err != nil {
+			errEncoder(w, err)
+			return
+		}
+		httptransport.EncodeJSON(w, http.StatusOK, &resp)
+	}))
+
+	mux.Handle("/search/id", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		var req SearchPosByIdRequest
+		err := httptransport.DecodeJSON(r.Body, &req)
+		if err != nil {
+			errEncoder(w, err)
+			return
+		}
+
+		resp, err := ep.SearchById(r.Context(), &req)
 		if err != nil {
 			errEncoder(w, err)
 			return

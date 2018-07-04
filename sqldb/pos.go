@@ -10,6 +10,8 @@ import (
 	"errors"
 	"github.com/mrtomyum/nopadol/config"
 	"time"
+	//"github.com/denisenkom/go-mssqldb"
+	//"upper.io/db.v3/mssql"
 )
 
 type NewPosModel struct {
@@ -89,13 +91,56 @@ type ListCreditCardModel struct {
 	ChargeAmount   float64 `db:"ChargeAmount"`
 }
 
+type PosModel struct {
+	Id              int                   `db:"Id"`
+	DocNo           string                `db:"DocNo"`
+	DocDate         string                `db:"DocDate"`
+	TaxNo           string                `db:"TaxNo"`
+	TaxDate         string                `db:"TaxDate"`
+	PosStatus       int                   `db:"PosStatus"`
+	ArCode          string                `db:"ArCode"`
+	ArName          string                `db:"ArName"`
+	SaleCode        string                `db:"SaleCode"`
+	SaleName        string                `db:"SaleName"`
+	ShiftCode       string                `db:"ShiftCode"`
+	CashierCode     string                `db:"CashierCode"`
+	ShiftNo         int                   `db:"ShiftNo"`
+	MachineNo       string                `db:"MachineNo"`
+	MachineCode     string                `db:"MachineCode"`
+	CoupongAmount   float64               `db:"CoupongAmount"`
+	ChangeAmount    float64               `db:"ChangeAmount"`
+	ChargeAmount    float64               `db:"ChargeAmount"`
+	TaxType         int                   `db:"TaxType"`
+	SumOfItemAmount float64               `db:"SumOfItemAmount"`
+	DiscountWord    string                `db:"DiscountWord"`
+	AfterDiscount   float64               `db:"AfterDiscount"`
+	BeforeTaxAmount float64               `db:"BeforeTaxAmount"`
+	TaxAmount       float64               `db:"TaxAmount"`
+	TotalAmount     float64               `db:"TotalAmount"`
+	SumCashAmount   float64               `db:"SumCashAmount"`
+	SumChqAmount    float64               `db:"SumChqAmount"`
+	SumCreditAmount float64               `db:"SumCreditAmount"`
+	SumBankAmount   float64               `db:"SumBankAmount"`
+	BankNo          string                `db:"BankNo"`
+	NetDebtAmount   float64               `db:"NetDebtAmount"`
+	IsCancel        int                   `db:"IsCancel"`
+	IsConfirm       int                   `db:"IsConfirm"`
+	CreatorCode     string                `db:"CreatorCode"`
+	CreateDateTime  string                `db:"CreateDateTime"`
+	LastEditorCode  string                `db:"LastEditorCode"`
+	LastEditDateT   string                `db:"LastEditDateT"`
+	ChqIns          []ListChqInModel      `db:"ChqIns"`
+	CreditCards     []ListCreditCardModel `db:"CreditCards"`
+	PosSubs         []NewPosItemModel     `db:"PosSubs"`
+}
+
 type posRepository struct{ db *sqlx.DB }
 
 func NewPosRepository(db *sqlx.DB) pos.Repository {
 	return &posRepository{db}
 }
 
-func (repo *posRepository) NewPos(ctx context.Context, req *pos.NewPosTemplate) (resp pos.NewPosResponseTemplate, err error) {
+func (repo *posRepository) New(ctx context.Context, req *pos.NewPosTemplate) (resp pos.NewPosResponseTemplate, err error) {
 	var check_doc_exist int
 	var count_item int
 	var count_item_qty int
@@ -247,7 +292,7 @@ func (repo *posRepository) NewPos(ctx context.Context, req *pos.NewPosTemplate) 
 		doc_no := genPosNo(repo.db, pos_machine_no)
 		req.DocNo = doc_no
 
-		switch  {
+		switch {
 		case req.DocNo == "":
 			fmt.Println("error =", "Docno is null")
 			return resp, errors.New("Docno is null")
@@ -263,7 +308,7 @@ func (repo *posRepository) NewPos(ctx context.Context, req *pos.NewPosTemplate) 
 
 		resp.Id, err = id.LastInsertId()
 	} else {
-		switch  {
+		switch {
 		case req.DocNo == "":
 			fmt.Println("error =", "Docno is null")
 			return resp, errors.New("Docno is null")
@@ -642,4 +687,66 @@ func calcTaxItem(taxtype int, taxrate float64, afterdiscountamount float64) (bef
 	fmt.Println("taxtype,taxrate,beforetaxamount,taxamount,totalamount", taxtype, taxrate, beforetaxamount, taxamount, totalamount)
 
 	return beforetaxamount, taxamount, totalamount
+}
+
+func (repo *posRepository) SearchById(ctx context.Context, req *pos.SearchPosByIdRequestTemplate) (resp pos.SearchPosByIdResponseTemplate, err error) {
+	p := PosModel{}
+
+	sql := `select a.roworder as Id,a.DocNo,a.DocDate,isnull(a.TaxNo,'') as TaxNo,isnull(a.docdate,'') as TaxDate,a.PosStatus,a.ArCode,isnull(b.name1,'') as ArName,a.SaleCode,isnull(c.name,'') as SaleName,isnull(ShiftCode,'') as ShiftCode,CashierCode,ShiftNo,MachineNo,MachineCode,CoupongAmount,ChangeAmount,ChargeAmount,a.TaxType,SumOfItemAmount,a.DiscountWord,AfterDiscount,BeforeTaxAmount,TaxAmount,TotalAmount ,SumCashAmount,SumChqAmount,SumCreditAmount,SumBankAmount,'' as BankNo,NetDebtAmount,IsCancel,IsConfirm,a.CreatorCode,a.CreateDateTime,isnull(a.LastEditorCode,'') as LastEditorCode,isnull(a.LastEditDateT,'') as LastEditDateT from dbo.bcarinvoice a  left join dbo.bcar b on a.arcode = b.code left join dbo.bcsale c  on a.salecode = c.code where a.roworder = 5548`
+	err = repo.db.Get(&p, sql)
+	if err != nil {
+		fmt.Println("err = ",err.Error())
+		return resp, err
+	}
+
+	pos_resp := map_pos_template(p)
+
+	//sql_crd := `select `
+
+
+	fmt.Println("Docno = ",pos_resp.DocNo)
+
+	return pos_resp, nil
+}
+
+func map_pos_template(x PosModel) pos.SearchPosByIdResponseTemplate{
+	return pos.SearchPosByIdResponseTemplate{
+		Id:x.Id,
+		DocNo:x.DocNo,
+		DocDate:x.DocDate,
+		TaxNo:x.TaxNo,
+		TaxDate:x.TaxDate,
+		PosStatus:x.PosStatus,
+		ArCode:x.ArCode,
+		ArName:x.ArName,
+		SaleCode:x.SaleCode,
+		SaleName:x.SaleName,
+		ShiftCode:x.ShiftCode,
+		CashierCode:x.CashierCode,
+		ShiftNo:x.ShiftNo,
+		MachineNo:x.MachineNo,
+		MachineCode:x.MachineCode,
+		CoupongAmount:x.CoupongAmount,
+		ChangeAmount:x.ChangeAmount,
+		ChargeAmount:x.ChargeAmount,
+		TaxType:x.TaxType,
+		SumOfItemAmount:x.SumOfItemAmount,
+		DiscountWord:x.DiscountWord,
+		AfterDiscount:x.AfterDiscount,
+		BeforeTaxAmount:x.BeforeTaxAmount,
+		TaxAmount:x.TaxAmount,
+		TotalAmount:x.TotalAmount,
+		SumCashAmount:x.SumCashAmount,
+		SumChqAmount:x.SumChqAmount,
+		SumCreditAmount:x.SumCreditAmount,
+		SumBankAmount:x.SumBankAmount,
+		BankNo:x.BankNo,
+		NetDebtAmount:x.NetDebtAmount,
+		IsCancel:x.IsCancel,
+		IsConfirm:x.IsConfirm,
+		CreatorCode:x.CreatorCode,
+		CreateDateTime:x.CreateDateTime,
+		LastEditorCode:x.LastEditorCode,
+		LastEditDateT:x.LastEditDateT,
+	}
 }
