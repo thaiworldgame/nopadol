@@ -21,8 +21,8 @@ func NewCustomerRepository(db *sqlx.DB) customer.Repository {
 
 func (cr *customerRepository) SearchCustomerById(ctx context.Context, req *customer.SearchByIdTemplate) (resp customer.CustomerTemplate, err error) {
 	cust := CustomerModel{}
-	sql := `select roworder as Id,code as ArCode,name1 as ArName from dbo.bcar where code = 'AR540803'`
-	err = cr.db.Get(&cust, sql)
+	sql := `select roworder as Id,code as ArCode,name1 as ArName from dbo.bcar where roworder = ?`
+	err = cr.db.Get(&cust, sql, req.Id)
 	if err != nil {
 		fmt.Println("err = ",err.Error())
 		return resp, err
@@ -30,9 +30,11 @@ func (cr *customerRepository) SearchCustomerById(ctx context.Context, req *custo
 
 	fmt.Println("customer = ", cust)
 
-	Resp := map_customer_template(cust)
+	cust_resp := map_customer_template(cust)
 
-	return Resp, nil
+	fmt.Println("customer Resp= ", cust_resp)
+
+	return cust_resp, nil
 }
 
 

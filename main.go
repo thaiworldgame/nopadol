@@ -29,6 +29,8 @@ import (
 	"github.com/mrtomyum/nopadol/pos"
 	posservice "github.com/mrtomyum/nopadol/pos/service"
 	posendpoint "github.com/mrtomyum/nopadol/pos/endpoint"
+	//"upper.io/db.v3/mssql"
+	//"log"
 )
 
 var mysql_dbc *sqlx.DB
@@ -77,8 +79,21 @@ func ConnectSqlDB() (msdb *sqlx.DB, err error) {
 	return msdb, nil
 }
 
+//var settings = mssql.ConnectionURL{
+//	Host:     "localhost", // MSSQL server IP or name.
+//	Database: "peanuts",   // Database name.
+//	User:     "cbrown",    // Optional user name.
+//	Password: "snoopy",    // Optional user password.
+//}
 
 func main() {
+
+	//// Attemping to establish a connection to the database.
+	//sess, err := mssql.Open(settings)
+	//if err != nil {
+	//	log.Fatalf("db.Open(): %q\n", err)
+	//}
+	//defer sess.Close() // Remember to close the database session.
 
 	// init repos
 	saleRepo := mysqldb.NewSaleRepository(mysql_dbc)

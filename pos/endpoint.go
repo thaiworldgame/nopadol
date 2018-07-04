@@ -5,7 +5,8 @@ import (
 )
 
 type Endpoint interface {
-	NewPos(context.Context, NewPosRequest) (*NewPosResponse, error)
+	New(context.Context, NewPosRequest) (*NewPosResponse, error)
+	SearchById(context.Context, *SearchPosByIdRequest) (*SearchPosByIdResponse, error)
 }
 
 type (
@@ -88,5 +89,56 @@ type (
 
 	NewPosResponse struct {
 		Id int64 `json:"id"`
+	}
+
+	SearchPosByIdResponse struct {
+		Id              int                     `json:"id"`
+		DocNo           string                  `json:"doc_no"`
+		DocDate         string                  `json:"doc_date"`
+		TaxNo           string                  `json:"tax_no"`
+		TaxDate         string                  `json:"tax_date"`
+		PosStatus       int                     `json:"pos_status"`
+		ArCode          string                  `json:"ar_code"`
+		ArName          string                  `json:"ar_name"`
+		SaleCode        string                  `json:"sale_code"`
+		SaleName        string                  `json:"sale_name"`
+		ShiftCode       string                  `json:"shiftcode"`
+		CashierCode     string                  `json:"cashier_code"`
+		ShiftNo         int                     `json:"shift_no"`
+		MachineNo       string                  `json:"machine_no"`
+		MachineCode     string                  `json:"machine_code"`
+		CoupongAmount   float64                 `json:"coupong_amount"`
+		ChangeAmount    float64                 `json:"change_amount"`
+		ChargeAmount    float64                 `json:"charge_amount"`
+		TaxType         int                     `json:"tax_type"`
+		SumOfItemAmount float64                 `json:"sum_of_item_amount"`
+		DiscountWord    string                  `json:"discount_word"`
+		AfterDiscount   float64                 `json:"after_discount"`
+		BeforeTaxAmount float64                 `json:"before_tax_amount"`
+		TaxAmount       float64                 `json:"tax_amount"`
+		TotalAmount     float64                 `json:"total_amount"`
+		SumCashAmount   float64                 `json:"sum_cash_amount"`
+		SumChqAmount    float64                 `json:"sum_chq_amount"`
+		SumCreditAmount float64                 `json:"sum_credit_amount"`
+		SumBankAmount   float64                 `json:"sum_bank_amount"`
+		BankNo          string                  `json:"bank_no"`
+		NetDebtAmount   float64                 `json:"net_debt_amount"`
+		IsCancel        int                     `json:"is_cancel"`
+		IsConfirm       int                     `json:"is_confirm"`
+		CreatorCode     string                  `json:"creator_code"`
+		CreateDateTime  string                  `json:"create_date_time"`
+		LastEditorCode  string                  `json:"last_editor_code"`
+		LastEditDateT   string                  `json:"last_edit_date_t"`
+		ChqIns          []ListChqInRequest      `json:"chq_ins"`
+		CreditCards     []ListCreditCardRequest `json:"credit_cards"`
+		PosSubs         []NewPosItemRequest     `json:"pos_subs"`
+	}
+
+	SearchPosByIdRequest struct {
+		Id int64 `json:"id"`
+	}
+
+	SearchPosByKeywordRequest struct {
+		Keyword string `json:"keyword"`
 	}
 )

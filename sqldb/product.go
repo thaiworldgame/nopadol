@@ -34,9 +34,9 @@ func (pd *productRepository) SearchProductByBarcode(ctx context.Context, req *pr
 		return resp, nil
 	}
 
-	Resp := map_product_template(product)
+	pdt_resp := map_product_template(product)
 
-	return Resp, nil
+	return pdt_resp, nil
 }
 
 func map_product_template(x ProductModel) product.ProductTemplate {

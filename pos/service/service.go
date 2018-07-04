@@ -13,7 +13,11 @@ type service struct {
 	repo pos.Repository
 }
 
-func (s service) NewPos(ctx context.Context, req *pos.NewPosTemplate) (resp pos.NewPosResponseTemplate, err error) {
-	return s.repo.NewPos(ctx, req)
+func (s service) New(ctx context.Context, req *pos.NewPosTemplate) (resp pos.NewPosResponseTemplate, err error) {
+	return s.repo.New(ctx, req)
+}
+
+func (s service)SearchById(ctx context.Context, req *pos.SearchPosByIdRequestTemplate)(resp pos.SearchPosByIdResponseTemplate, err error){
+	return s.repo.SearchById(ctx, req)
 }
 

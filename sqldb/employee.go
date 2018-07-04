@@ -28,8 +28,9 @@ func (em *employeeRepository) SearchEmployeeById(ctx context.Context, req *emplo
 		return resp, err
 	}
 
-	Resp := map_employee_template(emp)
-	return Resp, nil
+	emp_resp := map_employee_template(emp)
+
+	return emp_resp, nil
 }
 
 func map_employee_template(x EmployeeModel) employee.EmployeeTemplate {
