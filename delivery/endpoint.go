@@ -16,8 +16,11 @@ func makeReportDoData(s Service) interface{} {
 			fmt.Println("endpoint error ", err.Error())
 			return nil, err
 		}
+		return map[string]interface{}{
+			"data":resp,
+		}, nil
 		//return resp, nil
-		return resp, nil
+
 	}
 }
 

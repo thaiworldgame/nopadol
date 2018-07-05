@@ -26,7 +26,6 @@ func MakeHandler(s Service) http.Handler {
 	})
 
 	mux := http.NewServeMux()
-
 	mux.Handle("/report", m.Handler(makeReportDoData(s)))
 	return mustLogin()(mux)
 }
@@ -51,8 +50,8 @@ func jsonDecoder(r *http.Request, v interface{}) error {
 func jsonEncoder(w http.ResponseWriter, status int, v interface{}) error {
 	w.Header().Set("Content-Type", "application/json; charset=utf-8")
 	w.Header().Set("Access-Control-Allow-Origin", "*")
-	w.Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE")
-	w.Header().Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
+	//w.Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE")
+	//w.Header().Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
 	w.WriteHeader(status)
 	return json.NewEncoder(w).Encode(v)
 }
@@ -76,7 +75,7 @@ func errorEncoder(w http.ResponseWriter, r *http.Request, err error) {
 	// TODO: choose encoder from request's accept
 	encoder := jsonEncoder
 
-	var status = http.StatusBadRequest
+	var status = http.StatusNoContent
 
 	switch err {
 	case errMethodNotAllowed:
