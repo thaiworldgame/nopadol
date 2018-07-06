@@ -42,8 +42,8 @@ func (d *deliveryRepository) ReportDaily(req string) (interface{}, error) {
 		DiffDate    int64   `json:"diff_date"`
 		Description string  `json:"description"`
 		ArName      string  `json:"ar_name"`
-		itemAmount  float64 `json:"item_amount"`
-		itemGroup   string  `json:"item_group"`
+		ItemAmount  float64 `json:"item_amount"`
+		ItemGroup   string  `json:"item_group"`
 	}
 	_do := doModel{}
 	_dos := []doResponse{}
