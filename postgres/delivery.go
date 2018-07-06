@@ -36,11 +36,11 @@ func (d *deliveryRepository)ReportDaily() (interface{}, error) {
 
 	}
 	fmt.Println(_do)
-	//return map[string]interface{}{
-	//	"doc_no" : _do.Docno,
-	//	"doc_date" : _do.Docdate.String,
-	//	"date_send": _do.Datesend.String,
-	//	"time_send": _do.Timesend.String,
-	//}, nil
-	return nil, fmt.Errorf("error make mannual")
+	return map[string]interface{}{
+		"doc_no" : _do.Docno,
+		"doc_date" : _do.Docdate.String,
+		"date_send": _do.Datesend.String,
+		"time_send": _do.Timesend.String,
+	}, nil
+	//return nil, fmt.Errorf("error make mannual")
 }
