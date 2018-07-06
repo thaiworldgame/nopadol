@@ -1,8 +1,8 @@
 package main
 
 import (
-	"net/http"
 	"github.com/jmoiron/sqlx"
+	"net/http"
 	_ "github.com/go-sql-driver/mysql"
 	_ "github.com/denisenkom/go-mssqldb"
 	"fmt"
@@ -10,10 +10,13 @@ import (
 	"github.com/mrtomyum/nopadol/sqldb"
 
 	"github.com/mrtomyum/nopadol/sale"
-	saleservice "github.com/mrtomyum/nopadol/sale/service"
+
 	saleendpoint "github.com/mrtomyum/nopadol/sale/endpoint"
 	salehandler "github.com/mrtomyum/nopadol/sale/handler"
-
+	saleservice "github.com/mrtomyum/nopadol/sale/service"
+	"github.com/mrtomyum/nopadol/postgres"
+	"github.com/mrtomyum/nopadol/delivery"
+	"database/sql"
 	"github.com/mrtomyum/nopadol/customer"
 	customerservice "github.com/mrtomyum/nopadol/customer"
 	"github.com/mrtomyum/nopadol/employee"
@@ -29,6 +32,7 @@ import (
 	posendpoint "github.com/mrtomyum/nopadol/pos/endpoint"
 	//"upper.io/db.v3/mssql"
 	//"log"
+	"log"
 )
 
 var mysql_dbc *sqlx.DB
@@ -50,6 +54,15 @@ func init() {
 
 }
 
+var (
+	pgEnv = "development" //default
+	pgSSLMode = "disable"
+	pgDbHost = "192.168.0.163"
+	pgDbUser = "postgres"
+	pgDbPass = "postgres"
+	pgDbName = "backup"
+	pgDbPort = "5432"
+)
 func ConnectMySqlDB(dbName string) (db *sqlx.DB, err error) {
 	fmt.Println("Connect MySql")
 	//dsn := "root:[ibdkifu88@tcp(nopadol.net:3306)/" + dbName + "?parseTime=true&charset=utf8&loc=Local"
@@ -92,15 +105,29 @@ func main() {
 	//	log.Fatalf("db.Open(): %q\n", err)
 	//}
 	//defer sess.Close() // Remember to close the database session.
+	// Postgresql  Connect
+	pgConn := fmt.Sprintf("dbname=%s user=%s password=%s host=%s port=%s sslmode=%s",
+		pgDbName, pgDbUser, pgDbPass, pgDbHost, pgDbPort, pgSSLMode)
+
+	fmt.Println(pgConn)
+
+	pgDb, err := sql.Open("postgres", pgConn)
+	must(err)
+	defer pgDb.Close()
 
 	// init repos
 	saleRepo := mysqldb.NewSaleRepository(mysql_dbc)
 
 	// init services
 	saleService := saleservice.New(saleRepo)
-
 	// init endpoints
 	saleEndpoint := saleendpoint.New(saleService)
+
+
+	// doRepo
+	doRepo := postgres.NewDeliveryRepository(pgDb)
+	doService := delivery.NewService(doRepo)
+
 
 	// init customer
 	customerRepo := sqldb.NewCustomerRepository(sql_dbc)
@@ -125,6 +152,7 @@ func main() {
 	mux := http.NewServeMux()
 	mux.Handle("/", salehandler.New(saleService))
 	mux.Handle("/sale/", http.StripPrefix("/sale", sale.NewHTTPTransport(saleEndpoint)))
+	mux.Handle("/delivery/", http.StripPrefix("/delivery", delivery.MakeHandler(doService)))
 	//mux.Handle("/customer/", http.StripPrefix("/customer/v1", customer.NewHttpTransport(customerEndpoint)))
 	mux.Handle("/employee/", http.StripPrefix("/employee/v1", employee.NewHttpTransport(employeeEndpoint)))
 	mux.Handle("/product/", http.StripPrefix("/product/v1", product.NewHttpTransport(productEndpoint)))
@@ -132,4 +160,11 @@ func main() {
 	mux.Handle("/customer/",http.StripPrefix("/customer/v1", customer.MakeHandler(customerService)))
 
 	http.ListenAndServe(":8081", mux)
+}
+
+func must(err error) {
+	if err != nil {
+		fmt.Println("Error:", err)
+		log.Fatal(err)
+	}
 }
