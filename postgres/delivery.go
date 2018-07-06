@@ -25,7 +25,6 @@ func (d *deliveryRepository)ReportDaily() (interface{}, error) {
 	}
 
 	_do := doModel{}
-
 	lccommand := "select docno,docdate,datesend,timesend from sm_do.tb_do_delivery limit 1 "
 	rs := d.db.QueryRow(lccommand)
 	//_docno := ""
@@ -33,7 +32,6 @@ func (d *deliveryRepository)ReportDaily() (interface{}, error) {
 	//err := rs.Scan(&_do.docno)
 	if err != nil {
 		return nil, err
-
 	}
 	fmt.Println(_do)
 	return map[string]interface{}{
