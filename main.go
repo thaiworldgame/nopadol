@@ -21,6 +21,7 @@ import (
 	customerservice "github.com/mrtomyum/nopadol/customer"
 	"github.com/mrtomyum/nopadol/employee"
 	employeeservice "github.com/mrtomyum/nopadol/employee/service"
+
 	"github.com/mrtomyum/nopadol/product"
 	productservice "github.com/mrtomyum/nopadol/product/service"
 	productendpoint "github.com/mrtomyum/nopadol/product/endpoint"
@@ -61,7 +62,6 @@ var (
 	pgDbName  = "backup"
 	pgDbPort  = "5432"
 )
-
 func ConnectMySqlDB(dbName string) (db *sqlx.DB, err error) {
 	fmt.Println("Connect MySql")
 	//dsn := "root:[ibdkifu88@tcp(nopadol.net:3306)/" + dbName + "?parseTime=true&charset=utf8&loc=Local"

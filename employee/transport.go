@@ -33,7 +33,7 @@ func MakeHandler(s Service) http.Handler{
 	})
 
 	mux := http.NewServeMux()
-	mux.Handle("/search/id", m.Handler(""))
+	mux.Handle("/search/id", m.Handler(SearchById(s)))
 	return mustLogin()(mux)
 }
 
