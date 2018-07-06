@@ -12,14 +12,15 @@ type service struct {
 }
 
 type Service interface {
-	ReportDaily(string) (interface{}, error)
+	ReportDaily(req string) (interface{}, error)
 }
 
 // ListUpdateByVending ส่งคืนรายการ Software, Firmware, Data Update กลับไปยัง Vending ที่ร้องขอมา
-func (s *service) ReportDaily(date string) (interface{}, error) {
+func (s *service) ReportDaily(req string) (interface{}, error) {
 	fmt.Println("begin delivery service ReportDaily")
+	fmt.Println("service param is ->", req)
 	//s.repo.ListUpdateByVending()
-	resp, err := s.repo.ReportDaily()
+	resp, err := s.repo.ReportDaily(req)
 	if err != nil {
 		return nil, err
 	}
