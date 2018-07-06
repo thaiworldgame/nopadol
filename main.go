@@ -21,8 +21,6 @@ import (
 	customerservice "github.com/mrtomyum/nopadol/customer"
 	"github.com/mrtomyum/nopadol/employee"
 	employeeservice "github.com/mrtomyum/nopadol/employee/service"
-	employeeendpoint "github.com/mrtomyum/nopadol/employee/endpoint"
-
 	"github.com/mrtomyum/nopadol/product"
 	productservice "github.com/mrtomyum/nopadol/product/service"
 	productendpoint "github.com/mrtomyum/nopadol/product/endpoint"
@@ -55,14 +53,15 @@ func init() {
 }
 
 var (
-	pgEnv = "development" //default
+	pgEnv     = "development" //default
 	pgSSLMode = "disable"
-	pgDbHost = "192.168.0.163"
-	pgDbUser = "postgres"
-	pgDbPass = "postgres"
-	pgDbName = "backup"
-	pgDbPort = "5432"
+	pgDbHost  = "192.168.0.163"
+	pgDbUser  = "postgres"
+	pgDbPass  = "postgres"
+	pgDbName  = "backup"
+	pgDbPort  = "5432"
 )
+
 func ConnectMySqlDB(dbName string) (db *sqlx.DB, err error) {
 	fmt.Println("Connect MySql")
 	//dsn := "root:[ibdkifu88@tcp(nopadol.net:3306)/" + dbName + "?parseTime=true&charset=utf8&loc=Local"
@@ -123,11 +122,9 @@ func main() {
 	// init endpoints
 	saleEndpoint := saleendpoint.New(saleService)
 
-
 	// doRepo
 	doRepo := postgres.NewDeliveryRepository(pgDb)
 	doService := delivery.NewService(doRepo)
-
 
 	// init customer
 	customerRepo := sqldb.NewCustomerRepository(sql_dbc)
@@ -137,7 +134,7 @@ func main() {
 	// init employee
 	employeeRepo := sqldb.NewEmployeeRepository(sql_dbc)
 	employeeService := employeeservice.New(employeeRepo)
-	employeeEndpoint := employeeendpoint.New(employeeService)
+	//employeeEndpoint := employeeendpoint.New(employeeService)
 
 	//init product
 	productRepo := sqldb.NewProductRepository(sql_dbc)
@@ -154,10 +151,11 @@ func main() {
 	mux.Handle("/sale/", http.StripPrefix("/sale", sale.NewHTTPTransport(saleEndpoint)))
 	mux.Handle("/delivery/", http.StripPrefix("/delivery", delivery.MakeHandler(doService)))
 	//mux.Handle("/customer/", http.StripPrefix("/customer/v1", customer.NewHttpTransport(customerEndpoint)))
-	mux.Handle("/employee/", http.StripPrefix("/employee/v1", employee.NewHttpTransport(employeeEndpoint)))
+	//mux.Handle("/employee/", http.StripPrefix("/employee/v1", employee.NewHttpTransport(employeeEndpoint)))
 	mux.Handle("/product/", http.StripPrefix("/product/v1", product.NewHttpTransport(productEndpoint)))
 	mux.Handle("/pos/", http.StripPrefix("/pos/v1", pos.NewHttpTransport(posEndpoint)))
-	mux.Handle("/customer/",http.StripPrefix("/customer/v1", customer.MakeHandler(customerService)))
+	mux.Handle("/customer/", http.StripPrefix("/customer/v1", customer.MakeHandler(customerService)))
+	mux.Handle("/employee/", http.StripPrefix("/employess/v1", employee.MakeHandler(employeeService)))
 
 	http.ListenAndServe(":8081", mux)
 }
