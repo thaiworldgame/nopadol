@@ -34,7 +34,7 @@ func (d *deliveryRepository) ReportDaily(req string) (interface{}, error) {
 	}
 
 	type doResponse struct {
-		Id          int64
+		Id          int64   `json:"id"`
 		DoDocno     string  `json:"do_no"`
 		SoNo        string  `json:"so_no"`
 		ConfirmDate string  `json:"confirm_date"`
