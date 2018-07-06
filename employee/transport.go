@@ -2,7 +2,7 @@ package employee
 
 import (
 	"net/http"
-	"github.com/acoshift/hrpc"
+	//"github.com/acoshift/hrpc"
 	"encoding/json"
 	"fmt"
 )
@@ -25,15 +25,15 @@ func enableCors (w *http.ResponseWriter){
 
 // MakeHandler creates new vending  handler
 func MakeHandler(s Service) http.Handler{
-	m := hrpc.New(hrpc.Config{
-		Validate:        true,
-		RequestDecoder:  requestDecoder,
-		ResponseEncoder: responseEncoder,
-		ErrorEncoder:    errorEncoder,
-	})
-
+	//m := hrpc.New(hrpc.Config{
+	//	Validate:        true,
+	//	RequestDecoder:  requestDecoder,
+	//	ResponseEncoder: responseEncoder,
+	//	ErrorEncoder:    errorEncoder,
+	//})
+	//
 	mux := http.NewServeMux()
-	mux.Handle("/search/id", m.Handler(""))
+	//mux.Handle("/search/id", m.Handler(""))
 	return mustLogin()(mux)
 }
 
