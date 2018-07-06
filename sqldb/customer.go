@@ -3,7 +3,6 @@ package sqldb
 import (
 	"github.com/jmoiron/sqlx"
 	"github.com/mrtomyum/nopadol/customer"
-	"context"
 	"fmt"
 )
 
@@ -19,22 +18,27 @@ func NewCustomerRepository(db *sqlx.DB) customer.Repository {
 	return &customerRepository{db}
 }
 
-func (cr *customerRepository) SearchCustomerById(ctx context.Context, req *customer.SearchByIdTemplate) (resp customer.CustomerTemplate, err error) {
+func (cr *customerRepository) SearchById(req *customer.SearchByIdTemplate) (resp interface{}, err error) {
 	cust := CustomerModel{}
 	sql := `select roworder as Id,code as ArCode,name1 as ArName from dbo.bcar where roworder = ?`
 	err = cr.db.Get(&cust, sql, req.Id)
 	if err != nil {
 		fmt.Println("err = ",err.Error())
-		return resp, err
+		return resp, fmt.Errorf(err.Error())
+		//return resp, errors.New(err.Error())
 	}
 
-	fmt.Println("customer = ", cust)
+	//fmt.Println("customer = ", cust)
 
 	cust_resp := map_customer_template(cust)
 
-	fmt.Println("customer Resp= ", cust_resp)
+	//fmt.Println("customer Resp= ", cust_resp)
 
-	return cust_resp, nil
+	return map[string]interface{}{
+		"customer_id" : cust_resp.CustomerId,
+		"customer_code" : cust_resp.CustomerCode,
+		"customer_name" : cust_resp.CustomerName,
+	}, nil
 }
 
 

@@ -15,9 +15,7 @@ import (
 	salehandler "github.com/mrtomyum/nopadol/sale/handler"
 
 	"github.com/mrtomyum/nopadol/customer"
-	customerservice "github.com/mrtomyum/nopadol/customer/service"
-	customerenpoint "github.com/mrtomyum/nopadol/customer/endpoint"
-
+	customerservice "github.com/mrtomyum/nopadol/customer"
 	"github.com/mrtomyum/nopadol/employee"
 	employeeservice "github.com/mrtomyum/nopadol/employee/service"
 	employeeendpoint "github.com/mrtomyum/nopadol/employee/endpoint"
@@ -107,7 +105,7 @@ func main() {
 	// init customer
 	customerRepo := sqldb.NewCustomerRepository(sql_dbc)
 	customerService := customerservice.New(customerRepo)
-	customerEndpoint := customerenpoint.New(customerService)
+	//customerEndpoint := customerenpoint.New(customerService)
 
 	// init employee
 	employeeRepo := sqldb.NewEmployeeRepository(sql_dbc)
@@ -127,10 +125,11 @@ func main() {
 	mux := http.NewServeMux()
 	mux.Handle("/", salehandler.New(saleService))
 	mux.Handle("/sale/", http.StripPrefix("/sale", sale.NewHTTPTransport(saleEndpoint)))
-	mux.Handle("/customer/", http.StripPrefix("/customer/v1", customer.NewHttpTransport(customerEndpoint)))
+	//mux.Handle("/customer/", http.StripPrefix("/customer/v1", customer.NewHttpTransport(customerEndpoint)))
 	mux.Handle("/employee/", http.StripPrefix("/employee/v1", employee.NewHttpTransport(employeeEndpoint)))
 	mux.Handle("/product/", http.StripPrefix("/product/v1", product.NewHttpTransport(productEndpoint)))
 	mux.Handle("/pos/", http.StripPrefix("/pos/v1", pos.NewHttpTransport(posEndpoint)))
+	mux.Handle("/customer/",http.StripPrefix("/customer/v1", customer.MakeHandler(customerService)))
 
 	http.ListenAndServe(":8081", mux)
 }

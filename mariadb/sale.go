@@ -5,7 +5,7 @@ import (
 	"context"
 )
 
-// NewDomain1Repository creates domain1 repository implements by domain4
+// NewSaleRepository creates sale repository implements by mariadb
 func NewSaleRepository() sale.Repository {
 	return &saleRepository{}
 }
