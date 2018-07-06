@@ -84,8 +84,8 @@ func (d *deliveryRepository) ReportDaily(req string) (interface{}, error) {
 		_doResponse.DiffDate = _do.diffDate
 		_doResponse.Description = _do.description.String
 		_doResponse.ArName = _do.arName.String
-		_doResponse.itemAmount = _do.itemAmount
-		_doResponse.itemGroup = _do.itemGroup
+		_doResponse.ItemAmount = _do.itemAmount
+		_doResponse.ItemGroup = _do.itemGroup
 
 		_dos = append(_dos, _doResponse)
 		fmt.Println(_do)
