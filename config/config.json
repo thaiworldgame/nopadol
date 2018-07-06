@@ -1,0 +1,11 @@
+{
+  "_comment": "Default Config",
+  "tax_rate_default": 7,
+  "exchange_rate_default": 1,
+  "pos_tax_type": 1,
+  "pos_save_form": 1,
+  "pos_gl_format":"B01",
+  "pos_source":1,
+  "pos_my_type":1,
+  "pos_machine_no":"11"
+}

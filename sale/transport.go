@@ -10,7 +10,7 @@ type httpError struct {
 	Message string `json:"message"`
 }
 
-// NewHTTPTransport creates new HTTP transport for domain1
+// NewHTTPTransport creates new HTTP transport for domain Sale
 func NewHTTPTransport(ep Endpoint) http.Handler {
 	mux := http.NewServeMux()
 
@@ -24,8 +24,24 @@ func NewHTTPTransport(ep Endpoint) http.Handler {
 		httptransport.EncodeJSON(w, status, &httpError{Message: err.Error()})
 	}
 
+	//Call API Insert POS
+	//mux.Handle("/pos/new",http.HandlerFunc(func(w http.ResponseWriter, r *http.Request){
+	//	var req NewPosRequest
+	//	err := httptransport.DecodeJSON(r.Body, &req)
+	//	if err != nil {
+	//		errorEncoder(w, err)
+	//		return
+	//	}
+	//	resp, err := ep.NewPos(r.Context(), req)
+	//	if err != nil {
+	//		errorEncoder(w, err)
+	//		return
+	//	}
+	//	httptransport.EncodeJSON(w, http.StatusOK, &resp)
+	//}))
+
 	mux.Handle("/search", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		var req SearchSaleRequest
+		var req SearchSaleOrderRequest
 		err := httptransport.DecodeJSON(r.Body, &req)
 		enableCors(&w)
 		if err != nil {
@@ -39,7 +55,7 @@ func NewHTTPTransport(ep Endpoint) http.Handler {
 		}
 		httptransport.EncodeJSON(w, http.StatusOK, &resp)
 	}))
-
+	//
 	//mux.Handle("/create", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 	//	var req CreateRequest
 	//	err := httptransport.DecodeJSON(r.Body, &req)
@@ -55,6 +71,21 @@ func NewHTTPTransport(ep Endpoint) http.Handler {
 	//	httptransport.EncodeJSON(w, http.StatusOK, &resp)
 	//}))
 	//
+
+	mux.Handle("/so/new",http.HandlerFunc(func(w http.ResponseWriter, r *http.Request){
+		var req NewSaleOrderRequest
+		err := httptransport.DecodeJSON(r.Body, &req)
+		if err != nil {
+			errorEncoder(w, err)
+			return
+		}
+		resp, err := ep.NewSaleOrder(r.Context(), req)
+		if err != nil {
+			errorEncoder(w, err)
+			return
+		}
+		httptransport.EncodeJSON(w, http.StatusOK, resp)
+	}))
 
 	// mux.Handle("/new", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 	// 	var req NewRequest

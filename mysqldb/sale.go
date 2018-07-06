@@ -1,37 +1,63 @@
 package mysqldb
 
-import (
-	"github.com/mrtomyum/nopadol/sale"
-	"context"
-	"github.com/jmoiron/sqlx"
-	"fmt"
-)
+//Pos///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-// NewDomain1Repository creates domain1 repository implements by domain4
-func NewSaleRepository(db *sqlx.DB) sale.Repository {
-	return &saleRepository{db}
+type OutPutTax struct {
+	TaxNo    string `json:"tax_no"`
+	TaxDate  string `json:"tax_date"`
+	BookCode string `json:"book_code"`
 }
 
-type saleRepository struct {db *sqlx.DB}
-
-func (sr *saleRepository) Register(ctx context.Context, entity *sale.Entity1) (string, error) {
-	//sr.db.
-	fmt.Println("Entity1 = ",entity.Field1)
-	return "moo", nil
+type Customer struct {
+	ArCode string `json:"ar_code"`
 }
 
-func (sr *saleRepository) Search(ctx context.Context, kw *sale.EntitySearch) (docno sale.EntitySaleOrder, err error) {
-	sql := `select DocNo,ArCode,ArName from SaleOrder where DocNo = ? limit 1`
-	err = sr.db.Get(&docno, sql, kw.Keyword)
-	if err != nil {
-		return docno,err
-	}
-
-	fmt.Println("DocNo =",docno)
-	return docno,nil
+type SaleMan struct {
+	SaleCode string `json:"sale_code"`
 }
 
-// SetField3 sets field3 for Entity1
-func (saleRepository) SetField3(ctx context.Context, entityID string, field3 int) error {
-	return nil
+type NewPosModel struct {
+	SaveFrom        int               `json:"save_from"`
+	Source          int               `json:"source"`
+	DocNo           string            `json:"doc_no"`
+	DocDate         string            `json:"doc_date"`
+	OutPutTax
+	Customer
+	SaleMan
+	ShiftCode       string            `json:"shiftcode"`
+	CashierCode     string            `json:"cashier_code"`
+	ShiftNo         string            `json:"shift_no"`
+	MachineNo       string            `json:"machine_no"`
+	MachineCode     string            `json:"machine_code"`
+	CoupongAmount   float64           `json:"coupong_amount"`
+	ChangeAmount    float64           `json:"change_amount"`
+	ChargeAmount    float64           `json:"charge_amount"`
+	TaxType         int               `json:"tax_type"`
+	MyDescription   string            `json:"my_description"`
+	SumOfItemAmount float64           `json:"sum_of_item_amount"`
+	DiscountWord    string            `json:"discount_word"`
+	AfterDiscount   float64           `json:"after_discount"`
+	TotalAmount     float64           `json:"total_amount"`
+	SumCashAmount   float64           `json:"sum_cash_amount"`
+	SumChqAmount    float64           `json:"sum_chq_amount"`
+	SumCreditAmount float64           `json:"sum_credit_amount"`
+	SumBankAmount   float64           `json:"sum_bank_amount"`
+	NetDebtAmount   float64           `json:"net_debt_amount"`
+	UserCode        string            `json:"user_code"`
+	PosSubs         []NewPosItemModel `json:"pos_subs"`
+}
+
+type NewPosItemModel struct {
+	ItemCode     string  `json:"item_code"`
+	ItemName     string  `json:"item_name"`
+	WHCode       string  `json:"wh_code"`
+	ShelfCode    string  `json:"shelf_code"`
+	Qty          float64 `json:"qty"`
+	Price        float64 `json:"price"`
+	DiscountWord string  `json:"discount_word"`
+	UnitCode     string  `json:"unit_code"`
+	LineNumber   int     `json:"line_number"`
+	BarCode      string  `json:"bar_code"`
+	AverageCost  float64 `json:"averagecost"`
+	PackingRate1 float64 `json:"packing_rate_1"`
 }
