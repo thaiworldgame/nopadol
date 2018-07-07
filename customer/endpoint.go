@@ -5,9 +5,9 @@ import (
 	"fmt"
 )
 
-type Endpoint interface {
-	SearchCustomerById(context.Context, *SearchCustomerByIdRequest) (*SearchCustomerResponse, error)
-}
+//type Endpoint interface {
+//	SearchCustomerById(context.Context, *SearchCustomerByIdRequest) (*SearchCustomerResponse, error)
+//}
 
 type (
 	SearchCustomerByIdRequest struct {

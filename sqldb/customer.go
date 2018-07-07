@@ -20,6 +20,7 @@ func NewCustomerRepository(db *sqlx.DB) customer.Repository {
 
 func (cr *customerRepository) SearchById(req *customer.SearchByIdTemplate) (resp interface{}, err error) {
 	cust := CustomerModel{}
+
 	sql := `select roworder as Id,code as ArCode,name1 as ArName from dbo.bcar where roworder = ?`
 	err = cr.db.Get(&cust, sql, req.Id)
 	if err != nil {
