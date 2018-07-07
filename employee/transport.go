@@ -7,16 +7,12 @@ import (
 	"fmt"
 )
 
-//type httpError struct {
-//	Message string `json:"message"`
-//}
-
 type errorResponse struct {
 	Error string `json:"error"`
 }
 
-func enableCors (w *http.ResponseWriter){
-	(*w).Header().Set("Access-Control-Allow-Origin","*")
+func enableCors(w *http.ResponseWriter) {
+	(*w).Header().Set("Access-Control-Allow-Origin", "*")
 	(*w).Header().Set("Content-Type", "application/json")
 	(*w).Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE")
 	(*w).Header().Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
@@ -24,7 +20,7 @@ func enableCors (w *http.ResponseWriter){
 }
 
 // MakeHandler creates new vending  handler
-func MakeHandler(s Service) http.Handler{
+func MakeHandler(s Service) http.Handler {
 	m := hrpc.New(hrpc.Config{
 		Validate:        true,
 		RequestDecoder:  requestDecoder,
@@ -79,7 +75,7 @@ func errorEncoder(w http.ResponseWriter, r *http.Request, err error) {
 	fmt.Println("Error Encode = ", err)
 	switch err.Error() {
 	case StatusNotFound.Error():
-		status = http.StatusConflict
+		status = http.StatusNotFound
 	case ErrMethodNotAllowed.Error():
 		status = http.StatusMethodNotAllowed
 	case ErrForbidden.Error():
@@ -90,6 +86,7 @@ func errorEncoder(w http.ResponseWriter, r *http.Request, err error) {
 
 	encoder(w, status, &errorResponse{err.Error()})
 }
+
 //func NewHttpTransport(ep Endpoint) http.Handler {
 //	mux := http.NewServeMux()
 //
