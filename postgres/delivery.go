@@ -66,7 +66,6 @@ func (d *deliveryRepository) ReportDaily(req string) (interface{}, error) {
 		_doResponse.Id = _do.id.Int64
 		_doResponse.DoDocno = _do.doDocno.String
 		_doResponse.SoNo = _do.soNo.String
-
 		//layout := "2006-01-02"
 		//str := _do.confirmDate.String
 		//t, err := time.Parse(layout, str)
@@ -89,6 +88,7 @@ func (d *deliveryRepository) ReportDaily(req string) (interface{}, error) {
 
 		_dos = append(_dos, _doResponse)
 		fmt.Println(_do)
+
 	}
 
 	fmt.Println(_do)
