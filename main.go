@@ -17,13 +17,15 @@ import (
 	"github.com/mrtomyum/nopadol/postgres"
 	"github.com/mrtomyum/nopadol/delivery"
 	"database/sql"
+
 	"github.com/mrtomyum/nopadol/customer"
 	customerservice "github.com/mrtomyum/nopadol/customer"
+
 	"github.com/mrtomyum/nopadol/employee"
-	employeeservice "github.com/mrtomyum/nopadol/employee/service"
+	employeeservice "github.com/mrtomyum/nopadol/employee"
+
 	"github.com/mrtomyum/nopadol/product"
-	productservice "github.com/mrtomyum/nopadol/product/service"
-	productendpoint "github.com/mrtomyum/nopadol/product/endpoint"
+	productservice "github.com/mrtomyum/nopadol/product"
 
 	"github.com/mrtomyum/nopadol/pos"
 	posservice "github.com/mrtomyum/nopadol/pos/service"
@@ -61,7 +63,6 @@ var (
 	pgDbName  = "backup"
 	pgDbPort  = "5432"
 )
-
 func ConnectMySqlDB(dbName string) (db *sqlx.DB, err error) {
 	fmt.Println("Connect MySql")
 	//dsn := "root:[ibdkifu88@tcp(nopadol.net:3306)/" + dbName + "?parseTime=true&charset=utf8&loc=Local"
@@ -139,7 +140,7 @@ func main() {
 	//init product
 	productRepo := sqldb.NewProductRepository(sql_dbc)
 	productService := productservice.New(productRepo)
-	productEndpoint := productendpoint.New(productService)
+	//productEndpoint := productendpoint.New(productService)
 
 	//init pos
 	posRepo := sqldb.NewPosRepository(sql_dbc)
@@ -153,10 +154,11 @@ func main() {
 
 	//mux.Handle("/customer/", http.StripPrefix("/customer/v1", customer.NewHttpTransport(customerEndpoint)))
 	//mux.Handle("/employee/", http.StripPrefix("/employee/v1", employee.NewHttpTransport(employeeEndpoint)))
-	mux.Handle("/product/", http.StripPrefix("/product/v1", product.NewHttpTransport(productEndpoint)))
+	//mux.Handle("/product/", http.StripPrefix("/product/v1", product.NewHttpTransport(productEndpoint)))
 	mux.Handle("/pos/", http.StripPrefix("/pos/v1", pos.NewHttpTransport(posEndpoint)))
 	mux.Handle("/customer/", http.StripPrefix("/customer/v1", customer.MakeHandler(customerService)))
-	mux.Handle("/employee/", http.StripPrefix("/employess/v1", employee.MakeHandler(employeeService)))
+	mux.Handle("/employee/", http.StripPrefix("/employee/v1", employee.MakeHandler(employeeService)))
+	mux.Handle("/product/",http.StripPrefix("/product/v1", product.MakeHandler(productService)))
 
 	http.ListenAndServe(":8081", mux)
 }

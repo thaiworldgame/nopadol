@@ -2,7 +2,6 @@ package sqldb
 
 import (
 	"github.com/jmoiron/sqlx"
-	"context"
 	"github.com/mrtomyum/nopadol/employee"
 	"fmt"
 )
@@ -19,10 +18,10 @@ func NewEmployeeRepository(db *sqlx.DB) employee.Repository {
 	return &employeeRepository{db}
 }
 
-func (em *employeeRepository) SearchEmployeeById(ctx context.Context, req *employee.SearchByIdTemplate) (resp employee.EmployeeTemplate, err error) {
+func (em *employeeRepository) SearchById(req *employee.SearchByIdTemplate) (resp interface{}, err error) {
 	emp := EmployeeModel{}
-	sql := `select RowOrder as Id,code as SaleCode, name as SaleName from dbo.bcsale where code = '49024'`
-	err = em.db.Get(&emp, sql)
+	sql := `select RowOrder as Id,code as SaleCode, name as SaleName from dbo.bcsale where roworder = ?`
+	err = em.db.Get(&emp, sql, req.Id)
 	if err != nil {
 		fmt.Println("error =", err.Error())
 		return resp, err
@@ -30,7 +29,11 @@ func (em *employeeRepository) SearchEmployeeById(ctx context.Context, req *emplo
 
 	emp_resp := map_employee_template(emp)
 
-	return emp_resp, nil
+	return map[string]interface{}{
+		"sale_id":   emp_resp.Id,
+		"sale_code": emp_resp.SaleCode,
+		"sale_name": emp_resp.SaleName,
+	}, nil
 }
 
 func map_employee_template(x EmployeeModel) employee.EmployeeTemplate {
