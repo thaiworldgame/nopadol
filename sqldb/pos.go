@@ -1,15 +1,14 @@
 package sqldb
 
 import (
-	"context"
 	"github.com/mrtomyum/nopadol/pos"
 	"github.com/jmoiron/sqlx"
 	"fmt"
 	"math"
 	"strconv"
-	"errors"
-	"github.com/mrtomyum/nopadol/config"
 	"time"
+	config "github.com/mrtomyum/nopadol/config"
+	"errors"
 	//"github.com/denisenkom/go-mssqldb"
 	//"upper.io/db.v3/mssql"
 )
@@ -140,7 +139,7 @@ func NewPosRepository(db *sqlx.DB) pos.Repository {
 	return &posRepository{db}
 }
 
-func (repo *posRepository) New(ctx context.Context, req *pos.NewPosTemplate) (resp pos.NewPosResponseTemplate, err error) {
+func (repo *posRepository) Create(req *pos.NewPosTemplate) (resp interface{}, err error) {
 	var check_doc_exist int
 	var count_item int
 	var count_item_qty int
@@ -168,6 +167,8 @@ func (repo *posRepository) New(ctx context.Context, req *pos.NewPosTemplate) (re
 	var item_home_amount float64
 	var item_net_amount float64
 	var sum_of_cost float64
+
+	var lastId int64
 
 	def := config.Default{}
 	def = config.LoadDefaultData("config/config.json")
@@ -306,7 +307,7 @@ func (repo *posRepository) New(ctx context.Context, req *pos.NewPosTemplate) (re
 			return resp, err
 		}
 
-		resp.Id, err = id.LastInsertId()
+		lastId, err = id.LastInsertId()
 	} else {
 		switch {
 		case req.DocNo == "":
@@ -322,7 +323,7 @@ func (repo *posRepository) New(ctx context.Context, req *pos.NewPosTemplate) (re
 			return resp, err
 		}
 
-		resp.Id, err = id.LastInsertId()
+		lastId, err = id.LastInsertId()
 	}
 
 	sql_del_sub := `delete dbo.bcarinvoicesub where docno = ?`
@@ -555,7 +556,10 @@ func (repo *posRepository) New(ctx context.Context, req *pos.NewPosTemplate) (re
 
 	}
 
-	return resp, nil
+	return map[string]interface{}{
+		"Id": lastId,
+	}, nil
+	//return resp, nil
 }
 
 func genPosNo(db *sqlx.DB, pos_machine_no string) (doc_no string) {
@@ -689,13 +693,13 @@ func calcTaxItem(taxtype int, taxrate float64, afterdiscountamount float64) (bef
 	return beforetaxamount, taxamount, totalamount
 }
 
-func (repo *posRepository) SearchById(ctx context.Context, req *pos.SearchPosByIdRequestTemplate) (resp pos.SearchPosByIdResponseTemplate, err error) {
+func (repo *posRepository) SearchById(req *pos.SearchPosByIdRequestTemplate) (resp interface{}, err error) {
 	p := PosModel{}
 
 	sql := `select a.roworder as Id,a.DocNo,a.DocDate,isnull(a.TaxNo,'') as TaxNo,isnull(a.docdate,'') as TaxDate,a.PosStatus,a.ArCode,isnull(b.name1,'') as ArName,a.SaleCode,isnull(c.name,'') as SaleName,isnull(ShiftCode,'') as ShiftCode,CashierCode,ShiftNo,MachineNo,MachineCode,CoupongAmount,ChangeAmount,ChargeAmount,a.TaxType,SumOfItemAmount,a.DiscountWord,AfterDiscount,BeforeTaxAmount,TaxAmount,TotalAmount ,SumCashAmount,SumChqAmount,SumCreditAmount,SumBankAmount,'' as BankNo,NetDebtAmount,IsCancel,IsConfirm,a.CreatorCode,a.CreateDateTime,isnull(a.LastEditorCode,'') as LastEditorCode,isnull(a.LastEditDateT,'') as LastEditDateT from dbo.bcarinvoice a  left join dbo.bcar b on a.arcode = b.code left join dbo.bcsale c  on a.salecode = c.code where a.roworder = 5548`
 	err = repo.db.Get(&p, sql)
 	if err != nil {
-		fmt.Println("err = ",err.Error())
+		fmt.Println("err = ", err.Error())
 		return resp, err
 	}
 
@@ -703,50 +707,55 @@ func (repo *posRepository) SearchById(ctx context.Context, req *pos.SearchPosByI
 
 	//sql_crd := `select `
 
+	fmt.Println("Docno = ", pos_resp.DocNo)
 
-	fmt.Println("Docno = ",pos_resp.DocNo)
-
-	return pos_resp, nil
+	return map[string]interface{}{
+		"id":       pos_resp.Id,
+		"doc_no":   pos_resp.DocNo,
+		"doc_date": pos_resp.DocDate,
+		"ar_code":  pos_resp.ArCode,
+		"ar_name":  pos_resp.ArName,
+	}, nil
 }
 
-func map_pos_template(x PosModel) pos.SearchPosByIdResponseTemplate{
+func map_pos_template(x PosModel) pos.SearchPosByIdResponseTemplate {
 	return pos.SearchPosByIdResponseTemplate{
-		Id:x.Id,
-		DocNo:x.DocNo,
-		DocDate:x.DocDate,
-		TaxNo:x.TaxNo,
-		TaxDate:x.TaxDate,
-		PosStatus:x.PosStatus,
-		ArCode:x.ArCode,
-		ArName:x.ArName,
-		SaleCode:x.SaleCode,
-		SaleName:x.SaleName,
-		ShiftCode:x.ShiftCode,
-		CashierCode:x.CashierCode,
-		ShiftNo:x.ShiftNo,
-		MachineNo:x.MachineNo,
-		MachineCode:x.MachineCode,
-		CoupongAmount:x.CoupongAmount,
-		ChangeAmount:x.ChangeAmount,
-		ChargeAmount:x.ChargeAmount,
-		TaxType:x.TaxType,
-		SumOfItemAmount:x.SumOfItemAmount,
-		DiscountWord:x.DiscountWord,
-		AfterDiscount:x.AfterDiscount,
-		BeforeTaxAmount:x.BeforeTaxAmount,
-		TaxAmount:x.TaxAmount,
-		TotalAmount:x.TotalAmount,
-		SumCashAmount:x.SumCashAmount,
-		SumChqAmount:x.SumChqAmount,
-		SumCreditAmount:x.SumCreditAmount,
-		SumBankAmount:x.SumBankAmount,
-		BankNo:x.BankNo,
-		NetDebtAmount:x.NetDebtAmount,
-		IsCancel:x.IsCancel,
-		IsConfirm:x.IsConfirm,
-		CreatorCode:x.CreatorCode,
-		CreateDateTime:x.CreateDateTime,
-		LastEditorCode:x.LastEditorCode,
-		LastEditDateT:x.LastEditDateT,
+		Id:              x.Id,
+		DocNo:           x.DocNo,
+		DocDate:         x.DocDate,
+		TaxNo:           x.TaxNo,
+		TaxDate:         x.TaxDate,
+		PosStatus:       x.PosStatus,
+		ArCode:          x.ArCode,
+		ArName:          x.ArName,
+		SaleCode:        x.SaleCode,
+		SaleName:        x.SaleName,
+		ShiftCode:       x.ShiftCode,
+		CashierCode:     x.CashierCode,
+		ShiftNo:         x.ShiftNo,
+		MachineNo:       x.MachineNo,
+		MachineCode:     x.MachineCode,
+		CoupongAmount:   x.CoupongAmount,
+		ChangeAmount:    x.ChangeAmount,
+		ChargeAmount:    x.ChargeAmount,
+		TaxType:         x.TaxType,
+		SumOfItemAmount: x.SumOfItemAmount,
+		DiscountWord:    x.DiscountWord,
+		AfterDiscount:   x.AfterDiscount,
+		BeforeTaxAmount: x.BeforeTaxAmount,
+		TaxAmount:       x.TaxAmount,
+		TotalAmount:     x.TotalAmount,
+		SumCashAmount:   x.SumCashAmount,
+		SumChqAmount:    x.SumChqAmount,
+		SumCreditAmount: x.SumCreditAmount,
+		SumBankAmount:   x.SumBankAmount,
+		BankNo:          x.BankNo,
+		NetDebtAmount:   x.NetDebtAmount,
+		IsCancel:        x.IsCancel,
+		IsConfirm:       x.IsConfirm,
+		CreatorCode:     x.CreatorCode,
+		CreateDateTime:  x.CreateDateTime,
+		LastEditorCode:  x.LastEditorCode,
+		LastEditDateT:   x.LastEditDateT,
 	}
 }

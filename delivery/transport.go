@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"net/http"
+	//"github.com/acoshift/hrpc"
 	"github.com/acoshift/hrpc"
 )
 
@@ -11,6 +12,14 @@ var (
 	errMethodNotAllowed = errors.New("delivery : method not allowed")
 	errForbidden = errors.New("delivery : forbidden")
 )
+
+func enableCors(w *http.ResponseWriter) {
+	(*w).Header().Set("Access-Control-Allow-Origin", "*")
+	(*w).Header().Set("Content-Type", "application/json")
+	(*w).Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE")
+	(*w).Header().Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
+
+}
 
 type errorResponse struct {
 	Error string `json:"error"`
@@ -25,9 +34,14 @@ func MakeHandler(s Service) http.Handler {
 		ErrorEncoder:    errorEncoder,
 	})
 
+
 	mux := http.NewServeMux()
 	mux.Handle("/report", m.Handler(makeReportDoData(s)))
+
+	//mux.Handle("/report", m.Handler(makeReportDoData(s)))
+
 	return mustLogin()(mux)
+
 }
 
 func mustLogin() func(http.Handler) http.Handler {
@@ -38,6 +52,7 @@ func mustLogin() func(http.Handler) http.Handler {
 			//	errorEncoder(w, r, errForbidden)
 			//	return
 			//}
+			enableCors(&w)
 			h.ServeHTTP(w, r)
 		})
 	}

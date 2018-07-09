@@ -3,6 +3,8 @@ package pos
 import "errors"
 
 var (
-	ErrPosNotFound = errors.New("Pos: Data not found")
+	StatusNotFound = errors.New("sql: no rows in result set")
+	ErrMethodNotAllowed = errors.New("Customer: Data not found")
+	ErrForbidden = errors.New("Customer: Data not found")
 )
 

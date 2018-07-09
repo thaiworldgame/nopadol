@@ -2,12 +2,13 @@ package pos
 
 import (
 	"context"
+	"fmt"
 )
 
-type Endpoint interface {
-	New(context.Context, NewPosRequest) (*NewPosResponse, error)
-	SearchById(context.Context, *SearchPosByIdRequest) (*SearchPosByIdResponse, error)
-}
+//type Endpoint interface {
+//	New(context.Context, NewPosRequest) (*NewPosResponse, error)
+//	SearchById(context.Context, *SearchPosByIdRequest) (*SearchPosByIdResponse, error)
+//}
 
 type (
 	NewPosRequest struct {
@@ -142,3 +143,206 @@ type (
 		Keyword string `json:"keyword"`
 	}
 )
+
+func Create(s Service) interface{} {
+	fmt.Println("Endpoint")
+	return func(ctx context.Context, req *NewPosRequest) (interface{}, error) {
+		p := map_pos_request(req)
+
+		fmt.Println("p =")
+
+		for _, subs := range req.PosSubs {
+			itemline := map_pos_sub_request(subs)
+			p.PosSubs = append(p.PosSubs, itemline)
+		}
+		for _, creditcards := range req.CreditCards {
+			creditcardline := map_pos_creditcard_request(creditcards)
+			p.CreditCards = append(p.CreditCards, creditcardline)
+		}
+		for _, chqins := range req.ChqIns {
+			chqline := map_pos_chq_request(chqins)
+			p.ChqIns = append(p.ChqIns, chqline)
+		}
+
+		resp, err := s.Create(&NewPosTemplate{
+			DocNo:           req.DocNo,
+			DocDate:         req.DocDate,
+			ArCode:          req.ArCode,
+			SaleCode:        req.SaleCode,
+			ShiftNo:         req.ShiftNo,
+			ShiftCode:       req.ShiftCode,
+			MachineNo:       req.MachineNo,
+			MachineCode:     req.MachineCode,
+			CashierCode:     req.CashierCode,
+			CoupongAmount:   req.CoupongAmount,
+			ChangeAmount:    req.ChangeAmount,
+			ChargeAmount:    req.ChargeAmount,
+			TaxType:         req.TaxType,
+			SumOfItemAmount: req.SumOfItemAmount,
+			DiscountWord:    req.DiscountWord,
+			AfterDiscount:   req.AfterDiscount,
+			TotalAmount:     req.TotalAmount,
+			SumCashAmount:   req.SumCashAmount,
+			SumChqAmount:    req.SumChqAmount,
+			SumCreditAmount: req.SumCreditAmount,
+			SumBankAmount:   req.SumBankAmount,
+			NetDebtAmount:   req.NetDebtAmount,
+			UserCode:        req.UserCode,
+			PosSubs:         p.PosSubs,
+			CreditCards:     p.CreditCards,
+			ChqIns:          p.ChqIns,
+		})
+		if err != nil {
+			fmt.Println("endpoint error =", err.Error())
+			return nil, fmt.Errorf(err.Error())
+		}
+		return map[string]interface{}{
+			"data": resp,
+		}, nil
+	}
+}
+
+
+func SearchById(s Service) interface{} {
+	return func(ctx context.Context, req *SearchPosByIdRequest)(interface{}, error){
+		resp , err := s.SearchById(&SearchPosByIdRequestTemplate{Id:req.Id})
+		if err != nil {
+			fmt.Println("endpoint error =", err.Error())
+			return nil, fmt.Errorf(err.Error())
+		}
+		return map[string] interface{}{
+			"data": resp,
+		},nil
+	}
+}
+
+func map_search_pos_response(x SearchPosByIdResponseTemplate) SearchPosByIdResponse {
+	return SearchPosByIdResponse{
+		Id:              x.Id,
+		DocNo:           x.DocNo,
+		DocDate:         x.DocDate,
+		TaxNo:           x.TaxNo,
+		PosStatus:       x.PosStatus,
+		ArCode:          x.ArCode,
+		ArName:          x.ArName,
+		SaleCode:        x.SaleCode,
+		SaleName:        x.SaleName,
+		CashierCode:     x.CashierCode,
+		ShiftNo:         x.ShiftNo,
+		ShiftCode:       x.ShiftCode,
+		MachineNo:       x.MachineNo,
+		MachineCode:     x.MachineCode,
+		CoupongAmount:   x.CoupongAmount,
+		ChangeAmount:    x.ChangeAmount,
+		ChargeAmount:    x.ChargeAmount,
+		TaxType:         x.TaxType,
+		SumOfItemAmount: x.SumOfItemAmount,
+		DiscountWord:    x.DiscountWord,
+		AfterDiscount:   x.AfterDiscount,
+		BeforeTaxAmount: x.BeforeTaxAmount,
+		TaxAmount:       x.TaxAmount,
+		TotalAmount:     x.TotalAmount,
+		SumCashAmount:   x.SumCashAmount,
+		SumChqAmount:    x.SumChqAmount,
+		SumCreditAmount: x.SumCreditAmount,
+		SumBankAmount:   x.SumBankAmount,
+		NetDebtAmount:   x.NetDebtAmount,
+		IsCancel:        x.IsCancel,
+		IsConfirm:       x.IsConfirm,
+		CreatorCode:     x.CreatorCode,
+		CreateDateTime:  x.CreateDateTime,
+		LastEditorCode:  x.LastEditorCode,
+		LastEditDateT:   x.LastEditDateT,
+	}
+}
+
+func map_pos_request(x *NewPosRequest) NewPosTemplate {
+	fmt.Println("p1 =")
+	var subs []NewPosItemTemplate
+	var creditcards []ListCreditCardTemplate
+	var chqs []ListChqInTemplate
+	return NewPosTemplate{
+		DocNo:           x.DocNo,
+		DocDate:         x.DocDate,
+		ArCode:          x.ArCode,
+		SaleCode:        x.SaleCode,
+		ShiftNo:         x.ShiftNo,
+		ShiftCode:       x.ShiftCode,
+		MachineNo:       x.MachineNo,
+		MachineCode:     x.MachineCode,
+		CoupongAmount:   x.CoupongAmount,
+		ChangeAmount:    x.ChangeAmount,
+		ChargeAmount:    x.ChargeAmount,
+		TaxType:         x.TaxType,
+		SumOfItemAmount: x.SumOfItemAmount,
+		DiscountWord:    x.DiscountWord,
+		AfterDiscount:   x.AfterDiscount,
+		TotalAmount:     x.TotalAmount,
+		SumCashAmount:   x.SumCashAmount,
+		SumChqAmount:    x.SumChqAmount,
+		SumCreditAmount: x.SumCreditAmount,
+		SumBankAmount:   x.SumBankAmount,
+		NetDebtAmount:   x.NetDebtAmount,
+		UserCode:        x.UserCode,
+		PosSubs:         subs,
+		CreditCards:     creditcards,
+		ChqIns:          chqs,
+	}
+}
+
+func map_pos_sub_request(x NewPosItemRequest) NewPosItemTemplate {
+	return NewPosItemTemplate{
+		ItemCode:     x.ItemCode,
+		ItemName:     x.ItemName,
+		WHCode:       x.WHCode,
+		ShelfCode:    x.ShelfCode,
+		Qty:          x.Qty,
+		Price:        x.Price,
+		DiscountWord: x.DiscountWord,
+		UnitCode:     x.UnitCode,
+		BarCode:      x.BarCode,
+		AverageCost:  x.AverageCost,
+		PackingRate1: x.PackingRate1,
+		LineNumber:   x.LineNumber,
+	}
+}
+
+func map_pos_creditcard_request(x ListCreditCardRequest) ListCreditCardTemplate {
+	return ListCreditCardTemplate{
+		BankCode:       x.BankCode,
+		CreditCardNo:   x.CreditCardNo,
+		ReceiveDate:    x.ReceiveDate,
+		DueDate:        x.DueDate,
+		BookNo:         x.BookNo,
+		Status:         x.Status,
+		StatusDate:     x.StatusDate,
+		StatusDocNo:    x.StatusDocNo,
+		BankBranchCode: x.BankBranchCode,
+		Amount:         x.Amount,
+		MyDescription:  x.MyDescription,
+		CreditType:     x.CreditType,
+		ConfirmNo:      x.ConfirmNo,
+		ChargeAmount:   x.ChargeAmount,
+	}
+}
+
+func map_pos_chq_request(x ListChqInRequest) ListChqInTemplate {
+	return ListChqInTemplate{
+		ChqNumber:      x.ChqNumber,
+		BankCode:       x.BankCode,
+		BankBranchCode: x.BankBranchCode,
+		BookNo:         x.BookNo,
+		ReceiveDate:    x.ReceiveDate,
+		DueDate:        x.DueDate,
+		Status:         x.Status,
+		Amount:         x.Amount,
+		Balance:        x.Balance,
+		RefChqRowOrder: x.RefChqRowOrder,
+		StatusDate:     x.StatusDate,
+		StatusDocNo:    x.StatusDocNo,
+	}
+}
+
+func map_pos_response(x NewPosResponseTemplate) NewPosResponse {
+	return NewPosResponse{Id: x.Id}
+}

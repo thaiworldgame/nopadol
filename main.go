@@ -28,10 +28,8 @@ import (
 	productservice "github.com/mrtomyum/nopadol/product"
 
 	"github.com/mrtomyum/nopadol/pos"
-	posservice "github.com/mrtomyum/nopadol/pos/service"
-	posendpoint "github.com/mrtomyum/nopadol/pos/endpoint"
-	//"upper.io/db.v3/mssql"
-	//"log"
+	posservice "github.com/mrtomyum/nopadol/pos"
+
 	"log"
 )
 
@@ -63,6 +61,7 @@ var (
 	pgDbName  = "backup"
 	pgDbPort  = "5432"
 )
+
 func ConnectMySqlDB(dbName string) (db *sqlx.DB, err error) {
 	fmt.Println("Connect MySql")
 	//dsn := "root:[ibdkifu88@tcp(nopadol.net:3306)/" + dbName + "?parseTime=true&charset=utf8&loc=Local"
@@ -145,7 +144,7 @@ func main() {
 	//init pos
 	posRepo := sqldb.NewPosRepository(sql_dbc)
 	posService := posservice.New(posRepo)
-	posEndpoint := posendpoint.New(posService)
+	//posEndpoint := posendpoint.New(posService)
 
 	mux := http.NewServeMux()
 	mux.Handle("/", salehandler.New(saleService))
@@ -155,10 +154,11 @@ func main() {
 	//mux.Handle("/customer/", http.StripPrefix("/customer/v1", customer.NewHttpTransport(customerEndpoint)))
 	//mux.Handle("/employee/", http.StripPrefix("/employee/v1", employee.NewHttpTransport(employeeEndpoint)))
 	//mux.Handle("/product/", http.StripPrefix("/product/v1", product.NewHttpTransport(productEndpoint)))
-	mux.Handle("/pos/", http.StripPrefix("/pos/v1", pos.NewHttpTransport(posEndpoint)))
+	//mux.Handle("/pos/", http.StripPrefix("/pos/v1", pos.NewHttpTransport(posEndpoint)))
 	mux.Handle("/customer/", http.StripPrefix("/customer/v1", customer.MakeHandler(customerService)))
 	mux.Handle("/employee/", http.StripPrefix("/employee/v1", employee.MakeHandler(employeeService)))
-	mux.Handle("/product/",http.StripPrefix("/product/v1", product.MakeHandler(productService)))
+	mux.Handle("/product/", http.StripPrefix("/product/v1", product.MakeHandler(productService)))
+	mux.Handle("/pos/", http.StripPrefix("/pos/v1", pos.MakeHandler(posService)))
 
 	http.ListenAndServe(":8081", mux)
 }
