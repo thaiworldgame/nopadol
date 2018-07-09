@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"net/http"
+	//"github.com/acoshift/hrpc"
 	"github.com/acoshift/hrpc"
 )
 
@@ -33,9 +34,14 @@ func MakeHandler(s Service) http.Handler {
 		ErrorEncoder:    errorEncoder,
 	})
 
+
 	mux := http.NewServeMux()
 	mux.Handle("/report", m.Handler(makeReportDoData(s)))
+
+	//mux.Handle("/report", m.Handler(makeReportDoData(s)))
+
 	return mustLogin()(mux)
+
 }
 
 func mustLogin() func(http.Handler) http.Handler {
