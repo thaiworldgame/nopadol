@@ -12,6 +12,14 @@ var (
 	errForbidden = errors.New("delivery : forbidden")
 )
 
+func enableCors(w *http.ResponseWriter) {
+	(*w).Header().Set("Access-Control-Allow-Origin", "*")
+	(*w).Header().Set("Content-Type", "application/json")
+	(*w).Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE")
+	(*w).Header().Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
+
+}
+
 type errorResponse struct {
 	Error string `json:"error"`
 }
@@ -38,6 +46,7 @@ func mustLogin() func(http.Handler) http.Handler {
 			//	errorEncoder(w, r, errForbidden)
 			//	return
 			//}
+			enableCors(&w)
 			h.ServeHTTP(w, r)
 		})
 	}
