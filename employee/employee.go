@@ -2,7 +2,7 @@ package employee
 
 
 type SearchByKeywordTemplate struct {
-	keyword string `json:"keyword"`
+	Keyword string `json:"keyword"`
 }
 
 type SearchByIdTemplate struct {
