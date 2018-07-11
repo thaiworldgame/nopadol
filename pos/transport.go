@@ -64,25 +64,49 @@ func requestDecoder(r *http.Request, v interface{}) error {
 	return jsonDecoder(r, v)
 }
 
-func responseEncoder(w http.ResponseWriter, r *http.Request, v interface{}){
+func responseEncoder(w http.ResponseWriter, r *http.Request, v interface{}) {
+	fmt.Println("v =", v)
 	jsonEncoder(w, http.StatusOK, v)
 }
 
-func errorEncoder(w http.ResponseWriter, r *http.Request, err error){
+func errorEncoder(w http.ResponseWriter, r *http.Request, err error) {
 	encoder := jsonEncoder
 
 	var status = http.StatusNoContent
 
-	fmt.Println("Error Encode = ", err)
+	fmt.Println("Error Encode = ", err.Error())
 	switch err.Error() {
 	case StatusNotFound.Error():
 		status = http.StatusNotFound
+	case ArCodeNull.Error():
+		status = http.StatusNotFound
+	case NotHaveItem.Error():
+		status = http.StatusNotFound
+	case NotHavePayMoney.Error():
+		status = http.StatusNotFound
+	case NotHaveSumOfItem.Error():
+		status = http.StatusNotFound
+	case ItemNotHaveQty.Error():
+		status = http.StatusNotFound
+	case ItemNotHaveUnit.Error():
+		status = http.StatusNotFound
+	case MoneyOverTotalAmount.Error():
+		status = http.StatusNotFound
+	case MoneyLessThanTotalAmount.Error():
+		status = http.StatusNotFound
+	case PosNotHaveDate.Error():
+		status = http.StatusNotFound
+	case PosNotHaveChqData.Error():
+		status = http.StatusNotFound
+	case PosNotHaveCreditCardData.Error():
+		status = http.StatusNotFound
 	default:
-		status = http.StatusNoContent
+		status = http.StatusForbidden
 	}
 
 	encoder(w, status, &errorResponse{err.Error()})
 }
+
 //
 //
 //func NewHttpTransport(ep Endpoint) http.Handler {

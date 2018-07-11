@@ -14,6 +14,10 @@ type (
 		Id int64 `json:"id"`
 	}
 
+	SearchByKeywordRequest struct {
+		Keyword string `json:"keyword"`
+	}
+
 	SearchEmployeeResponse struct {
 		EmployeeId   int64  `json:"employee_id"`
 		EmployeeCode string `json:"employee_code"`
@@ -32,4 +36,18 @@ func SearchById(s Service) interface{} {
 			"data": resp,
 		}, nil
 	}
+}
+
+func SearchByKeyword(s Service) interface{} {
+	return func(ctx context.Context, req *SearchByKeywordRequest) (interface{}, error) {
+		resp, err := s.SearchByKeyword(&SearchByKeywordTemplate{Keyword: req.Keyword})
+		if err != nil {
+			fmt.Println("endpoint error ", err.Error())
+			return nil, fmt.Errorf(err.Error())
+		}
+		return map[string]interface{}{
+			"data": resp,
+		}, nil
+	}
+
 }
