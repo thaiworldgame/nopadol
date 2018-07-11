@@ -24,7 +24,7 @@ func (cr *customerRepository) SearchById(req *customer.SearchByIdTemplate) (resp
 	cust := CustomerModel{}
 
 	sql := `select roworder as Id,code as ArCode,name1 as ArName,isnull(billaddress,'') as CustomerAddress,isnull(telephone,'') as CustomerTelephone from dbo.bcar where roworder = ?`
-	err = cr.db.Select(&cust, sql, req.Id)
+	err = cr.db.Get(&cust, sql, req.Id)
 	if err != nil {
 		fmt.Println("err = ", err.Error())
 		return nil, fmt.Errorf(err.Error())
