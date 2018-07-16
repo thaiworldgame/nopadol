@@ -35,6 +35,7 @@ import (
 
 var mysql_dbc *sqlx.DB
 var sql_dbc *sqlx.DB
+var nebula_dbc *sqlx.DB
 
 func init() {
 	//db, err := ConnectDB("npdl")
@@ -49,6 +50,12 @@ func init() {
 		fmt.Println(err.Error())
 	}
 	sql_dbc = sql_db
+
+	nebula, err := ConnectNebula()
+	if err != nil {
+		fmt.Println(err.Error())
+	}
+	nebula_dbc = nebula
 
 }
 
@@ -74,9 +81,25 @@ func ConnectMySqlDB(dbName string) (db *sqlx.DB, err error) {
 	return db, err
 }
 
-func ConnectSqlDB() (msdb *sqlx.DB, err error) {
+func ConnectSqlDB() (msdb *sqlx.DB,  err error) {
 	db_host := "192.168.0.7"
 	db_name := "expertshop"
+	db_user := "sa"
+	db_pass := "[ibdkifu"
+	port := "1433"
+	dsn := fmt.Sprintf("server=%s;user id=%s;password=%s;port=%s;database=%s", db_host, db_user, db_pass, port, db_name)
+	msdb = sqlx.MustConnect("mssql", dsn)
+	if msdb.Ping() != nil {
+		fmt.Println("Error ")
+	}
+
+	return msdb, nil
+}
+
+
+func ConnectNebula() (msdb *sqlx.DB,  err error) {
+	db_host := "192.168.0.7"
+	db_name := "bcnp"
 	db_user := "sa"
 	db_pass := "[ibdkifu"
 	port := "1433"
@@ -127,17 +150,17 @@ func main() {
 	doService := delivery.NewService(doRepo)
 
 	// init customer
-	customerRepo := sqldb.NewCustomerRepository(sql_dbc)
+	customerRepo := sqldb.NewCustomerRepository(nebula_dbc)
 	customerService := customerservice.New(customerRepo)
 	//customerEndpoint := customerenpoint.New(customerService)
 
 	// init employee
-	employeeRepo := sqldb.NewEmployeeRepository(sql_dbc)
+	employeeRepo := sqldb.NewEmployeeRepository(nebula_dbc)
 	employeeService := employeeservice.New(employeeRepo)
 	//employeeEndpoint := employeeendpoint.New(employeeService)
 
 	//init product
-	productRepo := sqldb.NewProductRepository(sql_dbc)
+	productRepo := sqldb.NewProductRepository(nebula_dbc)
 	productService := productservice.New(productRepo)
 	//productEndpoint := productendpoint.New(productService)
 
