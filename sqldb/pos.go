@@ -554,7 +554,7 @@ func (repo *posRepository) Create(req *pos.NewPosTemplate) (resp interface{}, er
 	}
 
 	return map[string]interface{}{
-		"Id": lastId,
+		"Id":     lastId,
 		"doc_no": req.DocNo,
 	}, nil
 	//return resp, nil
@@ -701,54 +701,48 @@ func (repo *posRepository) SearchById(req *pos.SearchPosByIdRequestTemplate) (re
 		return resp, err
 	}
 
+	subpos := []NewPosItemModel{}
+
+	sql_sub := `select a.ItemCode,a.ItemName,a.WHCode,a.ShelfCode,a.Qty,a.Price,isnull(a.DiscountWord,'') as DiscountWord,a.UnitCode,isnull(a.BarCode,'') as BarCode,a.AverageCost,a.PackingRate1,a.LineNumber from dbo.bcarinvoicesub a left join dbo.bcitem b on a.itemcode = b.code where a.docno = ? order by a.linenumber`
+	err = repo.db.Select(&subpos, sql_sub, p.DocNo)
+	if err != nil {
+		fmt.Println("err sub= ", err.Error())
+		return resp, err
+	}
+
+	fmt.Println("Item =", subpos)
+
 	pos_resp := map_pos_template(p)
 
+	for _, sub := range subpos {
+		subline := map_pos_subs_template(sub)
+		pos_resp.PosSubs = append(pos_resp.PosSubs, subline)
+	}
+
+	subCreditCards := []ListCreditCardModel{}
+
+	sql_credit_card := `select isnull(BankCode,'') as BankCode,isnull(CreditCardNo,'') as CreditCardNo,isnull(ReceiveDate,'') as ReceiveDate,isnull(DueDate,'') as DueDate,isnull(BookNo,'') as BookNo,Status,isnull(StatusDate,'') as StatusDate,isnull(StatusDocNo,'') as StatusDocNo,isnull(BankBranchCode,'') as BankBranchCode,Amount,isnull(MyDescription,'') as MyDescription,isnull(CreditType,'') as CreditType,isnull(ConfirmNo,'') as ConfirmNo,ChargeAmount from dbo.bccreditcard where docno = ? order by roworder`
+	err = repo.db.Select(&subCreditCards, sql_credit_card, p.DocNo)
+	if err != nil {
+		fmt.Println("err sub= ", err.Error())
+		return resp, err
+	}
 	//sql_crd := `select `
+
+	for _, c := range subCreditCards {
+		creditcardline := map_pos_creditcard_template(c)
+		pos_resp.CreditCards = append(pos_resp.CreditCards, creditcardline)
+	}
 
 	fmt.Println("Docno = ", pos_resp.DocNo)
 
-	return map[string]interface{}{
-		"id":                 pos_resp.Id,
-		"doc_no":             pos_resp.DocNo,
-		"doc_date":           pos_resp.DocDate,
-		"ar_code":            pos_resp.ArCode,
-		"ar_name":            pos_resp.ArName,
-		"tax_no":             pos_resp.TaxNo,
-		"tax_date":           pos_resp.TaxDate,
-		"pos_status":         pos_resp.PosStatus,
-		"sale_code":          pos_resp.SaleCode,
-		"sale_name":          pos_resp.SaleName,
-		"shift_code":         pos_resp.ShiftCode,
-		"cashier_code":       pos_resp.CashierCode,
-		"shift_no":           pos_resp.ShiftNo,
-		"machine_no":         pos_resp.MachineNo,
-		"machine_code":       pos_resp.MachineCode,
-		"counpong_amount":    pos_resp.CoupongAmount,
-		"change_amount":      pos_resp.ChangeAmount,
-		"charge_amount":      pos_resp.ChargeAmount,
-		"tax_type":           pos_resp.TaxType,
-		"sum_of_item_amount": pos_resp.SumOfItemAmount,
-		"discount_word":      pos_resp.DiscountWord,
-		"after_discount":     pos_resp.AfterDiscount,
-		"before_tax_amount":  pos_resp.BeforeTaxAmount,
-		"tax_amount":            pos_resp.TaxAmount,
-		"total_amount":          pos_resp.TotalAmount,
-		"sum_cash_amount":        pos_resp.SumCashAmount,
-		"sum_chq_amount":         pos_resp.SumChqAmount,
-		"sum_credit_amount":     pos_resp.SumCreditAmount,
-		"sum_bank_amount":        pos_resp.SumBankAmount,
-		"book_no":               pos_resp.BankNo,
-		"net_debt_amount":        pos_resp.NetDebtAmount,
-		"is_cancel":             pos_resp.IsCancel,
-		"is_confirm":           pos_resp.IsConfirm,
-		"creator_code":          pos_resp.CreatorCode,
-		"create_date_time":      pos_resp.CreateDateTime,
-		"last_editor_code":       pos_resp.LastEditorCode,
-		"last_edit_date_t":        pos_resp.LastEditDateT,
-	}, nil
+	return pos_resp, nil
+
 }
 
 func map_pos_template(x PosModel) pos.SearchPosByIdResponseTemplate {
+	var subs []pos.NewPosItemTemplate
+	var crds []pos.ListCreditCardTemplate
 	return pos.SearchPosByIdResponseTemplate{
 		Id:              x.Id,
 		DocNo:           x.DocNo,
@@ -787,5 +781,43 @@ func map_pos_template(x PosModel) pos.SearchPosByIdResponseTemplate {
 		CreateDateTime:  x.CreateDateTime,
 		LastEditorCode:  x.LastEditorCode,
 		LastEditDateT:   x.LastEditDateT,
+		PosSubs:         subs,
+		CreditCards:     crds,
+	}
+}
+
+func map_pos_subs_template(x NewPosItemModel) pos.NewPosItemTemplate {
+	return pos.NewPosItemTemplate{
+		ItemCode:     x.ItemCode,
+		ItemName:     x.ItemName,
+		WHCode:       x.WHCode,
+		ShelfCode:    x.ShelfCode,
+		Qty:          x.Qty,
+		Price:        x.Price,
+		DiscountWord: x.DiscountWord,
+		UnitCode:     x.UnitCode,
+		BarCode:      x.BarCode,
+		LineNumber:   x.LineNumber,
+		AverageCost:  x.AverageCost,
+		PackingRate1: x.PackingRate1,
+	}
+}
+
+func map_pos_creditcard_template(x ListCreditCardModel) pos.ListCreditCardTemplate {
+	return pos.ListCreditCardTemplate{
+		BankCode:       x.BankCode,
+		CreditCardNo:   x.CreditCardNo,
+		ReceiveDate:    x.ReceiveDate,
+		DueDate:        x.DueDate,
+		BookNo:         x.BookNo,
+		Status:         x.Status,
+		StatusDate:     x.StatusDate,
+		StatusDocNo:    x.StatusDocNo,
+		BankBranchCode: x.BankBranchCode,
+		Amount:         x.Amount,
+		MyDescription:  x.MyDescription,
+		CreditType:     x.CreditType,
+		ConfirmNo:      x.ConfirmNo,
+		ChargeAmount:   x.ChargeAmount,
 	}
 }
