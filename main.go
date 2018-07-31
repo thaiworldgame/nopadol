@@ -8,28 +8,22 @@ import (
 	"fmt"
 	"github.com/mrtomyum/nopadol/mysqldb"
 	"github.com/mrtomyum/nopadol/sqldb"
-
 	"github.com/mrtomyum/nopadol/sale"
-
 	saleendpoint "github.com/mrtomyum/nopadol/sale/endpoint"
 	salehandler "github.com/mrtomyum/nopadol/sale/handler"
 	saleservice "github.com/mrtomyum/nopadol/sale/service"
 	"github.com/mrtomyum/nopadol/postgres"
 	"github.com/mrtomyum/nopadol/delivery"
 	"database/sql"
-
 	"github.com/mrtomyum/nopadol/customer"
 	customerservice "github.com/mrtomyum/nopadol/customer"
-
 	"github.com/mrtomyum/nopadol/employee"
 	employeeservice "github.com/mrtomyum/nopadol/employee"
-
 	"github.com/mrtomyum/nopadol/product"
 	productservice "github.com/mrtomyum/nopadol/product"
-
 	"github.com/mrtomyum/nopadol/pos"
 	posservice "github.com/mrtomyum/nopadol/pos"
-
+	"github.com/mrtomyum/nopadol/print"
 	"log"
 )
 
@@ -169,6 +163,9 @@ func main() {
 	posService := posservice.New(posRepo)
 	//posEndpoint := posendpoint.New(posService)
 
+	printRepo := sqldb.NewPrintRepository(sql_dbc)
+	printService := print.New(printRepo)
+
 	mux := http.NewServeMux()
 	mux.Handle("/", salehandler.New(saleService))
 	mux.Handle("/sale/", http.StripPrefix("/sale", sale.NewHTTPTransport(saleEndpoint)))
@@ -182,6 +179,7 @@ func main() {
 	mux.Handle("/employee/", http.StripPrefix("/employee/v1", employee.MakeHandler(employeeService)))
 	mux.Handle("/product/", http.StripPrefix("/product/v1", product.MakeHandler(productService)))
 	mux.Handle("/pos/", http.StripPrefix("/pos/v1", pos.MakeHandler(posService)))
+mux.Handle("/print/", http.StripPrefix("/print/v1", print.MakeHandler(printService)))
 
 	http.ListenAndServe(":8081", mux)
 }
@@ -192,3 +190,4 @@ func must(err error) {
 		log.Fatal(err)
 	}
 }
+

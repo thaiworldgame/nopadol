@@ -204,6 +204,7 @@ func Create(s Service) interface{} {
 
 
 func SearchById(s Service) interface{} {
+	fmt.Println("EndPoint")
 	return func(ctx context.Context, req *SearchPosByIdRequest)(interface{}, error){
 		resp , err := s.SearchById(&SearchPosByIdRequestTemplate{Id:req.Id})
 		if err != nil {

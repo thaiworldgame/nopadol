@@ -1,15 +1,11 @@
-package pos
+package print
 
 import (
 	"net/http"
-	"fmt"
 	"github.com/acoshift/hrpc"
 	"encoding/json"
+	"fmt"
 )
-
-//type httpError struct {
-//	Message string `json:"message"`
-//}
 
 type errorResponse struct {
 	Error string `json:"error"`
@@ -22,19 +18,17 @@ func enableCors(w *http.ResponseWriter) {
 	(*w).Header().Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
 }
 
-func MakeHandler(s Service) http.Handler {
+func MakeHandler(s Service) http.Handler{
 	m := hrpc.New(hrpc.Config{
-		Validate:        true,
-		RequestDecoder:  requestDecoder,
-		ResponseEncoder: responseEncoder,
-		ErrorEncoder:    errorEncoder,
+		Validate:true,
+		RequestDecoder:requestDecoder,
+		ResponseEncoder:responseEncoder,
+		ErrorEncoder: errorEncoder,
 	})
 	mux := http.NewServeMux()
-	mux.Handle("/new", m.Handler(Create(s)))
-	mux.Handle("/search/id", m.Handler(SearchById(s)))
-	//mux.Handle("/search/keyword", m.Handler(SearchByKeyword(s)))
-	return mustLogin()(mux)
+	mux.Handle("/posslip",m.Handler(PosSlip(s)))
 
+	return mustLogin()(mux)
 }
 
 func mustLogin() func(http.Handler) http.Handler {
@@ -106,54 +100,3 @@ func errorEncoder(w http.ResponseWriter, r *http.Request, err error) {
 
 	encoder(w, status, &errorResponse{err.Error()})
 }
-
-//
-//
-//func NewHttpTransport(ep Endpoint) http.Handler {
-//	mux := http.NewServeMux()
-//
-//	errEncoder := func(w http.ResponseWriter, err error) {
-//		status := http.StatusInternalServerError
-//		fmt.Println("error case= ", err)
-//		switch err {
-//		case ErrPosNotFound:
-//			status = http.StatusNotFound
-//		}
-//		httptransport.EncodeJSON(w, status, &httpError{Message: err.Error()})
-//		fmt.Println("transport error =", err.Error())
-//	}
-//
-//	mux.Handle("/new", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-//		var req NewPosRequest
-//		err := httptransport.DecodeJSON(r.Body, &req)
-//		if err != nil {
-//			errEncoder(w, err)
-//			return
-//		}
-//
-//		resp, err := ep.New(r.Context(), req)
-//		if err != nil {
-//			errEncoder(w, err)
-//			return
-//		}
-//		httptransport.EncodeJSON(w, http.StatusOK, &resp)
-//	}))
-//
-//	mux.Handle("/search/id", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-//		var req SearchPosByIdRequest
-//		err := httptransport.DecodeJSON(r.Body, &req)
-//		if err != nil {
-//			errEncoder(w, err)
-//			return
-//		}
-//
-//		resp, err := ep.SearchById(r.Context(), &req)
-//		if err != nil {
-//			errEncoder(w, err)
-//			return
-//		}
-//		httptransport.EncodeJSON(w, http.StatusOK, &resp)
-//	}))
-//
-//	return mux
-//}
