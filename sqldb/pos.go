@@ -262,13 +262,14 @@ func (repo *posRepository) Create(req *pos.NewPosTemplate) (resp interface{}, er
 
 	sum_remain_amount = total_amount - sum_pay_amount
 
+	fmt.Println(sum_remain_amount , total_amount , sum_pay_amount)
+
 	if sum_remain_amount != 0 {
 		return nil, errors.New("Docno have remain money to paid")
 	}
 
 	exchange_rate = def.ExchangeRateDefault
 	save_form = def.PosSaveForm
-
 	is_complete_save = 1
 	deposit_inc_tax = 1
 	pos_status = 1

@@ -28,6 +28,8 @@ func (s *service)Create(req *NewPosTemplate) (interface{}, error){
 
 
 	fmt.Println("Service")
+	sum_pay_amount = (req.SumCashAmount + req.SumCreditAmount + req.SumChqAmount + req.SumBankAmount + req.CoupongAmount)
+
 	for _, sub_item := range req.PosSubs {
 		if (sub_item.Qty != 0) {
 			count_item = count_item + 1
@@ -45,6 +47,9 @@ func (s *service)Create(req *NewPosTemplate) (interface{}, error){
 			count_item_unit = count_item_unit + 1
 		}
 	}
+
+
+	fmt.Println( " sum_item_amount,sum_pay_amount",sum_item_amount,sum_pay_amount)
 
 	switch {
 	case req.ArCode == "":
