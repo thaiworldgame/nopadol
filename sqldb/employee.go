@@ -36,6 +36,26 @@ func (em *employeeRepository) SearchById(req *employee.SearchByIdTemplate) (resp
 	}, nil
 }
 
+func (em *employeeRepository) SearchByKeyword(req *employee.SearchByKeywordTemplate) (resp interface{}, err error) {
+	emps := []EmployeeModel{}
+
+	sql := `select RowOrder as Id,code as SaleCode, name as SaleName from dbo.bcsale where (code like '%'+?+'%' or name like '%'+?+'%')`
+	err = em.db.Select(&emps, sql, req.Keyword, req.Keyword)
+	if err != nil {
+		fmt.Println("error =", err.Error())
+		return resp, err
+	}
+
+	employee := []employee.EmployeeTemplate{}
+
+	for _, e := range emps {
+		empline := map_employee_template(e)
+		employee = append(employee, empline)
+	}
+
+	return employee, nil
+}
+
 func map_employee_template(x EmployeeModel) employee.EmployeeTemplate {
 	return employee.EmployeeTemplate{
 		Id:       x.Id,
