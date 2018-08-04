@@ -29,6 +29,7 @@ type NewPosModel struct {
 	TaxType         int                   `db:"TaxType"`
 	SumOfItemAmount float64               `db:"SumOfItemAmount"`
 	DiscountWord    string                `db:"DiscountWord"`
+	DiscountAmount  float64               `db:"DiscountAmount"`
 	AfterDiscount   float64               `db:"AfterDiscount"`
 	TotalAmount     float64               `db:"TotalAmount"`
 	SumCashAmount   float64               `db:"SumCashAmount"`
@@ -44,18 +45,19 @@ type NewPosModel struct {
 }
 
 type NewPosItemModel struct {
-	ItemCode     string  `db:"ItemCode"`
-	ItemName     string  `db:"ItemName"`
-	WHCode       string  `db:"WHCode"`
-	ShelfCode    string  `db:"ShelfCode"`
-	Qty          float64 `db:"Qty"`
-	Price        float64 `db:"Price"`
-	DiscountWord string  `db:"DiscountWord"`
-	UnitCode     string  `db:"UnitCode"`
-	LineNumber   int     `db:"LineNumber"`
-	BarCode      string  `db:"BarCode"`
-	AverageCost  float64 `db:"AverageCost"`
-	PackingRate1 float64 `db:"PackingRate1"`
+	ItemCode       string  `db:"ItemCode"`
+	ItemName       string  `db:"ItemName"`
+	WHCode         string  `db:"WHCode"`
+	ShelfCode      string  `db:"ShelfCode"`
+	Qty            float64 `db:"Qty"`
+	Price          float64 `db:"Price"`
+	DiscountWord   string  `db:"DiscountWord"`
+	DiscountAmount float64 `db:"DiscountAmount"`
+	UnitCode       string  `db:"UnitCode"`
+	LineNumber     int     `db:"LineNumber"`
+	BarCode        string  `db:"BarCode"`
+	AverageCost    float64 `db:"AverageCost"`
+	PackingRate1   float64 `db:"PackingRate1"`
 }
 
 type ListChqInModel struct {
@@ -112,6 +114,7 @@ type PosModel struct {
 	TaxType         int                   `db:"TaxType"`
 	SumOfItemAmount float64               `db:"SumOfItemAmount"`
 	DiscountWord    string                `db:"DiscountWord"`
+	DiscountAmount  float64               `db:"DiscountAmount"`
 	AfterDiscount   float64               `db:"AfterDiscount"`
 	BeforeTaxAmount float64               `db:"BeforeTaxAmount"`
 	TaxAmount       float64               `db:"TaxAmount"`
@@ -192,7 +195,7 @@ func (repo *posRepository) Create(req *pos.NewPosTemplate) (resp interface{}, er
 	pos_tax_type = def.PosTaxType
 	req.MachineNo = pos_machine_no
 
-	sum_pay_amount = (req.SumCashAmount + req.SumCreditAmount + req.SumChqAmount + req.SumBankAmount + req.CoupongAmount)
+	sum_pay_amount = (req.SumCashAmount + req.SumCreditAmount + req.SumChqAmount + req.SumBankAmount + req.CoupongAmount + req.ChargeAmount) - req.ChangeAmount
 
 	for _, sub_item := range req.PosSubs {
 		if (sub_item.Qty != 0) {
@@ -262,7 +265,7 @@ func (repo *posRepository) Create(req *pos.NewPosTemplate) (resp interface{}, er
 
 	sum_remain_amount = total_amount - sum_pay_amount
 
-	fmt.Println(sum_remain_amount , total_amount , sum_pay_amount)
+	fmt.Println(sum_remain_amount, total_amount, sum_pay_amount)
 
 	if sum_remain_amount != 0 {
 		return nil, errors.New("Docno have remain money to paid")
@@ -766,6 +769,7 @@ func map_pos_template(x PosModel) pos.SearchPosByIdResponseTemplate {
 		TaxType:         x.TaxType,
 		SumOfItemAmount: x.SumOfItemAmount,
 		DiscountWord:    x.DiscountWord,
+		DiscountAmount:  x.DiscountAmount,
 		AfterDiscount:   x.AfterDiscount,
 		BeforeTaxAmount: x.BeforeTaxAmount,
 		TaxAmount:       x.TaxAmount,
@@ -789,18 +793,19 @@ func map_pos_template(x PosModel) pos.SearchPosByIdResponseTemplate {
 
 func map_pos_subs_template(x NewPosItemModel) pos.NewPosItemTemplate {
 	return pos.NewPosItemTemplate{
-		ItemCode:     x.ItemCode,
-		ItemName:     x.ItemName,
-		WHCode:       x.WHCode,
-		ShelfCode:    x.ShelfCode,
-		Qty:          x.Qty,
-		Price:        x.Price,
-		DiscountWord: x.DiscountWord,
-		UnitCode:     x.UnitCode,
-		BarCode:      x.BarCode,
-		LineNumber:   x.LineNumber,
-		AverageCost:  x.AverageCost,
-		PackingRate1: x.PackingRate1,
+		ItemCode:       x.ItemCode,
+		ItemName:       x.ItemName,
+		WHCode:         x.WHCode,
+		ShelfCode:      x.ShelfCode,
+		Qty:            x.Qty,
+		Price:          x.Price,
+		DiscountWord:   x.DiscountWord,
+		DiscountAmount: x.DiscountAmount,
+		UnitCode:       x.UnitCode,
+		BarCode:        x.BarCode,
+		LineNumber:     x.LineNumber,
+		AverageCost:    x.AverageCost,
+		PackingRate1:   x.PackingRate1,
 	}
 }
 

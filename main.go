@@ -10,7 +10,6 @@ import (
 	"github.com/mrtomyum/nopadol/sqldb"
 	"github.com/mrtomyum/nopadol/sale"
 	saleendpoint "github.com/mrtomyum/nopadol/sale/endpoint"
-	salehandler "github.com/mrtomyum/nopadol/sale/handler"
 	saleservice "github.com/mrtomyum/nopadol/sale/service"
 	"github.com/mrtomyum/nopadol/postgres"
 	"github.com/mrtomyum/nopadol/delivery"
@@ -75,7 +74,7 @@ func ConnectMySqlDB(dbName string) (db *sqlx.DB, err error) {
 	return db, err
 }
 
-func ConnectSqlDB() (msdb *sqlx.DB,  err error) {
+func ConnectSqlDB() (msdb *sqlx.DB, err error) {
 	db_host := "192.168.0.7"
 	db_name := "expertshop"
 	db_user := "sa"
@@ -90,8 +89,7 @@ func ConnectSqlDB() (msdb *sqlx.DB,  err error) {
 	return msdb, nil
 }
 
-
-func ConnectNebula() (msdb *sqlx.DB,  err error) {
+func ConnectNebula() (msdb *sqlx.DB, err error) {
 	db_host := "192.168.0.7"
 	db_name := "bcnp"
 	db_user := "sa"
@@ -167,7 +165,7 @@ func main() {
 	printService := print.New(printRepo)
 
 	mux := http.NewServeMux()
-	mux.Handle("/", salehandler.New(saleService))
+	//mux.Handle("/","")
 	mux.Handle("/sale/", http.StripPrefix("/sale", sale.NewHTTPTransport(saleEndpoint)))
 	mux.Handle("/delivery/", http.StripPrefix("/delivery", delivery.MakeHandler(doService)))
 
@@ -179,7 +177,7 @@ func main() {
 	mux.Handle("/employee/", http.StripPrefix("/employee/v1", employee.MakeHandler(employeeService)))
 	mux.Handle("/product/", http.StripPrefix("/product/v1", product.MakeHandler(productService)))
 	mux.Handle("/pos/", http.StripPrefix("/pos/v1", pos.MakeHandler(posService)))
-mux.Handle("/print/", http.StripPrefix("/print/v1", print.MakeHandler(printService)))
+	mux.Handle("/print/", http.StripPrefix("/print/v1", print.MakeHandler(printService)))
 
 	http.ListenAndServe(":8081", mux)
 }
@@ -190,4 +188,3 @@ func must(err error) {
 		log.Fatal(err)
 	}
 }
-
