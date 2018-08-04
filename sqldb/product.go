@@ -48,6 +48,28 @@ func (pd *productRepository) SearchByBarcode(req *product.SearchByBarcodeTemplat
 	//return pdt_resp, nil
 }
 
+
+func (pd *productRepository) SearchByKeyword(req *product.SearchByKeywordTemplate) (resp interface{}, err error) {
+	products := []ProductModel{}
+
+	sql := `set dateformat dmy     select b.roworder as Id,b.code as ItemCode,b.name1 as ItemName, a.barcode as BarCode, a.unitcode as UnitCode, isnull(c.saleprice1,0) as Price, isnull(d.rate,1) as Rate1, isnull(b.picfilename1,'') as PicPath from dbo.bcbarcodemaster a with (nolock) inner join dbo.bcitem b with (nolock) on a.itemcode = b.code left join dbo.bcpricelist c with (nolock) on c.saletype = 0 and c.transporttype = 0 and a.itemcode = c.itemcode and a.unitcode = c.unitcode and cast(rtrim(day(getdate()))+'/'+rtrim(month(getdate()))+'/'+rtrim(year(getdate())) as datetime) >= cast(rtrim(day(startdate))+'/'+rtrim(month(startdate))+'/'+rtrim(year(startdate)) as datetime) and cast(rtrim(day(getdate()))+'/'+rtrim(month(getdate()))+'/'+rtrim(year(getdate())) as datetime) <= cast(rtrim(day(stopdate))+'/'+rtrim(month(stopdate))+'/'+rtrim(year(stopdate)) as datetime)  left join dbo.bcstkpacking d with (nolock) on a.itemcode = d.itemcode and a.unitcode = d.unitcode where (a.barcode like '%'+?+'%' or b.code like '%'+?+'%' or b.name1 like '%'+?+'%')`
+	err = pd.db.Select(&products, sql, req.Keyword, req.Keyword, req.Keyword)
+	if err != nil {
+		fmt.Println("error = ", err.Error())
+		return resp, nil
+	}
+
+	product := []product.ProductTemplate{}
+	for _, p := range products{
+		pdtline := map_product_template(p)
+		product = append(product, pdtline)
+
+	}
+
+
+	return product, nil
+}
+
 func map_product_template(x ProductModel) product.ProductTemplate {
 	return product.ProductTemplate{
 		Id:       x.Id,

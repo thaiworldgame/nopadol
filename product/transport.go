@@ -29,6 +29,7 @@ func MakeHandler(s Service) http.Handler {
 
 	mux := http.NewServeMux()
 	mux.Handle("/search/barcode", m.Handler(SearchByBarcode(s)))
+	mux.Handle("/search/keyword", m.Handler(SearchByKeyword(s)))
 	return mustLogin()(mux)
 }
 
@@ -58,11 +59,11 @@ func requestDecoder(r *http.Request, v interface{}) error {
 	return jsonDecoder(r, v)
 }
 
-func responseEncoder(w http.ResponseWriter, r *http.Request, v interface{}){
+func responseEncoder(w http.ResponseWriter, r *http.Request, v interface{}) {
 	jsonEncoder(w, http.StatusOK, v)
 }
 
-func errorEncoder(w http.ResponseWriter, r *http.Request, err error){
+func errorEncoder(w http.ResponseWriter, r *http.Request, err error) {
 	encoder := jsonEncoder
 
 	var status = http.StatusNoContent

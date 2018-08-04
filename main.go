@@ -8,33 +8,28 @@ import (
 	"fmt"
 	"github.com/mrtomyum/nopadol/mysqldb"
 	"github.com/mrtomyum/nopadol/sqldb"
-
 	"github.com/mrtomyum/nopadol/sale"
-
 	saleendpoint "github.com/mrtomyum/nopadol/sale/endpoint"
 	salehandler "github.com/mrtomyum/nopadol/sale/handler"
 	saleservice "github.com/mrtomyum/nopadol/sale/service"
 	"github.com/mrtomyum/nopadol/postgres"
 	"github.com/mrtomyum/nopadol/delivery"
 	"database/sql"
-
 	"github.com/mrtomyum/nopadol/customer"
 	customerservice "github.com/mrtomyum/nopadol/customer"
-
 	"github.com/mrtomyum/nopadol/employee"
 	employeeservice "github.com/mrtomyum/nopadol/employee"
-
 	"github.com/mrtomyum/nopadol/product"
 	productservice "github.com/mrtomyum/nopadol/product"
-
 	"github.com/mrtomyum/nopadol/pos"
 	posservice "github.com/mrtomyum/nopadol/pos"
-
+	"github.com/mrtomyum/nopadol/print"
 	"log"
 )
 
 var mysql_dbc *sqlx.DB
 var sql_dbc *sqlx.DB
+var nebula_dbc *sqlx.DB
 
 func init() {
 	//db, err := ConnectDB("npdl")
@@ -49,6 +44,12 @@ func init() {
 		fmt.Println(err.Error())
 	}
 	sql_dbc = sql_db
+
+	nebula, err := ConnectNebula()
+	if err != nil {
+		fmt.Println(err.Error())
+	}
+	nebula_dbc = nebula
 
 }
 
@@ -74,9 +75,25 @@ func ConnectMySqlDB(dbName string) (db *sqlx.DB, err error) {
 	return db, err
 }
 
-func ConnectSqlDB() (msdb *sqlx.DB, err error) {
+func ConnectSqlDB() (msdb *sqlx.DB,  err error) {
 	db_host := "192.168.0.7"
 	db_name := "expertshop"
+	db_user := "sa"
+	db_pass := "[ibdkifu"
+	port := "1433"
+	dsn := fmt.Sprintf("server=%s;user id=%s;password=%s;port=%s;database=%s", db_host, db_user, db_pass, port, db_name)
+	msdb = sqlx.MustConnect("mssql", dsn)
+	if msdb.Ping() != nil {
+		fmt.Println("Error ")
+	}
+
+	return msdb, nil
+}
+
+
+func ConnectNebula() (msdb *sqlx.DB,  err error) {
+	db_host := "192.168.0.7"
+	db_name := "bcnp"
 	db_user := "sa"
 	db_pass := "[ibdkifu"
 	port := "1433"
@@ -127,17 +144,17 @@ func main() {
 	doService := delivery.NewService(doRepo)
 
 	// init customer
-	customerRepo := sqldb.NewCustomerRepository(sql_dbc)
+	customerRepo := sqldb.NewCustomerRepository(nebula_dbc)
 	customerService := customerservice.New(customerRepo)
 	//customerEndpoint := customerenpoint.New(customerService)
 
 	// init employee
-	employeeRepo := sqldb.NewEmployeeRepository(sql_dbc)
+	employeeRepo := sqldb.NewEmployeeRepository(nebula_dbc)
 	employeeService := employeeservice.New(employeeRepo)
 	//employeeEndpoint := employeeendpoint.New(employeeService)
 
 	//init product
-	productRepo := sqldb.NewProductRepository(sql_dbc)
+	productRepo := sqldb.NewProductRepository(nebula_dbc)
 	productService := productservice.New(productRepo)
 	//productEndpoint := productendpoint.New(productService)
 
@@ -145,6 +162,9 @@ func main() {
 	posRepo := sqldb.NewPosRepository(sql_dbc)
 	posService := posservice.New(posRepo)
 	//posEndpoint := posendpoint.New(posService)
+
+	printRepo := sqldb.NewPrintRepository(sql_dbc)
+	printService := print.New(printRepo)
 
 	mux := http.NewServeMux()
 	mux.Handle("/", salehandler.New(saleService))
@@ -159,6 +179,7 @@ func main() {
 	mux.Handle("/employee/", http.StripPrefix("/employee/v1", employee.MakeHandler(employeeService)))
 	mux.Handle("/product/", http.StripPrefix("/product/v1", product.MakeHandler(productService)))
 	mux.Handle("/pos/", http.StripPrefix("/pos/v1", pos.MakeHandler(posService)))
+mux.Handle("/print/", http.StripPrefix("/print/v1", print.MakeHandler(printService)))
 
 	http.ListenAndServe(":8081", mux)
 }
@@ -169,3 +190,4 @@ func must(err error) {
 		log.Fatal(err)
 	}
 }
+
