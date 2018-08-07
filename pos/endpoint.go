@@ -27,6 +27,7 @@ type (
 		TaxType         int                     `json:"tax_type"`
 		SumOfItemAmount float64                 `json:"sum_of_item_amount"`
 		DiscountWord    string                  `json:"discount_word"`
+		DiscountAmount  float64                 `json:"discount_amount"`
 		AfterDiscount   float64                 `json:"after_discount"`
 		TotalAmount     float64                 `json:"total_amount"`
 		SumCashAmount   float64                 `json:"sum_cash_amount"`
@@ -42,18 +43,19 @@ type (
 	}
 
 	NewPosItemRequest struct {
-		ItemCode     string  `json:"item_code"`
-		ItemName     string  `json:"item_name"`
-		WHCode       string  `json:"wh_code"`
-		ShelfCode    string  `json:"shelf_code"`
-		Qty          float64 `json:"qty"`
-		Price        float64 `json:"price"`
-		DiscountWord string  `json:"discount_word"`
-		UnitCode     string  `json:"unit_code"`
-		LineNumber   int     `json:"line_number"`
-		BarCode      string  `json:"bar_code"`
-		AverageCost  float64 `json:"averagecost"`
-		PackingRate1 float64 `json:"packing_rate_1"`
+		ItemCode       string  `json:"item_code"`
+		ItemName       string  `json:"item_name"`
+		WHCode         string  `json:"wh_code"`
+		ShelfCode      string  `json:"shelf_code"`
+		Qty            float64 `json:"qty"`
+		Price          float64 `json:"price"`
+		DiscountWord   string  `json:"discount_word"`
+		DiscountAmount float64 `json:"discount_amount"`
+		UnitCode       string  `json:"unit_code"`
+		LineNumber     int     `json:"line_number"`
+		BarCode        string  `json:"bar_code"`
+		AverageCost    float64 `json:"averagecost"`
+		PackingRate1   float64 `json:"packing_rate_1"`
 	}
 
 	ListChqInRequest struct {
@@ -114,6 +116,7 @@ type (
 		TaxType         int                     `json:"tax_type"`
 		SumOfItemAmount float64                 `json:"sum_of_item_amount"`
 		DiscountWord    string                  `json:"discount_word"`
+		DiscountAmount  float64                 `json:"discount_amount"`
 		AfterDiscount   float64                 `json:"after_discount"`
 		BeforeTaxAmount float64                 `json:"before_tax_amount"`
 		TaxAmount       float64                 `json:"tax_amount"`
@@ -180,6 +183,7 @@ func Create(s Service) interface{} {
 			TaxType:         req.TaxType,
 			SumOfItemAmount: req.SumOfItemAmount,
 			DiscountWord:    req.DiscountWord,
+			DiscountAmount:  req.DiscountAmount,
 			AfterDiscount:   req.AfterDiscount,
 			TotalAmount:     req.TotalAmount,
 			SumCashAmount:   req.SumCashAmount,
@@ -202,18 +206,17 @@ func Create(s Service) interface{} {
 	}
 }
 
-
 func SearchById(s Service) interface{} {
 	fmt.Println("EndPoint")
-	return func(ctx context.Context, req *SearchPosByIdRequest)(interface{}, error){
-		resp , err := s.SearchById(&SearchPosByIdRequestTemplate{Id:req.Id})
+	return func(ctx context.Context, req *SearchPosByIdRequest) (interface{}, error) {
+		resp, err := s.SearchById(&SearchPosByIdRequestTemplate{Id: req.Id})
 		if err != nil {
 			fmt.Println("endpoint error =", err.Error())
 			return nil, fmt.Errorf(err.Error())
 		}
-		return map[string] interface{}{
+		return map[string]interface{}{
 			"data": resp,
-		},nil
+		}, nil
 	}
 }
 
