@@ -31,6 +31,7 @@ func (d *deliveryRepository) ReportDaily(req string) (interface{}, error) {
 		arName      sql.NullString `json:"ar_name"`
 		itemAmount  float64
 		itemGroup   string
+		remark      string
 	}
 
 	type doResponse struct {
@@ -44,6 +45,7 @@ func (d *deliveryRepository) ReportDaily(req string) (interface{}, error) {
 		ArName      string  `json:"ar_name"`
 		ItemAmount  float64 `json:"item_amount"`
 		ItemGroup   string  `json:"item_group"`
+		Remark      string  `json:"remark"`
 	}
 	_do := doModel{}
 	_dos := []doResponse{}
@@ -58,7 +60,9 @@ func (d *deliveryRepository) ReportDaily(req string) (interface{}, error) {
 		fmt.Println(err.Error())
 	}
 	for rs.Next() {
-		err := rs.Scan(&_do.id, &_do.doDocno, &_do.soNo, &_do.confirmDate, &_do.doDate, &_do.diffDate, &_do.description, &_do.arName, &_do.itemAmount, &_do.itemGroup)
+		err := rs.Scan(&_do.id, &_do.doDocno, &_do.soNo, &_do.confirmDate,
+			&_do.doDate, &_do.diffDate, &_do.description, &_do.arName,
+			&_do.itemAmount, &_do.itemGroup, &_do.remark)
 		if err != nil {
 			return nil, err
 		}
@@ -85,6 +89,7 @@ func (d *deliveryRepository) ReportDaily(req string) (interface{}, error) {
 		_doResponse.ArName = _do.arName.String
 		_doResponse.ItemAmount = _do.itemAmount
 		_doResponse.ItemGroup = _do.itemGroup
+		_doResponse.Remark = _do.remark
 
 		_dos = append(_dos, _doResponse)
 		fmt.Println(_do)
