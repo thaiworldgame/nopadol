@@ -9,6 +9,8 @@ import (
 	"fmt"
 	//"time"
 	//"time"
+	"github.com/mrtomyum/nopadol/sale"
+	"github.com/satit13/bcsync/app"
 )
 
 func NewDeliveryRepository(db *sql.DB) delivery.Repository {
@@ -32,6 +34,10 @@ func (d *deliveryRepository) ReportDaily(req string) (interface{}, error) {
 		itemAmount  float64
 		itemGroup   string
 		remark      string
+		invoiceno   string
+		carlicense  string
+		salecode    string
+		saleman     string
 	}
 
 	type doResponse struct {
@@ -46,6 +52,10 @@ func (d *deliveryRepository) ReportDaily(req string) (interface{}, error) {
 		ItemAmount  float64 `json:"item_amount"`
 		ItemGroup   string  `json:"item_group"`
 		Remark      string  `json:"remark"`
+		Invoice     string  `json:"invoice"`
+		CarLicense  string  `json:"car_license"`
+		SaleCode    string  `json:"sale_code"`
+		Saleman     string  `json:"saleman"`
 	}
 	_do := doModel{}
 	_dos := []doResponse{}
@@ -62,7 +72,8 @@ func (d *deliveryRepository) ReportDaily(req string) (interface{}, error) {
 	for rs.Next() {
 		err := rs.Scan(&_do.id, &_do.doDocno, &_do.soNo, &_do.confirmDate,
 			&_do.doDate, &_do.diffDate, &_do.description, &_do.arName,
-			&_do.itemAmount, &_do.itemGroup, &_do.remark)
+			&_do.itemAmount, &_do.itemGroup, &_do.remark,&_do.invoiceno,
+			&_do.carlicense, &_do.salecode, &_do.saleman)
 		if err != nil {
 			return nil, err
 		}
@@ -90,6 +101,10 @@ func (d *deliveryRepository) ReportDaily(req string) (interface{}, error) {
 		_doResponse.ItemAmount = _do.itemAmount
 		_doResponse.ItemGroup = _do.itemGroup
 		_doResponse.Remark = _do.remark
+		_doResponse.Invoice = _do.invoiceno
+		_doResponse.CarLicense = _do.carlicense
+		_doResponse.SaleCode = _do.salecode
+		_doResponse.Saleman = _do.saleman
 
 		_dos = append(_dos, _doResponse)
 		fmt.Println(_do)
