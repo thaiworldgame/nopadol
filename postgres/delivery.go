@@ -9,8 +9,8 @@ import (
 	"fmt"
 	//"time"
 	//"time"
-	"github.com/mrtomyum/nopadol/sale"
-	"github.com/satit13/bcsync/app"
+	//"github.com/mrtomyum/nopadol/sale"
+	//"github.com/satit13/bcsync/app"
 )
 
 func NewDeliveryRepository(db *sql.DB) delivery.Repository {
@@ -72,7 +72,7 @@ func (d *deliveryRepository) ReportDaily(req string) (interface{}, error) {
 	for rs.Next() {
 		err := rs.Scan(&_do.id, &_do.doDocno, &_do.soNo, &_do.confirmDate,
 			&_do.doDate, &_do.diffDate, &_do.description, &_do.arName,
-			&_do.itemAmount, &_do.itemGroup, &_do.remark,&_do.invoiceno,
+			&_do.itemAmount, &_do.itemGroup, &_do.remark, &_do.invoiceno,
 			&_do.carlicense, &_do.salecode, &_do.saleman)
 		if err != nil {
 			return nil, err
