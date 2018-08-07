@@ -28,7 +28,7 @@ func (s *service)Create(req *NewPosTemplate) (interface{}, error){
 
 
 	fmt.Println("Service")
-	sum_pay_amount = (req.SumCashAmount + req.SumCreditAmount + req.SumChqAmount + req.SumBankAmount + req.CoupongAmount)
+	sum_pay_amount = (req.SumCashAmount + req.SumCreditAmount + req.SumChqAmount + req.SumBankAmount + req.CoupongAmount+req.ChargeAmount)-req.ChangeAmount
 
 	for _, sub_item := range req.PosSubs {
 		if (sub_item.Qty != 0) {
@@ -49,7 +49,7 @@ func (s *service)Create(req *NewPosTemplate) (interface{}, error){
 	}
 
 
-	fmt.Println( " sum_item_amount,sum_pay_amount",sum_item_amount,sum_pay_amount)
+	fmt.Println( " sum_item_amount,sum_pay_amount,DiscountAmount",sum_item_amount,sum_pay_amount,req.DiscountAmount)
 
 	switch {
 	case req.ArCode == "":
@@ -64,9 +64,9 @@ func (s *service)Create(req *NewPosTemplate) (interface{}, error){
 		return nil, errors.New("Item not have qty")
 	case count_item_unit > 0:
 		return nil, errors.New("Item not have unitcode")
-	case sum_pay_amount > req.TotalAmount:
+	case sum_pay_amount > req.AfterDiscount:
 		return nil, errors.New("Rec money is over totalamount")
-	case sum_item_amount != sum_pay_amount:
+	case (sum_item_amount-req.DiscountAmount) != sum_pay_amount:
 		return nil, errors.New("Rec money is less than totalamount")
 	case (req.MachineCode == "" || req.ShiftNo == 0 || req.ShiftCode == "" || req.CashierCode == ""):
 		return nil, errors.New("Docno not have pos data")
