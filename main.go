@@ -22,6 +22,8 @@ import (
 	productservice "github.com/mrtomyum/nopadol/product"
 	"github.com/mrtomyum/nopadol/pos"
 	posservice "github.com/mrtomyum/nopadol/pos"
+	"github.com/mrtomyum/nopadol/posconfig"
+	posconfigservice "github.com/mrtomyum/nopadol/posconfig"
 	"github.com/mrtomyum/nopadol/print"
 	"log"
 )
@@ -156,6 +158,11 @@ func main() {
 	productService := productservice.New(productRepo)
 	//productEndpoint := productendpoint.New(productService)
 
+	//init posconfig
+	posconfigRepo := mysqldb.NewPosConfigRepository(mysql_dbc)
+	posconfigService := posconfigservice.New(posconfigRepo)
+	//posEndpoint := posendpoint.New(posService)
+
 	//init pos
 	posRepo := sqldb.NewPosRepository(sql_dbc)
 	posService := posservice.New(posRepo)
@@ -176,6 +183,7 @@ func main() {
 	mux.Handle("/customer/", http.StripPrefix("/customer/v1", customer.MakeHandler(customerService)))
 	mux.Handle("/employee/", http.StripPrefix("/employee/v1", employee.MakeHandler(employeeService)))
 	mux.Handle("/product/", http.StripPrefix("/product/v1", product.MakeHandler(productService)))
+	mux.Handle("/posconfig/", http.StripPrefix("/posconfig/v1", posconfig.MakeHandler(posconfigService)))
 	mux.Handle("/pos/", http.StripPrefix("/pos/v1", pos.MakeHandler(posService)))
 	mux.Handle("/print/", http.StripPrefix("/print/v1", print.MakeHandler(printService)))
 
