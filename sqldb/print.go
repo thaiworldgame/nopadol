@@ -128,23 +128,17 @@ func (repo *printRepository) PosSlip(req *print.PosSlipRequestTemplate) (resp in
 		return resp, err
 	}
 
-	fmt.Println("Item =", s.PosSubs)
-	layout := "2014-09-12"
-
-	doc_date, err := time.Parse(layout, s.DocDate)
-
-	fmt.Println("doc_date =", doc_date)
-
 	pt := hw.PosPrinter{p, w}
 	pt.Init()
 	pt.SetLeftMargin(20)
 
-	//loc, _ := time.LoadLocation("Asia/Bangkok")
-	//now := time.Now().In(loc)
+	loc, _ := time.LoadLocation("Asia/Bangkok")
+	now := time.Now().In(loc)
 
-	now := time.Now()
-	fmt.Println("yyyy-mm-dd date format : ", now.AddDate(0, 0, 0).Format("2006-01-02"))
-	DocDate := now.AddDate(0, 0, 0).Format("2006-01-02")
+	//now := time.Now()
+	//fmt.Println("yyyy-mm-dd date format : ", now.AddDate(0, 0, 0).Format("2006-01-02"))
+	//DocDate := now.AddDate(0, 0, 0).Format("2006-01-02")
+	DocDate :=  now.Format("02-01-2006 ")
 
 	//////////////////////////////////////////////////////////////////////////////////////
 	pt.SetCharaterCode(26)
@@ -243,17 +237,18 @@ func (repo *printRepository) PosSlip(req *print.PosSlipRequestTemplate) (resp in
 	pt.OpenCashBox()
 	pt.End()
 
-	return "Print OK", err
+	return req.DocNo, err
 }
 
 func (repo *printRepository) PosDriveThruSlip(req *print.PosDriveThruSlipRequestTemplate) (resp interface{}, err error) {
-	sql_db, err := SqlConn(req.DbHost, req.DbName, req.DbUser, req.DbPass)
+	sql_db, err := SqlConn("192.168.2.100", "POS_Test", "vbuser", "132")
 	if err != nil {
 		fmt.Println(err.Error())
+		return nil, err
 	}
 	sql_dbc = sql_db
 
-	host := req.HostIP//"192.168.0.247:9100"
+	host := "192.168.0.247:9100"
 
 	f, err := net.Dial("tcp", host)
 	if err != nil {
@@ -270,33 +265,26 @@ func (repo *printRepository) PosDriveThruSlip(req *print.PosDriveThruSlipRequest
 	err = sql_dbc.Get(&s, sql, req.DocNo)
 	if err != nil {
 		fmt.Println("err = ", err.Error())
-		return resp, err
+		return nil, err
 	}
 
 	sql_sub := `select a.ItemCode,a.ItemName,a.WHCode,a.ShelfCode,a.Qty,a.Price,isnull(a.DiscountWord,'') as DiscountWord,a.DiscountAmount,a.UnitCode,isnull(a.BarCode,'') as BarCode,isnull(a.AverageCost,0) as AverageCost,a.PackingRate1,a.LineNumber from dbo.bcarinvoicesub a left join dbo.bcitem b on a.itemcode = b.code where a.docno = ? order by a.linenumber`
 	err = sql_dbc.Select(&s.PosSubs, sql_sub, s.DocNo)
 	if err != nil {
 		fmt.Println("err sub= ", err.Error())
-		return resp, err
+		return nil, err
 	}
-
-	fmt.Println("Item =", s.PosSubs)
-	layout := "2014-09-12"
-
-	doc_date, err := time.Parse(layout, s.DocDate)
-
-	fmt.Println("doc_date =", doc_date)
 
 	pt := hw.PosPrinter{p, w}
 	pt.Init()
 	pt.SetLeftMargin(20)
 
-	//loc, _ := time.LoadLocation("Asia/Bangkok")
-	//now := time.Now().In(loc)
-
-	now := time.Now()
-	fmt.Println("yyyy-mm-dd date format : ", now.AddDate(0, 0, 0).Format("2006-01-02"))
-	DocDate := now.AddDate(0, 0, 0).Format("2006-01-02")
+	loc, _ := time.LoadLocation("Asia/Bangkok")
+	now := time.Now().In(loc)
+	//now := time.Now()
+	//fmt.Println("yyyy-mm-dd date format : ", now.AddDate(0, 0, 0).Format("2006-01-02"))
+	//DocDate := now.AddDate(0, 0, 0).Format("2006-01-02")
+	DocDate :=  now.Format("02-01-2006 ")
 
 	//////////////////////////////////////////////////////////////////////////////////////
 	pt.SetCharaterCode(26)
@@ -313,7 +301,7 @@ func (repo *printRepository) PosDriveThruSlip(req *print.PosDriveThruSlipRequest
 	pt.WriteStringLines("TAX ID: 0505533999157" + "      " + "POS: " + s.ShiftCode + "\n")
 	//pt.WriteStringLines("ใบกำกับภาษีอย่างย่อ\n")
 	pt.SetAlign("left")
-	pt.WriteStringLines("CS : " + s.SaleCode + "/" + s.SaleName + "      " + "TIME:" + now.Format("15:04:05") + "\n")
+	//pt.WriteStringLines("CS : " + s.SaleCode + "/" + s.SaleName + "      " + "TIME:" + now.Format("15:04:05") + "\n")
 	//pt.WriteStringLines(" พนักงาน : "+s.CreateBy+"\n")
 	makeline(pt)
 	///////////////////////////////////////////////////////////////////////////////////
@@ -395,7 +383,127 @@ func (repo *printRepository) PosDriveThruSlip(req *print.PosDriveThruSlipRequest
 	pt.OpenCashBox()
 	pt.End()
 
-	return "Print OK", err
+	repo.PosDriveThruSlipCopy(s)
+
+	return req.DocNo, err
+}
+
+func (repo *printRepository) PosDriveThruSlipCopy(req PosSlipModel) () {
+
+	host := "192.168.0.247:9100"
+
+	f, err := net.Dial("tcp", host)
+	if err != nil {
+		fmt.Println(err.Error())
+	}
+	defer f.Close()
+
+	w := bufio.NewWriter(f)
+	p := escpos.New(w)
+
+	pt := hw.PosPrinter{p, w}
+	pt.Init()
+	pt.SetLeftMargin(20)
+
+	loc, _ := time.LoadLocation("Asia/Bangkok")
+	now := time.Now().In(loc)
+	DocDate :=  now.Format("02-01-2006 ")
+
+	//////////////////////////////////////////////////////////////////////////////////////
+	pt.SetCharaterCode(26)
+	pt.SetAlign("center")
+	pt.SetTextSize(0, 0)
+	pt.WriteStringLines("TAX INV (ABB)     (สำเนา)")
+	pt.LineFeed()
+	pt.SetTextSize(0, 0)
+	pt.SetAlign("left")
+	pt.WriteStringLines("NO: " + req.DocNo + "          " + "DATE: " + DocDate + "\n")
+	pt.SetAlign("center")
+	pt.WriteStringLines("บริษัท นพดลพานิช จำกัด" + "\n")
+	pt.SetAlign("left")
+	pt.WriteStringLines("TAX ID: 0505533999157" + "      " + "POS: " + req.ShiftCode + "\n")
+	//pt.WriteStringLines("ใบกำกับภาษีอย่างย่อ\n")
+	pt.SetAlign("left")
+	pt.WriteStringLines("CS : " + req.SaleCode + "/" + req.SaleName + "      " + "TIME:" + now.Format("15:04:05") + "\n")
+	//pt.WriteStringLines(" พนักงาน : "+s.CreateBy+"\n")
+	makeline(pt)
+	///////////////////////////////////////////////////////////////////////////////////
+	var CountItem int64
+	var CountQty float64
+	for _, subcount := range req.PosSubs {
+		CountItem = CountItem + 1
+		CountQty = CountQty + subcount.Qty
+	}
+
+	fmt.Println("CountItem =", CountItem, CountQty)
+	///////////////////////////////////////////////////////////////////////////////////
+	pt.SetAlign("left")
+	for _, sub := range req.PosSubs {
+		var vDiffEmpty int
+		var vItemPriceAmount string
+		var vItemAmount float64
+
+		pt.SetFont("A")
+
+		pt.WriteStringLines(" " + sub.ItemName + "\n")
+
+		vItemAmount = sub.Qty * (sub.Price - sub.DiscountAmount)
+
+		vItemPriceAmount = " " + strconv.FormatFloat(sub.Price, 'f', -1, 64) + " X " + strconv.Itoa(int(sub.Qty)) + " " + sub.UnitCode
+
+		vLen := len(vItemPriceAmount)
+		vDiff := 25 - (vLen / 3)
+
+		if (vDiff < 0) {
+			vDiffEmpty = 0
+		} else {
+			vDiffEmpty = vDiff
+		}
+
+		fmt.Println("ItemName=", sub.ItemName)
+		fmt.Println("Len", vLen/3)
+		fmt.Println("Diff ", vDiff)
+		pt.WriteStringLines(vItemPriceAmount + strings.Repeat(" ", vDiffEmpty))
+
+		pt.WriteStringLines("   ")
+		pt.WriteStringLines(CommaFloat(vItemAmount) + "\n\n")
+		//pt.FormfeedN(3)
+	}
+	makeline(pt)
+	////////////////////////////////////////////////////////////////////////////////////
+	pt.SetFont("A")
+	pt.WriteStringLines(" " + strconv.Itoa(int(CountItem)) + " รายการ " + strconv.Itoa(int(CountQty)) + " ชิ้น\n")
+	pt.WriteStringLines("TOTAL: ")
+	pt.WriteStringLines("                              ")
+	//pt.WriteStringLines(strconv.FormatFloat(s.TotalAmount, 'f', 2, 64)+"\n")
+	pt.WriteStringLines(CommaFloat(req.NetDebtAmount) + "\n")
+	////////////////////////////////////////////////////////////////////////////////////
+	pt.SetFont("A")
+	//pt.WriteStringLines(" มูลค่าสินค้ามีภาษีมูลค่าเพิ่ม"+"                       "+Commaf(vBeforeTaxAmount)+"\n")
+	//pt.WriteStringLines(" ภาษีมูลค่าเพิ่ม"+strconv.Itoa(c.TaxRate)+"%"+"                                "+Commaf(vTaxAmount)+"\n")
+	if (req.CoupongAmount != 0) {
+		pt.WriteStringLines("COUPON: " + "                              " + CommaFloat(req.CoupongAmount) + "\n")
+	}
+	if (req.SumCashAmount != 0) {
+		pt.WriteStringLines("CASH: " + "                               " + CommaFloat(req.SumCashAmount) + "\n")
+	}
+	if (req.SumCreditAmount != 0) {
+		pt.WriteStringLines("CREDIT: " + "                             " + CommaFloat(req.SumCreditAmount) + "\n")
+	}
+	if (req.ChangeAmount != 0) {
+		pt.WriteStringLines("CHANGE: " + "                               " + CommaFloat(req.ChangeAmount) + "\n")
+	}
+
+	pt.SetFont("A")
+	pt.SetAlign("center")
+	pt.WriteStringLines("ขอบคุณที่มาใช้บริการ" + "\n")
+	pt.WriteStringLines("เปลี่ยนสินค้าภายใน 30 วัน (รหัส [P] ไม่รับคืน)" + "\n")
+	pt.WriteStringLines("สอบถามโทร. 0-5324-0377 8.00-17.00 ทุกวัน" + "\n")
+	makeline(pt)
+
+	pt.Formfeed()
+	pt.End()
+
 }
 
 //
