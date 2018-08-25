@@ -80,13 +80,12 @@ type PosItemSlipModel struct {
 //	DocNo string `json:"doc_no"`
 //}
 
-type printRepository struct {db *sqlx.DB}
+type printRepository struct{ db *sqlx.DB }
 
-
-func SqlConn(db_host string, db_name string ,db_user string, db_pass string) (msdb *sqlx.DB, err error) {
+func SqlConn(db_host string, db_name string, db_user string, db_pass string) (msdb *sqlx.DB, err error) {
 	port := "1433"
 	dsn := fmt.Sprintf("server=%s;user id=%s;password=%s;port=%s;database=%s", db_host, db_user, db_pass, port, db_name)
-	fmt.Println("SqlConn",dsn)
+	fmt.Println("SqlConn", dsn)
 	msdb = sqlx.MustConnect("mssql", dsn)
 	if msdb.Ping() != nil {
 		fmt.Println("Error ")
@@ -94,7 +93,6 @@ func SqlConn(db_host string, db_name string ,db_user string, db_pass string) (ms
 
 	return msdb, nil
 }
-
 
 func NewPrintRepository(db *sqlx.DB) print.Repository {
 	return &printRepository{db}
@@ -138,7 +136,7 @@ func (repo *printRepository) PosSlip(req *print.PosSlipRequestTemplate) (resp in
 	//now := time.Now()
 	//fmt.Println("yyyy-mm-dd date format : ", now.AddDate(0, 0, 0).Format("2006-01-02"))
 	//DocDate := now.AddDate(0, 0, 0).Format("2006-01-02")
-	DocDate :=  now.Format("02-01-2006 ")
+	DocDate := now.Format("02-01-2006 ")
 
 	//////////////////////////////////////////////////////////////////////////////////////
 	pt.SetCharaterCode(26)
@@ -159,6 +157,10 @@ func (repo *printRepository) PosSlip(req *print.PosSlipRequestTemplate) (resp in
 	//pt.WriteStringLines(" พนักงาน : "+s.CreateBy+"\n")
 	makeline(pt)
 	///////////////////////////////////////////////////////////////////////////////////
+	pt.WriteStringLines(" รายการ " + "                        " + "มูลค่า" + "\n")
+	makeline(pt)
+	///////////////////////////////////////////////////////////////////////////////////
+
 	var CountItem int64
 	var CountQty float64
 	for _, subcount := range s.PosSubs {
@@ -180,8 +182,8 @@ func (repo *printRepository) PosSlip(req *print.PosSlipRequestTemplate) (resp in
 
 		vItemAmount = sub.Qty * (sub.Price - sub.DiscountAmount)
 
-		vItemPriceAmount = " " + strconv.FormatFloat(sub.Price, 'f', -1, 64) + " X " + strconv.Itoa(int(sub.Qty)) + " " + sub.UnitCode
-
+		//vItemPriceAmount = " " + strconv.FormatFloat(sub.Price, 'f', -1, 64) + " X " + strconv.Itoa(int(sub.Qty)) + " " + sub.UnitCode
+		vItemPriceAmount = " " + strconv.Itoa(int(sub.Qty)) + " " + sub.UnitCode + " X " + strconv.FormatFloat(sub.Price, 'f', -1, 64)
 		vLen := len(vItemPriceAmount)
 		vDiff := 25 - (vLen / 3)
 
@@ -205,7 +207,7 @@ func (repo *printRepository) PosSlip(req *print.PosSlipRequestTemplate) (resp in
 	pt.SetFont("A")
 	pt.WriteStringLines(" " + strconv.Itoa(int(CountItem)) + " รายการ " + strconv.Itoa(int(CountQty)) + " ชิ้น\n")
 	pt.WriteStringLines("TOTAL: ")
-	pt.WriteStringLines("                              ")
+	pt.WriteStringLines("                           ")
 	//pt.WriteStringLines(strconv.FormatFloat(s.TotalAmount, 'f', 2, 64)+"\n")
 	pt.WriteStringLines(CommaFloat(s.NetDebtAmount) + "\n")
 	////////////////////////////////////////////////////////////////////////////////////
@@ -213,16 +215,16 @@ func (repo *printRepository) PosSlip(req *print.PosSlipRequestTemplate) (resp in
 	//pt.WriteStringLines(" มูลค่าสินค้ามีภาษีมูลค่าเพิ่ม"+"                       "+Commaf(vBeforeTaxAmount)+"\n")
 	//pt.WriteStringLines(" ภาษีมูลค่าเพิ่ม"+strconv.Itoa(c.TaxRate)+"%"+"                                "+Commaf(vTaxAmount)+"\n")
 	if (s.CoupongAmount != 0) {
-		pt.WriteStringLines("COUPON: " + "                              " + CommaFloat(s.CoupongAmount) + "\n")
+		pt.WriteStringLines("COUPON: " + "                          " + CommaFloat(s.CoupongAmount) + "\n")
 	}
 	if (s.SumCashAmount != 0) {
-		pt.WriteStringLines("CASH: " + "                               " + CommaFloat(s.SumCashAmount) + "\n")
+		pt.WriteStringLines("CASH: " + "                            " + CommaFloat(s.SumCashAmount) + "\n")
 	}
 	if (s.SumCreditAmount != 0) {
-		pt.WriteStringLines("CREDIT: " + "                             " + CommaFloat(s.SumCreditAmount) + "\n")
+		pt.WriteStringLines("CREDIT: " + "                          " + CommaFloat(s.SumCreditAmount) + "\n")
 	}
 	if (s.ChangeAmount != 0) {
-		pt.WriteStringLines("CHANGE: " + "                               " + CommaFloat(s.ChangeAmount) + "\n")
+		pt.WriteStringLines("CHANGE: " + "                            " + CommaFloat(s.ChangeAmount) + "\n")
 	}
 
 	pt.SetFont("A")
@@ -284,7 +286,7 @@ func (repo *printRepository) PosDriveThruSlip(req *print.PosDriveThruSlipRequest
 	//now := time.Now()
 	//fmt.Println("yyyy-mm-dd date format : ", now.AddDate(0, 0, 0).Format("2006-01-02"))
 	//DocDate := now.AddDate(0, 0, 0).Format("2006-01-02")
-	DocDate :=  now.Format("02-01-2006 ")
+	DocDate := now.Format("02-01-2006 ")
 
 	//////////////////////////////////////////////////////////////////////////////////////
 	pt.SetCharaterCode(26)
@@ -305,6 +307,10 @@ func (repo *printRepository) PosDriveThruSlip(req *print.PosDriveThruSlipRequest
 	//pt.WriteStringLines(" พนักงาน : "+s.CreateBy+"\n")
 	makeline(pt)
 	///////////////////////////////////////////////////////////////////////////////////
+	pt.WriteStringLines(" รายการ " + "                        " + "มูลค่า" + "\n")
+	makeline(pt)
+	///////////////////////////////////////////////////////////////////////////////////
+
 	var CountItem int64
 	var CountQty float64
 	for _, subcount := range s.PosSubs {
@@ -326,8 +332,8 @@ func (repo *printRepository) PosDriveThruSlip(req *print.PosDriveThruSlipRequest
 
 		vItemAmount = sub.Qty * (sub.Price - sub.DiscountAmount)
 
-		vItemPriceAmount = " " + strconv.FormatFloat(sub.Price, 'f', -1, 64) + " X " + strconv.Itoa(int(sub.Qty)) + " " + sub.UnitCode
-
+		//vItemPriceAmount = " " + strconv.FormatFloat(sub.Price, 'f', -1, 64) + " X " + strconv.Itoa(int(sub.Qty)) + " " + sub.UnitCode
+		vItemPriceAmount = " " + strconv.Itoa(int(sub.Qty)) + " " + sub.UnitCode + " X " + strconv.FormatFloat(sub.Price, 'f', -1, 64)
 		vLen := len(vItemPriceAmount)
 		vDiff := 25 - (vLen / 3)
 
@@ -351,7 +357,7 @@ func (repo *printRepository) PosDriveThruSlip(req *print.PosDriveThruSlipRequest
 	pt.SetFont("A")
 	pt.WriteStringLines(" " + strconv.Itoa(int(CountItem)) + " รายการ " + strconv.Itoa(int(CountQty)) + " ชิ้น\n")
 	pt.WriteStringLines("TOTAL: ")
-	pt.WriteStringLines("                              ")
+	pt.WriteStringLines("                           ")
 	//pt.WriteStringLines(strconv.FormatFloat(s.TotalAmount, 'f', 2, 64)+"\n")
 	pt.WriteStringLines(CommaFloat(s.NetDebtAmount) + "\n")
 	////////////////////////////////////////////////////////////////////////////////////
@@ -359,16 +365,16 @@ func (repo *printRepository) PosDriveThruSlip(req *print.PosDriveThruSlipRequest
 	//pt.WriteStringLines(" มูลค่าสินค้ามีภาษีมูลค่าเพิ่ม"+"                       "+Commaf(vBeforeTaxAmount)+"\n")
 	//pt.WriteStringLines(" ภาษีมูลค่าเพิ่ม"+strconv.Itoa(c.TaxRate)+"%"+"                                "+Commaf(vTaxAmount)+"\n")
 	if (s.CoupongAmount != 0) {
-		pt.WriteStringLines("COUPON: " + "                              " + CommaFloat(s.CoupongAmount) + "\n")
+		pt.WriteStringLines("COUPON: " + "                          " + CommaFloat(s.CoupongAmount) + "\n")
 	}
 	if (s.SumCashAmount != 0) {
-		pt.WriteStringLines("CASH: " + "                               " + CommaFloat(s.SumCashAmount) + "\n")
+		pt.WriteStringLines("CASH: " + "                            " + CommaFloat(s.SumCashAmount) + "\n")
 	}
 	if (s.SumCreditAmount != 0) {
-		pt.WriteStringLines("CREDIT: " + "                             " + CommaFloat(s.SumCreditAmount) + "\n")
+		pt.WriteStringLines("CREDIT: " + "                          " + CommaFloat(s.SumCreditAmount) + "\n")
 	}
 	if (s.ChangeAmount != 0) {
-		pt.WriteStringLines("CHANGE: " + "                               " + CommaFloat(s.ChangeAmount) + "\n")
+		pt.WriteStringLines("CHANGE: " + "                            " + CommaFloat(s.ChangeAmount) + "\n")
 	}
 
 	pt.SetFont("A")
@@ -407,7 +413,7 @@ func (repo *printRepository) PosDriveThruSlipCopy(req PosSlipModel) () {
 
 	loc, _ := time.LoadLocation("Asia/Bangkok")
 	now := time.Now().In(loc)
-	DocDate :=  now.Format("02-01-2006 ")
+	DocDate := now.Format("02-01-2006 ")
 
 	//////////////////////////////////////////////////////////////////////////////////////
 	pt.SetCharaterCode(26)
@@ -428,6 +434,10 @@ func (repo *printRepository) PosDriveThruSlipCopy(req PosSlipModel) () {
 	//pt.WriteStringLines(" พนักงาน : "+s.CreateBy+"\n")
 	makeline(pt)
 	///////////////////////////////////////////////////////////////////////////////////
+	pt.WriteStringLines(" รายการ " + "                        " + "มูลค่า" + "\n")
+	makeline(pt)
+	///////////////////////////////////////////////////////////////////////////////////
+
 	var CountItem int64
 	var CountQty float64
 	for _, subcount := range req.PosSubs {
@@ -449,8 +459,8 @@ func (repo *printRepository) PosDriveThruSlipCopy(req PosSlipModel) () {
 
 		vItemAmount = sub.Qty * (sub.Price - sub.DiscountAmount)
 
-		vItemPriceAmount = " " + strconv.FormatFloat(sub.Price, 'f', -1, 64) + " X " + strconv.Itoa(int(sub.Qty)) + " " + sub.UnitCode
-
+		//vItemPriceAmount = " " + strconv.FormatFloat(sub.Price, 'f', -1, 64) + " X " + strconv.Itoa(int(sub.Qty)) + " " + sub.UnitCode
+		vItemPriceAmount = " " + strconv.Itoa(int(sub.Qty)) + " " + sub.UnitCode + " X " + strconv.FormatFloat(sub.Price, 'f', -1, 64)
 		vLen := len(vItemPriceAmount)
 		vDiff := 25 - (vLen / 3)
 
@@ -474,7 +484,7 @@ func (repo *printRepository) PosDriveThruSlipCopy(req PosSlipModel) () {
 	pt.SetFont("A")
 	pt.WriteStringLines(" " + strconv.Itoa(int(CountItem)) + " รายการ " + strconv.Itoa(int(CountQty)) + " ชิ้น\n")
 	pt.WriteStringLines("TOTAL: ")
-	pt.WriteStringLines("                              ")
+	pt.WriteStringLines("                           ")
 	//pt.WriteStringLines(strconv.FormatFloat(s.TotalAmount, 'f', 2, 64)+"\n")
 	pt.WriteStringLines(CommaFloat(req.NetDebtAmount) + "\n")
 	////////////////////////////////////////////////////////////////////////////////////
@@ -482,16 +492,16 @@ func (repo *printRepository) PosDriveThruSlipCopy(req PosSlipModel) () {
 	//pt.WriteStringLines(" มูลค่าสินค้ามีภาษีมูลค่าเพิ่ม"+"                       "+Commaf(vBeforeTaxAmount)+"\n")
 	//pt.WriteStringLines(" ภาษีมูลค่าเพิ่ม"+strconv.Itoa(c.TaxRate)+"%"+"                                "+Commaf(vTaxAmount)+"\n")
 	if (req.CoupongAmount != 0) {
-		pt.WriteStringLines("COUPON: " + "                              " + CommaFloat(req.CoupongAmount) + "\n")
+		pt.WriteStringLines("COUPON: " + "                          " + CommaFloat(req.CoupongAmount) + "\n")
 	}
 	if (req.SumCashAmount != 0) {
-		pt.WriteStringLines("CASH: " + "                               " + CommaFloat(req.SumCashAmount) + "\n")
+		pt.WriteStringLines("CASH: " + "                            " + CommaFloat(req.SumCashAmount) + "\n")
 	}
 	if (req.SumCreditAmount != 0) {
-		pt.WriteStringLines("CREDIT: " + "                             " + CommaFloat(req.SumCreditAmount) + "\n")
+		pt.WriteStringLines("CREDIT: " + "                          " + CommaFloat(req.SumCreditAmount) + "\n")
 	}
 	if (req.ChangeAmount != 0) {
-		pt.WriteStringLines("CHANGE: " + "                               " + CommaFloat(req.ChangeAmount) + "\n")
+		pt.WriteStringLines("CHANGE: " + "                            " + CommaFloat(req.ChangeAmount) + "\n")
 	}
 
 	pt.SetFont("A")
