@@ -118,3 +118,11 @@ func (d *deliveryRepository) ReportDaily(req string) (interface{}, error) {
 
 	//return nil, fmt.Errorf("error make mannual")
 }
+func (d *deliveryRepository) GetTeam() (interface{}, error) {
+
+	return nil, nil
+}
+
+func (d *deliveryRepository) GetSale() (interface{}, error) {
+	return nil, nil
+}

@@ -1,4 +1,4 @@
-package mysqldb
+package sqldb
 
 import (
 	"github.com/mrtomyum/nopadol/incentive"
@@ -10,7 +10,7 @@ func NewIncentiveRepository() incentive.Repository {
 	return &incentiveRepository{}
 }
 
-type incentiveRepository struct {}
+//type incentiveRepository struct {}
 
 func (incentiveRepository) Register(ctx context.Context, entity *incentive.Entity1) (string, error) {
 	return "", nil

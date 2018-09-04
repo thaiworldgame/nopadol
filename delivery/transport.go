@@ -36,8 +36,8 @@ func MakeHandler(s Service) http.Handler {
 
 	mux := http.NewServeMux()
 	mux.Handle("/report", m.Handler(makeReportDoData(s)))
-	//mux.Handle("/report", m.Handler(makeReportDoData(s)))
-
+	mux.Handle("/sales", m.Handler(makeGetSalesData(s)))
+	mux.Handle("/team", m.Handler(makeGetTeamData(s)))
 	return mustLogin()(mux)
 
 }

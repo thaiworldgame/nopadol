@@ -7,7 +7,6 @@ import (
 	_ "github.com/denisenkom/go-mssqldb"
 	"fmt"
 	"github.com/mrtomyum/nopadol/mysqldb"
-	"github.com/mrtomyum/nopadol/sqldb"
 	"github.com/mrtomyum/nopadol/sale"
 	saleendpoint "github.com/mrtomyum/nopadol/sale/endpoint"
 	saleservice "github.com/mrtomyum/nopadol/sale/service"
@@ -26,6 +25,7 @@ import (
 	posconfigservice "github.com/mrtomyum/nopadol/posconfig"
 	"github.com/mrtomyum/nopadol/print"
 	"log"
+	"github.com/mrtomyum/nopadol/sqldb"
 )
 
 var mysql_dbc *sqlx.DB

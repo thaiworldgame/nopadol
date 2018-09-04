@@ -1,4 +1,4 @@
-package SQLserverdb
+package sqldb
 
 import (
 	"github.com/mrtomyum/nopadol/incentive"
@@ -38,7 +38,7 @@ func (icr *incentiveRepository) SearchSaleCode(ctx context.Context, kw *incentiv
 
 
 	fmt.Println("SaleCode =",ic.SaleCode)
-	return so,nil
+	return ic, nil
 }
 
 func setHeader(){
