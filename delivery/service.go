@@ -2,7 +2,7 @@ package delivery
 
 import "fmt"
 
-func NewService(repo Repository) (Service) {
+func NewService(repo Repository) Service {
 	s := service{repo}
 	return &s
 }
@@ -31,7 +31,7 @@ func (s *service) ReportDaily(req string) (interface{}, error) {
 
 func (s *service) GetTeam() (interface{}, error) {
 	fmt.Println("begin delivery service ReportDaily")
-	fmt.Println("service param is ->", )
+	fmt.Println("service param is ->")
 	//s.repo.ListUpdateByVending()
 	resp, err := s.repo.GetTeam()
 	if err != nil {
@@ -42,7 +42,7 @@ func (s *service) GetTeam() (interface{}, error) {
 
 func (s *service) GetSales() (interface{}, error) {
 	fmt.Println("begin delivery service ReportDaily")
-	fmt.Println("service param is ->", )
+	fmt.Println("service param is ->")
 	//s.repo.ListUpdateByVending()
 	resp, err := s.repo.GetSale()
 	if err != nil {
@@ -50,4 +50,3 @@ func (s *service) GetSales() (interface{}, error) {
 	}
 	return resp, nil
 }
-

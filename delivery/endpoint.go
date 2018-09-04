@@ -1,10 +1,9 @@
 package delivery
 
 import (
-	"fmt"
 	"context"
+	"fmt"
 	//"github.com/gin-gonic/gin"
-
 )
 
 type reportDORequest struct {
@@ -22,7 +21,7 @@ func makeReportDoData(s Service) interface{} {
 			return nil, err
 		}
 		return map[string]interface{}{
-			"data":resp,
+			"data": resp,
 		}, nil
 		//return resp, nil
 
@@ -40,7 +39,7 @@ func makeGetSalesData(s Service) interface{} {
 			return nil, err
 		}
 		return map[string]interface{}{
-			"data":resp,
+			"data": resp,
 		}, nil
 		//return resp, nil
 	}
@@ -58,10 +57,8 @@ func makeGetTeamData(s Service) interface{} {
 			return nil, err
 		}
 		return map[string]interface{}{
-			"data":resp,
+			"data": resp,
 		}, nil
 		//return resp, nil
 	}
 }
-
-

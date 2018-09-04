@@ -39,4 +39,3 @@ func NewHTTPTransport(ep Endpoint) http.Handler {
 	}))
 	return mux
 }
-
