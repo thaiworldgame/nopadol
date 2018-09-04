@@ -1,5 +1,8 @@
 package pos
 
+
+
+
 type NewPosResponseTemplate struct {
 	Id int64 `json:"id"`
 }

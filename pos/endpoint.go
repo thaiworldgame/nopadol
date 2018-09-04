@@ -220,6 +220,7 @@ func SearchById(s Service) interface{} {
 	}
 }
 
+
 func map_search_pos_response(x SearchPosByIdResponseTemplate) SearchPosByIdResponse {
 	return SearchPosByIdResponse{
 		Id:              x.Id,
