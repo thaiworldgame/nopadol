@@ -119,10 +119,54 @@ func (d *deliveryRepository) ReportDaily(req string) (interface{}, error) {
 	//return nil, fmt.Errorf("error make mannual")
 }
 func (d *deliveryRepository) GetTeam() (interface{}, error) {
+	lcCommand := "select distinct branch from sm_do.tb_do_queue where COALESCE(upper(branch),'') <> ''"
 
-	return nil, nil
+	fmt.Printf("start postgres.getTeam() \n Query : %s \n ", lcCommand)
+	rs, err := d.db.Query(lcCommand)
+
+	type teamModel struct {
+		ProfitCenter string `db:"branch" json:"profit_code"`
+	}
+	t := teamModel{}
+	Ts := []teamModel{}
+
+	if err != nil {
+		fmt.Println(err.Error())
+		return nil, err
+
+	}
+	for rs.Next() {
+		rs.Scan(&t.ProfitCenter)
+		Ts = append(Ts, t)
+	}
+	return Ts, nil
 }
 
-func (d *deliveryRepository) GetSale() (interface{}, error) {
-	return nil, nil
+func (d *deliveryRepository) GetSale(_profit string) (interface{}, error) {
+	fmt.Println("param _profit = ", _profit)
+	lcCommand := "select distinct salecode,salename from sm_do.saleteam " +
+		"where COALESCE(profitcenter,'') <> '' 	and activestatus=1 and salecode in " +
+		"(select distinct salecode from sm_do.tb_do_queue	where COALESCE(upper(branch),'') = '" + _profit + "'" +
+		"		and date_trunc('year',createdate)=date_trunc('year',now())  )order by salecode  "
+
+	fmt.Printf("start postgres.getSale() \n Query : %s \n ", lcCommand)
+	rs, err := d.db.Query(lcCommand)
+
+	type saleModel struct {
+		SaleCode string `db:"salecode" json:"sale_code"`
+		SaleName string `db:"salename" json:"sale_name"`
+	}
+	s := saleModel{}
+	Ss := []saleModel{}
+
+	if err != nil {
+		fmt.Println(err.Error())
+		return nil, err
+
+	}
+	for rs.Next() {
+		rs.Scan(&s.SaleCode, &s.SaleName)
+		Ss = append(Ss, s)
+	}
+	return Ss, nil
 }
