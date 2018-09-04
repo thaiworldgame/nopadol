@@ -123,7 +123,7 @@ func main() {
 	pgConn := fmt.Sprintf("dbname=%s user=%s password=%s host=%s port=%s sslmode=%s",
 		pgDbName, pgDbUser, pgDbPass, pgDbHost, pgDbPort, pgSSLMode)
 
-	fmt.Println(pgConn)
+	//fmt.Println(pgConn)
 
 	pgDb, err := sql.Open("postgres", pgConn)
 	must(err)

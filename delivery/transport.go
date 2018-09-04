@@ -34,10 +34,8 @@ func MakeHandler(s Service) http.Handler {
 		ErrorEncoder:    errorEncoder,
 	})
 
-
 	mux := http.NewServeMux()
 	mux.Handle("/report", m.Handler(makeReportDoData(s)))
-
 	//mux.Handle("/report", m.Handler(makeReportDoData(s)))
 
 	return mustLogin()(mux)
