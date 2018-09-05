@@ -1,9 +1,9 @@
 package sqldb
 
 import (
+	"fmt"
 	"github.com/jmoiron/sqlx"
 	"github.com/mrtomyum/nopadol/product"
-	"fmt"
 )
 
 type ProductModel struct {
@@ -48,7 +48,6 @@ func (pd *productRepository) SearchByBarcode(req *product.SearchByBarcodeTemplat
 	//return pdt_resp, nil
 }
 
-
 func (pd *productRepository) SearchByKeyword(req *product.SearchByKeywordTemplate) (resp interface{}, err error) {
 	products := []ProductModel{}
 
@@ -60,12 +59,11 @@ func (pd *productRepository) SearchByKeyword(req *product.SearchByKeywordTemplat
 	}
 
 	product := []product.ProductTemplate{}
-	for _, p := range products{
+	for _, p := range products {
 		pdtline := map_product_template(p)
 		product = append(product, pdtline)
 
 	}
-
 
 	return product, nil
 }
