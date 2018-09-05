@@ -13,6 +13,7 @@ type service struct {
 
 type Service interface {
 	ReportDaily(req string) (interface{}, error)
+	ReportDailyByTeam(req *ReportDORequestByTeam) (interface{}, error)
 	GetTeam() (interface{}, error)
 	GetSales(req string) (interface{}, error)
 }
@@ -29,6 +30,16 @@ func (s *service) ReportDaily(req string) (interface{}, error) {
 	return resp, nil
 }
 
+func (s *service) ReportDailyByTeam(req *ReportDORequestByTeam) (interface{}, error) {
+	fmt.Println("begin delivery service ReportDaily")
+	fmt.Println("service param is ->", req)
+	//s.repo.ListUpdateByVending()
+	resp, err := s.repo.ReportDailyByTeam(req)
+	if err != nil {
+		return nil, err
+	}
+	return resp, nil
+}
 func (s *service) GetTeam() (interface{}, error) {
 	fmt.Println("begin delivery service ReportDaily")
 	fmt.Println("service param is ->")
