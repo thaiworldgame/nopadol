@@ -1,20 +1,26 @@
 package sale
 
-import (
-	"context"
-)
+func New(repo Repository) (Service) {
+	return &service{repo}
+}
+
+type service struct {
+	repo Repository
+}
 
 // Service is Sale service interface
 type Service interface {
 	// Create creates new Entity1
-	Create(ctx context.Context, entity *Entity1) (entityID string, err error)
+	Create(req *NewQTTemplate) (interface{}, error)
 
-	//Create creates new SaleOrder
-	NewSaleOrder(ctx context.Context, so *SaleOrderTemplate) (Id int64, err error)
+}
 
-	// Search searchs Entity1
-	Search(ctx context.Context, keyword *EntitySearch) (so SaleOrderTemplate, err error)
 
-	//Pos///////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	//NewPos(ctx context.Context, pos *NewPosRequestTemplate) (Id NewResponseTemplate, err error)
+func (s *service) Create(req *NewQTTemplate)(interface{},error){
+	resp, err := s.repo.Create(req)
+	if err != nil {
+		return nil, err
+	}
+
+	return resp, nil
 }

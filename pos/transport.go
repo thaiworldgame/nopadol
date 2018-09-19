@@ -7,10 +7,6 @@ import (
 	"encoding/json"
 )
 
-//type httpError struct {
-//	Message string `json:"message"`
-//}
-
 type errorResponse struct {
 	Error string `json:"error"`
 }
@@ -32,9 +28,7 @@ func MakeHandler(s Service) http.Handler {
 	mux := http.NewServeMux()
 	mux.Handle("/new", m.Handler(Create(s)))
 	mux.Handle("/search/id", m.Handler(SearchById(s)))
-	//mux.Handle("/search/keyword", m.Handler(SearchByKeyword(s)))
 	return mustLogin()(mux)
-
 }
 
 func mustLogin() func(http.Handler) http.Handler {
@@ -42,7 +36,6 @@ func mustLogin() func(http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			enableCors(&w)
 			h.ServeHTTP(w, r)
-
 		})
 	}
 }

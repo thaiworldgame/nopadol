@@ -1,63 +1,86 @@
 package mysqldb
 
+import (
+	"github.com/jmoiron/sqlx"
+	"github.com/mrtomyum/nopadol/sale"
+)
+
 //Pos///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-type OutPutTax struct {
-	TaxNo    string `json:"tax_no"`
-	TaxDate  string `json:"tax_date"`
-	BookCode string `json:"book_code"`
+
+type NewQTModel struct {
+	Id                  int64               `json:"id"`
+	DocNo               string              `json:"doc_no"`
+	DocDate             string              `json:"doc_date"`
+	ArId                int64               `json:"ar_id"`
+	ArCode              string              `json:"ar_code"`
+	ArName              string              `json:"ar_name"`
+	SaleId              int                 `json:"sale_id"`
+	SaleCode            string              `json:"sale_code"`
+	SaleName            string              `json:"sale_name"`
+	BillType            int64               `json:"bill_type"`
+	TaxType             int64               `json:"tax_type"`
+	TaxRate             int64               `json:"tax_rate"`
+	DepartCode          string              `json:"depart_code"`
+	RefNo               string              `json:"ref_no"`
+	IsConfirm           int64               `json:"is_confirm"`
+	BillStatus          int64               `json:"bill_status"`
+	DueDate             string              `json:"due_date"`
+	ExpireDate          string              `json:"expire_date"`
+	DeliveryDate        string              `json:"delivery_date"`
+	AssertStatus        int64               `json:"assert_status"`
+	IsConditionSend     int64               `json:"is_condition_send"`
+	MyDescription       string              `json:"my_description"`
+	SumItemAmount       float64             `json:"sum_item_amount"`
+	DiscountWord        string              `json:"discount_word"`
+	DiscountAmount      float64             `json:"discount_amount"`
+	AfterDiscountAmount float64             `json:"after_discount"`
+	BeforeTaxAmount     float64             `json:"before_tax_amount"`
+	TaxAmount           float64             `json:"tax_amount"`
+	TotalAmount         float64             `json:"total_amount"`
+	NetAmount           float64             `json:"net_debt_amount"`
+	ProjectId           int64               `json:"project_id"`
+	ProjectCode         string              `json:"project_code"`
+	IsCancel            int64               `json:"is_cancel"`
+	CreateBy            string              `json:"creator_by"`
+	CreateTime          string              `json:"create_time"`
+	EditBy              string              `json:"edit_by"`
+	EditTime            string              `json:"edit_time"`
+	CancelBy            string              `json:"cancel_by"`
+	CancelTime          string              `json:"cancel_time"`
+	Subs                []NewQTItemModel `json:"subs"`
 }
 
-type Customer struct {
-	ArCode string `json:"ar_code"`
+type NewQTItemModel struct {
+	Id              int64   `json:"id"`
+	QTId            int64   `json:"qt_id"`
+	ArId            int64   `json:"ar_id"`
+	SaleId          int64   `json:"sale_id"`
+	ItemId          int64   `json:"item_id"`
+	ItemCode        string  `json:"item_code"`
+	BarCode         string  `json:"bar_code"`
+	ItemName        string  `json:"item_name"`
+	Qty             float64 `json:"qty"`
+	RemainQty       float64 `json:"remain_qty"`
+	Price           float64 `json:"price"`
+	DiscountWord    string  `json:"discount_word"`
+	DiscountAmount  float64 `json:"discount_amount"`
+	UnitCode        string  `json:"unit_code"`
+	ItemAmount      float64 `json:"item_amount"`
+	ItemDescription string  `json:"item_description"`
+	PackingRate1    float64 `json:"packing_rate_1"`
+	LineNumber      int     `json:"line_number"`
 }
 
-type SaleMan struct {
-	SaleCode string `json:"sale_code"`
+type saleRepository struct{ db *sqlx.DB }
+
+func NewSaleRepository(db *sqlx.DB) sale.Repository{
+	return &saleRepository{db}
 }
 
-type NewPosModel struct {
-	SaveFrom        int               `json:"save_from"`
-	Source          int               `json:"source"`
-	DocNo           string            `json:"doc_no"`
-	DocDate         string            `json:"doc_date"`
-	OutPutTax
-	Customer
-	SaleMan
-	ShiftCode       string            `json:"shiftcode"`
-	CashierCode     string            `json:"cashier_code"`
-	ShiftNo         string            `json:"shift_no"`
-	MachineNo       string            `json:"machine_no"`
-	MachineCode     string            `json:"machine_code"`
-	CoupongAmount   float64           `json:"coupong_amount"`
-	ChangeAmount    float64           `json:"change_amount"`
-	ChargeAmount    float64           `json:"charge_amount"`
-	TaxType         int               `json:"tax_type"`
-	MyDescription   string            `json:"my_description"`
-	SumOfItemAmount float64           `json:"sum_of_item_amount"`
-	DiscountWord    string            `json:"discount_word"`
-	AfterDiscount   float64           `json:"after_discount"`
-	TotalAmount     float64           `json:"total_amount"`
-	SumCashAmount   float64           `json:"sum_cash_amount"`
-	SumChqAmount    float64           `json:"sum_chq_amount"`
-	SumCreditAmount float64           `json:"sum_credit_amount"`
-	SumBankAmount   float64           `json:"sum_bank_amount"`
-	NetDebtAmount   float64           `json:"net_debt_amount"`
-	UserCode        string            `json:"user_code"`
-	PosSubs         []NewPosItemModel `json:"pos_subs"`
-}
-
-type NewPosItemModel struct {
-	ItemCode     string  `json:"item_code"`
-	ItemName     string  `json:"item_name"`
-	WHCode       string  `json:"wh_code"`
-	ShelfCode    string  `json:"shelf_code"`
-	Qty          float64 `json:"qty"`
-	Price        float64 `json:"price"`
-	DiscountWord string  `json:"discount_word"`
-	UnitCode     string  `json:"unit_code"`
-	LineNumber   int     `json:"line_number"`
-	BarCode      string  `json:"bar_code"`
-	AverageCost  float64 `json:"averagecost"`
-	PackingRate1 float64 `json:"packing_rate_1"`
+func (repo *saleRepository) Create(req *sale.NewQTTemplate) (resp interface{}, err error) {
+	return map[string]interface{}{
+		"company_name":     req.DocNo,
+		"company_address": req.Id,
+	}, nil
 }
