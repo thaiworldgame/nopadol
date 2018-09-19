@@ -18,16 +18,18 @@ func enableCors(w *http.ResponseWriter) {
 	(*w).Header().Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
 }
 
-func MakeHandler(s Service) http.Handler{
+func MakeHandler(s Service) http.Handler {
 	m := hrpc.New(hrpc.Config{
-		Validate:true,
-		RequestDecoder:requestDecoder,
-		ResponseEncoder:responseEncoder,
-		ErrorEncoder: errorEncoder,
+		Validate:        true,
+		RequestDecoder:  requestDecoder,
+		ResponseEncoder: responseEncoder,
+		ErrorEncoder:    errorEncoder,
 	})
 	mux := http.NewServeMux()
-	mux.Handle("/new", m.Handler(Create(s)))
+	mux.Handle("/new",m.Handler(Create(s)))
+	mux.Handle("/search/id", m.Handler(SearchById(s)))
 	return mustLogin()(mux)
+
 }
 
 func mustLogin() func(http.Handler) http.Handler {
@@ -35,6 +37,7 @@ func mustLogin() func(http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			enableCors(&w)
 			h.ServeHTTP(w, r)
+
 		})
 	}
 }

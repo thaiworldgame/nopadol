@@ -1,5 +1,6 @@
 package sales
 
 type Repository interface {
-	Create(req *NewQuoTemplate) (interface{}, error)
+	Create(req *PosConfigTemplate1) (interface{}, error)
+	SearchById () (interface{}, error)
 }
