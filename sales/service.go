@@ -9,12 +9,14 @@ type service struct {
 }
 
 type Service interface {
-	Create(req *PosConfigTemplate1) (interface{}, error)
-	SearchById() (interface{}, error)
+	CreateQuo(req *NewQuoTemplate) (interface{}, error)
+	SearchQuoById() (interface{}, error)
+	CreateSale(req *NewSaleTemplate) (interface{}, error)
+	SearchSaleById() (interface{}, error)
 }
 
-func (s *service)Create(req *PosConfigTemplate1) (interface{}, error){
-	resp, err := s.repo.Create(req)
+func (s *service)CreateQuo(req *NewQuoTemplate) (interface{}, error){
+	resp, err := s.repo.CreateQuo(req)
 	if err != nil {
 		return nil, err
 	}
@@ -22,9 +24,25 @@ func (s *service)Create(req *PosConfigTemplate1) (interface{}, error){
 	return resp, nil
 }
 
+func (s *service)SearchQueById()(interface{}, error){
+	resp, err := s.repo.SearchQuoById()
+	if err != nil {
+		return nil, err
+	}
+	return resp, nil
+}
 
-func (s *service)SearchById()(interface{}, error){
-	resp, err := s.repo.SearchById()
+func (s *service) CreateSale(req *NewSaleTemplate) (interface{}, error){
+	resp, err := s.repo.CreateSale(req)
+	if err != nil {
+		return nil, err
+	}
+
+	return resp, nil
+}
+
+func (s *service)SearchSaleById()(interface{}, error){
+	resp, err := s.repo.SearchSaleById()
 	if err != nil {
 		return nil, err
 	}

@@ -1,4 +1,4 @@
-package sale
+package gendocno
 
 import "errors"
 
@@ -18,5 +18,3 @@ var (
 	PosNotHaveChqData = errors.New("Docno not have chq data")
 	PosNotHaveCreditCardData = errors.New("Docno not have credit card data")
 )
-
-

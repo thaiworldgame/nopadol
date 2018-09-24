@@ -22,6 +22,7 @@ import (
 	posconfigservice "github.com/mrtomyum/nopadol/posconfig"
 	printservice "github.com/mrtomyum/nopadol/print"
 	salesservice "github.com/mrtomyum/nopadol/sales"
+	gendocnoservice "github.com/mrtomyum/nopadol/gendocno"
 )
 
 var mysql_np *sqlx.DB
@@ -53,6 +54,7 @@ func ConnectMySqlDB(dbName string) (db *sqlx.DB, err error) {
 func ConnectMysqlNP(dbName string) (db *sqlx.DB, err error) {
 	fmt.Println("Connect MySql")
 	dsn := "root:[ibdkifu88@tcp(nopadol.net:3306)/" + dbName + "?parseTime=true&charset=utf8&loc=Local"
+	fmt.Println(dsn,"DBName =", dbName)
 	db, err = sqlx.Connect("mysql", dsn)
 	if err != nil {
 		fmt.Println("sql error =", err)
@@ -175,16 +177,19 @@ func main() {
 	salesRepo := mysqldb.NewSalesRepository(mysql_np)
 	salesService := salesservice.New(salesRepo)
 
+	gendocnoRepo := mysqldb.NewGenDocNoRepository(mysql_np)
+	gendocnoService := gendocnoservice.New(gendocnoRepo)
+
 	mux := http.NewServeMux()
 	mux.Handle("/delivery/", http.StripPrefix("/delivery", delivery.MakeHandler(doService)))
-//	mux.Handle("/sale/", http.StripPrefix("/sale1/v1", saleservice.MakeHandler(saleService)))
 	mux.Handle("/customer/", http.StripPrefix("/customer/v1", customerservice.MakeHandler(customerService)))
 	mux.Handle("/employee/", http.StripPrefix("/employee/v1", employeeservice.MakeHandler(employeeService)))
 	mux.Handle("/product/", http.StripPrefix("/product/v1", productservice.MakeHandler(productService)))
 	mux.Handle("/posconfig/", http.StripPrefix("/posconfig/v1", posconfigservice.MakeHandler(posconfigService)))
 	mux.Handle("/pos/", http.StripPrefix("/pos/v1", posservice.MakeHandler(posService)))
 	mux.Handle("/print/", http.StripPrefix("/print/v1", printservice.MakeHandler(printService)))
-	mux.Handle("/sales/",http.StripPrefix("/sales/v1",salesservice.MakeHandler(salesService)))
+	mux.Handle("/sales/", http.StripPrefix("/sales/v1", salesservice.MakeHandler(salesService)))
+	mux.Handle("/gendocno/", http.StripPrefix("/gendocno/v1", gendocnoservice.MakeHandler(gendocnoService)))
 	http.ListenAndServe(":8081", mux)
 }
 
