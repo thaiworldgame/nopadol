@@ -2,7 +2,7 @@ package sales
 
 type Repository interface {
 	CreateQuo(req *NewQuoTemplate) (interface{}, error)
-	SearchQuoById () (interface{}, error)
+	SearchQuoById (req *SearchByIdTemplate) (interface{}, error)
 	CreateSale(req *NewSaleTemplate) (interface{}, error)
-	SearchSaleById () (interface{}, error)
+	SearchSaleById (req *SearchByIdTemplate) (interface{}, error)
 }

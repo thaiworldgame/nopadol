@@ -60,6 +60,7 @@ type NewQuoItemTemplate struct {
 	ItemDescription string  `json:"item_description"`
 	PackingRate1    float64 `json:"packing_rate_1"`
 	LineNumber      int     `json:"line_number"`
+	IsCancel        int64   `json:"is_cancel"`
 }
 
 type NewSaleTemplate struct {
@@ -79,6 +80,9 @@ type NewSaleTemplate struct {
 	RefNo               string               `json:"ref_no"`
 	IsConfirm           int64                `json:"is_confirm"`
 	BillStatus          int64                `json:"bill_status"`
+	SoStatus            int64                `json:"so_status"`
+	HoldingStatus       int64                `json:"holding_status"`
+	CreditDay           int64                `json:"credit_day"`
 	DueDate             string               `json:"due_date"`
 	ExpireDate          string               `json:"expire_date"`
 	DeliveryDate        string               `json:"delivery_date"`
@@ -94,12 +98,15 @@ type NewSaleTemplate struct {
 	TotalAmount         float64              `json:"total_amount"`
 	NetDebtAmount       float64              `json:"net_debt_amount"`
 	ProjectId           int64                `json:"project_id"`
-	ProjectCode         string               `json:"project_code"`
+	AllocateId          int64                `json:"allocate_id"`
+	JobId               string               `json:"job_id"`
 	IsCancel            int64                `json:"is_cancel"`
-	CreateBy            string               `json:"creator_by"`
+	CreateBy            string               `json:"create_by"`
 	CreateTime          string               `json:"create_time"`
 	EditBy              string               `json:"edit_by"`
 	EditTime            string               `json:"edit_time"`
+	ConfirmBy           string               `json:"confirm_by"`
+	ConfirmTime         string               `json:"confirm_time"`
 	CancelBy            string               `json:"cancel_by"`
 	CancelTime          string               `json:"cancel_time"`
 	Subs                []NewSaleItemTemplate `json:"subs"`
@@ -107,7 +114,7 @@ type NewSaleTemplate struct {
 
 type NewSaleItemTemplate struct {
 	Id              int64   `json:"id"`
-	QuoId           int64   `json:"quo_id"`
+	SOId            int64   `json:"so_id"`
 	ItemId          int64   `json:"item_id"`
 	ItemCode        string  `json:"item_code"`
 	BarCode         string  `json:"bar_code"`
@@ -123,5 +130,16 @@ type NewSaleItemTemplate struct {
 	ItemAmount      float64 `json:"item_amount"`
 	ItemDescription string  `json:"item_description"`
 	PackingRate1    float64 `json:"packing_rate_1"`
+	RefNo           string  `json:"ref_no"`
+	QuoId           int64   `json:"quo_id"`
 	LineNumber      int     `json:"line_number"`
+	RefLineNumber   int64   `json:"ref_line_number"`
+	IsCancel        int64   `json:"is_cancel"`
+}
+type SearchByIdTemplate struct {
+	Id int64 `json:"id"`
+}
+
+type SearchByKeywordTemplate struct {
+	Keyword string `json:"keyword"`
 }

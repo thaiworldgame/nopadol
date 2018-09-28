@@ -1,5 +1,11 @@
 package sales
 
+import (
+	"fmt"
+	"strconv"
+	"errors"
+)
+
 func New(repo Repository) (Service) {
 	return &service{repo}
 }
@@ -10,12 +16,54 @@ type service struct {
 
 type Service interface {
 	CreateQuo(req *NewQuoTemplate) (interface{}, error)
-	SearchQuoById() (interface{}, error)
+	SearchQueById(req *SearchByIdTemplate) (interface{}, error)
 	CreateSale(req *NewSaleTemplate) (interface{}, error)
-	SearchSaleById() (interface{}, error)
+	SearchSaleById(req *SearchByIdTemplate) (interface{}, error)
 }
 
-func (s *service)CreateQuo(req *NewQuoTemplate) (interface{}, error){
+func (s *service) CreateQuo(req *NewQuoTemplate) (interface{}, error) {
+	var count_item int
+	var count_item_qty int
+	var count_item_unit int
+	var sum_item_amount float64
+
+
+	fmt.Println("Service")
+	for _, sub_item := range req.Subs {
+		if (sub_item.Qty != 0) {
+			count_item = count_item + 1
+
+			item_discount_amount_sub, err := strconv.ParseFloat(sub_item.DiscountWord, 64)
+			if err != nil {
+				fmt.Println(err)
+			}
+			sum_item_amount = sum_item_amount + (sub_item.Qty * (sub_item.Price - item_discount_amount_sub))
+		}
+		if (sub_item.ItemCode != "" && sub_item.Qty == 0) {
+			count_item_qty = count_item_qty + 1
+		}
+		if (sub_item.ItemCode != "" && sub_item.UnitCode == "") {
+			count_item_unit = count_item_unit + 1
+		}
+	}
+
+	switch {
+	case req.ArCode == "":
+		return nil, errors.New("Arcode is null")
+	case count_item == 0:
+		return nil, errors.New("Docno is not have item")
+	case req.SumOfItemAmount == 0:
+		return nil, errors.New("SumOfItemAmount = 0")
+	case count_item_qty > 0:
+		return nil, errors.New("Item not have qty")
+	case count_item_unit > 0:
+		return nil, errors.New("Item not have unitcode")
+	case req.SaleCode == "":
+		return nil,errors.New("Quotation not have salecode")
+	case sum_item_amount != req.SumOfItemAmount:
+		return nil,errors.New("ItemAmountSub not equa SumOfItemAmount")
+	}
+
 	resp, err := s.repo.CreateQuo(req)
 	if err != nil {
 		return nil, err
@@ -24,15 +72,57 @@ func (s *service)CreateQuo(req *NewQuoTemplate) (interface{}, error){
 	return resp, nil
 }
 
-func (s *service)SearchQueById()(interface{}, error){
-	resp, err := s.repo.SearchQuoById()
+func (s *service) SearchQueById(req *SearchByIdTemplate) (interface{}, error) {
+	resp, err := s.repo.SearchQuoById(req)
 	if err != nil {
 		return nil, err
 	}
 	return resp, nil
 }
 
-func (s *service) CreateSale(req *NewSaleTemplate) (interface{}, error){
+func (s *service) CreateSale(req *NewSaleTemplate) (interface{}, error) {
+	var count_item int
+	var count_item_qty int
+	var count_item_unit int
+	var sum_item_amount float64
+
+
+	fmt.Println("Service")
+	for _, sub_item := range req.Subs {
+		if (sub_item.Qty != 0) {
+			count_item = count_item + 1
+
+			item_discount_amount_sub, err := strconv.ParseFloat(sub_item.DiscountWord, 64)
+			if err != nil {
+				fmt.Println(err)
+			}
+			sum_item_amount = sum_item_amount + (sub_item.Qty * (sub_item.Price - item_discount_amount_sub))
+		}
+		if (sub_item.ItemCode != "" && sub_item.Qty == 0) {
+			count_item_qty = count_item_qty + 1
+		}
+		if (sub_item.ItemCode != "" && sub_item.UnitCode == "") {
+			count_item_unit = count_item_unit + 1
+		}
+	}
+
+	switch {
+	case req.ArCode == "":
+		return nil, errors.New("Arcode is null")
+	case count_item == 0:
+		return nil, errors.New("Docno is not have item")
+	case req.SumOfItemAmount == 0:
+		return nil, errors.New("SumOfItemAmount = 0")
+	case count_item_qty > 0:
+		return nil, errors.New("Item not have qty")
+	case count_item_unit > 0:
+		return nil, errors.New("Item not have unitcode")
+	case req.SaleCode == "":
+		return nil,errors.New("Quotation not have salecode")
+	case sum_item_amount != req.SumOfItemAmount:
+		return nil,errors.New("ItemAmountSub not equa SumOfItemAmount")
+	}
+
 	resp, err := s.repo.CreateSale(req)
 	if err != nil {
 		return nil, err
@@ -41,8 +131,8 @@ func (s *service) CreateSale(req *NewSaleTemplate) (interface{}, error){
 	return resp, nil
 }
 
-func (s *service)SearchSaleById()(interface{}, error){
-	resp, err := s.repo.SearchSaleById()
+func (s *service) SearchSaleById(req *SearchByIdTemplate) (interface{}, error) {
+	resp, err := s.repo.SearchSaleById(req)
 	if err != nil {
 		return nil, err
 	}

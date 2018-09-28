@@ -144,17 +144,17 @@ func main() {
 	doService := delivery.NewService(doRepo)
 
 	// init customer
-	customerRepo := sqldb.NewCustomerRepository(nebula_dbc)
+	customerRepo := mysqldb.NewCustomerRepository(mysql_np)
 	customerService := customerservice.New(customerRepo)
 	//customerEndpoint := customerenpoint.New(customerService)
 
 	// init employee
-	employeeRepo := sqldb.NewEmployeeRepository(nebula_dbc)
+	employeeRepo := mysqldb.NewEmployeeRepository(mysql_np)
 	employeeService := employeeservice.New(employeeRepo)
 	//employeeEndpoint := employeeendpoint.New(employeeService)
 
 	//init product
-	productRepo := sqldb.NewProductRepository(nebula_dbc)
+	productRepo := mysqldb.NewProductRepository(mysql_np)
 	productService := productservice.New(productRepo)
 	//productEndpoint := productendpoint.New(productService)
 

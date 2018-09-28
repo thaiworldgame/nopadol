@@ -31,6 +31,7 @@ type NewQuoModel struct {
 	RefNo               string            `db:"RefNo"`
 	IsConfirm           int64             `db:"IsConfirm"`
 	BillStatus          int64             `db:"BillStatus"`
+	CreditDay           int64             `db:"CreditDay"`
 	DueDate             string            `db:"DueDate"`
 	ExpireDate          string            `db:"ExpireDate"`
 	DeliveryDate        string            `db:"DeliveryDate"`
@@ -59,8 +60,6 @@ type NewQuoModel struct {
 type NewQuoItemModel struct {
 	Id              int64   `db:"Id"`
 	QuoId           int64   `db:"QuoId"`
-	ArId            int64   `db:"ArId"`
-	SaleId          int64   `db:"SaleId"`
 	ItemId          int64   `db:"ItemId"`
 	ItemCode        string  `db:"ItemCode"`
 	BarCode         string  `db:"BarCode"`
@@ -74,6 +73,7 @@ type NewQuoItemModel struct {
 	ItemAmount      float64 `db:"ItemAmount"`
 	ItemDescription string  `db:"ItemDescription"`
 	PackingRate1    float64 `db:"PackingRate1"`
+	IsCancel        int64   `db:"IsCancel"`
 	LineNumber      int     `db:"LineNumber"`
 }
 
@@ -94,6 +94,9 @@ type NewSaleModel struct {
 	RefNo               string             `db:"RefNo"`
 	IsConfirm           int64              `db:"IsConfirm"`
 	BillStatus          int64              `db:"BillStatus"`
+	SoStatus            int64              `db:"SoStatus"`
+	HoldingStatus       int64              `db:"HoldingStatus"`
+	CreditDay           int64              `db:"CreditDay"`
 	DueDate             string             `db:"DueDate"`
 	ExpireDate          string             `db:"ExpireDate"`
 	DeliveryDate        string             `db:"DeliveryDate"`
@@ -109,11 +112,15 @@ type NewSaleModel struct {
 	TotalAmount         float64            `db:"TotalAmount"`
 	NetDebtAmount       float64            `db:"NetDebtAmount"`
 	ProjectId           int64              `db:"ProjectId"`
+	AllocateId          int64              `db:"AllocateId"`
+	JobId               string             `db:"JobId"`
 	IsCancel            int64              `db:"IsCancel"`
 	CreateBy            string             `db:"CreateBy"`
 	CreateTime          string             `db:"CreateTime"`
 	EditBy              string             `db:"EditBy"`
 	EditTime            string             `db:"EditTime"`
+	ConfirmBy           string             `db:"ConfirmBy"`
+	ConfirmTime         string             `db:"ConfirmTime"`
 	CancelBy            string             `db:"CancelBy"`
 	CancelTime          string             `db:"CancelTime"`
 	Subs                []NewSaleItemModel `db:"subs"`
@@ -121,9 +128,7 @@ type NewSaleModel struct {
 
 type NewSaleItemModel struct {
 	Id              int64   `db:"Id"`
-	QuoId           int64   `db:"QuoId"`
-	ArId            int64   `db:"ArId"`
-	SaleId          int64   `db:"SaleId"`
+	SOId            int64   `db:"SOId"`
 	ItemId          int64   `db:"ItemId"`
 	ItemCode        string  `db:"ItemCode"`
 	BarCode         string  `db:"BarCode"`
@@ -139,7 +144,11 @@ type NewSaleItemModel struct {
 	ItemAmount      float64 `db:"ItemAmount"`
 	ItemDescription string  `db:"ItemDescription"`
 	PackingRate1    float64 `db:"PackingRate1"`
+	RefNo           string  `db:"RefNo"`
+	QuoId           int64   `db:"QuoId"`
 	LineNumber      int     `db:"LineNumber"`
+	RefLineNUmber   int     `db:"RefLineNUmber"`
+	IsCancel        int64   `db:"IsCancel"`
 }
 
 type salesRepository struct{ db *sqlx.DB }
@@ -154,22 +163,6 @@ func (repo *salesRepository) CreateQuo(req *sales.NewQuoTemplate) (resp interfac
 	var count_item_qty int
 	var count_item_unit int
 	var sum_item_amount float64
-	//var tax_rate float64
-	//var pos_tax_type int
-	//
-	//var is_complete_save int
-	//var deposit_inc_tax int
-	//var home_amount float64
-	//var bill_balance float64
-	//var pos_status int
-	//
-	//var line_number int
-	//var item_amount float64
-	//var my_type int
-	//var cn_qty float64
-	//var packing_rate_2 float64
-	//var item_home_amount float64
-	//var item_net_amount float64
 	var new_doc_no string
 
 	def := config.Default{}
@@ -186,14 +179,10 @@ func (repo *salesRepository) CreateQuo(req *sales.NewQuoTemplate) (resp interfac
 
 	req.DocDate = DocDate
 	req.CreateTime = now.String()
+	req.EditTime = now.String()
+	req.CancelTime = now.String()
 
 	fmt.Println("DocDate =", req.DocDate)
-
-	pos_machine_no := def.PosMachineNo
-	fmt.Println("pos_machine_no", pos_machine_no)
-
-	//tax_rate = def.TaxRateDefault
-	//pos_tax_type = def.PosTaxType
 
 	for _, sub_item := range req.Subs {
 		if (sub_item.Qty != 0) {
@@ -324,13 +313,14 @@ func (repo *salesRepository) CreateQuo(req *sales.NewQuoTemplate) (resp interfac
 		for _, sub := range req.Subs {
 			fmt.Println("ArId Sub = ", req.ArId)
 			fmt.Println("SaleId Sub = ", req.SaleId)
-			sqlsub := `INSERT INTO QuotationSub(QuoId,ArId,SaleId,ItemId,ItemCode,ItemName,Qty,RemainQty,Price,DiscountWord,DiscountAmount,UnitCode,ItemAmount,ItemDescription,PackingRate1,LineNumber) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`
+			sqlsub := `INSERT INTO QuotationSub(QuoId,ArId,SaleId,ItemId,ItemCode,BarCode,ItemName,Qty,RemainQty,Price,DiscountWord,DiscountAmount,UnitCode,ItemAmount,ItemDescription,PackingRate1,LineNumber,IsCancel) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`
 			_, err := repo.db.Exec(sqlsub,
 				req.Id,
 				req.ArId,
 				req.SaleId,
 				sub.ItemId,
 				sub.ItemCode,
+				sub.BarCode,
 				sub.ItemName,
 				sub.Qty,
 				sub.Qty,
@@ -341,7 +331,8 @@ func (repo *salesRepository) CreateQuo(req *sales.NewQuoTemplate) (resp interfac
 				sub.ItemAmount,
 				sub.ItemDescription,
 				sub.PackingRate1,
-				sub.LineNumber)
+				sub.LineNumber,
+				sub.IsCancel)
 
 			fmt.Println("QuotationSub =", sql, sub.QuoId)
 			if err != nil {
@@ -349,80 +340,56 @@ func (repo *salesRepository) CreateQuo(req *sales.NewQuoTemplate) (resp interfac
 			}
 		}
 
-	} //else {
-	//	switch {
-	//	case req.DocNo == "":
-	//		fmt.Println("error =", "Docno is null")
-	//		return nil, errors.New("Docno is null")
-	//	}
-	//
-	//	sql := `set dateformat dmy     update dbo.bcarinvoice set DocDate=?,ArCode=?,TaxType=?,CashierCode=?,ShiftNo=?,MachineNo=?,MachineCode=?,GrandTotal=?,CoupongAmount=?,ChangeAmount=?,SaleCode=?,TaxRate=?,SumOfItemAmount=?,DiscountWord=?,DiscountAmount=?,AfterDiscount=?,BeforeTaxAmount=?,TaxAmount=?,TotalAmount=?,SumCashAmount=?,SumChqAmount=?,SumCreditAmount=?,SumBankAmount=?,NetDebtAmount=?,HomeAmount=?,BillBalance=?,LastEditorCode=?,LastEditDateT=getdate() where DocNo=?`
-	//	fmt.Println("sql update = ", sql)
-	//	id, err := repo.db.Exec(sql, req.DocDate, req.ArCode, pos_tax_type, req.CashierCode, req.ShiftNo, req.MachineNo, req.MachineCode, total_amount, req.CoupongAmount, req.ChangeAmount, req.SaleCode, tax_rate, req.SumOfItemAmount, req.DiscountWord, discount_amount, req.AfterDiscount, before_tax_amount, tax_amount, req.TotalAmount, req.SumCashAmount, req.SumChqAmount, req.SumCreditAmount, req.SumBankAmount, req.NetDebtAmount, home_amount, bill_balance, req.UserCode, req.DocNo)
-	//	if err != nil {
-	//		fmt.Println("Error = ", err.Error())
-	//		return nil, err
-	//	}
-	//
-	//	lastId, err = id.LastInsertId()
-	//}
-	//
-	//sql_del_sub := `delete dbo.bcarinvoicesub where docno = ?`
-	//_, err = repo.db.Exec(sql_del_sub, req.DocNo)
-	//if err != nil {
-	//	fmt.Println("Error = ", err.Error())
-	//	return nil, err
-	//}
-	//
-	//for _, item := range req.PosSubs {
-	//	fmt.Println("ItemSub")
-	//	item_discount_amount, err := strconv.ParseFloat(item.DiscountWord, 64)
-	//
-	//	item_amount = item.Qty * (item.Price - item_discount_amount)
-	//
-	//	my_type = def.PosMyType
-	//	cn_qty = item.Qty
-	//	item.LineNumber = line_number
-	//
-	//	if (item.PackingRate1 == 0) {
-	//		item.PackingRate1 = 1
-	//	}
-	//	packing_rate_2 = 1
-	//
-	//	switch {
-	//	case pos_tax_type == 0:
-	//		item_home_amount = item_amount
-	//		item_net_amount = item_amount
-	//	case pos_tax_type == 1:
-	//		taxamount := toFixed(item_amount-((item_amount*100)/(100+float64(tax_rate))), 2)
-	//		beforetaxamount := toFixed(item_amount-taxamount, 2)
-	//		item_home_amount = beforetaxamount
-	//		item_net_amount = beforetaxamount
-	//	case pos_tax_type == 2:
-	//		item_home_amount = item_amount
-	//		item_net_amount = item_amount
-	//	}
-	//
-	//	sum_of_cost = item.AverageCost * item.Qty
-	//
-	//	sqlsub := `set dateformat dmy      insert into dbo.BCArInvoiceSub(MyType,DocNo, TaxType, ItemCode, DocDate, ArCode, DepartCode, SaleCode, MyDescription, ItemName, WHCode, ShelfCode, CNQty, Qty, Price, DiscountWord, DiscountAmount, Amount, NetAmount, HomeAmount, SumOfCost, UnitCode, LineNumber, BarCode, POSSTATUS, AVERAGECOST, PackingRate1, PackingRate2) values(?,?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
-	//	_, err = repo.db.Exec(sqlsub, my_type, req.DocNo, pos_tax_type, item.ItemCode, req.DocDate, req.ArCode, depart_code, req.SaleCode, "MobileApp", item.ItemName, item.WHCode, item.ShelfCode, cn_qty, item.Qty, item.Price, item.DiscountWord, item_discount_amount, item_amount, item_net_amount, item_home_amount, sum_of_cost, item.UnitCode, item.LineNumber, item.BarCode, pos_status, item.AverageCost, item.PackingRate1, packing_rate_2)
-	//	fmt.Println("sqlsub = ", sqlsub, my_type, req.DocNo, pos_tax_type, item.ItemCode, req.DocDate, req.ArCode, depart_code, req.SaleCode, "MobileApp", item.ItemName, item.WHCode, item.ShelfCode, cn_qty, item.Qty, item.Price, item.DiscountWord, item_discount_amount, item_amount, item_net_amount, item_home_amount, sum_of_cost, item.UnitCode, item.LineNumber, item.BarCode, pos_status, item.AverageCost, item.PackingRate1, packing_rate_2)
-	//	if err != nil {
-	//		fmt.Println("Error = ", err.Error())
-	//		return nil, err
-	//	}
-	//
-	//	sqlprocess := ` insert into dbo.ProcessStock (ItemCode,ProcessFlag,FlowStatus) values(?, 1, 0)`
-	//	_, err = repo.db.Exec(sqlprocess, item.ItemCode)
-	//	fmt.Println("sqlprocess = ", sqlsub)
-	//	if err != nil {
-	//		fmt.Println("Error = ", err.Error())
-	//		fmt.Println(err.Error())
-	//	}
-	//
-	//	line_number = line_number + 1
-	//}
+	} else {
+		sql := `Update Quotation set DocDate=?,BillType=?,ArId=?,ArCode=?,ArName=?,SaleId=?,SaleCode=?,SaleName=?,DepartCode=?,RefNo=?,TaxType=?,TaxRate=?,DueDate=?,ExpireDate=?,DeliveryDate=?,AssertStatus=?,IsConditionSend=?,MyDescription=?,SumOfItemAmount=?,DiscountWord=?,DiscountAmount=?,AfterDiscountAmount=?,BeforeTaxAmount=?,TaxAmount=?,TotalAmount=?,NetDebtAmount=?,ProjectId=?,EditBy=?,EditTime=? where DocNo=?`
+		fmt.Println("sql update = ", sql)
+		id, err := repo.db.Exec(sql, req.DocDate, req.BillType, req.ArId, req.ArCode, req.ArName, req.SaleId, req.SaleCode, req.SaleName, req.DepartCode, req.RefNo, req.TaxType, req.TaxRate, req.DueDate, req.ExpireDate, req.DeliveryDate, req.AssertStatus, req.IsConditionSend, req.MyDescription, req.SumOfItemAmount, req.DiscountWord, req.DiscountAmount, req.AfterDiscountAmount, req.BeforeTaxAmount, req.TaxAmount, req.TotalAmount, req.NetDebtAmount, req.ProjectId, req.EditBy, req.EditTime, req.DocNo)
+		if err != nil {
+			fmt.Println("Error = ", err.Error())
+			return nil, err
+		}
+
+		lastId, err := id.RowsAffected()
+		req.Id = lastId
+	}
+
+	sql_del_sub := `delete from QuotationSub where QuoId = ?`
+	_, err = repo.db.Exec(sql_del_sub, req.Id)
+	if err != nil {
+		fmt.Println("Error = ", err.Error())
+		return nil, err
+	}
+
+	var line_number int
+
+	for _, sub := range req.Subs {
+		sub.LineNumber = line_number
+		sqlsub := `INSERT INTO QuotationSub(QuoId,ArId,SaleId,ItemId,ItemCode,BarCode,ItemName,Qty,RemainQty,Price,DiscountWord,DiscountAmount,UnitCode,ItemAmount,ItemDescription,PackingRate1,LineNumber,IsCancel) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`
+		_, err := repo.db.Exec(sqlsub,
+			req.Id,
+			req.ArId,
+			req.SaleId,
+			sub.ItemId,
+			sub.ItemCode,
+			sub.BarCode,
+			sub.ItemName,
+			sub.Qty,
+			sub.Qty,
+			sub.Price,
+			sub.DiscountWord,
+			sub.DiscountAmount,
+			sub.UnitCode,
+			sub.ItemAmount,
+			sub.ItemDescription,
+			sub.PackingRate1,
+			sub.LineNumber,
+			sub.IsCancel)
+		if err != nil {
+			return nil, err
+		}
+
+		line_number = line_number + 1
+	}
 
 	return map[string]interface{}{
 		"company_name":    req.DocNo,
@@ -430,12 +397,12 @@ func (repo *salesRepository) CreateQuo(req *sales.NewQuoTemplate) (resp interfac
 	}, nil
 }
 
-func (repo *salesRepository) SearchQuoById() (resp interface{}, err error) {
+func (repo *salesRepository) SearchQuoById(req *sales.SearchByIdTemplate) (resp interface{}, err error) {
 
 	q := NewQuoModel{}
 
-	sql := `select isnull(CompanyName,'') as CompanyName,isnull(CompanyAddress,'') as CompanyAddress,isnull(Telephone,'') as Telephone,isnull(TaxId,'') as TaxId,isnull(ArCode,'') as ArCode,isnull(PosId,'') as PosId,isnull(WhCode,'') as WhCode,isnull(ShelfCode,'') as ShelfCode,isnull(PrinterPosIp,'') as PrinterPosIp,isnull(PrinterCopyIp,'') as PrinterCopyIp,isnull(MachineNo,'') as MachineNo,isnull(MachineCode,'') as MachineCode from posconfig`
-	err = repo.db.Get(&q, sql)
+	sql := `select   Id,DocNo,DocDate,BillType,ArId,ArCode,ArName,SaleId,SaleCode,SaleName,ifnull(DepartCode,'') as DepartCode,ifnull(RefNo,'') as RefNo,TaxType,IsConfirm,BillStatus,ifnull(DueDate,'') as DueDate,ifnull(ExpireDate,'') as ExpireDate,ifnull(DeliveryDate,'') as DeliveryDate,AssertStatus,IsConditionSend,ifnull(MyDescription,'') as MyDescription,SumOfItemAmount,ifnull(DiscountWord,'') as DiscountWord,DiscountAmount,AfterDiscountAmount,BeforeTaxAmount,TaxAmount,TotalAmount,NetDebtAmount,TaxRate,ProjectId,IsCancel,ifnull(CreateBy,'') as CreateBy,ifnull(CreateTime,'') as CreateTime,ifnull(EditBy,'') as EditBy,ifnull(EditTime,'') as EditTime,ifnull(CancelBy,'') as CancelBy,ifnull(CancelTime,'') as CancelTime from Quotation where Id =?`
+	err = repo.db.Get(&q, sql, req.Id)
 	if err != nil {
 		fmt.Println("err = ", err.Error())
 		return resp, err
@@ -443,12 +410,82 @@ func (repo *salesRepository) SearchQuoById() (resp interface{}, err error) {
 
 	qt_resp := map_quo_template(q)
 
+	subs := []NewQuoItemModel{}
+
+	sql_sub := `select a.ItemCode,a.ItemName,a.Qty,a.RemainQty,a.Price,ifnull(a.DiscountWord,'') as DiscountWord,DiscountAmount,ifnull(a.UnitCode,'') as UnitCode,ifnull(a.BarCode,'') as BarCode,ifnull(a.ItemDescription,'') as ItemDescription,a.PackingRate1,a.LineNumber,a.IsCancel from QuotationSub a  where QuoId = ? order by a.linenumber`
+	err = repo.db.Select(&subs, sql_sub, q.Id)
+	if err != nil {
+		fmt.Println("err sub= ", err.Error())
+		return resp, err
+	}
+
+	for _, sub := range subs {
+		subline := map_quo_subs_template(sub)
+		qt_resp.Subs = append(qt_resp.Subs, subline)
+	}
+
 	return qt_resp, nil
 }
 
 func map_quo_template(x NewQuoModel) sales.NewQuoTemplate {
 	return sales.NewQuoTemplate{
-		ArCode: x.ArCode,
+		Id:                  x.Id,
+		DocNo:               x.DocNo,
+		DocDate:             x.DocDate,
+		BillType:            x.BillType,
+		ArId:                x.ArId,
+		ArCode:              x.ArCode,
+		ArName:              x.ArName,
+		SaleId:              x.SaleId,
+		SaleCode:            x.SaleCode,
+		SaleName:            x.SaleName,
+		DepartCode:          x.DepartCode,
+		RefNo:               x.RefNo,
+		TaxType:             x.TaxType,
+		TaxRate:             x.TaxRate,
+		DueDate:             x.DueDate,
+		ExpireDate:          x.ExpireDate,
+		DeliveryDate:        x.DeliveryDate,
+		AssertStatus:        x.AssertStatus,
+		IsConditionSend:     x.IsConditionSend,
+		MyDescription:       x.MyDescription,
+		SumOfItemAmount:     x.SumOfItemAmount,
+		DiscountWord:        x.DiscountWord,
+		DiscountAmount:      x.DiscountAmount,
+		AfterDiscountAmount: x.AfterDiscountAmount,
+		BeforeTaxAmount:     x.BeforeTaxAmount,
+		TaxAmount:           x.TaxAmount,
+		TotalAmount:         x.TotalAmount,
+		NetDebtAmount:       x.NetDebtAmount,
+		ProjectId:           x.ProjectId,
+		CreateBy:            x.CreateBy,
+		CreateTime:          x.CreateTime,
+		EditBy:              x.EditBy,
+		EditTime:            x.EditTime,
+		CancelBy:            x.CancelBy,
+		CancelTime:          x.CancelTime,
+	}
+}
+
+func map_quo_subs_template(x NewQuoItemModel) sales.NewQuoItemTemplate {
+	return sales.NewQuoItemTemplate{
+		Id:              x.Id,
+		QuoId:           x.QuoId,
+		ItemId:          x.ItemId,
+		ItemCode:        x.ItemCode,
+		BarCode:         x.BarCode,
+		ItemName:        x.ItemName,
+		Qty:             x.Qty,
+		RemainQty:       x.RemainQty,
+		Price:           x.Price,
+		DiscountWord:    x.DiscountWord,
+		DiscountAmount:  x.DiscountAmount,
+		UnitCode:        x.UnitCode,
+		ItemAmount:      x.ItemAmount,
+		ItemDescription: x.ItemDescription,
+		PackingRate1:    x.PackingRate1,
+		LineNumber:      x.LineNumber,
+		IsCancel:        x.IsCancel,
 	}
 }
 
@@ -458,22 +495,6 @@ func (repo *salesRepository) CreateSale(req *sales.NewSaleTemplate) (resp interf
 	var count_item_qty int
 	var count_item_unit int
 	var sum_item_amount float64
-	//var tax_rate float64
-	//var pos_tax_type int
-	//
-	//var is_complete_save int
-	//var deposit_inc_tax int
-	//var home_amount float64
-	//var bill_balance float64
-	//var pos_status int
-	//
-	//var line_number int
-	//var item_amount float64
-	//var my_type int
-	//var cn_qty float64
-	//var packing_rate_2 float64
-	//var item_home_amount float64
-	//var item_net_amount float64
 	var new_doc_no string
 
 	def := config.Default{}
@@ -490,14 +511,8 @@ func (repo *salesRepository) CreateSale(req *sales.NewSaleTemplate) (resp interf
 
 	req.DocDate = DocDate
 	req.CreateTime = now.String()
-
-	fmt.Println("DocDate =", req.DocDate)
-
-	pos_machine_no := def.PosMachineNo
-	fmt.Println("pos_machine_no", pos_machine_no)
-
-	//tax_rate = def.TaxRateDefault
-	//pos_tax_type = def.PosTaxType
+	req.EditTime = now.String()
+	req.CancelTime = now.String()
 
 	for _, sub_item := range req.Subs {
 		if (sub_item.Qty != 0) {
@@ -517,7 +532,7 @@ func (repo *salesRepository) CreateSale(req *sales.NewSaleTemplate) (resp interf
 		}
 	}
 
-	sqlexist := `select count(DocNo) as check_exist from Quotation where DocNo = ?`
+	sqlexist := `select count(DocNo) as check_exist from SaleOrder where DocNo = ?`
 	fmt.Println("DocNo =", req.DocNo)
 	err = repo.db.Get(&check_doc_exist, sqlexist, req.DocNo)
 	if err != nil {
@@ -553,9 +568,9 @@ func (repo *salesRepository) CreateSale(req *sales.NewSaleTemplate) (resp interf
 		var jsonStr []byte
 
 		if req.BillType == 0 {
-			jsonStr = []byte(`{"table_code":"QT","bill_type":0}`)
+			jsonStr = []byte(`{"table_code":"SO","bill_type":0}`)
 		} else {
-			jsonStr = []byte(`{"table_code":"QT","bill_type":1}`)
+			jsonStr = []byte(`{"table_code":"SO","bill_type":1}`)
 		}
 
 		reqs, err := http.NewRequest("POST", url, bytes.NewBuffer(jsonStr))
@@ -583,11 +598,12 @@ func (repo *salesRepository) CreateSale(req *sales.NewSaleTemplate) (resp interf
 		}
 		req.BeforeTaxAmount, req.TaxAmount, req.TotalAmount = config.CalcTaxItem(req.TaxType, req.TaxRate, req.AfterDiscountAmount)
 
-		sql := `INSERT INTO Quotation(DocNo,DocDate,BillType,ArId,ArCode,ArName,SaleId,SaleCode,SaleName,DepartCode,RefNo,TaxType,TaxRate,DueDate,ExpireDate,DeliveryDate,AssertStatus,IsConditionSend,MyDescription,SumOfItemAmount,DiscountWord,DiscountAmount,AfterDiscountAmount,BeforeTaxAmount,TaxAmount,TotalAmount,NetDebtAmount,ProjectId,CreateBy,CreateTime) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`
+		sql := `INSERT INTO SaleOrder(DocNo,DocDate,BillType,TaxType,ArId,ArCode,ArName,SaleId,SaleCode,SaleName,DepartCode,CreditDay,DueDate,DeliveryDate,TaxRate,IsConfirm,MyDescription,BillStatus,SoStatus,HoldingStatus,SumOfItemAmount,DiscountWord,DiscountAmount,AfterDiscountAmount,BeforeTaxAmount,TaxAmount,TotalAmount,NetDebtAmount,IsCancel,IsConditionSend,JobId,ProjectId,AllocateId,CreateBy,CreateTime) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`
 		res, err := repo.db.Exec(sql,
 			req.DocNo,
 			req.DocDate,
 			req.BillType,
+			req.TaxType,
 			req.ArId,
 			req.ArCode,
 			req.ArName,
@@ -595,15 +611,15 @@ func (repo *salesRepository) CreateSale(req *sales.NewSaleTemplate) (resp interf
 			req.SaleCode,
 			req.SaleName,
 			req.DepartCode,
-			req.RefNo,
-			req.TaxType,
-			req.TaxRate,
+			req.CreditDay,
 			req.DueDate,
-			req.ExpireDate,
 			req.DeliveryDate,
-			req.AssertStatus,
-			req.IsConditionSend,
+			req.TaxRate,
+			req.IsConfirm,
 			req.MyDescription,
+			req.BillStatus,
+			req.SoStatus,
+			req.HoldingStatus,
 			req.SumOfItemAmount,
 			req.DiscountWord,
 			req.DiscountAmount,
@@ -612,6 +628,11 @@ func (repo *salesRepository) CreateSale(req *sales.NewSaleTemplate) (resp interf
 			req.TaxAmount,
 			req.TotalAmount,
 			req.NetDebtAmount,
+			req.IsCancel,
+			req.IsConditionSend,
+			req.JobId,
+			req.ProjectId,
+			req.AllocateId,
 			req.ProjectId,
 			req.CreateBy,
 			req.CreateTime)
@@ -628,24 +649,31 @@ func (repo *salesRepository) CreateSale(req *sales.NewSaleTemplate) (resp interf
 		for _, sub := range req.Subs {
 			fmt.Println("ArId Sub = ", req.ArId)
 			fmt.Println("SaleId Sub = ", req.SaleId)
-			sqlsub := `INSERT INTO QuotationSub(QuoId,ArId,SaleId,ItemId,ItemCode,ItemName,Qty,RemainQty,Price,DiscountWord,DiscountAmount,UnitCode,ItemAmount,ItemDescription,PackingRate1,LineNumber) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`
+			sqlsub := `INSERT INTO SaleSub(SOId,ArId,SaleId,ItemId,ItemCode,BarCode,ItemName,WhCode,ShelfCode,Qty,RemainQty,UnitCode,Price,DiscountWord,DiscountAmount,Amount,NetAmount,ItemDescription,RefNo,QuoId,IsCancel,PackingRate1,PackingRate2,RefLineNumber,LineNumber,IsCancel) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`
 			_, err := repo.db.Exec(sqlsub,
 				req.Id,
 				req.ArId,
 				req.SaleId,
 				sub.ItemId,
 				sub.ItemCode,
+				sub.BarCode,
 				sub.ItemName,
+				sub.WHCode,
+				sub.ShelfCode,
 				sub.Qty,
-				sub.Qty,
+				sub.RemainQty,
+				sub.UnitCode,
 				sub.Price,
 				sub.DiscountWord,
 				sub.DiscountAmount,
-				sub.UnitCode,
 				sub.ItemAmount,
 				sub.ItemDescription,
+				sub.RefNo,
+				sub.QuoId,
 				sub.PackingRate1,
-				sub.LineNumber)
+				sub.RefLineNumber,
+				sub.LineNumber,
+				sub.IsCancel)
 
 			fmt.Println("QuotationSub =", sql, sub.QuoId)
 			if err != nil {
@@ -734,7 +762,7 @@ func (repo *salesRepository) CreateSale(req *sales.NewSaleTemplate) (resp interf
 	}, nil
 }
 
-func (repo *salesRepository) SearchSaleById() (resp interface{}, err error) {
+func (repo *salesRepository) SearchSaleById(req *sales.SearchByIdTemplate) (resp interface{}, err error) {
 
 	q := NewSaleModel{}
 
