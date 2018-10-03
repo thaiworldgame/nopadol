@@ -5,4 +5,5 @@ type Repository interface {
 	SearchQuoById (req *SearchByIdTemplate) (interface{}, error)
 	CreateSale(req *NewSaleTemplate) (interface{}, error)
 	SearchSaleById (req *SearchByIdTemplate) (interface{}, error)
+	SearchDocByKeyword(req *SearchByKeywordTemplate) (interface{}, error)
 }

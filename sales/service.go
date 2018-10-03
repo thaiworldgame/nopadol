@@ -19,6 +19,7 @@ type Service interface {
 	SearchQueById(req *SearchByIdTemplate) (interface{}, error)
 	CreateSale(req *NewSaleTemplate) (interface{}, error)
 	SearchSaleById(req *SearchByIdTemplate) (interface{}, error)
+	SearchDocByKeyword(req *SearchByKeywordTemplate) (interface{}, error)
 }
 
 func (s *service) CreateQuo(req *NewQuoTemplate) (interface{}, error) {
@@ -28,7 +29,7 @@ func (s *service) CreateQuo(req *NewQuoTemplate) (interface{}, error) {
 	var sum_item_amount float64
 
 
-	fmt.Println("Service")
+	fmt.Println("Service Quo")
 	for _, sub_item := range req.Subs {
 		if (sub_item.Qty != 0) {
 			count_item = count_item + 1
@@ -87,15 +88,21 @@ func (s *service) CreateSale(req *NewSaleTemplate) (interface{}, error) {
 	var sum_item_amount float64
 
 
-	fmt.Println("Service")
+	fmt.Println("Service Sale")
+	var item_discount_amount_sub float64
+	var  err error
 	for _, sub_item := range req.Subs {
 		if (sub_item.Qty != 0) {
 			count_item = count_item + 1
-
-			item_discount_amount_sub, err := strconv.ParseFloat(sub_item.DiscountWord, 64)
-			if err != nil {
-				fmt.Println(err)
+			if sub_item.DiscountWord != "" {
+				item_discount_amount_sub, err = strconv.ParseFloat(sub_item.DiscountWord, 64)
+				if err != nil {
+					fmt.Println(err)
+				}
+			}else{
+				item_discount_amount_sub = 0
 			}
+
 			sum_item_amount = sum_item_amount + (sub_item.Qty * (sub_item.Price - item_discount_amount_sub))
 		}
 		if (sub_item.ItemCode != "" && sub_item.Qty == 0) {
@@ -133,6 +140,14 @@ func (s *service) CreateSale(req *NewSaleTemplate) (interface{}, error) {
 
 func (s *service) SearchSaleById(req *SearchByIdTemplate) (interface{}, error) {
 	resp, err := s.repo.SearchSaleById(req)
+	if err != nil {
+		return nil, err
+	}
+	return resp, nil
+}
+
+func (s *service) SearchDocByKeyword(req *SearchByKeywordTemplate) (interface{}, error) {
+	resp, err := s.repo.SearchDocByKeyword(req)
 	if err != nil {
 		return nil, err
 	}

@@ -10,6 +10,7 @@ type (
 		Id                  int64               `json:"id"`
 		DocNo               string              `json:"doc_no"`
 		DocDate             string              `json:"doc_date"`
+		DocType             int64               `json:"doc_type"`
 		ArId                int64               `json:"ar_id"`
 		ArCode              string              `json:"ar_code"`
 		ArName              string              `json:"ar_name"`
@@ -72,6 +73,7 @@ type (
 		Id                  int64                `json:"id"`
 		DocNo               string               `json:"doc_no"`
 		DocDate             string               `json:"doc_date"`
+		DocType             int64                `json:"doc_type"`
 		ArId                int64                `json:"ar_id"`
 		ArCode              string               `json:"ar_code"`
 		ArName              string               `json:"ar_name"`
@@ -91,7 +93,6 @@ type (
 		DueDate             string               `json:"due_date"`
 		ExpireDate          string               `json:"expire_date"`
 		DeliveryDate        string               `json:"delivery_date"`
-		AssertStatus        int64                `json:"assert_status"`
 		IsConditionSend     int64                `json:"is_condition_send"`
 		MyDescription       string               `json:"my_description"`
 		SumOfItemAmount     float64              `json:"sum_of_item_amount"`
@@ -147,7 +148,22 @@ type (
 	}
 
 	SearchByKeywordRequest struct {
-		Keyword string `json:"keyword"`
+		SaleCode string `json:"sale_code"`
+		Keyword  string `json:"keyword"`
+	}
+
+	SearchDocResponse struct {
+		DocNo         string  `json:"doc_no"`
+		DocDate       string  `json:"doc_date"`
+		Module        string  `json:"module"`
+		ArCode        string  `json:"ar_code"`
+		ArName        string  `json:"ar_name"`
+		SaleCode      string  `json:"sale_code"`
+		SaleName      string  `json:"sale_name"`
+		MyDescription string  `json:"my_description"`
+		TotalAmount   float64 `json:"total_amount"`
+		IsCancel      int     `json:"is_cancel"`
+		IsConfirm     int     `json:"is_confirm"`
 	}
 )
 
@@ -164,6 +180,13 @@ func CreateQuo(s Service) interface{} {
 			q.Subs = append(q.Subs, itemline)
 		}
 		resp, err := s.CreateQuo(&NewQuoTemplate{
+			DocType:             req.DocType,
+			AssertStatus:        req.AssertStatus,
+			BillStatus:          req.BillStatus,
+			IsCancel:            req.IsCancel,
+			IsConfirm:           req.IsConfirm,
+			NetDebtAmount:       req.NetDebtAmount,
+			ProjectId:           req.ProjectId,
 			DocNo:               req.DocNo,
 			DocDate:             req.DocDate,
 			BillType:            req.BillType,
@@ -207,51 +230,51 @@ func map_quo_request(x *NewQuoRequest) NewQuoTemplate {
 	var subs []NewQuoItemTemplate
 
 	return NewQuoTemplate{
-		DocNo:               x.DocNo,
-		DocDate:             x.DocDate,
-		BillType:            x.BillType,
-		ArId:                x.ArId,
-		ArName:              x.ArName,
-		ArCode:              x.ArCode,
-		SaleId:              x.SaleId,
-		SaleCode:            x.SaleCode,
-		SaleName:            x.SaleName,
-		TaxType:             x.TaxType,
-		TaxRate:             x.TaxRate,
-		RefNo:               x.RefNo,
-		DepartCode:          x.DepartCode,
-		DueDate:             x.DueDate,
-		ExpireDate:          x.ExpireDate,
-		DeliveryDate:        x.DeliveryDate,
-		IsConditionSend:     x.IsConditionSend,
-		MyDescription:       x.MyDescription,
-		SumOfItemAmount:     x.SumOfItemAmount,
-		DiscountWord:        x.DiscountWord,
-		DiscountAmount:      x.DiscountAmount,
-		AfterDiscountAmount: x.AfterDiscountAmount,
-		BeforeTaxAmount:     x.BeforeTaxAmount,
-		TaxAmount:           x.TaxAmount,
-		TotalAmount:         x.TotalAmount,
-		CreateBy:            x.CreateBy,
-		Subs:                subs,
+		DocNo:    x.DocNo,
+		DocDate:  x.DocDate,
+		BillType: x.BillType,
+		//ArId:                x.ArId,
+		//ArName:              x.ArName,
+		//ArCode:              x.ArCode,
+		//SaleId:              x.SaleId,
+		//SaleCode:            x.SaleCode,
+		//SaleName:            x.SaleName,
+		//TaxType:             x.TaxType,
+		//TaxRate:             x.TaxRate,
+		//RefNo:               x.RefNo,
+		//DepartCode:          x.DepartCode,
+		//DueDate:             x.DueDate,
+		//ExpireDate:          x.ExpireDate,
+		//DeliveryDate:        x.DeliveryDate,
+		//IsConditionSend:     x.IsConditionSend,
+		//MyDescription:       x.MyDescription,
+		//SumOfItemAmount:     x.SumOfItemAmount,
+		//DiscountWord:        x.DiscountWord,
+		//DiscountAmount:      x.DiscountAmount,
+		//AfterDiscountAmount: x.AfterDiscountAmount,
+		//BeforeTaxAmount:     x.BeforeTaxAmount,
+		//TaxAmount:           x.TaxAmount,
+		//TotalAmount:         x.TotalAmount,
+		//CreateBy:            x.CreateBy,
+		Subs: subs,
 	}
 }
 
 func map_quo_sub_request(x NewQuoItemRequest) NewQuoItemTemplate {
 	return NewQuoItemTemplate{
-		ItemCode:        x.ItemCode,
-		BarCode:         x.BarCode,
-		ItemName:        x.ItemName,
-		Qty:             x.Qty,
-		Price:           x.Price,
-		DiscountWord:    x.DiscountWord,
-		DiscountAmount:  x.DiscountAmount,
-		UnitCode:        x.UnitCode,
-		ItemAmount:      x.ItemAmount,
-		ItemDescription: x.ItemDescription,
-		PackingRate1:    x.PackingRate1,
-		LineNumber:      x.LineNumber,
-		IsCancel:        x.IsCancel,
+		ItemCode: x.ItemCode,
+		//BarCode:         x.BarCode,
+		//ItemName:        x.ItemName,
+		//Qty:             x.Qty,
+		//Price:           x.Price,
+		//DiscountWord:    x.DiscountWord,
+		//DiscountAmount:  x.DiscountAmount,
+		//UnitCode:        x.UnitCode,
+		//ItemAmount:      x.ItemAmount,
+		//ItemDescription: x.ItemDescription,
+		//PackingRate1:    x.PackingRate1,
+		//LineNumber:      x.LineNumber,
+		//IsCancel:        x.IsCancel,
 	}
 }
 
@@ -280,12 +303,22 @@ func CreateSale(s Service) interface{} {
 			so.Subs = append(so.Subs, itemline)
 		}
 		resp, err := s.CreateSale(&NewSaleTemplate{
+			DocType:             req.DocType,
+			IsConfirm:           req.IsConfirm,
+			IsCancel:            req.IsCancel,
+			JobId:               req.JobId,
 			DocNo:               req.DocNo,
 			DocDate:             req.DocDate,
 			BillType:            req.BillType,
+			SoStatus:            req.SoStatus,
+			HoldingStatus:       req.HoldingStatus,
+			AllocateId:          req.AllocateId,
 			ArId:                req.ArId,
 			ArName:              req.ArName,
 			ArCode:              req.ArCode,
+			BillStatus:          req.BillStatus,
+			NetDebtAmount:       req.NetDebtAmount,
+			ProjectId:           req.ProjectId,
 			SaleId:              req.SaleId,
 			SaleCode:            req.SaleCode,
 			SaleName:            req.SaleName,
@@ -376,6 +409,19 @@ func map_sale_sub_request(x NewSaleItemRequest) NewSaleItemTemplate {
 func SearchSaleById(s Service) interface{} {
 	return func(ctx context.Context, req *SearchByIdRequest) (interface{}, error) {
 		resp, err := s.SearchSaleById(&SearchByIdTemplate{Id: req.Id})
+		if err != nil {
+			fmt.Println("endpoint error =", err.Error())
+			return nil, fmt.Errorf(err.Error())
+		}
+		return map[string]interface{}{
+			"data": resp,
+		}, nil
+	}
+}
+
+func SearchDocByKeyword(s Service) interface{} {
+	return func(ctx context.Context, req *SearchByKeywordRequest) (interface{}, error) {
+		resp, err := s.SearchDocByKeyword(&SearchByKeywordTemplate{SaleCode: req.SaleCode, Keyword: req.Keyword})
 		if err != nil {
 			fmt.Println("endpoint error =", err.Error())
 			return nil, fmt.Errorf(err.Error())
