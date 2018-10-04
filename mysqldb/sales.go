@@ -153,6 +153,7 @@ type NewSaleItemModel struct {
 }
 
 type SearchDocModel struct {
+	Id            int64   `db:"Id"`
 	DocNo         string  `db:"DocNo"`
 	DocDate       string  `db:"DocDate"`
 	Module        string  `db:"Module"`
@@ -164,6 +165,56 @@ type SearchDocModel struct {
 	TotalAmount   float64 `db:"TotalAmount"`
 	IsCancel      int     `db:"IsCancel"`
 	IsConfirm     int     `db:"IsConfirm"`
+}
+
+type SearchDocDetailsModel struct {
+	Id                  int64             `db:"Id"`
+	DocNo               string            `db:"DocNo"`
+	DocDate             string            `db:"DocDate"`
+	DocType             int64             `db:"DocType"`
+	ArId                int64             `db:"ArId"`
+	ArCode              string            `db:"ArCode"`
+	ArName              string            `db:"ArName"`
+	SaleId              int               `db:"SaleId"`
+	SaleCode            string            `db:"SaleCode"`
+	SaleName            string            `db:"SaleName"`
+	BillType            int64             `db:"BillType"`
+	TaxType             int               `db:"TaxType"`
+	TaxRate             float64           `db:"TaxRate"`
+	DepartCode          string            `db:"DepartCode"`
+	RefNo               string            `db:"RefNo"`
+	IsConfirm           int64             `db:"IsConfirm"`
+	BillStatus          int64             `db:"BillStatus"`
+	CreditDay           int64             `db:"CreditDay"`
+	DueDate             string            `db:"DueDate"`
+	ExpireDate          string            `db:"ExpireDate"`
+	DeliveryDate        string            `db:"DeliveryDate"`
+	AssertStatus        int64             `db:"AssertStatus"`
+	IsConditionSend     int64             `db:"IsConditionSend"`
+	MyDescription       string            `db:"MyDescription"`
+	SumOfItemAmount     float64           `db:"SumOfItemAmount"`
+	DiscountWord        string            `db:"DiscountWord"`
+	DiscountAmount      float64           `db:"DiscountAmount"`
+	AfterDiscountAmount float64           `db:"AfterDiscountAmount"`
+	BeforeTaxAmount     float64           `db:"BeforeTaxAmount"`
+	TaxAmount           float64           `db:"TaxAmount"`
+	TotalAmount         float64           `db:"TotalAmount"`
+	NetDebtAmount       float64           `db:"NetDebtAmount"`
+	ProjectId           int64             `db:"ProjectId"`
+	IsCancel            int64             `db:"IsCancel"`
+	CreateBy            string            `db:"CreateBy"`
+	CreateTime          string            `db:"CreateTime"`
+	EditBy              string            `db:"EditBy"`
+	EditTime            string            `db:"EditTime"`
+	CancelBy            string            `db:"CancelBy"`
+	CancelTime          string            `db:"CancelTime"`
+	SoStatus            int64             `db:"SoStatus"`
+	HoldingStatus       int64             `db:"HoldingStatus"`
+	AllocateId          int64             `db:"AllocateId"`
+	JobId               string            `db:"JobId"`
+	ConfirmBy           string            `db:"ConfirmBy"`
+	ConfirmTime         string            `db:"ConfirmTime"`
+	Subs                []NewQuoItemModel `db:"subs"`
 }
 
 type salesRepository struct{ db *sqlx.DB }
@@ -249,7 +300,7 @@ func (repo *salesRepository) CreateQuo(req *sales.NewQuoTemplate) (resp interfac
 		//}
 
 		//API Get Post API
-		url := "http://localhost:8081/gendocno/v1/gen"
+		url := "http://venus.nopadol.com:8081/gendocno/v1/gen"
 		var jsonStr []byte
 
 		if req.BillType == 0 {
@@ -443,6 +494,12 @@ func (repo *salesRepository) SearchQuoById(req *sales.SearchByIdTemplate) (resp 
 	return qt_resp, nil
 }
 
+func (repo *salesRepository) SearchDocById(req *sales.SearchByIdTemplate) (resp interface{}, err error) {
+	doc := SearchDocDetailsModel{}
+
+	return doc, nil
+}
+
 func (repo *salesRepository) SearchDocByKeyword(req *sales.SearchByKeywordTemplate) (resp interface{}, err error) {
 
 	d := []SearchDocModel{}
@@ -467,6 +524,7 @@ func (repo *salesRepository) SearchDocByKeyword(req *sales.SearchByKeywordTempla
 
 func map_doc_template(x SearchDocModel) sales.SearchDocTemplate {
 	return sales.SearchDocTemplate{
+		Id:            x.Id,
 		DocNo:         x.DocNo,
 		DocDate:       x.DocDate,
 		ArCode:        x.ArCode,
@@ -619,7 +677,7 @@ func (repo *salesRepository) CreateSale(req *sales.NewSaleTemplate) (resp interf
 	//}
 
 	//API Get Post API
-	url := "http://localhost:8081/gendocno/v1/gen"
+	url := "http://venus.nopadol.com:8081/gendocno/v1/gen"
 	var jsonStr []byte
 
 	if req.BillType == 0 {

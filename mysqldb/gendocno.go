@@ -119,9 +119,9 @@ func GetLastDocNo(db *sqlx.DB, table_code string, formatnum int, bill_type int64
 	case "QT":
 		sqlcase = `select cast(right(ifnull(max(docno),0),?) as int)+1 maxno from Quotation where BillType = ? and year(DocDate) = year(CURDATE()) and month(DocDate) = month(CURDATE())`
 	case "SO":
-		sqlcase = `select cast(right(ifnull(max(docno),0),?) as int)+1 maxno from SaleOrder where SoStatus = 1 and BillType = ? and year(DocDate) = year(CURDATE()) and month(DocDate) = month(CURDATE())`
+		sqlcase = `select cast(right(ifnull(max(docno),0),?) as int)+1 maxno from SaleOrder where DocType = 1 and BillType = ? and year(DocDate) = year(CURDATE()) and month(DocDate) = month(CURDATE())`
 	case "RO":
-		sqlcase = `select cast(right(ifnull(max(docno),0),?) as int)+1 maxno from SaleOrder where SoStatus = 0 and BillType = ? and year(DocDate) = year(CURDATE()) and month(DocDate) = month(CURDATE())`
+		sqlcase = `select cast(right(ifnull(max(docno),0),?) as int)+1 maxno from SaleOrder where DocType = 0 and BillType = ? and year(DocDate) = year(CURDATE()) and month(DocDate) = month(CURDATE())`
 	}
 
 	sql = sqlcase

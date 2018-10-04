@@ -153,6 +153,7 @@ type (
 	}
 
 	SearchDocResponse struct {
+		Id            int64   `json:"id"`
 		DocNo         string  `json:"doc_no"`
 		DocDate       string  `json:"doc_date"`
 		Module        string  `json:"module"`
