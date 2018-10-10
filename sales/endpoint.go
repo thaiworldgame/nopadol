@@ -24,8 +24,12 @@ type (
 		RefNo               string              `json:"ref_no"`
 		IsConfirm           int64               `json:"is_confirm"`
 		BillStatus          int64               `json:"bill_status"`
+		Validity            int64               `json:"validity"`
+		CreditDay           int64               `json:"credit_day"`
 		DueDate             string              `json:"due_date"`
+		ExpireDay           int64               `json:"expire_day"`
 		ExpireDate          string              `json:"expire_date"`
+		DeliveryDay         int64               `json:"delivery_day"`
 		DeliveryDate        string              `json:"delivery_date"`
 		AssertStatus        int64               `json:"assert_status"`
 		IsConditionSend     int64               `json:"is_condition_send"`
@@ -39,6 +43,7 @@ type (
 		TotalAmount         float64             `json:"total_amount"`
 		NetDebtAmount       float64             `json:"net_debt_amount"`
 		ProjectId           int64               `json:"project_id"`
+		AllocateId          int64               `json:"allocate_id"`
 		IsCancel            int64               `json:"is_cancel"`
 		CreateBy            string              `json:"creator_by"`
 		CreateTime          string              `json:"create_time"`
@@ -181,6 +186,7 @@ func CreateQuo(s Service) interface{} {
 			q.Subs = append(q.Subs, itemline)
 		}
 		resp, err := s.CreateQuo(&NewQuoTemplate{
+			Id:                  req.Id,
 			DocType:             req.DocType,
 			AssertStatus:        req.AssertStatus,
 			BillStatus:          req.BillStatus,
@@ -188,6 +194,11 @@ func CreateQuo(s Service) interface{} {
 			IsConfirm:           req.IsConfirm,
 			NetDebtAmount:       req.NetDebtAmount,
 			ProjectId:           req.ProjectId,
+			AllocateId:          req.AllocateId,
+			Validity:            req.Validity,
+			CreditDay:           req.CreditDay,
+			ExpireDay:           req.ExpireDay,
+			DeliveryDay:         req.DeliveryDay,
 			DocNo:               req.DocNo,
 			DocDate:             req.DocDate,
 			BillType:            req.BillType,

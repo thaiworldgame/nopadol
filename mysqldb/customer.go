@@ -7,11 +7,12 @@ import (
 )
 
 type CustomerModel struct {
-	Id        int64  `db:"id"`
-	Code      string `db:"code"`
-	Name      string `db:"name"`
-	Address   string `db:"address"`
-	Telephone string `db:"telephone"`
+	Id         int64  `db:"id"`
+	Code       string `db:"code"`
+	Name       string `db:"name"`
+	Address    string `db:"address"`
+	Telephone  string `db:"telephone"`
+	BillCredit int64  `db:"bill_credit"`
 }
 
 type customerRepository struct{ db *sqlx.DB }
@@ -23,7 +24,7 @@ func NewCustomerRepository(db *sqlx.DB) customer.Repository {
 func (cr *customerRepository) SearchById(req *customer.SearchByIdTemplate) (resp interface{}, err error) {
 	cust := CustomerModel{}
 
-	sql := `select id,code,name,ifnull(address,'') as address,ifnull(telephone,'') as telephone from Customer where id = ?`
+	sql := `select id,code,name,ifnull(address,'') as address,ifnull(telephone,'') as telephone,bill_credit from Customer where id = ?`
 	err = cr.db.Get(&cust, sql, req.Id)
 	if err != nil {
 		fmt.Println("err = ", err.Error())
@@ -41,10 +42,10 @@ func (cr *customerRepository) SearchById(req *customer.SearchByIdTemplate) (resp
 	}, nil
 }
 
-func (cr *customerRepository) SearchByKeyword(req *customer.SearchByKeywordTemplate) (resp interface{}, err error) {//(doc_no like CONCAT("%",?,"%"))
+func (cr *customerRepository) SearchByKeyword(req *customer.SearchByKeywordTemplate) (resp interface{}, err error) { //(doc_no like CONCAT("%",?,"%"))
 	custs := []CustomerModel{}
 
-	sql := `select id,code,name,ifnull(address,'') as address,ifnull(telephone,'') as telephone from Customer where (code like concat('%',?,'%') or name like concat('%',?,'%') or address like concat('%',?,'%'))`
+	sql := `select id,code,name,ifnull(address,'') as address,ifnull(telephone,'') as telephone,bill_credit from Customer where (code like concat('%',?,'%') or name like concat('%',?,'%') or address like concat('%',?,'%')) order by code limit 20`
 	err = cr.db.Select(&custs, sql, req.Keyword, req.Keyword, req.Keyword)
 	fmt.Println(sql)
 	if err != nil {
@@ -72,5 +73,6 @@ func map_customer_template(x CustomerModel) customer.CustomerTemplate {
 		Name:      x.Name,
 		Address:   x.Address,
 		Telephone: x.Telephone,
+		BillCredit:x.BillCredit,
 	}
 }

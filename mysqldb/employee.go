@@ -20,7 +20,7 @@ func NewEmployeeRepository(db *sqlx.DB) employee.Repository {
 
 func (em *employeeRepository) SearchById(req *employee.SearchByIdTemplate) (resp interface{}, err error) {
 	emp := EmployeeModel{}
-	sql := `select Id,SaleCode, SaleName from Sale where Activestatus =1 and id = ?`
+	sql := `select Id, SaleCode, SaleName from Sale where Activestatus =1 and id = ?`
 	err = em.db.Get(&emp, sql, req.Id)
 	if err != nil {
 		fmt.Println("error =", err.Error())
@@ -39,7 +39,7 @@ func (em *employeeRepository) SearchById(req *employee.SearchByIdTemplate) (resp
 func (em *employeeRepository) SearchByKeyword(req *employee.SearchByKeywordTemplate) (resp interface{}, err error) {
 	emps := []EmployeeModel{}
 
-	sql := `select Id,SaleCode, SaleName from Sale where Activestatus =1 and (SaleCode like concat('%',?,'%') or SaleName like concat('%',?,'%'))`
+	sql := `select Id,SaleCode, SaleName from Sale where Activestatus =1 and (SaleCode like concat('%',?,'%') or SaleName like concat('%',?,'%')) order by SaleCode limit 20`
 	err = em.db.Select(&emps, sql, req.Keyword, req.Keyword)
 	if err != nil {
 		fmt.Println("error =", err.Error())

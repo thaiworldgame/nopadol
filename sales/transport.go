@@ -72,36 +72,36 @@ func responseEncoder(w http.ResponseWriter, r *http.Request, v interface{}) {
 func errorEncoder(w http.ResponseWriter, r *http.Request, err error) {
 	encoder := jsonEncoder
 
-	var status = http.StatusNoContent
+	var status = http.StatusOK
 
 	fmt.Println("Error Encode = ", err.Error())
 	switch err.Error() {
 	case StatusNotFound.Error():
-		status = http.StatusNotFound
+		status = http.StatusOK
 	case ArCodeNull.Error():
-		status = http.StatusNotFound
+		status = http.StatusOK
 	case NotHaveItem.Error():
-		status = http.StatusNotFound
+		status = http.StatusOK
 	case NotHavePayMoney.Error():
-		status = http.StatusNotFound
+		status = http.StatusOK
 	case NotHaveSumOfItem.Error():
-		status = http.StatusNotFound
+		status = http.StatusOK
 	case ItemNotHaveQty.Error():
-		status = http.StatusNotFound
+		status = http.StatusOK
 	case ItemNotHaveUnit.Error():
-		status = http.StatusNotFound
+		status = http.StatusOK
 	case MoneyOverTotalAmount.Error():
-		status = http.StatusNotFound
+		status = http.StatusOK
 	case MoneyLessThanTotalAmount.Error():
-		status = http.StatusNotFound
+		status = http.StatusOK
 	case PosNotHaveDate.Error():
-		status = http.StatusNotFound
+		status = http.StatusOK
 	case PosNotHaveChqData.Error():
-		status = http.StatusNotFound
+		status = http.StatusOK
 	case PosNotHaveCreditCardData.Error():
-		status = http.StatusNotFound
+		status = http.StatusOK
 	default:
-		status = http.StatusForbidden
+		status = http.StatusOK
 	}
 
 	encoder(w, status, &errorResponse{err.Error()})

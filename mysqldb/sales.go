@@ -8,10 +8,10 @@ import (
 	"time"
 	"strconv"
 	"errors"
-	"net/http"
-	"bytes"
-	"encoding/json"
-	"log"
+	//"net/http"
+	//"bytes"
+	//"encoding/json"
+	//"log"
 )
 
 type NewQuoModel struct {
@@ -32,9 +32,12 @@ type NewQuoModel struct {
 	RefNo               string            `db:"RefNo"`
 	IsConfirm           int64             `db:"IsConfirm"`
 	BillStatus          int64             `db:"BillStatus"`
+	Validity            int64             `db:"Validity"`
 	CreditDay           int64             `db:"CreditDay"`
 	DueDate             string            `db:"DueDate"`
+	ExpireDay           int64             `db:"ExpireDay"`
 	ExpireDate          string            `db:"ExpireDate"`
+	DeliveryDay         int64             `db:"DeliveryDay"`
 	DeliveryDate        string            `db:"DeliveryDate"`
 	AssertStatus        int64             `db:"AssertStatus"`
 	IsConditionSend     int64             `db:"IsConditionSend"`
@@ -48,6 +51,7 @@ type NewQuoModel struct {
 	TotalAmount         float64           `db:"TotalAmount"`
 	NetDebtAmount       float64           `db:"NetDebtAmount"`
 	ProjectId           int64             `db:"ProjectId"`
+	AllocateId          int64             `db:"AllocateId"`
 	IsCancel            int64             `db:"IsCancel"`
 	CreateBy            string            `db:"CreateBy"`
 	CreateTime          string            `db:"CreateTime"`
@@ -229,7 +233,7 @@ func (repo *salesRepository) CreateQuo(req *sales.NewQuoTemplate) (resp interfac
 	var count_item_qty int
 	var count_item_unit int
 	var sum_item_amount float64
-	var new_doc_no string
+	//var new_doc_no string
 
 	def := config.Default{}
 	def = config.LoadDefaultData("config/config.json")
@@ -268,12 +272,24 @@ func (repo *salesRepository) CreateQuo(req *sales.NewQuoTemplate) (resp interfac
 		}
 	}
 
-	sqlexist := `select count(DocNo) as check_exist from Quotation where DocNo = ?`
+	switch {
+	case req.DocNo == "":
+		fmt.Println("error =", "Docno is null")
+		return nil, errors.New("Docno is null")
+	}
+
+	sqlexist := `select count(DocNo) as check_exist from Quotation where id = ?`
 	fmt.Println("DocNo =", req.DocNo)
-	err = repo.db.Get(&check_doc_exist, sqlexist, req.DocNo)
+	err = repo.db.Get(&check_doc_exist, sqlexist, req.Id)
 	if err != nil {
 		fmt.Println("Error = ", err.Error())
 		return nil, err
+	}
+
+	switch {
+	case check_doc_exist != 0:
+		fmt.Println("error =", "Docno is null")
+		return nil, errors.New("Docno is null")
 	}
 
 	if (check_doc_exist == 0) {
@@ -300,41 +316,39 @@ func (repo *salesRepository) CreateQuo(req *sales.NewQuoTemplate) (resp interfac
 		//}
 
 		//API Get Post API
-		url := "http://venus.nopadol.com:8081/gendocno/v1/gen"
-		var jsonStr []byte
+		//url := "http://venus.nopadol.com:8081/gendocno/v1/gen"
+		//var jsonStr []byte
+		//
+		////append(jsonStr, "":"")
+		//
+		//if req.BillType == 0 {
+		//	jsonStr = []byte(`{"table_code":"QT","bill_type":0}`)
+		//} else {
+		//	jsonStr = []byte(`{"table_code":"QT","bill_type":1}`)
+		//}
+		//
+		//reqs, err := http.NewRequest("POST", url, bytes.NewBuffer(jsonStr))
+		//reqs.Header.Set("X-Custom-Header", "myvalue")
+		//reqs.Header.Set("Content-Type", "application/json")
+		//
+		//client := &http.Client{}
+		//resp, err := client.Do(reqs)
+		//if err != nil {
+		//	panic(err)
+		//}
+		//defer resp.Body.Close()
+		//
+		//if err := json.NewDecoder(resp.Body).Decode(&new_doc_no); err != nil {
+		//	log.Println(err)
+		//}
+		//
+		//req.DocNo = new_doc_no
+		//
+		//fmt.Println("Docno =", req.DocNo, new_doc_no)
 
-		if req.BillType == 0 {
-			jsonStr = []byte(`{"table_code":"QT","bill_type":0}`)
-		} else {
-			jsonStr = []byte(`{"table_code":"QT","bill_type":1}`)
-		}
-
-		reqs, err := http.NewRequest("POST", url, bytes.NewBuffer(jsonStr))
-		reqs.Header.Set("X-Custom-Header", "myvalue")
-		reqs.Header.Set("Content-Type", "application/json")
-
-		client := &http.Client{}
-		resp, err := client.Do(reqs)
-		if err != nil {
-			panic(err)
-		}
-		defer resp.Body.Close()
-
-		if err := json.NewDecoder(resp.Body).Decode(&new_doc_no); err != nil {
-			log.Println(err)
-		}
-
-		req.DocNo = new_doc_no
-
-		fmt.Println("Docno =", req.DocNo, new_doc_no)
-		switch {
-		case req.DocNo == "":
-			fmt.Println("error =", "Docno is null")
-			return nil, errors.New("Docno is null")
-		}
 		req.BeforeTaxAmount, req.TaxAmount, req.TotalAmount = config.CalcTaxItem(req.TaxType, req.TaxRate, req.AfterDiscountAmount)
 
-		sql := `INSERT INTO Quotation(DocNo,DocDate,BillType,ArId,ArCode,ArName,SaleId,SaleCode,SaleName,DepartCode,RefNo,TaxType,TaxRate,DueDate,ExpireDate,DeliveryDate,AssertStatus,IsConditionSend,MyDescription,SumOfItemAmount,DiscountWord,DiscountAmount,AfterDiscountAmount,BeforeTaxAmount,TaxAmount,TotalAmount,NetDebtAmount,ProjectId,CreateBy,CreateTime) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`
+		sql := `INSERT INTO Quotation(DocNo,DocDate,BillType,ArId,ArCode,ArName,SaleId,SaleCode,SaleName,DepartCode,RefNo,TaxType,TaxRate,DueDate,ExpireDate,DeliveryDate,AssertStatus,IsConditionSend,MyDescription,SumOfItemAmount,DiscountWord,DiscountAmount,AfterDiscountAmount,BeforeTaxAmount,TaxAmount,TotalAmount,NetDebtAmount,ProjectId,CreateBy,CreateTime,Validity,CreditDay,ExpireDay,DeliveryDay,AllocateId) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`
 		res, err := repo.db.Exec(sql,
 			req.DocNo,
 			req.DocDate,
@@ -365,7 +379,12 @@ func (repo *salesRepository) CreateQuo(req *sales.NewQuoTemplate) (resp interfac
 			req.NetDebtAmount,
 			req.ProjectId,
 			req.CreateBy,
-			req.CreateTime)
+			req.CreateTime,
+			req.Validity,
+			req.CreditDay,
+			req.ExpireDay,
+			req.DeliveryDay,
+			req.AllocateId)
 
 		fmt.Println("query=", sql, "Hello")
 		if err != nil {
@@ -407,9 +426,11 @@ func (repo *salesRepository) CreateQuo(req *sales.NewQuoTemplate) (resp interfac
 		}
 
 	} else {
-		sql := `Update Quotation set DocDate=?,BillType=?,ArId=?,ArCode=?,ArName=?,SaleId=?,SaleCode=?,SaleName=?,DepartCode=?,RefNo=?,TaxType=?,TaxRate=?,DueDate=?,ExpireDate=?,DeliveryDate=?,AssertStatus=?,IsConditionSend=?,MyDescription=?,SumOfItemAmount=?,DiscountWord=?,DiscountAmount=?,AfterDiscountAmount=?,BeforeTaxAmount=?,TaxAmount=?,TotalAmount=?,NetDebtAmount=?,ProjectId=?,EditBy=?,EditTime=? where DocNo=?`
+		req.EditBy = req.CreateBy
+
+		sql := `Update Quotation set DocDate=?,BillType=?,ArId=?,ArCode=?,ArName=?,SaleId=?,SaleCode=?,SaleName=?,DepartCode=?,RefNo=?,TaxType=?,TaxRate=?,DueDate=?,ExpireDate=?,DeliveryDate=?,AssertStatus=?,IsConditionSend=?,MyDescription=?,SumOfItemAmount=?,DiscountWord=?,DiscountAmount=?,AfterDiscountAmount=?,BeforeTaxAmount=?,TaxAmount=?,TotalAmount=?,NetDebtAmount=?,ProjectId=?,EditBy=?,EditTime=? where Id=?`
 		fmt.Println("sql update = ", sql)
-		id, err := repo.db.Exec(sql, req.DocDate, req.BillType, req.ArId, req.ArCode, req.ArName, req.SaleId, req.SaleCode, req.SaleName, req.DepartCode, req.RefNo, req.TaxType, req.TaxRate, req.DueDate, req.ExpireDate, req.DeliveryDate, req.AssertStatus, req.IsConditionSend, req.MyDescription, req.SumOfItemAmount, req.DiscountWord, req.DiscountAmount, req.AfterDiscountAmount, req.BeforeTaxAmount, req.TaxAmount, req.TotalAmount, req.NetDebtAmount, req.ProjectId, req.EditBy, req.EditTime, req.DocNo)
+		id, err := repo.db.Exec(sql, req.DocDate, req.BillType, req.ArId, req.ArCode, req.ArName, req.SaleId, req.SaleCode, req.SaleName, req.DepartCode, req.RefNo, req.TaxType, req.TaxRate, req.DueDate, req.ExpireDate, req.DeliveryDate, req.AssertStatus, req.IsConditionSend, req.MyDescription, req.SumOfItemAmount, req.DiscountWord, req.DiscountAmount, req.AfterDiscountAmount, req.BeforeTaxAmount, req.TaxAmount, req.TotalAmount, req.NetDebtAmount, req.ProjectId, req.EditBy, req.EditTime, req.Id)
 		if err != nil {
 			fmt.Println("Error = ", err.Error())
 			return nil, err
@@ -458,6 +479,7 @@ func (repo *salesRepository) CreateQuo(req *sales.NewQuoTemplate) (resp interfac
 	}
 
 	return map[string]interface{}{
+		"id":       req.Id,
 		"doc_no":   req.DocNo,
 		"doc_date": req.DocDate,
 		"ar_code":  req.ArCode,
@@ -644,11 +666,24 @@ func (repo *salesRepository) CreateSale(req *sales.NewSaleTemplate) (resp interf
 			count_item_unit = count_item_unit + 1
 		}
 	}
+
+	switch {
+	case req.DocNo == "":
+		fmt.Println("error =", "Docno is null")
+		return nil, errors.New("Docno is null")
+	}
+
 	sqlexist := `select count(DocNo) as check_exist from SaleOrder where DocNo = ?`
 	err = repo.db.Get(&check_doc_exist, sqlexist, req.DocNo)
 	if err != nil {
 		fmt.Println("Error = ", err.Error())
 		return nil, err
+	}
+
+	switch {
+	case check_doc_exist != 0:
+		fmt.Println("error =", "Docno is exist")
+		return nil, errors.New("Docno is exist")
 	}
 
 	fmt.Println("SOStatus =", req.SoStatus, new_doc_no)
@@ -677,37 +712,32 @@ func (repo *salesRepository) CreateSale(req *sales.NewSaleTemplate) (resp interf
 	//}
 
 	//API Get Post API
-	url := "http://venus.nopadol.com:8081/gendocno/v1/gen"
-	var jsonStr []byte
+	//url := "http://venus.nopadol.com:8081/gendocno/v1/gen"
+	//var jsonStr []byte
+	//
+	//if req.BillType == 0 {
+	//	jsonStr = []byte(`{"table_code":"SO","bill_type":0}`)
+	//} else {
+	//	jsonStr = []byte(`{"table_code":"SO","bill_type":1}`)
+	//}
+	//
+	//reqs, err := http.NewRequest("POST", url, bytes.NewBuffer(jsonStr))
+	//reqs.Header.Set("X-Custom-Header", "myvalue")
+	//reqs.Header.Set("Content-Type", "application/json")
+	//
+	//client := &http.Client{}
+	//resp1, err := client.Do(reqs)
+	//if err != nil {
+	//	panic(err)
+	//}
+	//defer resp1.Body.Close()
+	//
+	//if err := json.NewDecoder(resp1.Body).Decode(&new_doc_no); err != nil {
+	//	log.Println(err)
+	//}
 
-	if req.BillType == 0 {
-		jsonStr = []byte(`{"table_code":"SO","bill_type":0}`)
-	} else {
-		jsonStr = []byte(`{"table_code":"SO","bill_type":1}`)
-	}
+	//req.DocNo = new_doc_no
 
-	reqs, err := http.NewRequest("POST", url, bytes.NewBuffer(jsonStr))
-	reqs.Header.Set("X-Custom-Header", "myvalue")
-	reqs.Header.Set("Content-Type", "application/json")
-
-	client := &http.Client{}
-	resp1, err := client.Do(reqs)
-	if err != nil {
-		panic(err)
-	}
-	defer resp1.Body.Close()
-
-	if err := json.NewDecoder(resp1.Body).Decode(&new_doc_no); err != nil {
-		log.Println(err)
-	}
-
-	req.DocNo = new_doc_no
-
-	switch {
-	case req.DocNo == "":
-		fmt.Println("error =", "Docno is null")
-		return nil, errors.New("Docno is null")
-	}
 	req.BeforeTaxAmount, req.TaxAmount, req.TotalAmount = config.CalcTaxItem(req.TaxType, req.TaxRate, req.AfterDiscountAmount)
 
 	sql := `INSERT INTO SaleOrder(DocNo,DocDate,BillType,TaxType,ArId,ArCode,ArName,SaleId,SaleCode,SaleName,DepartCode,CreditDay,DueDate,DeliveryDate,TaxRate,IsConfirm,MyDescription,BillStatus,SoStatus,HoldingStatus,SumOfItemAmount,DiscountWord,DiscountAmount,AfterDiscountAmount,BeforeTaxAmount,TaxAmount,TotalAmount,NetDebtAmount,IsCancel,IsConditionSend,JobId,ProjectId,AllocateId,CreateBy,CreateTime) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`
@@ -756,9 +786,13 @@ func (repo *salesRepository) CreateSale(req *sales.NewSaleTemplate) (resp interf
 	id, _ := res.LastInsertId()
 	req.Id = id
 
+	var vLineNumber int
+	vLineNumber = 0
+
 	for _, sub := range req.Subs {
 		fmt.Println("ArId Sub = ", req.ArId)
 		fmt.Println("SaleId Sub = ", req.SaleId)
+		sub.LineNumber = vLineNumber
 		sqlsub := `INSERT INTO SaleOrderSub(SOId,ArId,SaleId,ItemId,ItemCode,BarCode,ItemName,WhCode,ShelfCode,Qty,RemainQty,UnitCode,Price,DiscountWord,DiscountAmount,ItemAmount,ItemDescription,RefNo,QuoId,IsCancel,PackingRate1,RefLineNumber,LineNumber) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`
 		_, err := repo.db.Exec(sqlsub,
 			req.Id,
@@ -784,6 +818,8 @@ func (repo *salesRepository) CreateSale(req *sales.NewSaleTemplate) (resp interf
 			sub.PackingRate1,
 			sub.RefLineNumber,
 			sub.LineNumber)
+
+		vLineNumber = vLineNumber + 1
 		if err != nil {
 			return "Insert SaleOrder Not Success", err
 		}

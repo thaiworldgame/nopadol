@@ -71,9 +71,9 @@ func errorEncoder(w http.ResponseWriter, r *http.Request, err error) {
 	fmt.Println("Error Encode = ", err)
 	switch err.Error() {
 	case StatusNotFound.Error():
-		status = http.StatusNotFound
+		status = http.StatusOK
 	default:
-		status = http.StatusNoContent
+		status = http.StatusOK
 	}
 
 	encoder(w, status, &errorResponse{err.Error()})
