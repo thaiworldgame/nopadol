@@ -35,7 +35,7 @@ type NewQuoModel struct {
 	Validity            int64             `db:"Validity"`
 	CreditDay           int64             `db:"CreditDay"`
 	DueDate             string            `db:"DueDate"`
-	ExpireDay           int64             `db:"ExpireDay"`
+	ExpireCredit        int64             `db:"ExpireCredit"`
 	ExpireDate          string            `db:"ExpireDate"`
 	DeliveryDay         int64             `db:"DeliveryDay"`
 	DeliveryDate        string            `db:"DeliveryDate"`
@@ -348,7 +348,7 @@ func (repo *salesRepository) CreateQuo(req *sales.NewQuoTemplate) (resp interfac
 
 		req.BeforeTaxAmount, req.TaxAmount, req.TotalAmount = config.CalcTaxItem(req.TaxType, req.TaxRate, req.AfterDiscountAmount)
 
-		sql := `INSERT INTO Quotation(DocNo,DocDate,BillType,ArId,ArCode,ArName,SaleId,SaleCode,SaleName,DepartCode,RefNo,TaxType,TaxRate,DueDate,ExpireDate,DeliveryDate,AssertStatus,IsConditionSend,MyDescription,SumOfItemAmount,DiscountWord,DiscountAmount,AfterDiscountAmount,BeforeTaxAmount,TaxAmount,TotalAmount,NetDebtAmount,ProjectId,CreateBy,CreateTime,Validity,CreditDay,ExpireDay,DeliveryDay,AllocateId) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`
+		sql := `INSERT INTO Quotation(DocNo,DocDate,BillType,ArId,ArCode,ArName,SaleId,SaleCode,SaleName,DepartCode,RefNo,TaxType,TaxRate,DueDate,ExpireDate,DeliveryDate,AssertStatus,IsConditionSend,MyDescription,SumOfItemAmount,DiscountWord,DiscountAmount,AfterDiscountAmount,BeforeTaxAmount,TaxAmount,TotalAmount,NetDebtAmount,ProjectId,CreateBy,CreateTime,Validity,CreditDay,ExpireCredit,DeliveryDay,AllocateId) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`
 		res, err := repo.db.Exec(sql,
 			req.DocNo,
 			req.DocDate,
@@ -382,7 +382,7 @@ func (repo *salesRepository) CreateQuo(req *sales.NewQuoTemplate) (resp interfac
 			req.CreateTime,
 			req.Validity,
 			req.CreditDay,
-			req.ExpireDay,
+			req.ExpireCredit,
 			req.DeliveryDay,
 			req.AllocateId)
 

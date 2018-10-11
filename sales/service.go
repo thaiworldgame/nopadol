@@ -48,6 +48,8 @@ func (s *service) CreateQuo(req *NewQuoTemplate) (interface{}, error) {
 		}
 	}
 
+	fmt.Println("Count Item", count_item)
+
 	switch {
 	case req.ArCode == "":
 		return nil, errors.New("Arcode is null")

@@ -27,7 +27,7 @@ type (
 		Validity            int64               `json:"validity"`
 		CreditDay           int64               `json:"credit_day"`
 		DueDate             string              `json:"due_date"`
-		ExpireDay           int64               `json:"expire_day"`
+		ExpireCredit        int64               `json:"expire_credit"`
 		ExpireDate          string              `json:"expire_date"`
 		DeliveryDay         int64               `json:"delivery_day"`
 		DeliveryDate        string              `json:"delivery_date"`
@@ -197,7 +197,7 @@ func CreateQuo(s Service) interface{} {
 			AllocateId:          req.AllocateId,
 			Validity:            req.Validity,
 			CreditDay:           req.CreditDay,
-			ExpireDay:           req.ExpireDay,
+			ExpireCredit:        req.ExpireCredit,
 			DeliveryDay:         req.DeliveryDay,
 			DocNo:               req.DocNo,
 			DocDate:             req.DocDate,
@@ -242,51 +242,59 @@ func map_quo_request(x *NewQuoRequest) NewQuoTemplate {
 	var subs []NewQuoItemTemplate
 
 	return NewQuoTemplate{
-		DocNo:    x.DocNo,
-		DocDate:  x.DocDate,
-		BillType: x.BillType,
-		//ArId:                x.ArId,
-		//ArName:              x.ArName,
-		//ArCode:              x.ArCode,
-		//SaleId:              x.SaleId,
-		//SaleCode:            x.SaleCode,
-		//SaleName:            x.SaleName,
-		//TaxType:             x.TaxType,
-		//TaxRate:             x.TaxRate,
-		//RefNo:               x.RefNo,
-		//DepartCode:          x.DepartCode,
-		//DueDate:             x.DueDate,
-		//ExpireDate:          x.ExpireDate,
-		//DeliveryDate:        x.DeliveryDate,
-		//IsConditionSend:     x.IsConditionSend,
-		//MyDescription:       x.MyDescription,
-		//SumOfItemAmount:     x.SumOfItemAmount,
-		//DiscountWord:        x.DiscountWord,
-		//DiscountAmount:      x.DiscountAmount,
-		//AfterDiscountAmount: x.AfterDiscountAmount,
-		//BeforeTaxAmount:     x.BeforeTaxAmount,
-		//TaxAmount:           x.TaxAmount,
-		//TotalAmount:         x.TotalAmount,
-		//CreateBy:            x.CreateBy,
-		Subs: subs,
+		AllocateId:   x.AllocateId,
+		AssertStatus: x.AssertStatus,
+		CreditDay:    x.CreditDay,
+		CreateTime:   x.CreateTime,
+		DeliveryDay:  x.DeliveryDay,
+		DocType:      x.DocType,
+		ExpireCredit:    x.ExpireCredit,
+
+		DocNo:               x.DocNo,
+		DocDate:             x.DocDate,
+		BillType:            x.BillType,
+		ArId:                x.ArId,
+		ArName:              x.ArName,
+		ArCode:              x.ArCode,
+		SaleId:              x.SaleId,
+		SaleCode:            x.SaleCode,
+		SaleName:            x.SaleName,
+		TaxType:             x.TaxType,
+		TaxRate:             x.TaxRate,
+		RefNo:               x.RefNo,
+		DepartCode:          x.DepartCode,
+		DueDate:             x.DueDate,
+		ExpireDate:          x.ExpireDate,
+		DeliveryDate:        x.DeliveryDate,
+		IsConditionSend:     x.IsConditionSend,
+		MyDescription:       x.MyDescription,
+		SumOfItemAmount:     x.SumOfItemAmount,
+		DiscountWord:        x.DiscountWord,
+		DiscountAmount:      x.DiscountAmount,
+		AfterDiscountAmount: x.AfterDiscountAmount,
+		BeforeTaxAmount:     x.BeforeTaxAmount,
+		TaxAmount:           x.TaxAmount,
+		TotalAmount:         x.TotalAmount,
+		CreateBy:            x.CreateBy,
+		Subs:                subs,
 	}
 }
 
 func map_quo_sub_request(x NewQuoItemRequest) NewQuoItemTemplate {
 	return NewQuoItemTemplate{
-		ItemCode: x.ItemCode,
-		//BarCode:         x.BarCode,
-		//ItemName:        x.ItemName,
-		//Qty:             x.Qty,
-		//Price:           x.Price,
-		//DiscountWord:    x.DiscountWord,
-		//DiscountAmount:  x.DiscountAmount,
-		//UnitCode:        x.UnitCode,
-		//ItemAmount:      x.ItemAmount,
-		//ItemDescription: x.ItemDescription,
-		//PackingRate1:    x.PackingRate1,
-		//LineNumber:      x.LineNumber,
-		//IsCancel:        x.IsCancel,
+		ItemCode:        x.ItemCode,
+		BarCode:         x.BarCode,
+		ItemName:        x.ItemName,
+		Qty:             x.Qty,
+		Price:           x.Price,
+		DiscountWord:    x.DiscountWord,
+		DiscountAmount:  x.DiscountAmount,
+		UnitCode:        x.UnitCode,
+		ItemAmount:      x.ItemAmount,
+		ItemDescription: x.ItemDescription,
+		PackingRate1:    x.PackingRate1,
+		LineNumber:      x.LineNumber,
+		IsCancel:        x.IsCancel,
 	}
 }
 
