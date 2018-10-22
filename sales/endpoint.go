@@ -10,10 +10,14 @@ type (
 		Id                  int64               `json:"id"`
 		DocNo               string              `json:"doc_no"`
 		DocDate             string              `json:"doc_date"`
+		CompanyId           int64               `json:"company_id"`
+		BranchId            int64               `json:"branch_id"`
 		DocType             int64               `json:"doc_type"`
 		ArId                int64               `json:"ar_id"`
 		ArCode              string              `json:"ar_code"`
 		ArName              string              `json:"ar_name"`
+		ArBillAddress       string              `json:"ar_bill_address"`
+		ArTelephone         string              `json:"ar_telephone"`
 		SaleId              int                 `json:"sale_id"`
 		SaleCode            string              `json:"sale_code"`
 		SaleName            string              `json:"sale_name"`
@@ -82,6 +86,8 @@ type (
 		ArId                int64                `json:"ar_id"`
 		ArCode              string               `json:"ar_code"`
 		ArName              string               `json:"ar_name"`
+		ArBillAddress       string               `json:"ar_bill_address"`
+		ArTelephone         string               `json:"ar_telephone"`
 		SaleId              int                  `json:"sale_id"`
 		SaleCode            string               `json:"sale_code"`
 		SaleName            string               `json:"sale_name"`
@@ -188,6 +194,8 @@ func CreateQuo(s Service) interface{} {
 		resp, err := s.CreateQuo(&NewQuoTemplate{
 			Id:                  req.Id,
 			DocType:             req.DocType,
+			CompanyId:           req.CompanyId,
+			BranchId:            req.BranchId,
 			AssertStatus:        req.AssertStatus,
 			BillStatus:          req.BillStatus,
 			IsCancel:            req.IsCancel,
@@ -242,14 +250,21 @@ func map_quo_request(x *NewQuoRequest) NewQuoTemplate {
 	var subs []NewQuoItemTemplate
 
 	return NewQuoTemplate{
-		AllocateId:   x.AllocateId,
-		AssertStatus: x.AssertStatus,
-		CreditDay:    x.CreditDay,
-		CreateTime:   x.CreateTime,
-		DeliveryDay:  x.DeliveryDay,
-		DocType:      x.DocType,
-		ExpireCredit:    x.ExpireCredit,
-
+		AllocateId:          x.AllocateId,
+		AssertStatus:        x.AssertStatus,
+		CreditDay:           x.CreditDay,
+		CreateTime:          x.CreateTime,
+		DeliveryDay:         x.DeliveryDay,
+		CompanyId:           x.CompanyId,
+		BranchId:            x.BranchId,
+		DocType:             x.DocType,
+		ExpireCredit:        x.ExpireCredit,
+		Id:                  x.Id,
+		IsConfirm:           x.IsConfirm,
+		IsCancel:            x.IsCancel,
+		NetDebtAmount:       x.NetDebtAmount,
+		ProjectId:           x.ProjectId,
+		Validity:            x.Validity,
 		DocNo:               x.DocNo,
 		DocDate:             x.DocDate,
 		BillType:            x.BillType,
@@ -282,6 +297,8 @@ func map_quo_request(x *NewQuoRequest) NewQuoTemplate {
 
 func map_quo_sub_request(x NewQuoItemRequest) NewQuoItemTemplate {
 	return NewQuoItemTemplate{
+		Id:              x.Id,
+		ItemId:          x.ItemId,
 		ItemCode:        x.ItemCode,
 		BarCode:         x.BarCode,
 		ItemName:        x.ItemName,

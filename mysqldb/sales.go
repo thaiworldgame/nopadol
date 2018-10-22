@@ -18,10 +18,14 @@ type NewQuoModel struct {
 	Id                  int64             `db:"Id"`
 	DocNo               string            `db:"DocNo"`
 	DocDate             string            `db:"DocDate"`
+	CompanyId           int64             `db:"CompanyId"`
+	BranchId            int64             `db:"BranchId"`
 	DocType             int64             `db:"DocType"`
 	ArId                int64             `db:"ArId"`
 	ArCode              string            `db:"ArCode"`
 	ArName              string            `db:"ArName"`
+	ArBillAddress       string            `db:"ArBillAddress"`
+	ArTelephone         string            `db:"ArTelephone"`
 	SaleId              int               `db:"SaleId"`
 	SaleCode            string            `db:"SaleCode"`
 	SaleName            string            `db:"SaleName"`
@@ -86,6 +90,8 @@ type NewSaleModel struct {
 	Id                  int64              `db:"Id"`
 	DocNo               string             `db:"DocNo"`
 	DocDate             string             `db:"DocDate"`
+	CompanyId           int64              `db:"CompanyId"`
+	BranchId            int64              `db:"BranchId"`
 	DocType             int64              `db:"DocType"`
 	ArId                int64              `db:"ArId"`
 	ArCode              string             `db:"ArCode"`
@@ -228,12 +234,11 @@ func NewSalesRepository(db *sqlx.DB) sales.Repository {
 }
 
 func (repo *salesRepository) CreateQuo(req *sales.NewQuoTemplate) (resp interface{}, err error) {
-	var check_doc_exist int
+	var check_doc_exist int64
 	var count_item int
 	var count_item_qty int
 	var count_item_unit int
 	var sum_item_amount float64
-	//var new_doc_no string
 
 	def := config.Default{}
 	def = config.LoadDefaultData("config/config.json")
@@ -252,17 +257,15 @@ func (repo *salesRepository) CreateQuo(req *sales.NewQuoTemplate) (resp interfac
 	req.EditTime = now.String()
 	req.CancelTime = now.String()
 
-	fmt.Println("DocDate =", req.DocDate)
+	fmt.Println("DocType = ", req.DocType)
 
 	for _, sub_item := range req.Subs {
 		if (sub_item.Qty != 0) {
 			count_item = count_item + 1
 
-			item_discount_amount_sub, err := strconv.ParseFloat(sub_item.DiscountWord, 64)
-			if err != nil {
-				fmt.Println(err)
-			}
-			sum_item_amount = sum_item_amount + (sub_item.Qty * (sub_item.Price - item_discount_amount_sub))
+			fmt.Println("Count Item =", count_item)
+
+			sum_item_amount = sum_item_amount + (sub_item.Qty * (sub_item.Price - sub_item.DiscountAmount))
 		}
 		if (sub_item.ItemCode != "" && sub_item.Qty == 0) {
 			count_item_qty = count_item_qty + 1
@@ -274,23 +277,18 @@ func (repo *salesRepository) CreateQuo(req *sales.NewQuoTemplate) (resp interfac
 
 	switch {
 	case req.DocNo == "":
-		fmt.Println("error =", "Docno is null")
 		return nil, errors.New("Docno is null")
 	}
 
 	sqlexist := `select count(DocNo) as check_exist from Quotation where id = ?`
-	fmt.Println("DocNo =", req.DocNo)
+	fmt.Println("DocNo Id", req.Id)
 	err = repo.db.Get(&check_doc_exist, sqlexist, req.Id)
 	if err != nil {
 		fmt.Println("Error = ", err.Error())
 		return nil, err
 	}
 
-	switch {
-	case check_doc_exist != 0:
-		fmt.Println("error =", "Docno is null")
-		return nil, errors.New("Docno is null")
-	}
+	fmt.Println("check_doc_exist", check_doc_exist)
 
 	if (check_doc_exist == 0) {
 		//API Call Get API
@@ -347,8 +345,9 @@ func (repo *salesRepository) CreateQuo(req *sales.NewQuoTemplate) (resp interfac
 		//fmt.Println("Docno =", req.DocNo, new_doc_no)
 
 		req.BeforeTaxAmount, req.TaxAmount, req.TotalAmount = config.CalcTaxItem(req.TaxType, req.TaxRate, req.AfterDiscountAmount)
+		req.NetDebtAmount = req.TotalAmount
 
-		sql := `INSERT INTO Quotation(DocNo,DocDate,BillType,ArId,ArCode,ArName,SaleId,SaleCode,SaleName,DepartCode,RefNo,TaxType,TaxRate,DueDate,ExpireDate,DeliveryDate,AssertStatus,IsConditionSend,MyDescription,SumOfItemAmount,DiscountWord,DiscountAmount,AfterDiscountAmount,BeforeTaxAmount,TaxAmount,TotalAmount,NetDebtAmount,ProjectId,CreateBy,CreateTime,Validity,CreditDay,ExpireCredit,DeliveryDay,AllocateId) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`
+		sql := `INSERT INTO Quotation(DocNo,DocDate,BillType,ArId,ArCode,ArName,SaleId,SaleCode,SaleName,DepartCode,RefNo,TaxType,TaxRate,DueDate,ExpireDate,DeliveryDate,AssertStatus,IsConditionSend,MyDescription,SumOfItemAmount,DiscountWord,DiscountAmount,AfterDiscountAmount,BeforeTaxAmount,TaxAmount,TotalAmount,NetDebtAmount,ProjectId,CreateBy,CreateTime,Validity,CreditDay,ExpireCredit,DeliveryDay,AllocateId,DocType,BranchId,CompanyId) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`
 		res, err := repo.db.Exec(sql,
 			req.DocNo,
 			req.DocDate,
@@ -384,7 +383,10 @@ func (repo *salesRepository) CreateQuo(req *sales.NewQuoTemplate) (resp interfac
 			req.CreditDay,
 			req.ExpireCredit,
 			req.DeliveryDay,
-			req.AllocateId)
+			req.AllocateId,
+			req.DocType,
+			req.BranchId,
+			req.CompanyId)
 
 		fmt.Println("query=", sql, "Hello")
 		if err != nil {
@@ -426,19 +428,25 @@ func (repo *salesRepository) CreateQuo(req *sales.NewQuoTemplate) (resp interfac
 		}
 
 	} else {
+		fmt.Println("Update")
 		req.EditBy = req.CreateBy
 
-		sql := `Update Quotation set DocDate=?,BillType=?,ArId=?,ArCode=?,ArName=?,SaleId=?,SaleCode=?,SaleName=?,DepartCode=?,RefNo=?,TaxType=?,TaxRate=?,DueDate=?,ExpireDate=?,DeliveryDate=?,AssertStatus=?,IsConditionSend=?,MyDescription=?,SumOfItemAmount=?,DiscountWord=?,DiscountAmount=?,AfterDiscountAmount=?,BeforeTaxAmount=?,TaxAmount=?,TotalAmount=?,NetDebtAmount=?,ProjectId=?,EditBy=?,EditTime=? where Id=?`
+		req.BeforeTaxAmount, req.TaxAmount, req.TotalAmount = config.CalcTaxItem(req.TaxType, req.TaxRate, req.AfterDiscountAmount)
+		req.NetDebtAmount = req.TotalAmount
+
+		sql := `Update Quotation set DocDate=?,BillType=?,ArId=?,ArCode=?,ArName=?,SaleId=?,SaleCode=?,SaleName=?,DepartCode=?,RefNo=?,TaxType=?,TaxRate=?,DueDate=?,ExpireDate=?,DeliveryDate=?,AssertStatus=?,IsConditionSend=?,MyDescription=?,SumOfItemAmount=?,DiscountWord=?,DiscountAmount=?,AfterDiscountAmount=?,BeforeTaxAmount=?,TaxAmount=?,TotalAmount=?,NetDebtAmount=?,ProjectId=?,EditBy=?,EditTime=?,AllocateId=?,DocType=?,CompanyId=?,BranchId=?,Validity=?,CreditDay=?,ExpireCredit=?,DeliveryDay=? where Id=?`
 		fmt.Println("sql update = ", sql)
-		id, err := repo.db.Exec(sql, req.DocDate, req.BillType, req.ArId, req.ArCode, req.ArName, req.SaleId, req.SaleCode, req.SaleName, req.DepartCode, req.RefNo, req.TaxType, req.TaxRate, req.DueDate, req.ExpireDate, req.DeliveryDate, req.AssertStatus, req.IsConditionSend, req.MyDescription, req.SumOfItemAmount, req.DiscountWord, req.DiscountAmount, req.AfterDiscountAmount, req.BeforeTaxAmount, req.TaxAmount, req.TotalAmount, req.NetDebtAmount, req.ProjectId, req.EditBy, req.EditTime, req.Id)
+		id, err := repo.db.Exec(sql, req.DocDate, req.BillType, req.ArId, req.ArCode, req.ArName, req.SaleId, req.SaleCode, req.SaleName, req.DepartCode, req.RefNo, req.TaxType, req.TaxRate, req.DueDate, req.ExpireDate, req.DeliveryDate, req.AssertStatus, req.IsConditionSend, req.MyDescription, req.SumOfItemAmount, req.DiscountWord, req.DiscountAmount, req.AfterDiscountAmount, req.BeforeTaxAmount, req.TaxAmount, req.TotalAmount, req.NetDebtAmount, req.ProjectId, req.EditBy, req.EditTime, req.AllocateId, req.DocType, req.CompanyId, req.BranchId, req.Validity, req.CreditDay, req.ExpireCredit, req.DeliveryDay, req.Id)
 		if err != nil {
 			fmt.Println("Error = ", err.Error())
 			return nil, err
 		}
 
-		lastId, err := id.RowsAffected()
-		req.Id = lastId
+		rowAffect, err := id.RowsAffected()
+		fmt.Println("Row Affect = ", rowAffect)
 	}
+
+	fmt.Println("ReqID=", req.Id)
 
 	sql_del_sub := `delete from QuotationSub where QuoId = ?`
 	_, err = repo.db.Exec(sql_del_sub, req.Id)
@@ -490,7 +498,7 @@ func (repo *salesRepository) SearchQuoById(req *sales.SearchByIdTemplate) (resp 
 
 	q := NewQuoModel{}
 
-	sql := `select   Id,DocNo,DocDate,BillType,ArId,ArCode,ArName,SaleId,SaleCode,SaleName,ifnull(DepartCode,'') as DepartCode,ifnull(RefNo,'') as RefNo,TaxType,IsConfirm,BillStatus,ifnull(DueDate,'') as DueDate,ifnull(ExpireDate,'') as ExpireDate,ifnull(DeliveryDate,'') as DeliveryDate,AssertStatus,IsConditionSend,ifnull(MyDescription,'') as MyDescription,SumOfItemAmount,ifnull(DiscountWord,'') as DiscountWord,DiscountAmount,AfterDiscountAmount,BeforeTaxAmount,TaxAmount,TotalAmount,NetDebtAmount,TaxRate,ProjectId,IsCancel,ifnull(CreateBy,'') as CreateBy,ifnull(CreateTime,'') as CreateTime,ifnull(EditBy,'') as EditBy,ifnull(EditTime,'') as EditTime,ifnull(CancelBy,'') as CancelBy,ifnull(CancelTime,'') as CancelTime from Quotation where Id =?`
+	sql := `select   	a.Id,DocNo,DocDate,DocType,Validity,BillType,ArId,ArCode,ArName,SaleId,SaleCode,SaleName,ifnull(DepartCode,'') as DepartCode,ifnull(RefNo,'') as RefNo,TaxType,IsConfirm,BillStatus,CreditDay,ifnull(DueDate,'') as DueDate,ExpireCredit,ifnull(ExpireDate,'') as ExpireDate,DeliveryDay,ifnull(DeliveryDate,'') as DeliveryDate,AssertStatus,IsConditionSend,ifnull(MyDescription,'') as MyDescription,SumOfItemAmount,ifnull(DiscountWord,'') as DiscountWord,DiscountAmount,AfterDiscountAmount,BeforeTaxAmount,TaxAmount,TotalAmount,NetDebtAmount,TaxRate,ProjectId,AllocateId,IsCancel,ifnull(CreateBy,'') as CreateBy,ifnull(CreateTime,'') as CreateTime,ifnull(EditBy,'') as EditBy,ifnull(EditTime,'') as EditTime,ifnull(CancelBy,'') as CancelBy,ifnull(CancelTime,'') as CancelTime,ifnull(b.address,'') as ArBillAddress,ifnull(b.telephone,'') as ArTelephone from 	Quotation a left join Customer b on a.ArId = b.id  where a.Id = ?`
 	err = repo.db.Get(&q, sql, req.Id)
 	if err != nil {
 		fmt.Println("err = ", err.Error())
@@ -501,7 +509,7 @@ func (repo *salesRepository) SearchQuoById(req *sales.SearchByIdTemplate) (resp 
 
 	subs := []NewQuoItemModel{}
 
-	sql_sub := `select a.ItemCode,a.ItemName,a.Qty,a.RemainQty,a.Price,ifnull(a.DiscountWord,'') as DiscountWord,DiscountAmount,ifnull(a.UnitCode,'') as UnitCode,ifnull(a.BarCode,'') as BarCode,ifnull(a.ItemDescription,'') as ItemDescription,a.PackingRate1,a.LineNumber,a.IsCancel from QuotationSub a  where QuoId = ? order by a.linenumber`
+	sql_sub := `select a.Id,a.QuoId,a.ItemId,a.ItemCode,a.ItemName,a.Qty,a.RemainQty,a.Price,ifnull(a.DiscountWord,'') as DiscountWord,DiscountAmount,ifnull(a.UnitCode,'') as UnitCode,ifnull(a.BarCode,'') as BarCode,ifnull(a.ItemDescription,'') as ItemDescription,a.ItemAmount,a.PackingRate1,a.LineNumber,a.IsCancel from QuotationSub a  where QuoId = ? order by a.linenumber`
 	err = repo.db.Select(&subs, sql_sub, q.Id)
 	if err != nil {
 		fmt.Println("err sub= ", err.Error())
@@ -564,6 +572,7 @@ func map_doc_template(x SearchDocModel) sales.SearchDocTemplate {
 func map_quo_template(x NewQuoModel) sales.NewQuoTemplate {
 	return sales.NewQuoTemplate{
 		Id:                  x.Id,
+		DocType:             x.DocType,
 		DocNo:               x.DocNo,
 		DocDate:             x.DocDate,
 		BillType:            x.BillType,
@@ -577,8 +586,12 @@ func map_quo_template(x NewQuoModel) sales.NewQuoTemplate {
 		RefNo:               x.RefNo,
 		TaxType:             x.TaxType,
 		TaxRate:             x.TaxRate,
+		Validity:            x.Validity,
+		CreditDay:           x.CreditDay,
 		DueDate:             x.DueDate,
+		ExpireCredit:        x.ExpireCredit,
 		ExpireDate:          x.ExpireDate,
+		DeliveryDay:         x.DeliveryDay,
 		DeliveryDate:        x.DeliveryDate,
 		AssertStatus:        x.AssertStatus,
 		IsConditionSend:     x.IsConditionSend,
@@ -592,6 +605,7 @@ func map_quo_template(x NewQuoModel) sales.NewQuoTemplate {
 		TotalAmount:         x.TotalAmount,
 		NetDebtAmount:       x.NetDebtAmount,
 		ProjectId:           x.ProjectId,
+		AllocateId:          x.AllocateId,
 		CreateBy:            x.CreateBy,
 		CreateTime:          x.CreateTime,
 		EditBy:              x.EditBy,
@@ -630,6 +644,7 @@ func (repo *salesRepository) CreateSale(req *sales.NewSaleTemplate) (resp interf
 	var count_item_unit int
 	var sum_item_amount float64
 	var new_doc_no string
+	var item_discount_amount_sub float64
 
 	def := config.Default{}
 	def = config.LoadDefaultData("config/config.json")
@@ -653,10 +668,15 @@ func (repo *salesRepository) CreateSale(req *sales.NewSaleTemplate) (resp interf
 		if (sub_item.Qty != 0) {
 			count_item = count_item + 1
 
-			item_discount_amount_sub, err := strconv.ParseFloat(sub_item.DiscountWord, 64)
-			if err != nil {
-				fmt.Println(err)
+			if sub_item.DiscountWord != "" {
+				item_discount_amount_sub, err = strconv.ParseFloat(sub_item.DiscountWord, 64)
+				if err != nil {
+					fmt.Println(err)
+				}
+			} else {
+				item_discount_amount_sub = 0
 			}
+
 			sum_item_amount = sum_item_amount + (sub_item.Qty * (sub_item.Price - item_discount_amount_sub))
 		}
 		if (sub_item.ItemCode != "" && sub_item.Qty == 0) {
@@ -681,7 +701,7 @@ func (repo *salesRepository) CreateSale(req *sales.NewSaleTemplate) (resp interf
 	}
 
 	switch {
-	case check_doc_exist != 0:
+	case check_doc_exist == 0:
 		fmt.Println("error =", "Docno is exist")
 		return nil, errors.New("Docno is exist")
 	}

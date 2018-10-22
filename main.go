@@ -23,6 +23,7 @@ import (
 	printservice "github.com/mrtomyum/nopadol/print"
 	salesservice "github.com/mrtomyum/nopadol/sales"
 	gendocnoservice "github.com/mrtomyum/nopadol/gendocno"
+	envservice "github.com/mrtomyum/nopadol/environment"
 )
 
 var mysql_np *sqlx.DB
@@ -180,6 +181,9 @@ func main() {
 	gendocnoRepo := mysqldb.NewGenDocNoRepository(mysql_np)
 	gendocnoService := gendocnoservice.New(gendocnoRepo)
 
+	envRepo := mysqldb.NewEnvironmentRepository(mysql_np)
+	envService := envservice.New(envRepo)
+
 	mux := http.NewServeMux()
 	mux.Handle("/delivery/", http.StripPrefix("/delivery", delivery.MakeHandler(doService)))
 	mux.Handle("/customer/", http.StripPrefix("/customer/v1", customerservice.MakeHandler(customerService)))
@@ -190,6 +194,7 @@ func main() {
 	mux.Handle("/print/", http.StripPrefix("/print/v1", printservice.MakeHandler(printService)))
 	mux.Handle("/sales/", http.StripPrefix("/sales/v1", salesservice.MakeHandler(salesService)))
 	mux.Handle("/gendocno/", http.StripPrefix("/gendocno/v1", gendocnoservice.MakeHandler(gendocnoService)))
+	mux.Handle("/env/",http.StripPrefix("/env/v1",envservice.MakeHandler(envService)))
 	http.ListenAndServe(":8081", mux)
 }
 

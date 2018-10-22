@@ -40,7 +40,7 @@ func (repo *gendocnoRepository) Gen(req *gendocno.DocNoTemplate) (resp string, e
 	var vmonth string
 	var vmonth1 string
 	var lenmonth int
-	var vbranch_head string
+	//var vbranch_head string
 
 	fmt.Println("Table = ", req.TableCode)
 	fmt.Println("BillType = ", req.BillType)
@@ -96,13 +96,13 @@ func (repo *gendocnoRepository) Gen(req *gendocno.DocNoTemplate) (resp string, e
 
 	vHeader = d.Header
 
-	if d.BillType == 0 {
-		vbranch_head = "S01"
-	} else {
-		vbranch_head = "W01"
-	}
+	//if d.BillType == 0 {
+	//	vbranch_head = "S01"
+	//} else {
+	//	vbranch_head = "W01"
+	//}
 
-	NewDocNo := vbranch_head + "-" + d.Header + vyear1 + vmonth1 + "-" + snumber
+	NewDocNo := d.Header + vyear1 + vmonth1 + "-" + snumber
 	fmt.Println(snumber)
 	fmt.Println(vHeader)
 
@@ -114,6 +114,8 @@ func (repo *gendocnoRepository) Gen(req *gendocno.DocNoTemplate) (resp string, e
 func GetLastDocNo(db *sqlx.DB, branch_id int64, table_code string, formatnum int64, bill_type int64) (last_no int, err error) {
 	var sql string
 	var sqlcase string
+
+	fmt.Println("GetLastDocNo")
 
 	switch table_code {
 	case "QT":
@@ -131,8 +133,8 @@ func GetLastDocNo(db *sqlx.DB, branch_id int64, table_code string, formatnum int
 	fmt.Println("Query = ", sql)
 	err = db.Get(&last_no, sql, formatnum, branch_id, bill_type)
 	if err != nil {
-		fmt.Println(err)
-		return 1, err
+		//fmt.Println("Last No Error = ",err)
+		return 1, nil
 	}
 
 	fmt.Println("Last No = ", last_no)

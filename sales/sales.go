@@ -4,10 +4,14 @@ type NewQuoTemplate struct {
 	Id                  int64                `json:"id"`
 	DocNo               string               `json:"doc_no"`
 	DocDate             string               `json:"doc_date"`
+	CompanyId           int64                `json:"company_id"`
+	BranchId            int64                `json:"branch_id"`
 	DocType             int64                `json:"doc_type"`
 	ArId                int64                `json:"ar_id"`
 	ArCode              string               `json:"ar_code"`
 	ArName              string               `json:"ar_name"`
+	ArBillAddress       string               `json:"ar_bill_address"`
+	ArTelephone         string               `json:"ar_telephone"`
 	SaleId              int                  `json:"sale_id"`
 	SaleCode            string               `json:"sale_code"`
 	SaleName            string               `json:"sale_name"`
@@ -72,10 +76,14 @@ type NewSaleTemplate struct {
 	Id                  int64                 `json:"id"`
 	DocNo               string                `json:"doc_no"`
 	DocDate             string                `json:"doc_date"`
+	CompanyId           int64                 `json:"company_id"`
+	BranchId            int64                 `json:"branch_id"`
 	DocType             int64                 `json:"doc_type"`
 	ArId                int64                 `json:"ar_id"`
 	ArCode              string                `json:"ar_code"`
 	ArName              string                `json:"ar_name"`
+	ArBillAddress       string                `json:"ar_bill_address"`
+	ArTelephone         string                `json:"ar_telephone"`
 	SaleId              int                   `json:"sale_id"`
 	SaleCode            string                `json:"sale_code"`
 	SaleName            string                `json:"sale_name"`

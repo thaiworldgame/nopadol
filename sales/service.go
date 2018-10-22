@@ -27,6 +27,7 @@ func (s *service) CreateQuo(req *NewQuoTemplate) (interface{}, error) {
 	var count_item_qty int
 	var count_item_unit int
 	var sum_item_amount float64
+	var err error
 
 
 	fmt.Println("Service Quo")
@@ -34,11 +35,7 @@ func (s *service) CreateQuo(req *NewQuoTemplate) (interface{}, error) {
 		if (sub_item.Qty != 0) {
 			count_item = count_item + 1
 
-			item_discount_amount_sub, err := strconv.ParseFloat(sub_item.DiscountWord, 64)
-			if err != nil {
-				fmt.Println(err)
-			}
-			sum_item_amount = sum_item_amount + (sub_item.Qty * (sub_item.Price - item_discount_amount_sub))
+			sum_item_amount = sum_item_amount + (sub_item.Qty * (sub_item.Price - sub_item.DiscountAmount))
 		}
 		if (sub_item.ItemCode != "" && sub_item.Qty == 0) {
 			count_item_qty = count_item_qty + 1
