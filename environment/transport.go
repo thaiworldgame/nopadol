@@ -29,6 +29,10 @@ func MakeHandler(s Service) http.Handler {
 	mux := http.NewServeMux()
 	mux.Handle("/department/search/id", m.Handler(SearchDepartmentById(s)))
 	mux.Handle("/department/search/keyword", m.Handler(SearchDepartmentByKeyword(s)))
+	mux.Handle("/project/search/id", m.Handler(SearchProjectById(s)))
+	mux.Handle("/project/search/keyword", m.Handler(SearchProjectByKeyword(s)))
+	mux.Handle("/allocate/search/id", m.Handler(SearchAllocateById(s)))
+	mux.Handle("/allocate/search/keyword", m.Handler(SearchAllocateByKeyword(s)))
 
 	return mustLogin()(mux)
 }

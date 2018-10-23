@@ -579,6 +579,8 @@ func map_quo_template(x NewQuoModel) sales.NewQuoTemplate {
 		ArId:                x.ArId,
 		ArCode:              x.ArCode,
 		ArName:              x.ArName,
+		ArBillAddress:       x.ArBillAddress,
+		ArTelephone:         x.ArTelephone,
 		SaleId:              x.SaleId,
 		SaleCode:            x.SaleCode,
 		SaleName:            x.SaleName,

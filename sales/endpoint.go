@@ -399,6 +399,8 @@ func map_sale_request(x *NewSaleRequest) NewSaleTemplate {
 		ArId:                x.ArId,
 		ArName:              x.ArName,
 		ArCode:              x.ArCode,
+		ArBillAddress:       x.ArBillAddress,
+		ArTelephone:         x.ArTelephone,
 		SaleId:              x.SaleId,
 		SaleCode:            x.SaleCode,
 		SaleName:            x.SaleName,

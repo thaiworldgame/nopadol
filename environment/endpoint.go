@@ -54,3 +54,61 @@ func SearchDepartmentByKeyword(s Service) interface{} {
 	}
 }
 
+
+//Project///////////////////////////////////////////////////////////////////////////////////
+
+func SearchProjectById(s Service) interface{} {
+	return func(ctx context.Context, req *SearchByIdRequest) (interface{}, error) {
+		resp, err := s.SearchProjectById(&SearchByIdTemplate{Id: req.Id})
+		if err != nil {
+			fmt.Println("endpoint error = ", err.Error())
+			return nil, fmt.Errorf(err.Error())
+		}
+		return map[string]interface{}{
+			"data": resp,
+		}, nil
+	}
+}
+
+func SearchProjectByKeyword(s Service) interface{} {
+	return func(ctx context.Context, req *SearchByKeywordRequest) (interface{}, error) {
+		resp, err := s.SearchProjectByKeyword(&SearchByKeywordTemplate{Keyword: req.Keyword})
+		if err != nil {
+			fmt.Println("endpoint error = ", err.Error())
+			return nil, fmt.Errorf(err.Error())
+		}
+		return map[string]interface{}{
+			"data": resp,
+		}, nil
+	}
+}
+
+
+//Allocate///////////////////////////////////////////////////////////////////////////////////
+
+func SearchAllocateById(s Service) interface{} {
+	return func(ctx context.Context, req *SearchByIdRequest) (interface{}, error) {
+		resp, err := s.SearchAllocateById(&SearchByIdTemplate{Id: req.Id})
+		if err != nil {
+			fmt.Println("endpoint error = ", err.Error())
+			return nil, fmt.Errorf(err.Error())
+		}
+		return map[string]interface{}{
+			"data": resp,
+		}, nil
+	}
+}
+
+func SearchAllocateByKeyword(s Service) interface{} {
+	return func(ctx context.Context, req *SearchByKeywordRequest) (interface{}, error) {
+		resp, err := s.SearchAllocateByKeyword(&SearchByKeywordTemplate{Keyword: req.Keyword})
+		if err != nil {
+			fmt.Println("endpoint error = ", err.Error())
+			return nil, fmt.Errorf(err.Error())
+		}
+		return map[string]interface{}{
+			"data": resp,
+		}, nil
+	}
+}
+
