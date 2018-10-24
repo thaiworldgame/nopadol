@@ -32,8 +32,9 @@ type NewQuoModel struct {
 	BillType            int64             `db:"BillType"`
 	TaxType             int               `db:"TaxType"`
 	TaxRate             float64           `db:"TaxRate"`
-	DepartCode          string            `db:"DepartCode"`
+	DepartId            int64             `db:"DepartId"`
 	RefNo               string            `db:"RefNo"`
+	JobId               string            `db:"JobId"`
 	IsConfirm           int64             `db:"IsConfirm"`
 	BillStatus          int64             `db:"BillStatus"`
 	Validity            int64             `db:"Validity"`
@@ -102,17 +103,19 @@ type NewSaleModel struct {
 	BillType            int64              `db:"BillType"`
 	TaxType             int                `db:"TaxType"`
 	TaxRate             float64            `db:"TaxRate"`
-	DepartCode          string             `db:"DepartCode"`
+	DepartId            int64              `db:"DepartCode"`
 	RefNo               string             `db:"RefNo"`
 	IsConfirm           int64              `db:"IsConfirm"`
 	BillStatus          int64              `db:"BillStatus"`
-	SoStatus            int64              `db:"SoStatus"`
 	HoldingStatus       int64              `db:"HoldingStatus"`
 	CreditDay           int64              `db:"CreditDay"`
 	DueDate             string             `db:"DueDate"`
-	ExpireDate          string             `db:"ExpireDate"`
+	DeliveryDay         int64              `db:"DeliveryDay"`
 	DeliveryDate        string             `db:"DeliveryDate"`
 	IsConditionSend     int64              `db:"IsConditionSend"`
+	DeliveryAddressId   int64              `db:"DeliveryAddressId"`
+	CarLicense          string             `db:"CarLicense"`
+	PersonReceiveTel    string             `db:"PersonReceiveTel"`
 	MyDescription       string             `db:"MyDescription"`
 	SumOfItemAmount     float64            `db:"SumOfItemAmount"`
 	DiscountWord        string             `db:"DiscountWord"`
@@ -252,7 +255,10 @@ func (repo *salesRepository) CreateQuo(req *sales.NewQuoTemplate) (resp interfac
 	fmt.Println("yyyy-mm-dd date format : ", now.AddDate(0, 0, 0).Format("2006-01-02"))
 	DocDate := now.AddDate(0, 0, 0).Format("2006-01-02")
 
-	req.DocDate = DocDate
+	if req.DocDate == "" {
+		req.DocDate = DocDate
+	}
+
 	req.CreateTime = now.String()
 	req.EditTime = now.String()
 	req.CancelTime = now.String()
@@ -347,7 +353,7 @@ func (repo *salesRepository) CreateQuo(req *sales.NewQuoTemplate) (resp interfac
 		req.BeforeTaxAmount, req.TaxAmount, req.TotalAmount = config.CalcTaxItem(req.TaxType, req.TaxRate, req.AfterDiscountAmount)
 		req.NetDebtAmount = req.TotalAmount
 
-		sql := `INSERT INTO Quotation(DocNo,DocDate,BillType,ArId,ArCode,ArName,SaleId,SaleCode,SaleName,DepartCode,RefNo,TaxType,TaxRate,DueDate,ExpireDate,DeliveryDate,AssertStatus,IsConditionSend,MyDescription,SumOfItemAmount,DiscountWord,DiscountAmount,AfterDiscountAmount,BeforeTaxAmount,TaxAmount,TotalAmount,NetDebtAmount,ProjectId,CreateBy,CreateTime,Validity,CreditDay,ExpireCredit,DeliveryDay,AllocateId,DocType,BranchId,CompanyId) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`
+		sql := `INSERT INTO Quotation(DocNo,DocDate,BillType,ArId,ArCode,ArName,SaleId,SaleCode,SaleName,DepartId,RefNo,JobId,TaxType,TaxRate,DueDate,ExpireDate,DeliveryDate,AssertStatus,IsConditionSend,MyDescription,SumOfItemAmount,DiscountWord,DiscountAmount,AfterDiscountAmount,BeforeTaxAmount,TaxAmount,TotalAmount,NetDebtAmount,ProjectId,CreateBy,CreateTime,Validity,CreditDay,ExpireCredit,DeliveryDay,AllocateId,DocType,BranchId,CompanyId) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`
 		res, err := repo.db.Exec(sql,
 			req.DocNo,
 			req.DocDate,
@@ -358,8 +364,9 @@ func (repo *salesRepository) CreateQuo(req *sales.NewQuoTemplate) (resp interfac
 			req.SaleId,
 			req.SaleCode,
 			req.SaleName,
-			req.DepartCode,
+			req.DepartId,
 			req.RefNo,
+			req.JobId,
 			req.TaxType,
 			req.TaxRate,
 			req.DueDate,
@@ -434,9 +441,9 @@ func (repo *salesRepository) CreateQuo(req *sales.NewQuoTemplate) (resp interfac
 		req.BeforeTaxAmount, req.TaxAmount, req.TotalAmount = config.CalcTaxItem(req.TaxType, req.TaxRate, req.AfterDiscountAmount)
 		req.NetDebtAmount = req.TotalAmount
 
-		sql := `Update Quotation set DocDate=?,BillType=?,ArId=?,ArCode=?,ArName=?,SaleId=?,SaleCode=?,SaleName=?,DepartCode=?,RefNo=?,TaxType=?,TaxRate=?,DueDate=?,ExpireDate=?,DeliveryDate=?,AssertStatus=?,IsConditionSend=?,MyDescription=?,SumOfItemAmount=?,DiscountWord=?,DiscountAmount=?,AfterDiscountAmount=?,BeforeTaxAmount=?,TaxAmount=?,TotalAmount=?,NetDebtAmount=?,ProjectId=?,EditBy=?,EditTime=?,AllocateId=?,DocType=?,CompanyId=?,BranchId=?,Validity=?,CreditDay=?,ExpireCredit=?,DeliveryDay=? where Id=?`
+		sql := `Update Quotation set DocDate=?,BillType=?,ArId=?,ArCode=?,ArName=?,SaleId=?,SaleCode=?,SaleName=?,DepartId=?,RefNo=?,JobId=?,TaxType=?,TaxRate=?,DueDate=?,ExpireDate=?,DeliveryDate=?,AssertStatus=?,IsConditionSend=?,MyDescription=?,SumOfItemAmount=?,DiscountWord=?,DiscountAmount=?,AfterDiscountAmount=?,BeforeTaxAmount=?,TaxAmount=?,TotalAmount=?,NetDebtAmount=?,ProjectId=?,EditBy=?,EditTime=?,AllocateId=?,DocType=?,CompanyId=?,BranchId=?,Validity=?,CreditDay=?,ExpireCredit=?,DeliveryDay=? where Id=?`
 		fmt.Println("sql update = ", sql)
-		id, err := repo.db.Exec(sql, req.DocDate, req.BillType, req.ArId, req.ArCode, req.ArName, req.SaleId, req.SaleCode, req.SaleName, req.DepartCode, req.RefNo, req.TaxType, req.TaxRate, req.DueDate, req.ExpireDate, req.DeliveryDate, req.AssertStatus, req.IsConditionSend, req.MyDescription, req.SumOfItemAmount, req.DiscountWord, req.DiscountAmount, req.AfterDiscountAmount, req.BeforeTaxAmount, req.TaxAmount, req.TotalAmount, req.NetDebtAmount, req.ProjectId, req.EditBy, req.EditTime, req.AllocateId, req.DocType, req.CompanyId, req.BranchId, req.Validity, req.CreditDay, req.ExpireCredit, req.DeliveryDay, req.Id)
+		id, err := repo.db.Exec(sql, req.DocDate, req.BillType, req.ArId, req.ArCode, req.ArName, req.SaleId, req.SaleCode, req.SaleName, req.DepartId, req.RefNo, req.JobId, req.TaxType, req.TaxRate, req.DueDate, req.ExpireDate, req.DeliveryDate, req.AssertStatus, req.IsConditionSend, req.MyDescription, req.SumOfItemAmount, req.DiscountWord, req.DiscountAmount, req.AfterDiscountAmount, req.BeforeTaxAmount, req.TaxAmount, req.TotalAmount, req.NetDebtAmount, req.ProjectId, req.EditBy, req.EditTime, req.AllocateId, req.DocType, req.CompanyId, req.BranchId, req.Validity, req.CreditDay, req.ExpireCredit, req.DeliveryDay, req.Id)
 		if err != nil {
 			fmt.Println("Error = ", err.Error())
 			return nil, err
@@ -498,7 +505,7 @@ func (repo *salesRepository) SearchQuoById(req *sales.SearchByIdTemplate) (resp 
 
 	q := NewQuoModel{}
 
-	sql := `select   	a.Id,DocNo,DocDate,DocType,Validity,BillType,ArId,ArCode,ArName,SaleId,SaleCode,SaleName,ifnull(DepartCode,'') as DepartCode,ifnull(RefNo,'') as RefNo,TaxType,IsConfirm,BillStatus,CreditDay,ifnull(DueDate,'') as DueDate,ExpireCredit,ifnull(ExpireDate,'') as ExpireDate,DeliveryDay,ifnull(DeliveryDate,'') as DeliveryDate,AssertStatus,IsConditionSend,ifnull(MyDescription,'') as MyDescription,SumOfItemAmount,ifnull(DiscountWord,'') as DiscountWord,DiscountAmount,AfterDiscountAmount,BeforeTaxAmount,TaxAmount,TotalAmount,NetDebtAmount,TaxRate,ProjectId,AllocateId,IsCancel,ifnull(CreateBy,'') as CreateBy,ifnull(CreateTime,'') as CreateTime,ifnull(EditBy,'') as EditBy,ifnull(EditTime,'') as EditTime,ifnull(CancelBy,'') as CancelBy,ifnull(CancelTime,'') as CancelTime,ifnull(b.address,'') as ArBillAddress,ifnull(b.telephone,'') as ArTelephone from 	Quotation a left join Customer b on a.ArId = b.id  where a.Id = ?`
+	sql := `select   	a.Id,DocNo,DocDate,DocType,Validity,BillType,ArId,ArCode,ArName,SaleId,SaleCode,SaleName,ifnull(DepartId,0) as DepartId,ifnull(RefNo,'') as RefNo,ifnull(JobId,'') as JobId,TaxType,IsConfirm,BillStatus,CreditDay,ifnull(DueDate,'') as DueDate,ExpireCredit,ifnull(ExpireDate,'') as ExpireDate,DeliveryDay,ifnull(DeliveryDate,'') as DeliveryDate,AssertStatus,IsConditionSend,ifnull(MyDescription,'') as MyDescription,SumOfItemAmount,ifnull(DiscountWord,'') as DiscountWord,DiscountAmount,AfterDiscountAmount,BeforeTaxAmount,TaxAmount,TotalAmount,NetDebtAmount,TaxRate,ProjectId,AllocateId,IsCancel,ifnull(CreateBy,'') as CreateBy,ifnull(CreateTime,'') as CreateTime,ifnull(EditBy,'') as EditBy,ifnull(EditTime,'') as EditTime,ifnull(CancelBy,'') as CancelBy,ifnull(CancelTime,'') as CancelTime,ifnull(b.address,'') as ArBillAddress,ifnull(b.telephone,'') as ArTelephone from Quotation a left join Customer b on a.ArId = b.id  where a.Id = ?`
 	err = repo.db.Get(&q, sql, req.Id)
 	if err != nil {
 		fmt.Println("err = ", err.Error())
@@ -584,7 +591,7 @@ func map_quo_template(x NewQuoModel) sales.NewQuoTemplate {
 		SaleId:              x.SaleId,
 		SaleCode:            x.SaleCode,
 		SaleName:            x.SaleName,
-		DepartCode:          x.DepartCode,
+		DepartId:            x.DepartId,
 		RefNo:               x.RefNo,
 		TaxType:             x.TaxType,
 		TaxRate:             x.TaxRate,
@@ -659,7 +666,10 @@ func (repo *salesRepository) CreateSale(req *sales.NewSaleTemplate) (resp interf
 	fmt.Println("yyyy-mm-dd date format : ", now.AddDate(0, 0, 0).Format("2006-01-02"))
 	DocDate := now.AddDate(0, 0, 0).Format("2006-01-02")
 
-	req.DocDate = DocDate
+	if req.DocDate == "" {
+		req.DocDate = DocDate
+	}
+
 	req.CreateTime = now.String()
 	req.EditTime = now.String()
 	req.CancelTime = now.String()
@@ -695,6 +705,8 @@ func (repo *salesRepository) CreateSale(req *sales.NewSaleTemplate) (resp interf
 		return nil, errors.New("Docno is null")
 	}
 
+	fmt.Println("DocNo =", req.DocNo)
+
 	sqlexist := `select count(DocNo) as check_exist from SaleOrder where DocNo = ?`
 	err = repo.db.Get(&check_doc_exist, sqlexist, req.DocNo)
 	if err != nil {
@@ -703,7 +715,7 @@ func (repo *salesRepository) CreateSale(req *sales.NewSaleTemplate) (resp interf
 	}
 
 	switch {
-	case check_doc_exist == 0:
+	case check_doc_exist != 0:
 		fmt.Println("error =", "Docno is exist")
 		return nil, errors.New("Docno is exist")
 	}
@@ -762,10 +774,13 @@ func (repo *salesRepository) CreateSale(req *sales.NewSaleTemplate) (resp interf
 
 	req.BeforeTaxAmount, req.TaxAmount, req.TotalAmount = config.CalcTaxItem(req.TaxType, req.TaxRate, req.AfterDiscountAmount)
 
-	sql := `INSERT INTO SaleOrder(DocNo,DocDate,BillType,TaxType,ArId,ArCode,ArName,SaleId,SaleCode,SaleName,DepartCode,CreditDay,DueDate,DeliveryDate,TaxRate,IsConfirm,MyDescription,BillStatus,SoStatus,HoldingStatus,SumOfItemAmount,DiscountWord,DiscountAmount,AfterDiscountAmount,BeforeTaxAmount,TaxAmount,TotalAmount,NetDebtAmount,IsCancel,IsConditionSend,JobId,ProjectId,AllocateId,CreateBy,CreateTime) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`
+	sql := `INSERT INTO SaleOrder(DocNo,DocDate,CompanyId,BranchId,DocType,BillType,TaxType,ArId,ArCode,ArName,SaleId,SaleCode,SaleName,DepartId,CreditDay,DueDate,DeliveryDay,DeliveryDate,TaxRate,IsConfirm,MyDescription,BillStatus,HoldingStatus,SumOfItemAmount,DiscountWord,DiscountAmount,AfterDiscountAmount,BeforeTaxAmount,TaxAmount,TotalAmount,NetDebtAmount,IsCancel,IsConditionSend,DeliveryAddressId,CarLicense,PersonReceiveTel,JobId,ProjectId,AllocateId,CreateBy,CreateTime) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`
 	res, err := repo.db.Exec(sql,
 		req.DocNo,
 		req.DocDate,
+		req.CompanyId,
+		req.BranchId,
+		req.DocType,
 		req.BillType,
 		req.TaxType,
 		req.ArId,
@@ -774,15 +789,15 @@ func (repo *salesRepository) CreateSale(req *sales.NewSaleTemplate) (resp interf
 		req.SaleId,
 		req.SaleCode,
 		req.SaleName,
-		req.DepartCode,
+		req.DepartId,
 		req.CreditDay,
 		req.DueDate,
+		req.DeliveryDay,
 		req.DeliveryDate,
 		req.TaxRate,
 		req.IsConfirm,
 		req.MyDescription,
 		req.BillStatus,
-		req.SoStatus,
 		req.HoldingStatus,
 		req.SumOfItemAmount,
 		req.DiscountWord,
@@ -794,6 +809,9 @@ func (repo *salesRepository) CreateSale(req *sales.NewSaleTemplate) (resp interf
 		req.NetDebtAmount,
 		req.IsCancel,
 		req.IsConditionSend,
+		req.DeliveryAddressId,
+		req.CarLicense,
+		req.PersonReceiveTel,
 		req.JobId,
 		req.ProjectId,
 		req.AllocateId,

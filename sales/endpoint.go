@@ -24,8 +24,9 @@ type (
 		BillType            int64               `json:"bill_type"`
 		TaxType             int                 `json:"tax_type"`
 		TaxRate             float64             `json:"tax_rate"`
-		DepartCode          string              `json:"depart_code"`
+		DepartId            int64               `json:"depart_id"`
 		RefNo               string              `json:"ref_no"`
+		JobId               string              `json:"job_id"`
 		IsConfirm           int64               `json:"is_confirm"`
 		BillStatus          int64               `json:"bill_status"`
 		Validity            int64               `json:"validity"`
@@ -82,6 +83,8 @@ type (
 		Id                  int64                `json:"id"`
 		DocNo               string               `json:"doc_no"`
 		DocDate             string               `json:"doc_date"`
+		CompanyId           int64                `json:"company_id"`
+		BranchId            int64                `json:"branch_id"`
 		DocType             int64                `json:"doc_type"`
 		ArId                int64                `json:"ar_id"`
 		ArCode              string               `json:"ar_code"`
@@ -94,7 +97,7 @@ type (
 		BillType            int64                `json:"bill_type"`
 		TaxType             int                  `json:"tax_type"`
 		TaxRate             float64              `json:"tax_rate"`
-		DepartCode          string               `json:"depart_code"`
+		DepartId            int64                `json:"depart_id"`
 		RefNo               string               `json:"ref_no"`
 		IsConfirm           int64                `json:"is_confirm"`
 		BillStatus          int64                `json:"bill_status"`
@@ -102,9 +105,12 @@ type (
 		HoldingStatus       int64                `json:"holding_status"`
 		CreditDay           int64                `json:"credit_day"`
 		DueDate             string               `json:"due_date"`
-		ExpireDate          string               `json:"expire_date"`
+		DeliveryDay         int64                `json:"delivery_day"`
 		DeliveryDate        string               `json:"delivery_date"`
 		IsConditionSend     int64                `json:"is_condition_send"`
+		DeliveryAddressId   int64                `json:"delivery_address_id"`
+		CarLicense          string               `json:"car_license"`
+		PersonReceiveTel    string               `json:"person_receive_tel"`
 		MyDescription       string               `json:"my_description"`
 		SumOfItemAmount     float64              `json:"sum_of_item_amount"`
 		DiscountWord        string               `json:"discount_word"`
@@ -219,7 +225,7 @@ func CreateQuo(s Service) interface{} {
 			TaxType:             req.TaxType,
 			TaxRate:             req.TaxRate,
 			RefNo:               req.RefNo,
-			DepartCode:          req.DepartCode,
+			DepartId:            req.DepartId,
 			DueDate:             req.DueDate,
 			ExpireDate:          req.ExpireDate,
 			DeliveryDate:        req.DeliveryDate,
@@ -277,7 +283,7 @@ func map_quo_request(x *NewQuoRequest) NewQuoTemplate {
 		TaxType:             x.TaxType,
 		TaxRate:             x.TaxRate,
 		RefNo:               x.RefNo,
-		DepartCode:          x.DepartCode,
+		DepartId:            x.DepartId,
 		DueDate:             x.DueDate,
 		ExpireDate:          x.ExpireDate,
 		DeliveryDate:        x.DeliveryDate,
@@ -340,7 +346,10 @@ func CreateSale(s Service) interface{} {
 			so.Subs = append(so.Subs, itemline)
 		}
 		resp, err := s.CreateSale(&NewSaleTemplate{
+			Id:                  req.Id,
 			DocType:             req.DocType,
+			CompanyId:           req.CompanyId,
+			BranchId:            req.BranchId,
 			IsConfirm:           req.IsConfirm,
 			IsCancel:            req.IsCancel,
 			JobId:               req.JobId,
@@ -362,9 +371,13 @@ func CreateSale(s Service) interface{} {
 			TaxType:             req.TaxType,
 			TaxRate:             req.TaxRate,
 			RefNo:               req.RefNo,
-			DepartCode:          req.DepartCode,
+			CarLicense:          req.CarLicense,
+			CreditDay:           req.CreditDay,
+			DeliveryAddressId:   req.DeliveryAddressId,
+			DeliveryDay:         req.DeliveryDay,
+			PersonReceiveTel:req.PersonReceiveTel,
+			DepartId:            req.DepartId,
 			DueDate:             req.DueDate,
-			ExpireDate:          req.ExpireDate,
 			DeliveryDate:        req.DeliveryDate,
 			IsConditionSend:     req.IsConditionSend,
 			MyDescription:       req.MyDescription,
@@ -407,9 +420,8 @@ func map_sale_request(x *NewSaleRequest) NewSaleTemplate {
 		TaxType:             x.TaxType,
 		TaxRate:             x.TaxRate,
 		RefNo:               x.RefNo,
-		DepartCode:          x.DepartCode,
+		DepartId:            x.DepartId,
 		DueDate:             x.DueDate,
-		ExpireDate:          x.ExpireDate,
 		DeliveryDate:        x.DeliveryDate,
 		IsConditionSend:     x.IsConditionSend,
 		MyDescription:       x.MyDescription,

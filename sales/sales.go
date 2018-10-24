@@ -18,8 +18,9 @@ type NewQuoTemplate struct {
 	BillType            int64                `json:"bill_type"`
 	TaxType             int                  `json:"tax_type"`
 	TaxRate             float64              `json:"tax_rate"`
-	DepartCode          string               `json:"depart_code"`
+	DepartId            int64                `json:"depart_id"`
 	RefNo               string               `json:"ref_no"`
+	JobId               string               `json:"job_id"`
 	IsConfirm           int64                `json:"is_confirm"`
 	BillStatus          int64                `json:"bill_status"`
 	Validity            int64                `json:"validity"`
@@ -90,7 +91,7 @@ type NewSaleTemplate struct {
 	BillType            int64                 `json:"bill_type"`
 	TaxType             int                   `json:"tax_type"`
 	TaxRate             float64               `json:"tax_rate"`
-	DepartCode          string                `json:"depart_code"`
+	DepartId            int64                 `json:"depart_id"`
 	RefNo               string                `json:"ref_no"`
 	IsConfirm           int64                 `json:"is_confirm"`
 	BillStatus          int64                 `json:"bill_status"`
@@ -98,9 +99,12 @@ type NewSaleTemplate struct {
 	HoldingStatus       int64                 `json:"holding_status"`
 	CreditDay           int64                 `json:"credit_day"`
 	DueDate             string                `json:"due_date"`
-	ExpireDate          string                `json:"expire_date"`
+	DeliveryDay         int64                `json:"delivery_day"`
 	DeliveryDate        string                `json:"delivery_date"`
 	IsConditionSend     int64                 `json:"is_condition_send"`
+	DeliveryAddressId   int64                 `json:"delivery_address_id"`
+	CarLicense          string                `json:"car_license"`
+	PersonReceiveTel    string                `json:"person_receive_tel"`
 	MyDescription       string                `json:"my_description"`
 	SumOfItemAmount     float64               `json:"sum_of_item_amount"`
 	DiscountWord        string                `json:"discount_word"`
