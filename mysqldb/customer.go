@@ -39,6 +39,7 @@ func (cr *customerRepository) SearchById(req *customer.SearchByIdTemplate) (resp
 		"name":      cust_resp.Name,
 		"address":   cust_resp.Address,
 		"telephone": cust_resp.Telephone,
+		"bill_credit":cust_resp.BillCredit,
 	}, nil
 }
 

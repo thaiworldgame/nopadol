@@ -722,7 +722,7 @@ func (repo *salesRepository) CreateSale(req *sales.NewSaleTemplate) (resp interf
 
 	fmt.Println("SOStatus =", req.SoStatus, new_doc_no)
 
-	//if (check_doc_exist == 0) {
+	if (check_doc_exist == 0) {
 	//API Call Get API
 	//url := "http://localhost:8081/gendocno/v1/gen?table_code=QT&bill_type=0"
 	//reqs, err := http.NewRequest("POST", url, nil)
@@ -865,22 +865,24 @@ func (repo *salesRepository) CreateSale(req *sales.NewSaleTemplate) (resp interf
 		}
 	}
 
-	//} //else {
-	//	switch {
-	//	case req.DocNo == "":
-	//		fmt.Println("error =", "Docno is null")
-	//		return nil, errors.New("Docno is null")
-	//	}
-	//
-	//	sql := `set dateformat dmy     update dbo.bcarinvoice set DocDate=?,ArCode=?,TaxType=?,CashierCode=?,ShiftNo=?,MachineNo=?,MachineCode=?,GrandTotal=?,CoupongAmount=?,ChangeAmount=?,SaleCode=?,TaxRate=?,SumOfItemAmount=?,DiscountWord=?,DiscountAmount=?,AfterDiscount=?,BeforeTaxAmount=?,TaxAmount=?,TotalAmount=?,SumCashAmount=?,SumChqAmount=?,SumCreditAmount=?,SumBankAmount=?,NetDebtAmount=?,HomeAmount=?,BillBalance=?,LastEditorCode=?,LastEditDateT=getdate() where DocNo=?`
-	//	fmt.Println("sql update = ", sql)
-	//	id, err := repo.db.Exec(sql, req.DocDate, req.ArCode, pos_tax_type, req.CashierCode, req.ShiftNo, req.MachineNo, req.MachineCode, total_amount, req.CoupongAmount, req.ChangeAmount, req.SaleCode, tax_rate, req.SumOfItemAmount, req.DiscountWord, discount_amount, req.AfterDiscount, before_tax_amount, tax_amount, req.TotalAmount, req.SumCashAmount, req.SumChqAmount, req.SumCreditAmount, req.SumBankAmount, req.NetDebtAmount, home_amount, bill_balance, req.UserCode, req.DocNo)
-	//	if err != nil {
-	//		fmt.Println("Error = ", err.Error())
-	//		return nil, err
-	//	}
-	//
-	//	lastId, err = id.LastInsertId()
+	} else {
+		switch {
+		case req.DocNo == "":
+			fmt.Println("error =", "Docno is null")
+			return nil, errors.New("Docno is null")
+		}
+
+		//sql := `set dateformat dmy     update dbo.bcarinvoice set DocDate=?,ArCode=?,TaxType=?,CashierCode=?,ShiftNo=?,MachineNo=?,MachineCode=?,GrandTotal=?,CoupongAmount=?,ChangeAmount=?,SaleCode=?,TaxRate=?,SumOfItemAmount=?,DiscountWord=?,DiscountAmount=?,AfterDiscount=?,BeforeTaxAmount=?,TaxAmount=?,TotalAmount=?,SumCashAmount=?,SumChqAmount=?,SumCreditAmount=?,SumBankAmount=?,NetDebtAmount=?,HomeAmount=?,BillBalance=?,LastEditorCode=?,LastEditDateT=getdate() where DocNo=?`
+		//fmt.Println("sql update = ", sql)
+		//id, err := repo.db.Exec(sql, req.DocDate, req.ArCode, pos_tax_type, req.CashierCode, req.ShiftNo, req.MachineNo, req.MachineCode, total_amount, req.CoupongAmount, req.ChangeAmount, req.SaleCode, tax_rate, req.SumOfItemAmount, req.DiscountWord, discount_amount, req.AfterDiscount, before_tax_amount, tax_amount, req.TotalAmount, req.SumCashAmount, req.SumChqAmount, req.SumCreditAmount, req.SumBankAmount, req.NetDebtAmount, home_amount, bill_balance, req.UserCode, req.DocNo)
+		//if err != nil {
+		//	fmt.Println("Error = ", err.Error())
+		//	return nil, err
+		//}
+
+	//	lastId, err := id.LastInsertId()
+
+		//fmt.Println("lastId = ",lastId)
 	//}
 	//
 	//sql_del_sub := `delete dbo.bcarinvoicesub where docno = ?`
@@ -938,11 +940,11 @@ func (repo *salesRepository) CreateSale(req *sales.NewSaleTemplate) (resp interf
 	//	}
 	//
 	//	line_number = line_number + 1
-	//}
+	}
 
 	return map[string]interface{}{
-		"company_name":    req.DocNo,
-		"company_address": req.DocDate,
+		"doc_no":    req.DocNo,
+		"doc_date": req.DocDate,
 	}, nil
 }
 

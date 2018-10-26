@@ -10,11 +10,20 @@ type service struct {
 
 type Service interface {
 	SearchByBarcode(req *SearchByBarcodeTemplate) (interface{}, error)
+	SearchByItemCode(req *SearchByItemCodeTemplate) (interface{}, error)
 	SearchByKeyword(req *SearchByKeywordTemplate) (interface{}, error)
 }
 
 func (s *service) SearchByBarcode(req *SearchByBarcodeTemplate) (interface{}, error) {
 	resp, err := s.repo.SearchByBarcode(req)
+	if err != nil {
+		return nil, err
+	}
+	return resp, nil
+}
+
+func (s *service) SearchByItemCode(req *SearchByItemCodeTemplate) (interface{}, error) {
+	resp, err := s.repo.SearchByItemCode(req)
 	if err != nil {
 		return nil, err
 	}

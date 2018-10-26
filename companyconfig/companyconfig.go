@@ -23,6 +23,8 @@ type RequestConfigTemplate struct {
 	DefSaleShelf    string `json:"def_sale_shelf"`
 	DefBuyWh        string `json:"def_buy_wh"`
 	DefBuyShelf     string `json:"def_buy_shelf"`
+	SaleBillType    int64  `json:"sale_bill_type"`
+	BuyBillType     int64  `json:"buy_bill_type"`
 	LogoPath        string `json:"logo_path"`
 	ActiveStatus    int    `json:"active_status"`
 	CreateBy        string `json:"create_by"`
