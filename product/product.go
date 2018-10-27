@@ -24,6 +24,15 @@ type ProductTemplate struct {
 	PicPath1   string  `json:"pic_path_1"`
 }
 
+type SearchProductStockTemplate struct {
+	Id        int     `json:"id"`
+	ItemCode  string  `json:"item_code"`
+	WHCode    string  `json:"wh_code"`
+	ShelfCode string  `json:"shelf_code"`
+	Qty       float64 `json:"qty"`
+	UnitCode  string  `json:"unit_code"`
+}
+
 //type Item struct {
 //	Parent *Category
 //	Name   string

@@ -34,6 +34,14 @@ type (
 		PicPath1   string  `json:"pic_path_1"`
 	}
 
+	SearchProductStock struct {
+		Id        int     `json:"id"`
+		ItemCode  string  `json:"item_code"`
+		WHCode    string  `json:"wh_code"`
+		ShelfCode string  `json:"shelf_code"`
+		Qty       float64 `json:"qty"`
+		UnitCode  string  `json:"unit_code"`
+	}
 )
 
 func SearchByBarcode(s Service) interface{} {
@@ -52,6 +60,19 @@ func SearchByBarcode(s Service) interface{} {
 func SearchByItemCode(s Service) interface{} {
 	return func(ctx context.Context, req *SearchByItemCodeRequest) (interface{}, error) {
 		resp, err := s.SearchByItemCode(&SearchByItemCodeTemplate{ItemCode: req.ItemCode})
+		if err != nil {
+			fmt.Println("endpoint error =", err.Error())
+			return nil, fmt.Errorf(err.Error())
+		}
+		return map[string]interface{}{
+			"data": resp,
+		}, nil
+	}
+}
+
+func SearchByItemStockLocation(s Service) interface{} {
+	return func(ctx context.Context, req *SearchByItemCodeRequest) (interface{}, error) {
+		resp, err := s.SearchByItemStockLocation(&SearchByItemCodeTemplate{ItemCode: req.ItemCode})
 		if err != nil {
 			fmt.Println("endpoint error =", err.Error())
 			return nil, fmt.Errorf(err.Error())

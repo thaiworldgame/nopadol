@@ -18,6 +18,15 @@ type ProductModel struct {
 	PicPath1   string  `db:"pic_path_1"`
 }
 
+type SearchProductStockModel struct {
+	Id        int     `db:"id"`
+	ItemCode  string  `db:"item_code"`
+	WHCode    string  `db:"wh_code"`
+	ShelfCode string  `db:"shelf_code"`
+	Qty       float64 `db:"qty"`
+	UnitCode  string  `db:"unit_code"`
+}
+
 type productRepository struct{ db *sqlx.DB }
 
 func NewProductRepository(db *sqlx.DB) product.Repository {
@@ -51,7 +60,6 @@ func (pd *productRepository) SearchByBarcode(req *product.SearchByBarcodeTemplat
 	//return pdt_resp, nil
 }
 
-
 func (pd *productRepository) SearchByItemCode(req *product.SearchByItemCodeTemplate) (resp interface{}, err error) {
 	products := []ProductModel{}
 	fmt.Println("Product")
@@ -73,6 +81,25 @@ func (pd *productRepository) SearchByItemCode(req *product.SearchByItemCodeTempl
 	return product, nil
 }
 
+func (pd *productRepository) SearchByItemStockLocation(req *product.SearchByItemCodeTemplate) (resp interface{}, err error) {
+	products := []SearchProductStockModel{}
+	fmt.Println("Product")
+
+	sql := `select 	distinct a.id,code as item_code,ifnull(wh_code,'') as wh_code,ifnull(shelf_code,'') as shelf_code,ifnull(b.qty,0) as qty,ifnull(b.unit_code,'') as unit_code  from 		Item a left join StockLocation b on a.code = b.item_code  where a.code = ? order by b.wh_code`
+	err = pd.db.Select(&products, sql, req.ItemCode)
+	if err != nil {
+		fmt.Println("error = ", err.Error())
+		return resp, nil
+	}
+	product := []product.SearchProductStockTemplate{}
+	for _, p := range products {
+		pdtline := map_stock_template(p)
+		product = append(product, pdtline)
+
+	}
+
+	return product, nil
+}
 
 func (pd *productRepository) SearchByKeyword(req *product.SearchByKeywordTemplate) (resp interface{}, err error) {
 	products := []ProductModel{}
@@ -95,16 +122,27 @@ func (pd *productRepository) SearchByKeyword(req *product.SearchByKeywordTemplat
 	return product, nil
 }
 
+func map_stock_template(x SearchProductStockModel) product.SearchProductStockTemplate {
+	return product.SearchProductStockTemplate{
+		Id:        x.Id,
+		ItemCode:  x.ItemCode,
+		WHCode:    x.WHCode,
+		ShelfCode: x.ShelfCode,
+		Qty:       x.Qty,
+		UnitCode:  x.UnitCode,
+	}
+}
+
 func map_product_template(x ProductModel) product.ProductTemplate {
 	return product.ProductTemplate{
-		Id:       x.Id,
-		BarCode:  x.BarCode,
-		ItemCode: x.ItemCode,
-		ItemName: x.ItemName,
-		SalePrice1:    x.SalePrice1,
-		SalePrice2:x.SalePrice2,
-		UnitCode: x.UnitCode,
-		Rate1:    x.Rate1,
-		PicPath1:  x.PicPath1,
+		Id:         x.Id,
+		BarCode:    x.BarCode,
+		ItemCode:   x.ItemCode,
+		ItemName:   x.ItemName,
+		SalePrice1: x.SalePrice1,
+		SalePrice2: x.SalePrice2,
+		UnitCode:   x.UnitCode,
+		Rate1:      x.Rate1,
+		PicPath1:   x.PicPath1,
 	}
 }
