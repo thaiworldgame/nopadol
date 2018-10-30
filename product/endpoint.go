@@ -32,6 +32,15 @@ type (
 		SalePrice2 float64 `json:"sale_price_2"`
 		Rate1      float64 `json:"rate_1"`
 		PicPath1   string  `json:"pic_path_1"`
+		Qty        float64 `json:"qty"`
+		Stock      []Stock `json:"stock"`
+	}
+
+	Stock struct {
+		WHCode      string  `json:"wh_code"`
+		ShelfCode   string  `json:"shelf_code"`
+		Qty         float64 `json:"qty"`
+		StkUnitCode string  `json:"Stk_unit_code"`
 	}
 
 	SearchProductStock struct {

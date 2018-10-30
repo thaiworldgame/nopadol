@@ -13,15 +13,24 @@ type SearchByKeywordTemplate struct {
 }
 
 type ProductTemplate struct {
-	Id         int     `json:"id"`
-	ItemCode   string  `json:"item_code"`
-	ItemName   string  `json:"item_name"`
-	BarCode    string  `json:"bar_code"`
-	UnitCode   string  `json:"unit_code"`
-	SalePrice1 float64 `json:"sale_price_1"`
-	SalePrice2 float64 `json:"sale_price_2"`
-	Rate1      float64 `json:"rate_1"`
-	PicPath1   string  `json:"pic_path_1"`
+	Id         int             `json:"id"`
+	ItemCode   string          `json:"item_code"`
+	ItemName   string          `json:"item_name"`
+	BarCode    string          `json:"bar_code"`
+	UnitCode   string          `json:"unit_code"`
+	SalePrice1 float64         `json:"sale_price_1"`
+	SalePrice2 float64         `json:"sale_price_2"`
+	Rate1      float64         `json:"rate_1"`
+	PicPath1   string          `json:"pic_path_1"`
+	Qty        float64         `json:"qty"`
+	Stock      []StockTemplate `json:"stock"`
+}
+
+type StockTemplate struct {
+	WHCode      string  `json:"wh_code"`
+	ShelfCode   string  `json:"shelf_code"`
+	Qty         float64 `json:"qty"`
+	StkUnitCode string  `json:"Stk_unit_code"`
 }
 
 type SearchProductStockTemplate struct {
