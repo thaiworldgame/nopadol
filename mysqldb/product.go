@@ -7,17 +7,17 @@ import (
 )
 
 type ProductModel struct {
-	Id         int          `db:"id"`
-	ItemCode   string       `db:"item_code"`
-	ItemName   string       `db:"item_name"`
-	BarCode    string       `db:"bar_code"`
-	UnitCode   string       `db:"unit_code"`
-	SalePrice1 float64      `db:"sale_price_1"`
-	SalePrice2 float64      `db:"sale_price_2"`
-	Rate1      float64      `db:"rate_1"`
-	PicPath1   string       `db:"pic_path_1"`
-	Qty        float64      `db:"qty"`
-	Stock      []StockModel `db:stock`
+	Id          int          `db:"id"`
+	ItemCode    string       `db:"item_code"`
+	ItemName    string       `db:"item_name"`
+	BarCode     string       `db:"bar_code"`
+	UnitCode    string       `db:"unit_code"`
+	SalePrice1  float64      `db:"sale_price_1"`
+	SalePrice2  float64      `db:"sale_price_2"`
+	Rate1       float64      `db:"rate_1"`
+	PicPath1    string       `db:"pic_path_1"`
+	StkQty      float64      `db:"stk_qty"`
+	StkLocation []StockModel `db:stk_location`
 }
 
 type StockModel struct {
@@ -45,10 +45,10 @@ func NewProductRepository(db *sqlx.DB) product.Repository {
 func (pd *productRepository) SearchByBarcode(req *product.SearchByBarcodeTemplate) (resp interface{}, err error) {
 	product := ProductModel{}
 
-	fmt.Println("barcode = ",req.BarCode)
+	fmt.Println("barcode = ", req.BarCode)
 
 	//sql := `set dateformat dmy     select id,item_code,item_name, bar_code, unit_code, isnull(c.saleprice1,0) as Price, isnull(d.rate,1) as Rate1, isnull(b.picfilename1,'') as PicPath from dbo.bcbarcodemaster a with (nolock) inner join dbo.bcitem b with (nolock) on a.itemcode = b.code left join dbo.bcpricelist c with (nolock) on c.saletype = 0 and c.transporttype = 0 and a.itemcode = c.itemcode and a.unitcode = c.unitcode and cast(rtrim(day(getdate()))+'/'+rtrim(month(getdate()))+'/'+rtrim(year(getdate())) as datetime) >= cast(rtrim(day(startdate))+'/'+rtrim(month(startdate))+'/'+rtrim(year(startdate)) as datetime) and cast(rtrim(day(getdate()))+'/'+rtrim(month(getdate()))+'/'+rtrim(year(getdate())) as datetime) <= cast(rtrim(day(stopdate))+'/'+rtrim(month(stopdate))+'/'+rtrim(year(stopdate)) as datetime)  left join dbo.bcstkpacking d with (nolock) on a.itemcode = d.itemcode and a.unitcode = d.unitcode where a.barcode = ?`
-	sql := `select distinct a.id,a.code as item_code,a.item_name,ifnull(a.pic_path1,'') as pic_path_1,b.bar_code,b.unit_code,c.sale_price_1,c.sale_price_2, ifnull(d.rate1,1) as rate_1,ifnull((select sum(qty)  as qty from StockLocation where item_code = a.code),0) as qty from Item a inner join Barcode b on a.code = b.item_code inner join Price c on a.code = c.item_code and b.unit_code = c.unit_code left join ItemRate d on a.code = d.item_code and c.unit_code = d.unit_code where b.bar_code = ? `
+	sql := `select distinct a.id,a.code as item_code,a.item_name,ifnull(a.pic_path1,'') as pic_path_1,b.bar_code,b.unit_code,c.sale_price_1,c.sale_price_2, ifnull(d.rate1,1) as rate_1,ifnull((select sum(qty)  as qty from StockLocation where item_code = a.code),0) as stk_qty from Item a inner join Barcode b on a.code = b.item_code inner join Price c on a.code = c.item_code and b.unit_code = c.unit_code left join ItemRate d on a.code = d.item_code and c.unit_code = d.unit_code where b.bar_code = ? `
 	err = pd.db.Get(&product, sql, req.BarCode)
 	if err != nil {
 		fmt.Println("error = ", err.Error())
@@ -67,7 +67,7 @@ func (pd *productRepository) SearchByBarcode(req *product.SearchByBarcodeTemplat
 		"sale_price_2": pdt_resp.SalePrice2,
 		"rate1":        pdt_resp.Rate1,
 		"pic_path_1":   pdt_resp.PicPath1,
-		"qty":          pdt_resp.Qty,
+		"stk_qty":      pdt_resp.StkQty,
 	}, nil
 	//return pdt_resp, nil
 }
@@ -75,7 +75,7 @@ func (pd *productRepository) SearchByBarcode(req *product.SearchByBarcodeTemplat
 func (pd *productRepository) SearchByItemCode(req *product.SearchByItemCodeTemplate) (resp interface{}, err error) {
 	products := []ProductModel{}
 	//sql := `select id,item_code,item_name,pic_path_1,unit_code,sale_price_1,sale_price_2,rate_1,(qty/rate_1) as qty_unit from (select distinct a.id,a.code as item_code,a.item_name,ifnull(a.pic_path1,'') as pic_path_1,c.unit_code,c.sale_price_1,c.sale_price_2, ifnull(b.rate1,1) as rate_1,ifnull((select sum(qty)  as qty from StockLocation where item_code = a.code),0) as qty from Item a  inner join Price c on a.code = c.item_code left join ItemRate b on a.code = b.item_code and c.unit_code = b.unit_code where a.code = ?) as rs order by unit_code`
-	sql := `select distinct a.id,a.code as item_code,a.item_name,ifnull(a.pic_path1,'') as pic_path_1,c.unit_code,c.sale_price_1,c.sale_price_2, ifnull(b.rate1,1) as rate_1,ifnull((select sum(qty)  as qty from StockLocation where item_code = a.code),0) as qty from Item a  inner join Price c on a.code = c.item_code left join ItemRate b on a.code = b.item_code and c.unit_code = b.unit_code where a.code = ? order by unit_code`
+	sql := `select distinct a.id,a.code as item_code,a.item_name,ifnull(a.pic_path1,'') as pic_path_1,c.unit_code,c.sale_price_1,c.sale_price_2, ifnull(b.rate1,1) as rate_1,ifnull((select sum(qty)  as qty from StockLocation where item_code = a.code),0) as stk_qty from Item a  inner join Price c on a.code = c.item_code left join ItemRate b on a.code = b.item_code and c.unit_code = b.unit_code where a.code = ? order by unit_code`
 	err = pd.db.Select(&products, sql, req.ItemCode)
 	if err != nil {
 		fmt.Println("error = ", err.Error())
@@ -96,12 +96,48 @@ func (pd *productRepository) SearchByItemCode(req *product.SearchByItemCodeTempl
 		pdtline := map_product_template(item)
 		for _, sub := range stocks {
 			subline := map_itemstock_template(sub)
-			pdtline.Stock = append(pdtline.Stock, subline)
+			pdtline.StkLocation = append(pdtline.StkLocation, subline)
 		}
 		prod = append(prod, pdtline)
 	}
 
 	return prod, nil
+}
+
+func (pd *productRepository) SearchByKeyword(req *product.SearchByKeywordTemplate) (resp interface{}, err error) {
+	products := []ProductModel{}
+
+	fmt.Println("keyword = ", req.Keyword)
+
+	sql := `select distinct rs.id,rs.code as item_code,rs.item_name,ifnull(pic_path1,'') as pic_path_1,ifnull(b.bar_code,'') as bar_code,ifnull(c.sale_price_1,0) as sale_price_1,ifnull(sale_price_2,0) as sale_price_2,ifnull(b.unit_code,'') as unit_code,ifnull(d.rate1,1) as rate_1, ifnull((select sum(qty)  as qty from StockLocation where item_code = rs.code),0) as stk_qty  from (select * from Item where code like concat(?,'%') or item_name like  concat(?,'%') order by code limit 20) as rs left join Barcode b on rs.code = b.item_code left join Price c on rs.code = c.item_code and b.unit_code = c.unit_code left join ItemRate d on rs.code = d.item_code and b.unit_code = d.unit_code`
+	err = pd.db.Select(&products, sql, req.Keyword, req.Keyword)
+	if err != nil {
+		fmt.Println("error = ", err.Error())
+		return resp, nil
+	}
+
+	product := []product.ProductTemplate{}
+	for _, p := range products {
+
+		pdtline := map_product_template(p)
+
+		stocks := []StockModel{}
+		sql_stk := `select 	distinct ifnull(wh_code,'') as wh_code,ifnull(shelf_code,'') as shelf_code,ifnull(b.qty,0) as qty,ifnull(b.unit_code,'') as stk_unit_code  from Item a left join StockLocation b on a.code = b.item_code  where a.code = ? order by b.wh_code`
+		err = pd.db.Select(&stocks, sql_stk, p.ItemCode)
+		if err != nil {
+			fmt.Println("error = ", err.Error())
+			return resp, nil
+		}
+
+		for _, sub := range stocks {
+			subline := map_itemstock_template(sub)
+			pdtline.StkLocation = append(pdtline.StkLocation, subline)
+		}
+
+		product = append(product, pdtline)
+	}
+
+	return product, nil
 }
 
 func (pd *productRepository) SearchByItemStockLocation(req *product.SearchByItemCodeTemplate) (resp interface{}, err error) {
@@ -116,27 +152,6 @@ func (pd *productRepository) SearchByItemStockLocation(req *product.SearchByItem
 	product := []product.SearchProductStockTemplate{}
 	for _, p := range products {
 		pdtline := map_stock_template(p)
-		product = append(product, pdtline)
-
-	}
-
-	return product, nil
-}
-
-func (pd *productRepository) SearchByKeyword(req *product.SearchByKeywordTemplate) (resp interface{}, err error) {
-	products := []ProductModel{}
-
-	//sql := `set dateformat dmy     select b.roworder as Id,b.code as ItemCode,b.name1 as ItemName, a.barcode as BarCode, a.unitcode as UnitCode, isnull(c.saleprice1,0) as Price, isnull(d.rate,1) as Rate1, isnull(b.picfilename1,'') as PicPath from dbo.bcbarcodemaster a with (nolock) inner join dbo.bcitem b with (nolock) on a.itemcode = b.code left join dbo.bcpricelist c with (nolock) on c.saletype = 0 and c.transporttype = 0 and a.itemcode = c.itemcode and a.unitcode = c.unitcode and cast(rtrim(day(getdate()))+'/'+rtrim(month(getdate()))+'/'+rtrim(year(getdate())) as datetime) >= cast(rtrim(day(startdate))+'/'+rtrim(month(startdate))+'/'+rtrim(year(startdate)) as datetime) and cast(rtrim(day(getdate()))+'/'+rtrim(month(getdate()))+'/'+rtrim(year(getdate())) as datetime) <= cast(rtrim(day(stopdate))+'/'+rtrim(month(stopdate))+'/'+rtrim(year(stopdate)) as datetime)  left join dbo.bcstkpacking d with (nolock) on a.itemcode = d.itemcode and a.unitcode = d.unitcode where (a.barcode like '%'+?+'%' or b.code like '%'+?+'%' or b.name1 like '%'+?+'%')`
-	sql := `select distinct a.id,a.code as item_code,a.item_name,ifnull(a.pic_path1,'') as pic_path_1,c.unit_code,c.sale_price_1,c.sale_price_2, ifnull(b.rate1,1) as rate_1,ifnull((select sum(qty)  as qty from StockLocation where item_code = a.code),0) as qty from Item a  inner join Price c on a.code = c.item_code left join ItemRate b on a.code = b.item_code and c.unit_code = b.unit_code where (a.bar_code like concat('%',?,'%') or a.code like concat('%',?,'%') or a.item_name like concat('%',?,'%')) order by a.code limit 20`
-	err = pd.db.Select(&products, sql, req.Keyword, req.Keyword, req.Keyword)
-	if err != nil {
-		fmt.Println("error = ", err.Error())
-		return resp, nil
-	}
-
-	product := []product.ProductTemplate{}
-	for _, p := range products {
-		pdtline := map_product_template(p)
 		product = append(product, pdtline)
 
 	}
@@ -167,16 +182,16 @@ func map_stock_template(x SearchProductStockModel) product.SearchProductStockTem
 func map_product_template(x ProductModel) product.ProductTemplate {
 	var stock []product.StockTemplate
 	return product.ProductTemplate{
-		Id:         x.Id,
-		BarCode:    x.BarCode,
-		ItemCode:   x.ItemCode,
-		ItemName:   x.ItemName,
-		SalePrice1: x.SalePrice1,
-		SalePrice2: x.SalePrice2,
-		UnitCode:   x.UnitCode,
-		Rate1:      x.Rate1,
-		PicPath1:   x.PicPath1,
-		Qty:        x.Qty,
-		Stock:      stock,
+		Id:          x.Id,
+		BarCode:     x.BarCode,
+		ItemCode:    x.ItemCode,
+		ItemName:    x.ItemName,
+		SalePrice1:  x.SalePrice1,
+		SalePrice2:  x.SalePrice2,
+		UnitCode:    x.UnitCode,
+		Rate1:       x.Rate1,
+		PicPath1:    x.PicPath1,
+		StkQty:      x.StkQty,
+		StkLocation: stock,
 	}
 }
