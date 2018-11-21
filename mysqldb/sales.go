@@ -230,13 +230,82 @@ type SearchDocDetailsModel struct {
 	Subs                []NewQuoItemModel `db:"subs"`
 }
 
+type NewDepositModel struct {
+	Id               int64   `db:"id"`
+	CompanyId        int64   `db:"company_id"`
+	BranchId         int64   `db:"branch_id"`
+	Uuid             string  `db:"uuid"`
+	DocNo            string  `db:"doc_no"`
+	TaxNo            string  `db:"tax_no"`
+	DocDate          string  `db:"doc_date"`
+	ArId             int64   `db:"ar_id"`
+	SaleId           int64   `db:"sale_id"`
+	TaxType          int64   `db:"tax_type"`
+	TaxRate          float64 `db:"tax_rate"`
+	RefNo            string  `db:"ref_no"`
+	CreditDay        int64   `db:"credit_day"`
+	DueDate          string  `db:"due_date"`
+	DepartId         int64   `db:"depart_id"`
+	AllocateId       int64   `db:"allocate_id"`
+	ProjectId        int64   `db:"project_id"`
+	MyDescription    string  `db:"my_description"`
+	BeforeTaxAmount  float64 `db:"before_tax_amount"`
+	TaxAmount        float64 `db:"tax_amount"`
+	TotalAmount      float64 `db:"total_amount"`
+	NetAmount        float64 `db:"net_amount"`
+	BillBalance      float64 `db:"bill_balance"`
+	CashAmount       float64 `db:"cash_amount"`
+	CreditcardAmount float64 `db:"creditcard_amount"`
+	ChqAmount        float64 `db:"chq_amount"`
+	BankAmount       float64 `db:"bank_amount"`
+	IsReturnMoney    int64   `db:"is_return_money" `
+	IsCancel         int64   `db:"is_cancel"`
+	IsConfirm        int64   `db:"is_confirm"`
+	ScgId            string  `db:"scg_id"`
+	JobNo            string  `db:"job_no"`
+	CreateBy         string  `db:"create_by"`
+	CreateTime       string  `db:"create_time"`
+	EditBy           string  `db:"edit_by"`
+	EditTime         string  `db:"edit_time"`
+	CancelBy         string  `db:"cancel_by"`
+	CancelTime       string  `db:"cancel_time" `
+	ConfirmBy        string  `db:"confirm_by"`
+	ConfirmTime      string  `db:"confirm_time"`
+}
+
+type NewDepositItemModel struct {
+	Id              int64   `db:"id"`
+	SORefNo         string  `db:"so_ref_no"`
+	SOId            int64   `db:"so_id"`
+	ItemId          int64   `db:"item_id"`
+	ItemCode        string  `db:"item_code"`
+	BarCode         string  `db:"bar_code"`
+	ItemName        string  `db:"item_name"`
+	WHCode          string  `db:"wh_code"`
+	ShelfCode       string  `db:"shelf_code"`
+	Qty             float64 `db:"qty"`
+	RemainQty       float64 `db:"remain_qty"`
+	Price           float64 `db:"price"`
+	DiscountWord    string  `db:"discount_word"`
+	DiscountAmount  float64 `db:"discount_amount"`
+	UnitCode        string  `db:"unit_code"`
+	ItemAmount      float64 `db:"item_amount"`
+	ItemDescription string  `db:"item_description"`
+	PackingRate1    float64 `db:"packing_rate_1"`
+	RefNo           string  `db:"ref_no"`
+	QuoId           int64   `db:"quo_id"`
+	LineNumber      int     `db:"line_number"`
+	RefLineNumber   int64   `db:"ref_line_number"`
+	IsCancel        int64   `db:"is_cancel"`
+}
+
 type salesRepository struct{ db *sqlx.DB }
 
 func NewSalesRepository(db *sqlx.DB) sales.Repository {
 	return &salesRepository{db}
 }
 
-func (repo *salesRepository) CreateQuo(req *sales.NewQuoTemplate) (resp interface{}, err error) {
+func (repo *salesRepository) CreateQuotation(req *sales.NewQuoTemplate) (resp interface{}, err error) {
 	var check_doc_exist int64
 	var count_item int
 	var count_item_qty int
@@ -646,7 +715,7 @@ func map_quo_subs_template(x NewQuoItemModel) sales.NewQuoItemTemplate {
 	}
 }
 
-func (repo *salesRepository) CreateSale(req *sales.NewSaleTemplate) (resp interface{}, err error) {
+func (repo *salesRepository) CreateSaleOrder(req *sales.NewSaleTemplate) (resp interface{}, err error) {
 	var check_doc_exist int
 	var count_item int
 	var count_item_qty int
@@ -723,147 +792,147 @@ func (repo *salesRepository) CreateSale(req *sales.NewSaleTemplate) (resp interf
 	fmt.Println("SOStatus =", req.SoStatus, new_doc_no)
 
 	if (check_doc_exist == 0) {
-	//API Call Get API
-	//url := "http://localhost:8081/gendocno/v1/gen?table_code=QT&bill_type=0"
-	//reqs, err := http.NewRequest("POST", url, nil)
-	//if err != nil {
-	//	log.Fatal("NewRequest: ", err)
-	//	return nil, err
-	//}
+		//API Call Get API
+		//url := "http://localhost:8081/gendocno/v1/gen?table_code=QT&bill_type=0"
+		//reqs, err := http.NewRequest("POST", url, nil)
+		//if err != nil {
+		//	log.Fatal("NewRequest: ", err)
+		//	return nil, err
+		//}
 
-	//client := &http.Client{}
-	//
-	//resp, err := client.Do(reqs)
-	//if err != nil {
-	//	log.Fatal("Do: ", err)
-	//	return nil, err
-	//}
-	//
-	//defer resp.Body.Close()
-	//
-	//if err := json.NewDecoder(resp.Body).Decode(&new_doc_no); err != nil {
-	//	log.Println(err)
-	//}
+		//client := &http.Client{}
+		//
+		//resp, err := client.Do(reqs)
+		//if err != nil {
+		//	log.Fatal("Do: ", err)
+		//	return nil, err
+		//}
+		//
+		//defer resp.Body.Close()
+		//
+		//if err := json.NewDecoder(resp.Body).Decode(&new_doc_no); err != nil {
+		//	log.Println(err)
+		//}
 
-	//API Get Post API
-	//url := "http://venus.nopadol.com:8081/gendocno/v1/gen"
-	//var jsonStr []byte
-	//
-	//if req.BillType == 0 {
-	//	jsonStr = []byte(`{"table_code":"SO","bill_type":0}`)
-	//} else {
-	//	jsonStr = []byte(`{"table_code":"SO","bill_type":1}`)
-	//}
-	//
-	//reqs, err := http.NewRequest("POST", url, bytes.NewBuffer(jsonStr))
-	//reqs.Header.Set("X-Custom-Header", "myvalue")
-	//reqs.Header.Set("Content-Type", "application/json")
-	//
-	//client := &http.Client{}
-	//resp1, err := client.Do(reqs)
-	//if err != nil {
-	//	panic(err)
-	//}
-	//defer resp1.Body.Close()
-	//
-	//if err := json.NewDecoder(resp1.Body).Decode(&new_doc_no); err != nil {
-	//	log.Println(err)
-	//}
+		//API Get Post API
+		//url := "http://venus.nopadol.com:8081/gendocno/v1/gen"
+		//var jsonStr []byte
+		//
+		//if req.BillType == 0 {
+		//	jsonStr = []byte(`{"table_code":"SO","bill_type":0}`)
+		//} else {
+		//	jsonStr = []byte(`{"table_code":"SO","bill_type":1}`)
+		//}
+		//
+		//reqs, err := http.NewRequest("POST", url, bytes.NewBuffer(jsonStr))
+		//reqs.Header.Set("X-Custom-Header", "myvalue")
+		//reqs.Header.Set("Content-Type", "application/json")
+		//
+		//client := &http.Client{}
+		//resp1, err := client.Do(reqs)
+		//if err != nil {
+		//	panic(err)
+		//}
+		//defer resp1.Body.Close()
+		//
+		//if err := json.NewDecoder(resp1.Body).Decode(&new_doc_no); err != nil {
+		//	log.Println(err)
+		//}
 
-	//req.DocNo = new_doc_no
+		//req.DocNo = new_doc_no
 
-	req.BeforeTaxAmount, req.TaxAmount, req.TotalAmount = config.CalcTaxItem(req.TaxType, req.TaxRate, req.AfterDiscountAmount)
+		req.BeforeTaxAmount, req.TaxAmount, req.TotalAmount = config.CalcTaxItem(req.TaxType, req.TaxRate, req.AfterDiscountAmount)
 
-	sql := `INSERT INTO SaleOrder(DocNo,DocDate,CompanyId,BranchId,DocType,BillType,TaxType,ArId,ArCode,ArName,SaleId,SaleCode,SaleName,DepartId,CreditDay,DueDate,DeliveryDay,DeliveryDate,TaxRate,IsConfirm,MyDescription,BillStatus,HoldingStatus,SumOfItemAmount,DiscountWord,DiscountAmount,AfterDiscountAmount,BeforeTaxAmount,TaxAmount,TotalAmount,NetDebtAmount,IsCancel,IsConditionSend,DeliveryAddressId,CarLicense,PersonReceiveTel,JobId,ProjectId,AllocateId,CreateBy,CreateTime) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`
-	res, err := repo.db.Exec(sql,
-		req.DocNo,
-		req.DocDate,
-		req.CompanyId,
-		req.BranchId,
-		req.DocType,
-		req.BillType,
-		req.TaxType,
-		req.ArId,
-		req.ArCode,
-		req.ArName,
-		req.SaleId,
-		req.SaleCode,
-		req.SaleName,
-		req.DepartId,
-		req.CreditDay,
-		req.DueDate,
-		req.DeliveryDay,
-		req.DeliveryDate,
-		req.TaxRate,
-		req.IsConfirm,
-		req.MyDescription,
-		req.BillStatus,
-		req.HoldingStatus,
-		req.SumOfItemAmount,
-		req.DiscountWord,
-		req.DiscountAmount,
-		req.AfterDiscountAmount,
-		req.BeforeTaxAmount,
-		req.TaxAmount,
-		req.TotalAmount,
-		req.NetDebtAmount,
-		req.IsCancel,
-		req.IsConditionSend,
-		req.DeliveryAddressId,
-		req.CarLicense,
-		req.PersonReceiveTel,
-		req.JobId,
-		req.ProjectId,
-		req.AllocateId,
-		req.CreateBy,
-		req.CreateTime)
-
-	//fmt.Println("query=", sql, "Hello")
-	if err != nil {
-		return "", err
-	}
-
-	id, _ := res.LastInsertId()
-	req.Id = id
-
-	var vLineNumber int
-	vLineNumber = 0
-
-	for _, sub := range req.Subs {
-		fmt.Println("ArId Sub = ", req.ArId)
-		fmt.Println("SaleId Sub = ", req.SaleId)
-		sub.LineNumber = vLineNumber
-		sqlsub := `INSERT INTO SaleOrderSub(SOId,ArId,SaleId,ItemId,ItemCode,BarCode,ItemName,WhCode,ShelfCode,Qty,RemainQty,UnitCode,Price,DiscountWord,DiscountAmount,ItemAmount,ItemDescription,RefNo,QuoId,IsCancel,PackingRate1,RefLineNumber,LineNumber) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`
-		_, err := repo.db.Exec(sqlsub,
-			req.Id,
+		sql := `INSERT INTO SaleOrder(DocNo,DocDate,CompanyId,BranchId,DocType,BillType,TaxType,ArId,ArCode,ArName,SaleId,SaleCode,SaleName,DepartId,CreditDay,DueDate,DeliveryDay,DeliveryDate,TaxRate,IsConfirm,MyDescription,BillStatus,HoldingStatus,SumOfItemAmount,DiscountWord,DiscountAmount,AfterDiscountAmount,BeforeTaxAmount,TaxAmount,TotalAmount,NetDebtAmount,IsCancel,IsConditionSend,DeliveryAddressId,CarLicense,PersonReceiveTel,JobId,ProjectId,AllocateId,CreateBy,CreateTime) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`
+		res, err := repo.db.Exec(sql,
+			req.DocNo,
+			req.DocDate,
+			req.CompanyId,
+			req.BranchId,
+			req.DocType,
+			req.BillType,
+			req.TaxType,
 			req.ArId,
+			req.ArCode,
+			req.ArName,
 			req.SaleId,
-			sub.ItemId,
-			sub.ItemCode,
-			sub.BarCode,
-			sub.ItemName,
-			sub.WHCode,
-			sub.ShelfCode,
-			sub.Qty,
-			sub.RemainQty,
-			sub.UnitCode,
-			sub.Price,
-			sub.DiscountWord,
-			sub.DiscountAmount,
-			sub.ItemAmount,
-			sub.ItemDescription,
-			sub.RefNo,
-			sub.QuoId,
-			sub.IsCancel,
-			sub.PackingRate1,
-			sub.RefLineNumber,
-			sub.LineNumber)
+			req.SaleCode,
+			req.SaleName,
+			req.DepartId,
+			req.CreditDay,
+			req.DueDate,
+			req.DeliveryDay,
+			req.DeliveryDate,
+			req.TaxRate,
+			req.IsConfirm,
+			req.MyDescription,
+			req.BillStatus,
+			req.HoldingStatus,
+			req.SumOfItemAmount,
+			req.DiscountWord,
+			req.DiscountAmount,
+			req.AfterDiscountAmount,
+			req.BeforeTaxAmount,
+			req.TaxAmount,
+			req.TotalAmount,
+			req.NetDebtAmount,
+			req.IsCancel,
+			req.IsConditionSend,
+			req.DeliveryAddressId,
+			req.CarLicense,
+			req.PersonReceiveTel,
+			req.JobId,
+			req.ProjectId,
+			req.AllocateId,
+			req.CreateBy,
+			req.CreateTime)
 
-		vLineNumber = vLineNumber + 1
+		//fmt.Println("query=", sql, "Hello")
 		if err != nil {
-			return "Insert SaleOrder Not Success", err
+			return "", err
 		}
-	}
+
+		id, _ := res.LastInsertId()
+		req.Id = id
+
+		var vLineNumber int
+		vLineNumber = 0
+
+		for _, sub := range req.Subs {
+			fmt.Println("ArId Sub = ", req.ArId)
+			fmt.Println("SaleId Sub = ", req.SaleId)
+			sub.LineNumber = vLineNumber
+			sqlsub := `INSERT INTO SaleOrderSub(SOId,ArId,SaleId,ItemId,ItemCode,BarCode,ItemName,WhCode,ShelfCode,Qty,RemainQty,UnitCode,Price,DiscountWord,DiscountAmount,ItemAmount,ItemDescription,RefNo,QuoId,IsCancel,PackingRate1,RefLineNumber,LineNumber) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`
+			_, err := repo.db.Exec(sqlsub,
+				req.Id,
+				req.ArId,
+				req.SaleId,
+				sub.ItemId,
+				sub.ItemCode,
+				sub.BarCode,
+				sub.ItemName,
+				sub.WHCode,
+				sub.ShelfCode,
+				sub.Qty,
+				sub.RemainQty,
+				sub.UnitCode,
+				sub.Price,
+				sub.DiscountWord,
+				sub.DiscountAmount,
+				sub.ItemAmount,
+				sub.ItemDescription,
+				sub.RefNo,
+				sub.QuoId,
+				sub.IsCancel,
+				sub.PackingRate1,
+				sub.RefLineNumber,
+				sub.LineNumber)
+
+			vLineNumber = vLineNumber + 1
+			if err != nil {
+				return "Insert SaleOrder Not Success", err
+			}
+		}
 
 	} else {
 		switch {
@@ -880,70 +949,70 @@ func (repo *salesRepository) CreateSale(req *sales.NewSaleTemplate) (resp interf
 		//	return nil, err
 		//}
 
-	//	lastId, err := id.LastInsertId()
+		//	lastId, err := id.LastInsertId()
 
 		//fmt.Println("lastId = ",lastId)
-	//}
-	//
-	//sql_del_sub := `delete dbo.bcarinvoicesub where docno = ?`
-	//_, err = repo.db.Exec(sql_del_sub, req.DocNo)
-	//if err != nil {
-	//	fmt.Println("Error = ", err.Error())
-	//	return nil, err
-	//}
-	//
-	//for _, item := range req.PosSubs {
-	//	fmt.Println("ItemSub")
-	//	item_discount_amount, err := strconv.ParseFloat(item.DiscountWord, 64)
-	//
-	//	item_amount = item.Qty * (item.Price - item_discount_amount)
-	//
-	//	my_type = def.PosMyType
-	//	cn_qty = item.Qty
-	//	item.LineNumber = line_number
-	//
-	//	if (item.PackingRate1 == 0) {
-	//		item.PackingRate1 = 1
-	//	}
-	//	packing_rate_2 = 1
-	//
-	//	switch {
-	//	case pos_tax_type == 0:
-	//		item_home_amount = item_amount
-	//		item_net_amount = item_amount
-	//	case pos_tax_type == 1:
-	//		taxamount := toFixed(item_amount-((item_amount*100)/(100+float64(tax_rate))), 2)
-	//		beforetaxamount := toFixed(item_amount-taxamount, 2)
-	//		item_home_amount = beforetaxamount
-	//		item_net_amount = beforetaxamount
-	//	case pos_tax_type == 2:
-	//		item_home_amount = item_amount
-	//		item_net_amount = item_amount
-	//	}
-	//
-	//	sum_of_cost = item.AverageCost * item.Qty
-	//
-	//	sqlsub := `set dateformat dmy      insert into dbo.BCArInvoiceSub(MyType,DocNo, TaxType, ItemCode, DocDate, ArCode, DepartCode, SaleCode, MyDescription, ItemName, WHCode, ShelfCode, CNQty, Qty, Price, DiscountWord, DiscountAmount, Amount, NetAmount, HomeAmount, SumOfCost, UnitCode, LineNumber, BarCode, POSSTATUS, AVERAGECOST, PackingRate1, PackingRate2) values(?,?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
-	//	_, err = repo.db.Exec(sqlsub, my_type, req.DocNo, pos_tax_type, item.ItemCode, req.DocDate, req.ArCode, depart_code, req.SaleCode, "MobileApp", item.ItemName, item.WHCode, item.ShelfCode, cn_qty, item.Qty, item.Price, item.DiscountWord, item_discount_amount, item_amount, item_net_amount, item_home_amount, sum_of_cost, item.UnitCode, item.LineNumber, item.BarCode, pos_status, item.AverageCost, item.PackingRate1, packing_rate_2)
-	//	fmt.Println("sqlsub = ", sqlsub, my_type, req.DocNo, pos_tax_type, item.ItemCode, req.DocDate, req.ArCode, depart_code, req.SaleCode, "MobileApp", item.ItemName, item.WHCode, item.ShelfCode, cn_qty, item.Qty, item.Price, item.DiscountWord, item_discount_amount, item_amount, item_net_amount, item_home_amount, sum_of_cost, item.UnitCode, item.LineNumber, item.BarCode, pos_status, item.AverageCost, item.PackingRate1, packing_rate_2)
-	//	if err != nil {
-	//		fmt.Println("Error = ", err.Error())
-	//		return nil, err
-	//	}
-	//
-	//	sqlprocess := ` insert into dbo.ProcessStock (ItemCode,ProcessFlag,FlowStatus) values(?, 1, 0)`
-	//	_, err = repo.db.Exec(sqlprocess, item.ItemCode)
-	//	fmt.Println("sqlprocess = ", sqlsub)
-	//	if err != nil {
-	//		fmt.Println("Error = ", err.Error())
-	//		fmt.Println(err.Error())
-	//	}
-	//
-	//	line_number = line_number + 1
+		//}
+		//
+		//sql_del_sub := `delete dbo.bcarinvoicesub where docno = ?`
+		//_, err = repo.db.Exec(sql_del_sub, req.DocNo)
+		//if err != nil {
+		//	fmt.Println("Error = ", err.Error())
+		//	return nil, err
+		//}
+		//
+		//for _, item := range req.PosSubs {
+		//	fmt.Println("ItemSub")
+		//	item_discount_amount, err := strconv.ParseFloat(item.DiscountWord, 64)
+		//
+		//	item_amount = item.Qty * (item.Price - item_discount_amount)
+		//
+		//	my_type = def.PosMyType
+		//	cn_qty = item.Qty
+		//	item.LineNumber = line_number
+		//
+		//	if (item.PackingRate1 == 0) {
+		//		item.PackingRate1 = 1
+		//	}
+		//	packing_rate_2 = 1
+		//
+		//	switch {
+		//	case pos_tax_type == 0:
+		//		item_home_amount = item_amount
+		//		item_net_amount = item_amount
+		//	case pos_tax_type == 1:
+		//		taxamount := toFixed(item_amount-((item_amount*100)/(100+float64(tax_rate))), 2)
+		//		beforetaxamount := toFixed(item_amount-taxamount, 2)
+		//		item_home_amount = beforetaxamount
+		//		item_net_amount = beforetaxamount
+		//	case pos_tax_type == 2:
+		//		item_home_amount = item_amount
+		//		item_net_amount = item_amount
+		//	}
+		//
+		//	sum_of_cost = item.AverageCost * item.Qty
+		//
+		//	sqlsub := `set dateformat dmy      insert into dbo.BCArInvoiceSub(MyType,DocNo, TaxType, ItemCode, DocDate, ArCode, DepartCode, SaleCode, MyDescription, ItemName, WHCode, ShelfCode, CNQty, Qty, Price, DiscountWord, DiscountAmount, Amount, NetAmount, HomeAmount, SumOfCost, UnitCode, LineNumber, BarCode, POSSTATUS, AVERAGECOST, PackingRate1, PackingRate2) values(?,?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+		//	_, err = repo.db.Exec(sqlsub, my_type, req.DocNo, pos_tax_type, item.ItemCode, req.DocDate, req.ArCode, depart_code, req.SaleCode, "MobileApp", item.ItemName, item.WHCode, item.ShelfCode, cn_qty, item.Qty, item.Price, item.DiscountWord, item_discount_amount, item_amount, item_net_amount, item_home_amount, sum_of_cost, item.UnitCode, item.LineNumber, item.BarCode, pos_status, item.AverageCost, item.PackingRate1, packing_rate_2)
+		//	fmt.Println("sqlsub = ", sqlsub, my_type, req.DocNo, pos_tax_type, item.ItemCode, req.DocDate, req.ArCode, depart_code, req.SaleCode, "MobileApp", item.ItemName, item.WHCode, item.ShelfCode, cn_qty, item.Qty, item.Price, item.DiscountWord, item_discount_amount, item_amount, item_net_amount, item_home_amount, sum_of_cost, item.UnitCode, item.LineNumber, item.BarCode, pos_status, item.AverageCost, item.PackingRate1, packing_rate_2)
+		//	if err != nil {
+		//		fmt.Println("Error = ", err.Error())
+		//		return nil, err
+		//	}
+		//
+		//	sqlprocess := ` insert into dbo.ProcessStock (ItemCode,ProcessFlag,FlowStatus) values(?, 1, 0)`
+		//	_, err = repo.db.Exec(sqlprocess, item.ItemCode)
+		//	fmt.Println("sqlprocess = ", sqlsub)
+		//	if err != nil {
+		//		fmt.Println("Error = ", err.Error())
+		//		fmt.Println(err.Error())
+		//	}
+		//
+		//	line_number = line_number + 1
 	}
 
 	return map[string]interface{}{
-		"doc_no":    req.DocNo,
+		"doc_no":   req.DocNo,
 		"doc_date": req.DocDate,
 	}, nil
 }
@@ -968,4 +1037,66 @@ func map_sale_template(x NewSaleModel) sales.NewSaleTemplate {
 	return sales.NewSaleTemplate{
 		ArCode: x.ArCode,
 	}
+}
+
+func (repo *salesRepository) CreateDeposit(req *sales.NewDepositTemplate) (interface{}, error) {
+	var check_doc_exist int64
+
+	def := config.Default{}
+	def = config.LoadDefaultData("config/config.json")
+
+	now := time.Now()
+	fmt.Println("yyyy-mm-dd date format : ", now.AddDate(0, 0, 0).Format("2006-01-02"))
+	DocDate := now.AddDate(0, 0, 0).Format("2006-01-02")
+
+	sqlexist := `select count(doc_no) as check_exist from ar_deposit where doc_no = ?`
+	err := repo.db.Get(&check_doc_exist, sqlexist, req.DocNo)
+	if err != nil {
+		fmt.Println("Error = ", err.Error())
+		return nil, err
+	}
+
+	uuid := GenUUID()
+
+	if req.DocDate == "" {
+		req.DocDate = DocDate
+	}
+
+	due_date := now.AddDate(0, 0, int(req.CreditDay)).Format("2006-01-02")
+
+	req.DueDate = due_date
+
+	fmt.Println("duedate =", req.DueDate)
+
+	req.CreateTime = now.String()
+	req.EditTime = now.String()
+	req.CancelTime = now.String()
+	req.TaxRate = def.TaxRateDefault
+
+	req.Uuid = uuid
+
+	if req.TotalAmount == 0 {
+		req.BeforeTaxAmount, req.TaxAmount = config.CalcTaxTotalAmount(req.TaxType, req.TaxRate, req.TotalAmount)
+		req.NetAmount = req.TotalAmount
+	}
+
+
+	if (check_doc_exist == 0) {
+		sql := `insert into ar_deposit(company_id, branch_id, uuid, doc_no, tax_no, doc_date, ar_id, sale_id, tax_type, tax_rate, ref_no, credit_day, due_date, depart_id, allocate_id, project_id, my_description, before_tax_amount, tax_amount, total_amount, net_amount ,bill_balance ,cash_amount ,creditcard_amount, chq_amount, bank_amount, is_return_money, is_cancel, is_confirm, scg_id, job_no, create_by, create_time) values(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`
+		resp, err := repo.db.Exec(sql, req.CompanyId, req.BranchId, req.Uuid, req.DocNo, req.TaxNo, req.DocDate, req.ArId, req.SaleId, req.TaxType, req.TaxRate, req.RefNo, req.CreditDay, req.DueDate, req.DepartId, req.AllocateId, req.ProjectId, req.MyDescription, req.BeforeTaxAmount, req.TaxAmount, req.TotalAmount, req.NetAmount, req.BillBalance, req.CashAmount, req.CreditcardAmount, req.ChqAmount, req.BankAmount, req.IsReturnMoney, req.IsCancel, req.IsConfirm, req.ScgId, req.JobNo, req.CreateBy, req.CreateTime)
+		if err != nil {
+			fmt.Println("error = ", err.Error())
+		}
+		fmt.Println("sql = ", sql)
+
+		id, _ := resp.LastInsertId()
+
+		req.Id = id
+	}
+
+	return map[string]interface{}{
+		"id":       req.Id,
+		"doc_no":   req.DocNo,
+		"doc_date": req.DocDate,
+	}, nil
 }

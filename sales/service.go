@@ -15,20 +15,20 @@ type service struct {
 }
 
 type Service interface {
-	CreateQuo(req *NewQuoTemplate) (interface{}, error)
+	CreateQuotation(req *NewQuoTemplate) (interface{}, error)
 	SearchQueById(req *SearchByIdTemplate) (interface{}, error)
-	CreateSale(req *NewSaleTemplate) (interface{}, error)
+	CreateSaleOrder(req *NewSaleTemplate) (interface{}, error)
 	SearchSaleById(req *SearchByIdTemplate) (interface{}, error)
 	SearchDocByKeyword(req *SearchByKeywordTemplate) (interface{}, error)
+	CreateDeposit(req *NewDepositTemplate) (interface{}, error)
 }
 
-func (s *service) CreateQuo(req *NewQuoTemplate) (interface{}, error) {
+func (s *service) CreateQuotation(req *NewQuoTemplate) (interface{}, error) {
 	var count_item int
 	var count_item_qty int
 	var count_item_unit int
 	var sum_item_amount float64
 	var err error
-
 
 	fmt.Println("Service Quo")
 	for _, sub_item := range req.Subs {
@@ -59,12 +59,12 @@ func (s *service) CreateQuo(req *NewQuoTemplate) (interface{}, error) {
 	case count_item_unit > 0:
 		return nil, errors.New("Item not have unitcode")
 	case req.SaleCode == "":
-		return nil,errors.New("Quotation not have salecode")
+		return nil, errors.New("Quotation not have salecode")
 	case sum_item_amount != req.SumOfItemAmount:
-		return nil,errors.New("ItemAmountSub not equa SumOfItemAmount")
+		return nil, errors.New("ItemAmountSub not equa SumOfItemAmount")
 	}
 
-	resp, err := s.repo.CreateQuo(req)
+	resp, err := s.repo.CreateQuotation(req)
 	if err != nil {
 		return nil, err
 	}
@@ -80,16 +80,15 @@ func (s *service) SearchQueById(req *SearchByIdTemplate) (interface{}, error) {
 	return resp, nil
 }
 
-func (s *service) CreateSale(req *NewSaleTemplate) (interface{}, error) {
+func (s *service) CreateSaleOrder(req *NewSaleTemplate) (interface{}, error) {
 	var count_item int
 	var count_item_qty int
 	var count_item_unit int
 	var sum_item_amount float64
 
-
 	fmt.Println("Service Sale")
 	var item_discount_amount_sub float64
-	var  err error
+	var err error
 	for _, sub_item := range req.Subs {
 		if (sub_item.Qty != 0) {
 			count_item = count_item + 1
@@ -98,7 +97,7 @@ func (s *service) CreateSale(req *NewSaleTemplate) (interface{}, error) {
 				if err != nil {
 					fmt.Println(err)
 				}
-			}else{
+			} else {
 				item_discount_amount_sub = 0
 			}
 
@@ -114,22 +113,22 @@ func (s *service) CreateSale(req *NewSaleTemplate) (interface{}, error) {
 
 	switch {
 	case req.ArCode == "":
-		return nil, errors.New("Arcode is null")
+		return nil, errors.New("เอกสารไม่ได้ระบุ ลูกค้า")
 	case count_item == 0:
-		return nil, errors.New("Docno is not have item")
+		return nil, errors.New("เอกสารไม่มีรายการสินค้า")
 	case req.SumOfItemAmount == 0:
-		return nil, errors.New("SumOfItemAmount = 0")
+		return nil, errors.New("เอกสารไม่มีมูลค่าสินค้า")
 	case count_item_qty > 0:
-		return nil, errors.New("Item not have qty")
+		return nil, errors.New("รายการสินค้าไม่ได้ระบุ จำนวน")
 	case count_item_unit > 0:
-		return nil, errors.New("Item not have unitcode")
+		return nil, errors.New("รายการสินค้าไม่ได้ระบุ หน่วยนับ")
 	case req.SaleCode == "":
-		return nil,errors.New("Quotation not have salecode")
+		return nil, errors.New("เอกสารไม่ได้ระบุ พนักงานขาย")
 	case sum_item_amount != req.SumOfItemAmount:
-		return nil,errors.New("ItemAmountSub not equa SumOfItemAmount")
+		return nil, errors.New("มูลค่ารวมรายการสินค้าไม่เท่ากับมูลค่าสินค้า")
 	}
 
-	resp, err := s.repo.CreateSale(req)
+	resp, err := s.repo.CreateSaleOrder(req)
 	if err != nil {
 		return nil, err
 	}
@@ -147,6 +146,31 @@ func (s *service) SearchSaleById(req *SearchByIdTemplate) (interface{}, error) {
 
 func (s *service) SearchDocByKeyword(req *SearchByKeywordTemplate) (interface{}, error) {
 	resp, err := s.repo.SearchDocByKeyword(req)
+	if err != nil {
+		return nil, err
+	}
+	return resp, nil
+}
+
+func (s *service) CreateDeposit(req *NewDepositTemplate) (interface{}, error) {
+	var sum_pay_all float64
+
+	sum_pay_all = req.CashAmount + req.CreditcardAmount + req.ChqAmount + req.BankAmount
+	switch {
+	case req.ArId == 0:
+		return nil, errors.New("เอกสารไม่ได้ระบุ ลูกค้า")
+	case req.TotalAmount == 0:
+		return nil, errors.New("มูลค่าเอกสาร = 0")
+	case req.SaleId == 0:
+		return nil, errors.New("เอกสารไม่ได้ระบุ พนักงานขาย")
+	case req.CashAmount == 0 && req.CreditcardAmount ==0 && req.ChqAmount == 0 && req.BankAmount == 0:
+		return nil, errors.New("เอกสารไม่ได้ระบุยอดชำระ")
+	case sum_pay_all != req.TotalAmount:
+		return nil,errors.New("ยอดชำระไม่เท่ากับมูลค่าเอกสาร")
+	}
+
+
+	resp, err := s.repo.CreateDeposit(req)
 	if err != nil {
 		return nil, err
 	}

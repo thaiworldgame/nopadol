@@ -26,6 +26,24 @@ func CalcTaxItem(taxtype int, taxrate float64, afterdiscountamount float64) (bef
 	return beforetaxamount, taxamount, totalamount
 }
 
+func CalcTaxTotalAmount(taxtype int64, taxrate float64, totalamount float64) (beforetaxamount float64, taxamount float64) {
+	switch taxtype {
+	case 0:
+		beforetaxamount = toFixed(totalamount, 2)
+		taxamount = toFixed(((totalamount*(100+float64(taxrate)))/(100))-totalamount, 2)
+	case 1:
+		taxamount = toFixed(totalamount-((totalamount*100)/(100+float64(taxrate))), 2)
+		beforetaxamount = toFixed(totalamount-taxamount, 2)
+	case 2:
+		beforetaxamount = toFixed(totalamount, 2)
+		taxamount = 0
+	}
+
+	fmt.Println("taxtype,taxrate,beforetaxamount,taxamount,totalamount", taxtype, taxrate, beforetaxamount, taxamount)
+
+	return beforetaxamount, taxamount
+}
+
 func round(num float64) int {
 	return int(num + math.Copysign(0.5, num))
 }

@@ -26,11 +26,12 @@ func MakeHandler(s Service) http.Handler {
 		ErrorEncoder:    errorEncoder,
 	})
 	mux := http.NewServeMux()
-	mux.Handle("/quo/new",m.Handler(CreateQuo(s)))
+	mux.Handle("/quo/new",m.Handler(CreateQuotation(s)))
 	mux.Handle("/quo/search/id", m.Handler(SearchQuoById(s)))
-	mux.Handle("/sale/new", m.Handler(CreateSale(s)))
+	mux.Handle("/sale/new", m.Handler(CreateSaleOrder(s)))
 	mux.Handle("/sale/search/id", m.Handler(SearchSaleById(s)))
 	mux.Handle("/sale/doc/search",m.Handler(SearchDocByKeyword(s)))
+	mux.Handle("/dep/new",m.Handler(CreateDeposit(s)))
 	return mustLogin()(mux)
 
 }
