@@ -185,46 +185,51 @@ type (
 	}
 
 	NewDepositRequest struct {
-		Id               int64   `json:"id"`
-		CompanyId        int64   `json:"company_id"`
-		BranchId         int64   `json:"branch_id"`
-		Uuid             string  `json:"uuid"`
-		DocNo            string  `json:"doc_no"`
-		TaxNo            string  `json:"tax_no"`
-		DocDate          string  `json:"doc_date"`
-		ArId             int64   `json:"ar_id"`
-		SaleId           int64   `json:"sale_id"`
-		TaxType          int64   `json:"tax_type"`
-		TaxRate          float64 `json:"tax_rate"`
-		RefNo            string  `json:"ref_no"`
-		CreditDay        int64   `json:"credit_day"`
-		DueDate          string  `json:"due_date"`
-		DepartId         int64   `json:"depart_id"`
-		AllocateId       int64   `json:"allocate_id"`
-		ProjectId        int64   `json:"project_id"`
-		MyDescription    string  `json:"my_description"`
-		BeforeTaxAmount  float64 `json:"before_tax_amount"`
-		TaxAmount        float64 `json:"tax_amount"`
-		TotalAmount      float64 `json:"total_amount"`
-		NetAmount        float64 `json:"net_amount"`
-		BillBalance      float64 `json:"bill_balance"`
-		CashAmount       float64 `json:"cash_amount"`
-		CreditcardAmount float64 `json:"creditcard_amount"`
-		ChqAmount        float64 `json:"chq_amount"`
-		BankAmount       float64 `json:"bank_amount"`
-		IsReturnMoney    int64   `json:"is_return_money" `
-		IsCancel         int64   `json:"is_cancel"`
-		IsConfirm        int64   `json:"is_confirm"`
-		ScgId            string  `json:"scg_id"`
-		JobNo            string  `json:"job_no"`
-		CreateBy         string  `json:"create_by"`
-		CreateTime       string  `json:"create_time"`
-		EditBy           string  `json:"edit_by"`
-		EditTime         string  `json:"edit_time"`
-		CancelBy         string  `json:"cancel_by"`
-		CancelTime       string  `json:"cancel_time" `
-		ConfirmBy        string  `json:"confirm_by"`
-		ConfirmTime      string  `json:"confirm_time"`
+		Id               int64        `json:"id"`
+		CompanyId        int64        `json:"company_id"`
+		BranchId         int64        `json:"branch_id"`
+		Uuid             string       `json:"uuid"`
+		DocNo            string       `json:"doc_no"`
+		TaxNo            string       `json:"tax_no"`
+		DocDate          string       `json:"doc_date"`
+		BillType         int64        `json:"bill_type"`
+		ArId             int64        `json:"ar_id"`
+		ArCode           string       `json:"ar_code"`
+		SaleId           int64        `json:"sale_id"`
+		SaleCode         string       `json:"sale_code"`
+		TaxType          int64        `json:"tax_type"`
+		TaxRate          float64      `json:"tax_rate"`
+		RefNo            string       `json:"ref_no"`
+		CreditDay        int64        `json:"credit_day"`
+		DueDate          string       `json:"due_date"`
+		DepartId         int64        `json:"depart_id"`
+		AllocateId       int64        `json:"allocate_id"`
+		ProjectId        int64        `json:"project_id"`
+		MyDescription    string       `json:"my_description"`
+		BeforeTaxAmount  float64      `json:"before_tax_amount"`
+		TaxAmount        float64      `json:"tax_amount"`
+		TotalAmount      float64      `json:"total_amount"`
+		NetAmount        float64      `json:"net_amount"`
+		BillBalance      float64      `json:"bill_balance"`
+		CashAmount       float64      `json:"cash_amount"`
+		CreditcardAmount float64      `json:"creditcard_amount"`
+		ChqAmount        float64      `json:"chq_amount"`
+		BankAmount       float64      `json:"bank_amount"`
+		IsReturnMoney    int64        `json:"is_return_money" `
+		IsCancel         int64        `json:"is_cancel"`
+		IsConfirm        int64        `json:"is_confirm"`
+		ScgId            string       `json:"scg_id"`
+		JobNo            string       `json:"job_no"`
+		CreateBy         string       `json:"create_by"`
+		CreateTime       string       `json:"create_time"`
+		EditBy           string       `json:"edit_by"`
+		EditTime         string       `json:"edit_time"`
+		CancelBy         string       `json:"cancel_by"`
+		CancelTime       string       `json:"cancel_time" `
+		ConfirmBy        string       `json:"confirm_by"`
+		ConfirmTime      string       `json:"confirm_time"`
+		CreditCard       []CreditCard `json:"credit_card"`
+		Chq              []Chq        `json:"chq"`
 	}
 
 	NewDepositItemRequest struct {
@@ -252,6 +257,42 @@ type (
 		RefLineNumber   int64   `json:"ref_line_number"`
 		IsCancel        int64   `json:"is_cancel"`
 	}
+
+	CreditCard struct {
+		Id           int64  `json:"id"`
+		CompanyId    int64  `json:"company_id"`
+		BranchId     int64  `json:"branch_id"`
+		Uuid         string `json:"uuid"`
+		RefId        int64  `json:"ref_id"`
+		ArId         int64  `json:"ar_id"`
+		DocDate      string `json:"doc_date"`
+		CreditCardNo string `json:"credit_card_no"`
+		BankId       int64  `json:"bank_id"`
+		BankBranchId int64  `json:"bank_branch_id"`
+		ReceiveDate  string `json:"receive_date"`
+		DueDate      string `json:"due_date"`
+		BookId       int64  `json:"book_id"`
+	}
+
+	Chq struct {
+		Id           int64   `json:"id"`
+		CompanyId    int64   `json:"company_id"`
+		BranchId     int64   `json:"branch_id"`
+		Uuid         string  `json:"uuid"`
+		RefId        int64   `json:"ref_id"`
+		ArId         int64   `json:"ar_id"`
+		DocDate      string  `json:"doc_date"`
+		Chqnumber    string  `json:"chqnumber"`
+		BankId       int64   `json:"bank_id"`
+		BankBranchId int64   `json:"bank_branch_id"`
+		ReceiveDate  string  `json:"receive_date"`
+		DueDate      string  `json:"due_date"`
+		BookId       int64   `json:"book_id"`
+		ChqStatus    int64   `json:"chq_status"`
+		ChqAmount    float64 `json:"chq_amount"`
+		ChqBalance   float64 `json:"chq_balance"`
+	}
+
 )
 
 ////// Quotation /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -562,8 +603,11 @@ func CreateDeposit(s Service) interface{} {
 			DocNo:            req.DocNo,
 			TaxNo:            req.TaxNo,
 			DocDate:          req.DocDate,
+			BillType:         req.BillType,
 			ArId:             req.ArId,
+			ArCode:           req.ArCode,
 			SaleId:           req.SaleId,
+			SaleCode:         req.SaleCode,
 			TaxType:          req.TaxType,
 			TaxRate:          req.TaxRate,
 			RefNo:            req.RefNo,

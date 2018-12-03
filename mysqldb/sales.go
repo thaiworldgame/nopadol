@@ -238,8 +238,11 @@ type NewDepositModel struct {
 	DocNo            string  `db:"doc_no"`
 	TaxNo            string  `db:"tax_no"`
 	DocDate          string  `db:"doc_date"`
+	BillType         int64   `db:"bill_type"`
 	ArId             int64   `db:"ar_id"`
+	ArCode           string  `db:"ar_code"`
 	SaleId           int64   `db:"sale_id"`
+	SaleCode         string  `db:"sale_code"`
 	TaxType          int64   `db:"tax_type"`
 	TaxRate          float64 `db:"tax_rate"`
 	RefNo            string  `db:"ref_no"`
@@ -1044,6 +1047,7 @@ func (repo *salesRepository) CreateDeposit(req *sales.NewDepositTemplate) (inter
 
 	def := config.Default{}
 	def = config.LoadDefaultData("config/config.json")
+	fmt.Println("tax rate = ",def.TaxRateDefault)
 
 	now := time.Now()
 	fmt.Println("yyyy-mm-dd date format : ", now.AddDate(0, 0, 0).Format("2006-01-02"))
@@ -1071,19 +1075,18 @@ func (repo *salesRepository) CreateDeposit(req *sales.NewDepositTemplate) (inter
 	req.CreateTime = now.String()
 	req.EditTime = now.String()
 	req.CancelTime = now.String()
-	req.TaxRate = def.TaxRateDefault
+	//req.TaxRate = def.TaxRateDefault
 
 	req.Uuid = uuid
 
-	if req.TotalAmount == 0 {
+	if req.TotalAmount != 0 {
 		req.BeforeTaxAmount, req.TaxAmount = config.CalcTaxTotalAmount(req.TaxType, req.TaxRate, req.TotalAmount)
 		req.NetAmount = req.TotalAmount
 	}
 
-
 	if (check_doc_exist == 0) {
-		sql := `insert into ar_deposit(company_id, branch_id, uuid, doc_no, tax_no, doc_date, ar_id, sale_id, tax_type, tax_rate, ref_no, credit_day, due_date, depart_id, allocate_id, project_id, my_description, before_tax_amount, tax_amount, total_amount, net_amount ,bill_balance ,cash_amount ,creditcard_amount, chq_amount, bank_amount, is_return_money, is_cancel, is_confirm, scg_id, job_no, create_by, create_time) values(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`
-		resp, err := repo.db.Exec(sql, req.CompanyId, req.BranchId, req.Uuid, req.DocNo, req.TaxNo, req.DocDate, req.ArId, req.SaleId, req.TaxType, req.TaxRate, req.RefNo, req.CreditDay, req.DueDate, req.DepartId, req.AllocateId, req.ProjectId, req.MyDescription, req.BeforeTaxAmount, req.TaxAmount, req.TotalAmount, req.NetAmount, req.BillBalance, req.CashAmount, req.CreditcardAmount, req.ChqAmount, req.BankAmount, req.IsReturnMoney, req.IsCancel, req.IsConfirm, req.ScgId, req.JobNo, req.CreateBy, req.CreateTime)
+		sql := `insert into ar_deposit(company_id, branch_id, uuid, doc_no, tax_no, doc_date, bill_type, ar_id, ar_code, sale_id, sale_code, tax_type, tax_rate, ref_no, credit_day, due_date, depart_id, allocate_id, project_id, my_description, before_tax_amount, tax_amount, total_amount, net_amount ,bill_balance ,cash_amount ,creditcard_amount, chq_amount, bank_amount, is_return_money, is_cancel, is_confirm, scg_id, job_no, create_by, create_time) values(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`
+		resp, err := repo.db.Exec(sql, req.CompanyId, req.BranchId, req.Uuid, req.DocNo, req.TaxNo, req.DocDate, req.BillType, req.ArId, req.ArCode, req.SaleId, req.SaleCode, req.TaxType, req.TaxRate, req.RefNo, req.CreditDay, req.DueDate, req.DepartId, req.AllocateId, req.ProjectId, req.MyDescription, req.BeforeTaxAmount, req.TaxAmount, req.TotalAmount, req.NetAmount, req.BillBalance, req.CashAmount, req.CreditcardAmount, req.ChqAmount, req.BankAmount, req.IsReturnMoney, req.IsCancel, req.IsConfirm, req.ScgId, req.JobNo, req.CreateBy, req.CreateTime)
 		if err != nil {
 			fmt.Println("error = ", err.Error())
 		}

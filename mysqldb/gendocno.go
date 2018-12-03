@@ -119,19 +119,21 @@ func GetLastDocNo(db *sqlx.DB, branch_id int64, table_code string, formatnum int
 
 	switch table_code {
 	case "QT":
-		sqlcase = `select cast(right(ifnull(max(docno),0),?) as int)+1 maxno from Quotation where BranchId = ? and BillType = ? and year(DocDate) = year(CURDATE()) and month(DocDate) = month(CURDATE())`
+		sqlcase = `select cast(right(ifnull(max(docno),0),?) as int)+1 maxno from Quotation where CompanyId = ? and BranchId = ? and BillType = ? and year(DocDate) = year(CURDATE()) and month(DocDate) = month(CURDATE())`
 	case "BO":
-		sqlcase = `select cast(right(ifnull(max(docno),0),?) as int)+1 maxno from Quotation where BranchId = ? and BillType = ? and year(DocDate) = year(CURDATE()) and month(DocDate) = month(CURDATE())`
+		sqlcase = `select cast(right(ifnull(max(docno),0),?) as int)+1 maxno from Quotation where CompanyId = ? and BranchId = ? and BillType = ? and year(DocDate) = year(CURDATE()) and month(DocDate) = month(CURDATE())`
 	case "SO":
-		sqlcase = `select cast(right(ifnull(max(docno),0),?) as int)+1 maxno from SaleOrder where BranchId = ? and DocType = 1 and BillType = ? and year(DocDate) = year(CURDATE()) and month(DocDate) = month(CURDATE())`
+		sqlcase = `select cast(right(ifnull(max(docno),0),?) as int)+1 maxno from SaleOrder where CompanyId = ? and BranchId = ? and DocType = 1 and BillType = ? and year(DocDate) = year(CURDATE()) and month(DocDate) = month(CURDATE())`
 	case "RO":
-		sqlcase = `select cast(right(ifnull(max(docno),0),?) as int)+1 maxno from SaleOrder where BranchId = ? and DocType = 0 and BillType = ? and year(DocDate) = year(CURDATE()) and month(DocDate) = month(CURDATE())`
+		sqlcase = `select cast(right(ifnull(max(docno),0),?) as int)+1 maxno from SaleOrder where CompanyId = ? and BranchId = ? and DocType = 0 and BillType = ? and year(DocDate) = year(CURDATE()) and month(DocDate) = month(CURDATE())`
+	case "DP":
+		sqlcase = `select cast(right(ifnull(max(doc_no),0),?) as int)+1 maxno from ar_deposit where company_id = ? and branch_id = ? and bill_type = ? and year(doc_date) = year(CURDATE()) and month(doc_date) = month(CURDATE())`
 	}
 
 	sql = sqlcase
 	fmt.Println("Branch ID =",branch_id)
 	fmt.Println("Query = ", sql)
-	err = db.Get(&last_no, sql, formatnum, branch_id, bill_type)
+	err = db.Get(&last_no, sql, formatnum, 1, branch_id, bill_type)
 	if err != nil {
 		//fmt.Println("Last No Error = ",err)
 		return 1, nil
