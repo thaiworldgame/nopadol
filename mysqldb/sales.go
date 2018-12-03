@@ -97,13 +97,15 @@ type NewSaleModel struct {
 	ArId                int64              `db:"ArId"`
 	ArCode              string             `db:"ArCode"`
 	ArName              string             `db:"ArName"`
+	ArBillAddress       string             `db:"ar_bill_address"`
+	ArTelephone         string             `db:"ar_telephone"`
 	SaleId              int                `db:"SaleId"`
 	SaleCode            string             `db:"SaleCode"`
 	SaleName            string             `db:"SaleName"`
 	BillType            int64              `db:"BillType"`
 	TaxType             int                `db:"TaxType"`
 	TaxRate             float64            `db:"TaxRate"`
-	DepartId            int64              `db:"DepartCode"`
+	DepartId            int64              `db:"DepartId"`
 	RefNo               string             `db:"RefNo"`
 	IsConfirm           int64              `db:"IsConfirm"`
 	BillStatus          int64              `db:"BillStatus"`
@@ -157,6 +159,9 @@ type NewSaleItemModel struct {
 	UnitCode        string  `db:"UnitCode"`
 	ItemAmount      float64 `db:"ItemAmount"`
 	ItemDescription string  `db:"ItemDescription"`
+	StockType       int64   `db:"StockType"`
+	AverageCost     float64 `db:"AverageCost"`
+	SumOfCost       float64 `db:"SumOfCost"`
 	PackingRate1    float64 `db:"PackingRate1"`
 	RefNo           string  `db:"RefNo"`
 	QuoId           int64   `db:"QuoId"`
@@ -724,7 +729,6 @@ func (repo *salesRepository) CreateSaleOrder(req *sales.NewSaleTemplate) (resp i
 	var count_item_qty int
 	var count_item_unit int
 	var sum_item_amount float64
-	var new_doc_no string
 	var item_discount_amount_sub float64
 
 	def := config.Default{}
@@ -791,8 +795,6 @@ func (repo *salesRepository) CreateSaleOrder(req *sales.NewSaleTemplate) (resp i
 		fmt.Println("error =", "Docno is exist")
 		return nil, errors.New("Docno is exist")
 	}
-
-	fmt.Println("SOStatus =", req.SoStatus, new_doc_no)
 
 	if (check_doc_exist == 0) {
 		//API Call Get API
@@ -905,7 +907,9 @@ func (repo *salesRepository) CreateSaleOrder(req *sales.NewSaleTemplate) (resp i
 			fmt.Println("ArId Sub = ", req.ArId)
 			fmt.Println("SaleId Sub = ", req.SaleId)
 			sub.LineNumber = vLineNumber
-			sqlsub := `INSERT INTO SaleOrderSub(SOId,ArId,SaleId,ItemId,ItemCode,BarCode,ItemName,WhCode,ShelfCode,Qty,RemainQty,UnitCode,Price,DiscountWord,DiscountAmount,ItemAmount,ItemDescription,RefNo,QuoId,IsCancel,PackingRate1,RefLineNumber,LineNumber) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`
+			sub.SumOfCost = sub.AverageCost * sub.Qty
+
+			sqlsub := `INSERT INTO SaleOrderSub(SOId,ArId,SaleId,ItemId,ItemCode,BarCode,ItemName,WhCode,ShelfCode,Qty,RemainQty,UnitCode,Price,DiscountWord,DiscountAmount,ItemAmount,ItemDescription,StockType,AverageCost,SumOfCost,RefNo,QuoId,IsCancel,PackingRate1,RefLineNumber,LineNumber) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`
 			_, err := repo.db.Exec(sqlsub,
 				req.Id,
 				req.ArId,
@@ -924,6 +928,9 @@ func (repo *salesRepository) CreateSaleOrder(req *sales.NewSaleTemplate) (resp i
 				sub.DiscountAmount,
 				sub.ItemAmount,
 				sub.ItemDescription,
+				sub.StockType,
+				sub.AverageCost,
+				sub.SumOfCost,
 				sub.RefNo,
 				sub.QuoId,
 				sub.IsCancel,
@@ -1020,25 +1027,121 @@ func (repo *salesRepository) CreateSaleOrder(req *sales.NewSaleTemplate) (resp i
 	}, nil
 }
 
-func (repo *salesRepository) SearchSaleById(req *sales.SearchByIdTemplate) (resp interface{}, err error) {
+func (repo *salesRepository) SearchSaleOrderById(req *sales.SearchByIdTemplate) (resp interface{}, err error) {
 
-	q := NewSaleModel{}
+	s := NewSaleModel{}
 
-	sql := `select isnull(CompanyName,'') as CompanyName,isnull(CompanyAddress,'') as CompanyAddress,isnull(Telephone,'') as Telephone,isnull(TaxId,'') as TaxId,isnull(ArCode,'') as ArCode,isnull(PosId,'') as PosId,isnull(WhCode,'') as WhCode,isnull(ShelfCode,'') as ShelfCode,isnull(PrinterPosIp,'') as PrinterPosIp,isnull(PrinterCopyIp,'') as PrinterCopyIp,isnull(MachineNo,'') as MachineNo,isnull(MachineCode,'') as MachineCode from posconfig`
-	err = repo.db.Get(&q, sql)
+	sql := `select Id,DocNo,DocDate,CompanyId,BranchId,DocType,BillType,TaxType,ArId,ArCode,ArName,SaleId,SaleCode,SaleName,DepartId,CreditDay,DueDate,DeliveryDay,DeliveryDate,TaxRate,IsConfirm,ifnull(MyDescription,'') as MyDescription,BillStatus,HoldingStatus,SumOfItemAmount,ifnull(DiscountWord,'') as DiscountWord,DiscountAmount,AfterDiscountAmount,BeforeTaxAmount,TaxAmount,TotalAmount,NetDebtAmount,IsCancel,IsConditionSend,DeliveryAddressId,ifnull(CarLicense,'') as CarLicense,ifnull(PersonReceiveTel,'') as PersonReceiveTel,JobId,ProjectId,AllocateId,ifnull(CreateBy,'') as CreateBy,CreateTime,ifnull(EditBy,'') as EditBy,ifnull(EditTime,'') as EditTime, ifnull(CancelBy,'') as CancelBy,ifnull(CancelTime,'') as CancelTime, ifnull(ConfirmBy,'') as ConfirmBy,ifnull(ConfirmTime,'') as ConfirmTime from SaleOrder where id=?`
+	err = repo.db.Get(&s, sql, req.Id)
 	if err != nil {
 		fmt.Println("err = ", err.Error())
 		return resp, err
 	}
 
-	qt_resp := map_sale_template(q)
+	so_resp := map_saleorder_template(s)
 
-	return qt_resp, nil
+	subs := []NewSaleItemModel{}
+
+	fmt.Println("s.Id =",s.Id)
+
+	sql_sub := `select a.Id,a.SOId,a.ItemId,a.ItemCode,a.ItemName,ifnull(a.WHCode,'') as WHCode,ifnull(a.ShelfCode,'') as ShelfCode,a.Qty,a.RemainQty,a.Price,ifnull(a.DiscountWord,'') as DiscountWord,DiscountAmount,ifnull(a.UnitCode,'') as UnitCode,ifnull(a.BarCode,'') as BarCode,ifnull(a.ItemDescription,'') as ItemDescription,a.StockType,a.AverageCost,a.SumOfCost,a.ItemAmount,a.PackingRate1,a.LineNumber,a.IsCancel from SaleOrderSub a  where SOId = ? order by a.linenumber`
+	err = repo.db.Select(&subs, sql_sub, s.Id)
+	fmt.Println("sql_sub = ",sql_sub)
+	if err != nil {
+		fmt.Println("err sub= ", err.Error())
+		return resp, err
+	}
+
+
+
+	for _, sub := range subs {
+		subline := map_sale_subs_template(sub)
+		so_resp.Subs = append(so_resp.Subs, subline)
+	}
+
+	return so_resp, nil
 }
 
-func map_sale_template(x NewSaleModel) sales.NewSaleTemplate {
+func map_saleorder_template(x NewSaleModel) sales.NewSaleTemplate {
 	return sales.NewSaleTemplate{
-		ArCode: x.ArCode,
+		AllocateId:          x.AllocateId,
+		ArCode:              x.ArCode,
+		ArId:                x.ArId,
+		AfterDiscountAmount: x.AfterDiscountAmount,
+		ArTelephone:         x.ArTelephone,
+		ArBillAddress:       x.ArBillAddress,
+		ArName:              x.ArName,
+		BillType:            x.BillType,
+		BranchId:            x.BranchId,
+		BeforeTaxAmount:     x.BeforeTaxAmount,
+		BillStatus:          x.BillStatus,
+		CreditDay:           x.CreditDay,
+		CreateTime:          x.CreateTime,
+		CreateBy:            x.CreateBy,
+		CompanyId:           x.CompanyId,
+		CarLicense:          x.CarLicense,
+		CancelTime:          x.CancelTime,
+		CancelBy:            x.CancelBy,
+		ConfirmBy:           x.ConfirmBy,
+		ConfirmTime:         x.ConfirmTime,
+		DueDate:             x.DueDate,
+		DepartId:            x.DepartId,
+		DocDate:             x.DocDate,
+		DocNo:               x.DocNo,
+		DocType:             x.DocType,
+		DiscountAmount:      x.DiscountAmount,
+		DiscountWord:        x.DiscountWord,
+		DeliveryDay:         x.DeliveryDay,
+		DeliveryAddressId:   x.DeliveryAddressId,
+		DeliveryDate:        x.DeliveryDate,
+		EditBy:              x.EditBy,
+		EditTime:            x.EditTime,
+		HoldingStatus:       x.HoldingStatus,
+		Id:                  x.Id,
+		IsConfirm:           x.IsConfirm,
+		IsCancel:            x.IsCancel,
+		IsConditionSend:     x.IsConditionSend,
+		JobId:               x.JobId,
+		MyDescription:       x.MyDescription,
+		NetDebtAmount:       x.NetDebtAmount,
+		ProjectId:           x.ProjectId,
+		PersonReceiveTel:    x.PersonReceiveTel,
+		RefNo:               x.RefNo,
+		SaleCode:            x.SaleCode,
+		SaleId:              x.SaleId,
+		SaleName:            x.SaleName,
+		SumOfItemAmount:     x.SumOfItemAmount,
+		TotalAmount:         x.TotalAmount,
+		TaxAmount:           x.TaxAmount,
+		TaxRate:             x.TaxRate,
+		TaxType:             x.TaxType,
+	}
+}
+
+func map_sale_subs_template(x NewSaleItemModel) sales.NewSaleItemTemplate {
+	return sales.NewSaleItemTemplate{
+		Id:              x.Id,
+		QuoId:           x.QuoId,
+		ItemId:          x.ItemId,
+		ItemCode:        x.ItemCode,
+		BarCode:         x.BarCode,
+		ItemName:        x.ItemName,
+		Qty:             x.Qty,
+		RemainQty:       x.RemainQty,
+		WHCode:          x.WHCode,
+		ShelfCode:       x.ShelfCode,
+		Price:           x.Price,
+		DiscountWord:    x.DiscountWord,
+		DiscountAmount:  x.DiscountAmount,
+		UnitCode:        x.UnitCode,
+		ItemAmount:      x.ItemAmount,
+		ItemDescription: x.ItemDescription,
+		StockType:       x.StockType,
+		AverageCost:     x.AverageCost,
+		SumOfCost:       x.SumOfCost,
+		PackingRate1:    x.PackingRate1,
+		LineNumber:      x.LineNumber,
+		IsCancel:        x.IsCancel,
 	}
 }
 
@@ -1047,7 +1150,7 @@ func (repo *salesRepository) CreateDeposit(req *sales.NewDepositTemplate) (inter
 
 	def := config.Default{}
 	def = config.LoadDefaultData("config/config.json")
-	fmt.Println("tax rate = ",def.TaxRateDefault)
+	fmt.Println("tax rate = ", def.TaxRateDefault)
 
 	now := time.Now()
 	fmt.Println("yyyy-mm-dd date format : ", now.AddDate(0, 0, 0).Format("2006-01-02"))

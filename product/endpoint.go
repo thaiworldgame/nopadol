@@ -34,6 +34,7 @@ type (
 		PicPath1    string  `json:"pic_path_1"`
 		StkQty      float64 `json:"stk_qty"`
 		StockType   int64   `json:"stock_type"`
+		AverageCost float64 `json:"average_cost"`
 		StkLocation []Stock `json:"stk_location"`
 	}
 

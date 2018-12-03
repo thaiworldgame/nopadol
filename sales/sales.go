@@ -95,7 +95,6 @@ type NewSaleTemplate struct {
 	RefNo               string                `json:"ref_no"`
 	IsConfirm           int64                 `json:"is_confirm"`
 	BillStatus          int64                 `json:"bill_status"`
-	SoStatus            int64                 `json:"so_status"`
 	HoldingStatus       int64                 `json:"holding_status"`
 	CreditDay           int64                 `json:"credit_day"`
 	DueDate             string                `json:"due_date"`
@@ -146,6 +145,9 @@ type NewSaleItemTemplate struct {
 	UnitCode        string  `json:"unit_code"`
 	ItemAmount      float64 `json:"item_amount"`
 	ItemDescription string  `json:"item_description"`
+	StockType       int64   `json:"stock_type"`
+	AverageCost     float64 `json:"average_cost"`
+	SumOfCost       float64 `json:"sum_of_cost"`
 	PackingRate1    float64 `json:"packing_rate_1"`
 	RefNo           string  `json:"ref_no"`
 	QuoId           int64   `json:"quo_id"`

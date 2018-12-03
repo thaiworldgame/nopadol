@@ -24,6 +24,7 @@ type ProductTemplate struct {
 	PicPath1    string          `json:"pic_path_1"`
 	StkQty      float64         `json:"stk_qty"`
 	StockType   int64           `json:"stock_type"`
+	AverageCost float64         `json:"average_cost"`
 	StkLocation []StockTemplate `json:"stk_location"`
 }
 

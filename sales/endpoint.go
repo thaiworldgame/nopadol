@@ -101,7 +101,6 @@ type (
 		RefNo               string               `json:"ref_no"`
 		IsConfirm           int64                `json:"is_confirm"`
 		BillStatus          int64                `json:"bill_status"`
-		SoStatus            int64                `json:"so_status"`
 		HoldingStatus       int64                `json:"holding_status"`
 		CreditDay           int64                `json:"credit_day"`
 		DueDate             string               `json:"due_date"`
@@ -152,6 +151,9 @@ type (
 		UnitCode        string  `json:"unit_code"`
 		ItemAmount      float64 `json:"item_amount"`
 		ItemDescription string  `json:"item_description"`
+		StockType       int64   `json:"stock_type"`
+		AverageCost     float64 `json:"average_cost"`
+		SumOfCost       float64 `json:"sum_of_cost"`
 		PackingRate1    float64 `json:"packing_rate_1"`
 		RefNo           string  `json:"ref_no"`
 		QuoId           int64   `json:"quo_id"`
@@ -292,7 +294,6 @@ type (
 		ChqAmount    float64 `json:"chq_amount"`
 		ChqBalance   float64 `json:"chq_balance"`
 	}
-
 )
 
 ////// Quotation /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -466,7 +467,6 @@ func CreateSaleOrder(s Service) interface{} {
 			DocNo:               req.DocNo,
 			DocDate:             req.DocDate,
 			BillType:            req.BillType,
-			SoStatus:            req.SoStatus,
 			HoldingStatus:       req.HoldingStatus,
 			AllocateId:          req.AllocateId,
 			ArId:                req.ArId,
@@ -567,9 +567,9 @@ func map_sale_sub_request(x NewSaleItemRequest) NewSaleItemTemplate {
 	}
 }
 
-func SearchSaleById(s Service) interface{} {
+func SearchSaleOrderById(s Service) interface{} {
 	return func(ctx context.Context, req *SearchByIdRequest) (interface{}, error) {
-		resp, err := s.SearchSaleById(&SearchByIdTemplate{Id: req.Id})
+		resp, err := s.SearchSaleOrderById(&SearchByIdTemplate{Id: req.Id})
 		if err != nil {
 			fmt.Println("endpoint error =", err.Error())
 			return nil, fmt.Errorf(err.Error())

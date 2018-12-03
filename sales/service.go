@@ -18,7 +18,7 @@ type Service interface {
 	CreateQuotation(req *NewQuoTemplate) (interface{}, error)
 	SearchQueById(req *SearchByIdTemplate) (interface{}, error)
 	CreateSaleOrder(req *NewSaleTemplate) (interface{}, error)
-	SearchSaleById(req *SearchByIdTemplate) (interface{}, error)
+	SearchSaleOrderById(req *SearchByIdTemplate) (interface{}, error)
 	SearchDocByKeyword(req *SearchByKeywordTemplate) (interface{}, error)
 	CreateDeposit(req *NewDepositTemplate) (interface{}, error)
 }
@@ -136,8 +136,8 @@ func (s *service) CreateSaleOrder(req *NewSaleTemplate) (interface{}, error) {
 	return resp, nil
 }
 
-func (s *service) SearchSaleById(req *SearchByIdTemplate) (interface{}, error) {
-	resp, err := s.repo.SearchSaleById(req)
+func (s *service) SearchSaleOrderById(req *SearchByIdTemplate) (interface{}, error) {
+	resp, err := s.repo.SearchSaleOrderById(req)
 	if err != nil {
 		return nil, err
 	}
