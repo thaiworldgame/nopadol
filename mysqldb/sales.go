@@ -246,8 +246,10 @@ type NewDepositModel struct {
 	BillType         int64   `db:"bill_type"`
 	ArId             int64   `db:"ar_id"`
 	ArCode           string  `db:"ar_code"`
+	ArName           string  `db:"ar_name"`
 	SaleId           int64   `db:"sale_id"`
 	SaleCode         string  `db:"sale_code"`
+	SaleName         string  `db:"sale_name"`
 	TaxType          int64   `db:"tax_type"`
 	TaxRate          float64 `db:"tax_rate"`
 	RefNo            string  `db:"ref_no"`
@@ -945,15 +947,33 @@ func (repo *salesRepository) CreateSaleOrder(req *sales.NewSaleTemplate) (resp i
 		}
 
 	} else {
-		switch {
-		case req.DocNo == "":
-			fmt.Println("error =", "Docno is null")
-			return nil, errors.New("Docno is null")
-		}
-
-		//sql := `set dateformat dmy     update dbo.bcarinvoice set DocDate=?,ArCode=?,TaxType=?,CashierCode=?,ShiftNo=?,MachineNo=?,MachineCode=?,GrandTotal=?,CoupongAmount=?,ChangeAmount=?,SaleCode=?,TaxRate=?,SumOfItemAmount=?,DiscountWord=?,DiscountAmount=?,AfterDiscount=?,BeforeTaxAmount=?,TaxAmount=?,TotalAmount=?,SumCashAmount=?,SumChqAmount=?,SumCreditAmount=?,SumBankAmount=?,NetDebtAmount=?,HomeAmount=?,BillBalance=?,LastEditorCode=?,LastEditDateT=getdate() where DocNo=?`
-		//fmt.Println("sql update = ", sql)
-		//id, err := repo.db.Exec(sql, req.DocDate, req.ArCode, pos_tax_type, req.CashierCode, req.ShiftNo, req.MachineNo, req.MachineCode, total_amount, req.CoupongAmount, req.ChangeAmount, req.SaleCode, tax_rate, req.SumOfItemAmount, req.DiscountWord, discount_amount, req.AfterDiscount, before_tax_amount, tax_amount, req.TotalAmount, req.SumCashAmount, req.SumChqAmount, req.SumCreditAmount, req.SumBankAmount, req.NetDebtAmount, home_amount, bill_balance, req.UserCode, req.DocNo)
+		//	switch {
+		//	case req.DocNo == "":
+		//		fmt.Println("error =", "Docno is null")
+		//		return nil, errors.New("Docno is null")
+		//	}
+		//
+		//	fmt.Println("Update")
+		//	req.EditBy = req.CreateBy
+		//
+		//	req.BeforeTaxAmount, req.TaxAmount, req.TotalAmount = config.CalcTaxItem(req.TaxType, req.TaxRate, req.AfterDiscountAmount)
+		//
+		//	sql := `Update SaleOrder set DocNo=?,DocDate=?,CompanyId=?,BranchId=?,DocType=?,BillType=?,TaxType=?,ArId=?,ArCode=?,ArName=?,SaleId=?,SaleCode=?,SaleName=?,DepartId=?,CreditDay=?,DueDate=?,DeliveryDay=?,DeliveryDate=?,TaxRate=?,IsConfirm=?,MyDescription=?,BillStatus=?,HoldingStatus=?,SumOfItemAmount=?,DiscountWord=?,DiscountAmount=?,AfterDiscountAmount=?,BeforeTaxAmount=?,TaxAmount=?,TotalAmount=?,NetDebtAmount=?,IsCancel=?,IsConditionSend=?,DeliveryAddressId=?,CarLicense=?,PersonReceiveTel=?,JobId=?,ProjectId=?,AllocateId=?,EditBy=?,EditTime=? where Id=?`
+		//	fmt.Println("sql update = ", sql)
+		//	id, err := repo.db.Exec(sql, req.DocNo,req.DocDate,req.CompanyId,BranchId,DocType,BillType,TaxType,ArId,ArCode,ArName,SaleId,SaleCode,SaleName,DepartId,CreditDay,DueDate,DeliveryDay,DeliveryDate,TaxRate,IsConfirm,MyDescription,BillStatus,HoldingStatus,SumOfItemAmount,DiscountWord,DiscountAmount,AfterDiscountAmount,BeforeTaxAmount,TaxAmount,TotalAmount,NetDebtAmount,IsCancel,IsConditionSend,DeliveryAddressId,CarLicense,PersonReceiveTel,JobId,ProjectId,AllocateId,CreateBy,req.EditTime, req.Id)
+		//	if err != nil {
+		//		fmt.Println("Error = ", err.Error())
+		//		return nil, err
+		//	}
+		//
+		//	rowAffect, err := id.RowsAffected()
+		//	fmt.Println("Row Affect = ", rowAffect)
+		//}
+		//
+		//fmt.Println("ReqID=", req.Id)
+		//
+		//sql_del_sub := `delete from SaleOrderSub where SOId = ?`
+		//_, err = repo.db.Exec(sql_del_sub, req.Id)
 		//if err != nil {
 		//	fmt.Println("Error = ", err.Error())
 		//	return nil, err
@@ -1042,17 +1062,15 @@ func (repo *salesRepository) SearchSaleOrderById(req *sales.SearchByIdTemplate) 
 
 	subs := []NewSaleItemModel{}
 
-	fmt.Println("s.Id =",s.Id)
+	fmt.Println("s.Id =", s.Id)
 
 	sql_sub := `select a.Id,a.SOId,a.ItemId,a.ItemCode,a.ItemName,ifnull(a.WHCode,'') as WHCode,ifnull(a.ShelfCode,'') as ShelfCode,a.Qty,a.RemainQty,a.Price,ifnull(a.DiscountWord,'') as DiscountWord,DiscountAmount,ifnull(a.UnitCode,'') as UnitCode,ifnull(a.BarCode,'') as BarCode,ifnull(a.ItemDescription,'') as ItemDescription,a.StockType,a.AverageCost,a.SumOfCost,a.ItemAmount,a.PackingRate1,a.LineNumber,a.IsCancel from SaleOrderSub a  where SOId = ? order by a.linenumber`
 	err = repo.db.Select(&subs, sql_sub, s.Id)
-	fmt.Println("sql_sub = ",sql_sub)
+	fmt.Println("sql_sub = ", sql_sub)
 	if err != nil {
 		fmt.Println("err sub= ", err.Error())
 		return resp, err
 	}
-
-
 
 	for _, sub := range subs {
 		subline := map_sale_subs_template(sub)
@@ -1188,8 +1206,8 @@ func (repo *salesRepository) CreateDeposit(req *sales.NewDepositTemplate) (inter
 	}
 
 	if (check_doc_exist == 0) {
-		sql := `insert into ar_deposit(company_id, branch_id, uuid, doc_no, tax_no, doc_date, bill_type, ar_id, ar_code, sale_id, sale_code, tax_type, tax_rate, ref_no, credit_day, due_date, depart_id, allocate_id, project_id, my_description, before_tax_amount, tax_amount, total_amount, net_amount ,bill_balance ,cash_amount ,creditcard_amount, chq_amount, bank_amount, is_return_money, is_cancel, is_confirm, scg_id, job_no, create_by, create_time) values(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`
-		resp, err := repo.db.Exec(sql, req.CompanyId, req.BranchId, req.Uuid, req.DocNo, req.TaxNo, req.DocDate, req.BillType, req.ArId, req.ArCode, req.SaleId, req.SaleCode, req.TaxType, req.TaxRate, req.RefNo, req.CreditDay, req.DueDate, req.DepartId, req.AllocateId, req.ProjectId, req.MyDescription, req.BeforeTaxAmount, req.TaxAmount, req.TotalAmount, req.NetAmount, req.BillBalance, req.CashAmount, req.CreditcardAmount, req.ChqAmount, req.BankAmount, req.IsReturnMoney, req.IsCancel, req.IsConfirm, req.ScgId, req.JobNo, req.CreateBy, req.CreateTime)
+		sql := `insert into ar_deposit(company_id, branch_id, uuid, doc_no, tax_no, doc_date, bill_type, ar_id, ar_code, ar_name, sale_id, sale_code, sale_name, tax_type, tax_rate, ref_no, credit_day, due_date, depart_id, allocate_id, project_id, my_description, before_tax_amount, tax_amount, total_amount, net_amount ,bill_balance ,cash_amount ,creditcard_amount, chq_amount, bank_amount, is_return_money, is_cancel, is_confirm, scg_id, job_no, create_by, create_time) values(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`
+		resp, err := repo.db.Exec(sql, req.CompanyId, req.BranchId, req.Uuid, req.DocNo, req.TaxNo, req.DocDate, req.BillType, req.ArId, req.ArCode, req.ArName, req.SaleId, req.SaleCode, req.SaleName, req.TaxType, req.TaxRate, req.RefNo, req.CreditDay, req.DueDate, req.DepartId, req.AllocateId, req.ProjectId, req.MyDescription, req.BeforeTaxAmount, req.TaxAmount, req.TotalAmount, req.NetAmount, req.BillBalance, req.CashAmount, req.CreditcardAmount, req.ChqAmount, req.BankAmount, req.IsReturnMoney, req.IsCancel, req.IsConfirm, req.ScgId, req.JobNo, req.CreateBy, req.CreateTime)
 		if err != nil {
 			fmt.Println("error = ", err.Error())
 		}
@@ -1198,11 +1216,121 @@ func (repo *salesRepository) CreateDeposit(req *sales.NewDepositTemplate) (inter
 		id, _ := resp.LastInsertId()
 
 		req.Id = id
+	}else{
+
 	}
 
 	return map[string]interface{}{
 		"id":       req.Id,
 		"doc_no":   req.DocNo,
 		"doc_date": req.DocDate,
+		"ar_code":  req.ArCode,
 	}, nil
+}
+
+func (repo *salesRepository) SearchDepositById(req *sales.SearchByIdTemplate) (resp interface{}, err error) {
+
+	d := NewDepositModel{}
+
+	sql := `select company_id, branch_id, ifnull(uuid,'') as uuid, doc_no, ifnull(tax_no,'') as tax_no, doc_date, bill_type, ar_id, ar_code, ifnull(ar_name,'') as ar_name,sale_id, sale_code, ifnull(sale_name,'') as sale_name,tax_type, tax_rate, ifnull(ref_no,'') as ref_no, credit_day, due_date, depart_id, allocate_id, project_id, ifnull(my_description,'') as my_description, before_tax_amount, tax_amount, total_amount, net_amount ,bill_balance ,cash_amount ,creditcard_amount, chq_amount, bank_amount, is_return_money, is_cancel, is_confirm, ifnull(scg_id,'') as scg_id, ifnull(job_no,'') as job_no, ifnull(create_by,'') as create_by, ifnull(create_time,'') as create_time from ar_deposit where id=?`
+	err = repo.db.Get(&d, sql, req.Id)
+	if err != nil {
+		fmt.Println("err = ", err.Error())
+		return resp, err
+	}
+
+	dp_resp := map_deposit_template(d)
+
+	subs := []NewSaleItemModel{}
+
+	fmt.Println("s.Id =", d.Id)
+
+	sql_sub := `select a.Id,a.SOId,a.ItemId,a.ItemCode,a.ItemName,ifnull(a.WHCode,'') as WHCode,ifnull(a.ShelfCode,'') as ShelfCode,a.Qty,a.RemainQty,a.Price,ifnull(a.DiscountWord,'') as DiscountWord,DiscountAmount,ifnull(a.UnitCode,'') as UnitCode,ifnull(a.BarCode,'') as BarCode,ifnull(a.ItemDescription,'') as ItemDescription,a.StockType,a.AverageCost,a.SumOfCost,a.ItemAmount,a.PackingRate1,a.LineNumber,a.IsCancel from SaleOrderSub a  where SOId = ? order by a.linenumber`
+	err = repo.db.Select(&subs, sql_sub, d.Id)
+	fmt.Println("sql_sub = ", sql_sub)
+	if err != nil {
+		fmt.Println("err sub= ", err.Error())
+		return resp, err
+	}
+
+	//for _, sub := range subs {
+	//	subline := map_sale_subs_template(sub)
+	//	so_resp.Subs = append(so_resp.Subs, subline)
+	//}
+
+	return dp_resp, nil
+}
+
+
+func (repo *salesRepository) SearchDepositByKeyword(req *sales.SearchByKeywordTemplate) (resp interface{}, err error) {
+
+	d := []NewDepositModel{}
+
+	sql := `select id, company_id, branch_id, ifnull(uuid,'') as uuid, doc_no, ifnull(tax_no,'') as tax_no, doc_date, bill_type, ar_id, ar_code, ifnull(ar_name,'') as ar_name,sale_id, sale_code, ifnull(sale_name,'') as sale_name,tax_type, tax_rate, ifnull(ref_no,'') as ref_no, credit_day, due_date, depart_id, allocate_id, project_id, ifnull(my_description,'') as my_description, before_tax_amount, tax_amount, total_amount, net_amount ,bill_balance ,cash_amount ,creditcard_amount, chq_amount, bank_amount, is_return_money, is_cancel, is_confirm, ifnull(scg_id,'') as scg_id, ifnull(job_no,'') as job_no, ifnull(create_by,'') as create_by, ifnull(create_time,'') as create_time from ar_deposit where doc_no like  concat(?,'%') or ar_code like  concat(?,'%') or ar_name like  concat(?,'%') order by id desc limit 30`
+	err = repo.db.Select(&d, sql, req.Keyword, req.Keyword, req.Keyword)
+	fmt.Println("sql = ",sql,req.Keyword)
+	if err != nil {
+		fmt.Println("err = ", err.Error())
+		return resp, err
+	}
+
+	dp := []sales.NewDepositTemplate{}
+
+	for _, dep := range d{
+		dpline := map_deposit_template(dep)
+		dp = append(dp,dpline)
+	}
+
+
+	return dp, nil
+}
+
+func map_deposit_template(x NewDepositModel) sales.NewDepositTemplate {
+	return sales.NewDepositTemplate{
+		AllocateId:       x.AllocateId,
+		ArCode:           x.ArCode,
+		ArId:             x.ArId,
+		ArName:           x.ArName,
+		BeforeTaxAmount:  x.BeforeTaxAmount,
+		BranchId:         x.BranchId,
+		BillType:         x.BillType,
+		BankAmount:       x.BankAmount,
+		BillBalance:      x.BillBalance,
+		ConfirmTime:      x.ConfirmTime,
+		ConfirmBy:        x.ConfirmBy,
+		CancelBy:         x.CancelBy,
+		CancelTime:       x.CancelTime,
+		CompanyId:        x.CompanyId,
+		CreateBy:         x.CreateBy,
+		CreateTime:       x.CreateTime,
+		CreditDay:        x.CreditDay,
+		ChqAmount:        x.ChqAmount,
+		CreditcardAmount: x.CreditcardAmount,
+		CashAmount:       x.CashAmount,
+		DocNo:            x.DocNo,
+		DocDate:          x.DocDate,
+		DepartId:         x.DepartId,
+		DueDate:          x.DueDate,
+		EditTime:         x.EditTime,
+		EditBy:           x.EditBy,
+		Id:               x.Id,
+		IsCancel:         x.IsCancel,
+		IsConfirm:        x.IsConfirm,
+		IsReturnMoney:    x.IsReturnMoney,
+		JobNo:            x.JobNo,
+		MyDescription:    x.MyDescription,
+		NetAmount:        x.NetAmount,
+		ProjectId:        x.ProjectId,
+		RefNo:            x.RefNo,
+		SaleName:         x.SaleName,
+		SaleId:           x.SaleId,
+		SaleCode:         x.SaleCode,
+		ScgId:            x.ScgId,
+		TaxType:          x.TaxType,
+		TaxRate:          x.TaxRate,
+		TaxAmount:        x.TaxAmount,
+		TotalAmount:      x.TotalAmount,
+		TaxNo:            x.TaxNo,
+		Uuid:             x.Uuid,
+	}
 }

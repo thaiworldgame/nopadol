@@ -197,8 +197,10 @@ type (
 		BillType         int64        `json:"bill_type"`
 		ArId             int64        `json:"ar_id"`
 		ArCode           string       `json:"ar_code"`
+		ArName           string       `json:"ar_name"`
 		SaleId           int64        `json:"sale_id"`
 		SaleCode         string       `json:"sale_code"`
+		SaleName         string       `json:"sale_name"`
 		TaxType          int64        `json:"tax_type"`
 		TaxRate          float64      `json:"tax_rate"`
 		RefNo            string       `json:"ref_no"`
@@ -606,8 +608,10 @@ func CreateDeposit(s Service) interface{} {
 			BillType:         req.BillType,
 			ArId:             req.ArId,
 			ArCode:           req.ArCode,
+			ArName:           req.ArName,
 			SaleId:           req.SaleId,
 			SaleCode:         req.SaleCode,
+			SaleName:         req.SaleName,
 			TaxType:          req.TaxType,
 			TaxRate:          req.TaxRate,
 			RefNo:            req.RefNo,
@@ -634,6 +638,34 @@ func CreateDeposit(s Service) interface{} {
 			CreateBy:         req.CreateBy,
 			CreateTime:       req.CreateTime,
 		})
+		if err != nil {
+			fmt.Println("endpoint error =", err.Error())
+			return nil, fmt.Errorf(err.Error())
+		}
+		return map[string]interface{}{
+			"data": resp,
+		}, nil
+	}
+}
+
+
+func SearchDepositById(s Service) interface{} {
+	return func(ctx context.Context, req *SearchByIdRequest) (interface{}, error) {
+		resp, err := s.SearchDepositById(&SearchByIdTemplate{Id: req.Id})
+		if err != nil {
+			fmt.Println("endpoint error =", err.Error())
+			return nil, fmt.Errorf(err.Error())
+		}
+		return map[string]interface{}{
+			"data": resp,
+		}, nil
+	}
+}
+
+
+func SearchDepositByKeyword(s Service) interface{} {
+	return func(ctx context.Context, req *SearchByKeywordRequest) (interface{}, error) {
+		resp, err := s.SearchDepositByKeyword(&SearchByKeywordTemplate{Keyword: req.Keyword})
 		if err != nil {
 			fmt.Println("endpoint error =", err.Error())
 			return nil, fmt.Errorf(err.Error())

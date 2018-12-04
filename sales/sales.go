@@ -191,8 +191,10 @@ type NewDepositTemplate struct {
 	BillType         int64   `json:"bill_type"`
 	ArId             int64   `json:"ar_id"`
 	ArCode           string  `json:"ar_code"`
+	ArName           string  `json:"ar_name"`
 	SaleId           int64   `json:"sale_id"`
 	SaleCode         string  `json:"sale_code"`
+	SaleName         string  `json:"sale_name"`
 	TaxType          int64   `json:"tax_type"`
 	TaxRate          float64 `json:"tax_rate"`
 	RefNo            string  `json:"ref_no"`
