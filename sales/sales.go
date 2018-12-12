@@ -181,51 +181,56 @@ type SearchDocTemplate struct {
 }
 
 type NewDepositTemplate struct {
-	Id               int64   `json:"id"`
-	CompanyId        int64   `json:"company_id"`
-	BranchId         int64   `json:"branch_id"`
-	Uuid             string  `json:"uuid"`
-	DocNo            string  `json:"doc_no"`
-	TaxNo            string  `json:"tax_no"`
-	DocDate          string  `json:"doc_date"`
-	BillType         int64   `json:"bill_type"`
-	ArId             int64   `json:"ar_id"`
-	ArCode           string  `json:"ar_code"`
-	ArName           string  `json:"ar_name"`
-	SaleId           int64   `json:"sale_id"`
-	SaleCode         string  `json:"sale_code"`
-	SaleName         string  `json:"sale_name"`
-	TaxType          int64   `json:"tax_type"`
-	TaxRate          float64 `json:"tax_rate"`
-	RefNo            string  `json:"ref_no"`
-	CreditDay        int64   `json:"credit_day"`
-	DueDate          string  `json:"due_date"`
-	DepartId         int64   `json:"depart_id"`
-	AllocateId       int64   `json:"allocate_id"`
-	ProjectId        int64   `json:"project_id"`
-	MyDescription    string  `json:"my_description"`
-	BeforeTaxAmount  float64 `json:"before_tax_amount"`
-	TaxAmount        float64 `json:"tax_amount"`
-	TotalAmount      float64 `json:"total_amount"`
-	NetAmount        float64 `json:"net_amount"`
-	BillBalance      float64 `json:"bill_balance"`
-	CashAmount       float64 `json:"cash_amount"`
-	CreditcardAmount float64 `json:"creditcard_amount"`
-	ChqAmount        float64 `json:"chq_amount"`
-	BankAmount       float64 `json:"bank_amount"`
-	IsReturnMoney    int64   `json:"is_return_money" `
-	IsCancel         int64   `json:"is_cancel"`
-	IsConfirm        int64   `json:"is_confirm"`
-	ScgId            string  `json:"scg_id"`
-	JobNo            string  `json:"job_no"`
-	CreateBy         string  `json:"create_by"`
-	CreateTime       string  `json:"create_time"`
-	EditBy           string  `json:"edit_by"`
-	EditTime         string  `json:"edit_time"`
-	CancelBy         string  `json:"cancel_by"`
-	CancelTime       string  `json:"cancel_time" `
-	ConfirmBy        string  `json:"confirm_by"`
-	ConfirmTime      string  `json:"confirm_time"`
+	Id               int64                   `json:"id"`
+	CompanyId        int64                   `json:"company_id"`
+	BranchId         int64                   `json:"branch_id"`
+	Uuid             string                  `json:"uuid"`
+	DocNo            string                  `json:"doc_no"`
+	TaxNo            string                  `json:"tax_no"`
+	DocDate          string                  `json:"doc_date"`
+	BillType         int64                   `json:"bill_type"`
+	ArId             int64                   `json:"ar_id"`
+	ArCode           string                  `json:"ar_code"`
+	ArName           string                  `json:"ar_name"`
+	ArBillAddress    string                  `json:"ar_bill_address"`
+	ArTelephone      string                  `json:"ar_telephone"`
+	SaleId           int64                   `json:"sale_id"`
+	SaleCode         string                  `json:"sale_code"`
+	SaleName         string                  `json:"sale_name"`
+	TaxType          int64                   `json:"tax_type"`
+	TaxRate          float64                 `json:"tax_rate"`
+	RefNo            string                  `json:"ref_no"`
+	CreditDay        int64                   `json:"credit_day"`
+	DueDate          string                  `json:"due_date"`
+	DepartId         int64                   `json:"depart_id"`
+	AllocateId       int64                   `json:"allocate_id"`
+	ProjectId        int64                   `json:"project_id"`
+	MyDescription    string                  `json:"my_description"`
+	BeforeTaxAmount  float64                 `json:"before_tax_amount"`
+	TaxAmount        float64                 `json:"tax_amount"`
+	TotalAmount      float64                 `json:"total_amount"`
+	NetAmount        float64                 `json:"net_amount"`
+	BillBalance      float64                 `json:"bill_balance"`
+	CashAmount       float64                 `json:"cash_amount"`
+	CreditcardAmount float64                 `json:"creditcard_amount"`
+	ChqAmount        float64                 `json:"chq_amount"`
+	BankAmount       float64                 `json:"bank_amount"`
+	IsReturnMoney    int64                   `json:"is_return_money" `
+	IsCancel         int64                   `json:"is_cancel"`
+	IsConfirm        int64                   `json:"is_confirm"`
+	ScgId            string                  `json:"scg_id"`
+	JobNo            string                  `json:"job_no"`
+	CreateBy         string                  `json:"create_by"`
+	CreateTime       string                  `json:"create_time"`
+	EditBy           string                  `json:"edit_by"`
+	EditTime         string                  `json:"edit_time"`
+	CancelBy         string                  `json:"cancel_by"`
+	CancelTime       string                  `json:"cancel_time" `
+	ConfirmBy        string                  `json:"confirm_by"`
+	ConfirmTime      string                  `json:"confirm_time"`
+	Subs             []NewDepositItemRequest `json:"subs"`
+	CreditCard       []CreditCardTemplate    `json:"credit_card"`
+	Chq              []ChqInTemplate         `json:"chq"`
 }
 
 type NewDepositItemTemplate struct {
@@ -252,4 +257,35 @@ type NewDepositItemTemplate struct {
 	LineNumber      int     `json:"line_number"`
 	RefLineNumber   int64   `json:"ref_line_number"`
 	IsCancel        int64   `json:"is_cancel"`
+}
+
+type CreditCardTemplate struct {
+	Id           int64   `json:"id"`
+	RefId        int64   `json:"ref_id"`
+	CreditCardNo string  `json:"credit_card_no"`
+	CreditType   string  `json:"credit_type"`
+	ConfirmNo    string  `json:"confirm_no"`
+	Amount       float64 `json:"amount"`
+	ChargeAmount float64 `json:"charge_amount"`
+	Description  string  `json:"description"`
+	BankId       int64   `json:"bank_id"`
+	BankBranchId int64   `json:"bank_branch_id"`
+	ReceiveDate  string  `json:"receive_date"`
+	DueDate      string  `json:"due_date"`
+	BookId       int64   `json:"book_id"`
+}
+
+type ChqInTemplate struct {
+	Id           int64   `json:"id"`
+	RefId        int64   `json:"ref_id"`
+	ChqNumber    string  `json:"chq_number"`
+	BankId       int64   `json:"bank_id"`
+	BankBranchId int64   `json:"bank_branch_id"`
+	ReceiveDate  string  `json:"receive_date"`
+	DueDate      string  `json:"due_date"`
+	BookId       int64   `json:"book_id"`
+	ChqStatus    int64   `json:"chq_status"`
+	ChqAmount    float64 `json:"chq_amount"`
+	ChqBalance   float64 `json:"chq_balance"`
+	Description  string  `json:"description"`
 }

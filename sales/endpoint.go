@@ -187,53 +187,56 @@ type (
 	}
 
 	NewDepositRequest struct {
-		Id               int64        `json:"id"`
-		CompanyId        int64        `json:"company_id"`
-		BranchId         int64        `json:"branch_id"`
-		Uuid             string       `json:"uuid"`
-		DocNo            string       `json:"doc_no"`
-		TaxNo            string       `json:"tax_no"`
-		DocDate          string       `json:"doc_date"`
-		BillType         int64        `json:"bill_type"`
-		ArId             int64        `json:"ar_id"`
-		ArCode           string       `json:"ar_code"`
-		ArName           string       `json:"ar_name"`
-		SaleId           int64        `json:"sale_id"`
-		SaleCode         string       `json:"sale_code"`
-		SaleName         string       `json:"sale_name"`
-		TaxType          int64        `json:"tax_type"`
-		TaxRate          float64      `json:"tax_rate"`
-		RefNo            string       `json:"ref_no"`
-		CreditDay        int64        `json:"credit_day"`
-		DueDate          string       `json:"due_date"`
-		DepartId         int64        `json:"depart_id"`
-		AllocateId       int64        `json:"allocate_id"`
-		ProjectId        int64        `json:"project_id"`
-		MyDescription    string       `json:"my_description"`
-		BeforeTaxAmount  float64      `json:"before_tax_amount"`
-		TaxAmount        float64      `json:"tax_amount"`
-		TotalAmount      float64      `json:"total_amount"`
-		NetAmount        float64      `json:"net_amount"`
-		BillBalance      float64      `json:"bill_balance"`
-		CashAmount       float64      `json:"cash_amount"`
-		CreditcardAmount float64      `json:"creditcard_amount"`
-		ChqAmount        float64      `json:"chq_amount"`
-		BankAmount       float64      `json:"bank_amount"`
-		IsReturnMoney    int64        `json:"is_return_money" `
-		IsCancel         int64        `json:"is_cancel"`
-		IsConfirm        int64        `json:"is_confirm"`
-		ScgId            string       `json:"scg_id"`
-		JobNo            string       `json:"job_no"`
-		CreateBy         string       `json:"create_by"`
-		CreateTime       string       `json:"create_time"`
-		EditBy           string       `json:"edit_by"`
-		EditTime         string       `json:"edit_time"`
-		CancelBy         string       `json:"cancel_by"`
-		CancelTime       string       `json:"cancel_time" `
-		ConfirmBy        string       `json:"confirm_by"`
-		ConfirmTime      string       `json:"confirm_time"`
-		CreditCard       []CreditCard `json:"credit_card"`
-		Chq              []Chq        `json:"chq"`
+		Id               int64                   `json:"id"`
+		CompanyId        int64                   `json:"company_id"`
+		BranchId         int64                   `json:"branch_id"`
+		Uuid             string                  `json:"uuid"`
+		DocNo            string                  `json:"doc_no"`
+		TaxNo            string                  `json:"tax_no"`
+		DocDate          string                  `json:"doc_date"`
+		BillType         int64                   `json:"bill_type"`
+		ArId             int64                   `json:"ar_id"`
+		ArCode           string                  `json:"ar_code"`
+		ArName           string                  `json:"ar_name"`
+		ArBillAddress    string                  `json:"ar_bill_address"`
+		ArTelephone      string                  `json:"ar_telephone"`
+		SaleId           int64                   `json:"sale_id"`
+		SaleCode         string                  `json:"sale_code"`
+		SaleName         string                  `json:"sale_name"`
+		TaxType          int64                   `json:"tax_type"`
+		TaxRate          float64                 `json:"tax_rate"`
+		RefNo            string                  `json:"ref_no"`
+		CreditDay        int64                   `json:"credit_day"`
+		DueDate          string                  `json:"due_date"`
+		DepartId         int64                   `json:"depart_id"`
+		AllocateId       int64                   `json:"allocate_id"`
+		ProjectId        int64                   `json:"project_id"`
+		MyDescription    string                  `json:"my_description"`
+		BeforeTaxAmount  float64                 `json:"before_tax_amount"`
+		TaxAmount        float64                 `json:"tax_amount"`
+		TotalAmount      float64                 `json:"total_amount"`
+		NetAmount        float64                 `json:"net_amount"`
+		BillBalance      float64                 `json:"bill_balance"`
+		CashAmount       float64                 `json:"cash_amount"`
+		CreditcardAmount float64                 `json:"creditcard_amount"`
+		ChqAmount        float64                 `json:"chq_amount"`
+		BankAmount       float64                 `json:"bank_amount"`
+		IsReturnMoney    int64                   `json:"is_return_money" `
+		IsCancel         int64                   `json:"is_cancel"`
+		IsConfirm        int64                   `json:"is_confirm"`
+		ScgId            string                  `json:"scg_id"`
+		JobNo            string                  `json:"job_no"`
+		CreateBy         string                  `json:"create_by"`
+		CreateTime       string                  `json:"create_time"`
+		EditBy           string                  `json:"edit_by"`
+		EditTime         string                  `json:"edit_time"`
+		CancelBy         string                  `json:"cancel_by"`
+		CancelTime       string                  `json:"cancel_time" `
+		ConfirmBy        string                  `json:"confirm_by"`
+		ConfirmTime      string                  `json:"confirm_time"`
+		Subs             []NewDepositItemRequest `json:"subs"`
+		CreditCard       []CreditCard            `json:"credit_card"`
+		Chq              []ChqIn                 `json:"chq"`
 	}
 
 	NewDepositItemRequest struct {
@@ -263,30 +266,25 @@ type (
 	}
 
 	CreditCard struct {
-		Id           int64  `json:"id"`
-		CompanyId    int64  `json:"company_id"`
-		BranchId     int64  `json:"branch_id"`
-		Uuid         string `json:"uuid"`
-		RefId        int64  `json:"ref_id"`
-		ArId         int64  `json:"ar_id"`
-		DocDate      string `json:"doc_date"`
-		CreditCardNo string `json:"credit_card_no"`
-		BankId       int64  `json:"bank_id"`
-		BankBranchId int64  `json:"bank_branch_id"`
-		ReceiveDate  string `json:"receive_date"`
-		DueDate      string `json:"due_date"`
-		BookId       int64  `json:"book_id"`
+		Id           int64   `json:"id"`
+		RefId        int64   `json:"ref_id"`
+		CreditCardNo string  `json:"credit_card_no"`
+		CreditType   string  `json:"credit_type"`
+		ConfirmNo    string  `json:"confirm_no"`
+		Amount       float64 `json:"amount"`
+		ChargeAmount float64 `json:"charge_amount"`
+		Description  string  `json:"description"`
+		BankId       int64   `json:"bank_id"`
+		BankBranchId int64   `json:"bank_branch_id"`
+		ReceiveDate  string  `json:"receive_date"`
+		DueDate      string  `json:"due_date"`
+		BookId       int64   `json:"book_id"`
 	}
 
-	Chq struct {
+	ChqIn struct {
 		Id           int64   `json:"id"`
-		CompanyId    int64   `json:"company_id"`
-		BranchId     int64   `json:"branch_id"`
-		Uuid         string  `json:"uuid"`
 		RefId        int64   `json:"ref_id"`
-		ArId         int64   `json:"ar_id"`
-		DocDate      string  `json:"doc_date"`
-		Chqnumber    string  `json:"chqnumber"`
+		ChqNumber    string  `json:"chq_number"`
 		BankId       int64   `json:"bank_id"`
 		BankBranchId int64   `json:"bank_branch_id"`
 		ReceiveDate  string  `json:"receive_date"`
@@ -295,6 +293,7 @@ type (
 		ChqStatus    int64   `json:"chq_status"`
 		ChqAmount    float64 `json:"chq_amount"`
 		ChqBalance   float64 `json:"chq_balance"`
+		Description  string  `json:"description"`
 	}
 )
 
@@ -599,7 +598,21 @@ func SearchDocByKeyword(s Service) interface{} {
 
 func CreateDeposit(s Service) interface{} {
 	return func(ctx context.Context, req *NewDepositRequest) (interface{}, error) {
+
+		dp := map_deposit_request(req)
+
+		for _, crds := range req.CreditCard {
+			crdline := map_creditcard_request(crds)
+			dp.CreditCard = append(dp.CreditCard, crdline)
+		}
+
+		for _, chqs := range req.Chq {
+			chqline := map_chq_request(chqs)
+			dp.Chq = append(dp.Chq, chqline)
+		}
+
 		resp, err := s.CreateDeposit(&NewDepositTemplate{
+			Id:               req.Id,
 			CompanyId:        req.CompanyId,
 			BranchId:         req.BranchId,
 			DocNo:            req.DocNo,
@@ -609,6 +622,8 @@ func CreateDeposit(s Service) interface{} {
 			ArId:             req.ArId,
 			ArCode:           req.ArCode,
 			ArName:           req.ArName,
+			ArBillAddress:    req.ArBillAddress,
+			ArTelephone:      req.ArTelephone,
 			SaleId:           req.SaleId,
 			SaleCode:         req.SaleCode,
 			SaleName:         req.SaleName,
@@ -637,6 +652,10 @@ func CreateDeposit(s Service) interface{} {
 			JobNo:            req.JobNo,
 			CreateBy:         req.CreateBy,
 			CreateTime:       req.CreateTime,
+			EditBy:           req.EditBy,
+			Uuid:             req.Uuid,
+			CreditCard:       dp.CreditCard,
+			Chq:              dp.Chq,
 		})
 		if err != nil {
 			fmt.Println("endpoint error =", err.Error())
@@ -648,6 +667,100 @@ func CreateDeposit(s Service) interface{} {
 	}
 }
 
+func map_deposit_request(x *NewDepositRequest) NewDepositTemplate {
+	var subs []NewDepositItemRequest
+	var credit_cards []CreditCardTemplate
+	var chqs []ChqInTemplate
+
+	return NewDepositTemplate{
+		Id:               x.Id,
+		DocNo:            x.DocNo,
+		DocDate:          x.DocDate,
+		ArId:             x.ArId,
+		ArTelephone:      x.ArTelephone,
+		ArBillAddress:    x.ArBillAddress,
+		ArName:           x.ArName,
+		ArCode:           x.ArCode,
+		AllocateId:       x.AllocateId,
+		BranchId:         x.BranchId,
+		BillBalance:      x.BillBalance,
+		BankAmount:       x.BankAmount,
+		BillType:         x.BillType,
+		BeforeTaxAmount:  x.BeforeTaxAmount,
+		CompanyId:        x.CompanyId,
+		CreditcardAmount: x.CreditcardAmount,
+		ChqAmount:        x.ChqAmount,
+		CashAmount:       x.CashAmount,
+		CreditDay:        x.CreditDay,
+		CreateTime:       x.CreateTime,
+		CreateBy:         x.CreateBy,
+		CancelTime:       x.CancelTime,
+		CancelBy:         x.CancelBy,
+		ConfirmBy:        x.ConfirmBy,
+		ConfirmTime:      x.ConfirmTime,
+		DueDate:          x.DueDate,
+		DepartId:         x.DepartId,
+		EditBy:           x.EditBy,
+		EditTime:         x.EditTime,
+		IsReturnMoney:    x.IsReturnMoney,
+		IsConfirm:        x.IsConfirm,
+		IsCancel:         x.IsCancel,
+		JobNo:            x.JobNo,
+		MyDescription:    x.MyDescription,
+		NetAmount:        x.NetAmount,
+		ProjectId:        x.ProjectId,
+		RefNo:            x.RefNo,
+		SaleName:         x.SaleName,
+		SaleCode:         x.SaleCode,
+		SaleId:           x.SaleId,
+		ScgId:            x.ScgId,
+		TaxNo:            x.TaxNo,
+		TotalAmount:      x.TotalAmount,
+		TaxAmount:        x.TaxAmount,
+		TaxRate:          x.TaxRate,
+		TaxType:          x.TaxType,
+		Uuid:             x.Uuid,
+		Subs:             subs,
+		CreditCard:       credit_cards,
+		Chq:              chqs,
+	}
+}
+
+func map_creditcard_request(x CreditCard) CreditCardTemplate {
+
+	return CreditCardTemplate{
+		BankBranchId: x.BankBranchId,
+		BankId:       x.BankId,
+		BookId:       x.BookId,
+		CreditCardNo: x.CreditCardNo,
+		Amount:       x.Amount,
+		ChargeAmount: x.ChargeAmount,
+		CreditType:   x.CreditType,
+		ConfirmNo:    x.ConfirmNo,
+		Description:  x.Description,
+		DueDate:      x.DueDate,
+		Id:           x.Id,
+		ReceiveDate:  x.ReceiveDate,
+		RefId:        x.RefId,
+	}
+}
+
+func map_chq_request(x ChqIn) ChqInTemplate {
+	return ChqInTemplate{
+		BookId:       x.BookId,
+		BankId:       x.BankId,
+		BankBranchId: x.BankBranchId,
+		ChqAmount:    x.ChqAmount,
+		ChqBalance:   x.ChqBalance,
+		ChqNumber:    x.ChqNumber,
+		ChqStatus:    x.ChqStatus,
+		DueDate:      x.DueDate,
+		Id:           x.Id,
+		RefId:        x.RefId,
+		ReceiveDate:  x.ReceiveDate,
+		Description:  x.Description,
+	}
+}
 
 func SearchDepositById(s Service) interface{} {
 	return func(ctx context.Context, req *SearchByIdRequest) (interface{}, error) {
@@ -661,7 +774,6 @@ func SearchDepositById(s Service) interface{} {
 		}, nil
 	}
 }
-
 
 func SearchDepositByKeyword(s Service) interface{} {
 	return func(ctx context.Context, req *SearchByKeywordRequest) (interface{}, error) {
