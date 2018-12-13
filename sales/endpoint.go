@@ -167,6 +167,7 @@ type (
 	}
 
 	SearchByKeywordRequest struct {
+		ArId     int64  `json:"ar_id"`
 		SaleCode string `json:"sale_code"`
 		Keyword  string `json:"keyword"`
 	}
@@ -778,6 +779,18 @@ func SearchDepositById(s Service) interface{} {
 func SearchDepositByKeyword(s Service) interface{} {
 	return func(ctx context.Context, req *SearchByKeywordRequest) (interface{}, error) {
 		resp, err := s.SearchDepositByKeyword(&SearchByKeywordTemplate{Keyword: req.Keyword})
+		if err != nil {
+			fmt.Println("endpoint error =", err.Error())
+			return nil, fmt.Errorf(err.Error())
+		}
+		return map[string]interface{}{
+			"data": resp,
+		}, nil
+	}
+}
+func SearchReserveToDeposit(s Service) interface{} {
+	return func(ctx context.Context, req *SearchByKeywordRequest) (interface{}, error) {
+		resp, err := s.SearchDepositByKeyword(&SearchByKeywordTemplate{ArId: req.ArId, Keyword: req.Keyword})
 		if err != nil {
 			fmt.Println("endpoint error =", err.Error())
 			return nil, fmt.Errorf(err.Error())

@@ -34,6 +34,7 @@ func MakeHandler(s Service) http.Handler {
 	mux.Handle("/dep/new",m.Handler(CreateDeposit(s)))
 	mux.Handle("/dep/search/id", m.Handler(SearchDepositById(s)))
 	mux.Handle("/dep/search/keyword",m.Handler(SearchDepositByKeyword(s)))
+	mux.Handle("/dep/reserve/search",m.Handler(SearchReserveToDeposit(s)))
 	return mustLogin()(mux)
 
 }

@@ -161,6 +161,7 @@ type SearchByIdTemplate struct {
 }
 
 type SearchByKeywordTemplate struct {
+	ArId     int64  `json:"ar_id"`
 	SaleCode string `json:"sale_code"`
 	Keyword  string `json:"keyword"`
 }

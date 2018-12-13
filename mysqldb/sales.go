@@ -1013,7 +1013,7 @@ func (repo *salesRepository) SearchSaleOrderById(req *sales.SearchByIdTemplate) 
 
 	s := NewSaleModel{}
 
-	sql := `select a.Id,a.DocNo,ifnull(a.DocDate,'') as DocDate,a.CompanyId,a.BranchId,a.DocType,a.BillType,a.TaxType,a.ArId,ifnull(a.ArCode,'') as ArCode,ifnull(a.ArName,'') as ArName,a.SaleId,ifnull(a.SaleCode,'') as SaleCode,ifnull(a.SaleName,'') as SaleName,a.DepartId,a.CreditDay,ifnull(a.DueDate,'') as DueDate,a.DeliveryDay,ifnull(a.DeliveryDate,'') as DeliveryDate,a.TaxRate,a.IsConfirm,ifnull(a.MyDescription,'') as MyDescription,a.BillStatus,a.HoldingStatus,a.SumOfItemAmount,ifnull(a.DiscountWord,'') as DiscountWord,a.DiscountAmount,a.AfterDiscountAmount,a.BeforeTaxAmount,a.TaxAmount,a.TotalAmount,a.NetDebtAmount,a.IsCancel,a.IsConditionSend,a.DeliveryAddressId,ifnull(a.CarLicense,'') as CarLicense,ifnull(a.PersonReceiveTel,'') as PersonReceiveTel,ifnull(a.JobId,'') as JobId,a.ProjectId,a.AllocateId,ifnull(a.CreateBy,'') as CreateBy,a.CreateTime,ifnull(a.EditBy,'') as EditBy,ifnull(a.EditTime,'') as EditTime, ifnull(a.CancelBy,'') as CancelBy,ifnull(a.CancelTime,'') as CancelTime, ifnull(a.ConfirmBy,'') as ConfirmBy,ifnull(a.ConfirmTime,'') as ConfirmTime,ifnull(b.address,'') as ArBillAddress,ifnull(b.telephone,'') as ArTelephone from SaleOrder a left join Customer on a.ArId = b.id where a.id=?`
+	sql := `select a.Id,a.DocNo,ifnull(a.DocDate,'') as DocDate,a.CompanyId,a.BranchId,a.DocType,a.BillType,a.TaxType,a.ArId,ifnull(a.ArCode,'') as ArCode,ifnull(a.ArName,'') as ArName,a.SaleId,ifnull(a.SaleCode,'') as SaleCode,ifnull(a.SaleName,'') as SaleName,a.DepartId,a.CreditDay,ifnull(a.DueDate,'') as DueDate,a.DeliveryDay,ifnull(a.DeliveryDate,'') as DeliveryDate,a.TaxRate,a.IsConfirm,ifnull(a.MyDescription,'') as MyDescription,a.BillStatus,a.HoldingStatus,a.SumOfItemAmount,ifnull(a.DiscountWord,'') as DiscountWord,a.DiscountAmount,a.AfterDiscountAmount,a.BeforeTaxAmount,a.TaxAmount,a.TotalAmount,a.NetDebtAmount,a.IsCancel,a.IsConditionSend,a.DeliveryAddressId,ifnull(a.CarLicense,'') as CarLicense,ifnull(a.PersonReceiveTel,'') as PersonReceiveTel,ifnull(a.JobId,'') as JobId,a.ProjectId,a.AllocateId,ifnull(a.CreateBy,'') as CreateBy,a.CreateTime,ifnull(a.EditBy,'') as EditBy,ifnull(a.EditTime,'') as EditTime, ifnull(a.CancelBy,'') as CancelBy,ifnull(a.CancelTime,'') as CancelTime, ifnull(a.ConfirmBy,'') as ConfirmBy,ifnull(a.ConfirmTime,'') as ConfirmTime,ifnull(b.address,'') as ArBillAddress,ifnull(b.telephone,'') as ArTelephone from SaleOrder a left join Customer b on a.ArId = b.id where a.id=?`
 	err = repo.db.Get(&s, sql, req.Id)
 	if err != nil {
 		fmt.Println("err = ", err.Error())
@@ -1255,14 +1255,15 @@ func (repo *salesRepository) CreateDeposit(req *sales.NewDepositTemplate) (inter
 	count_chq_err = 0
 	if req.ChqAmount != 0 {
 		for _, chq := range req.Chq {
+			fmt.Println("UUID Chq= ", req.Uuid, req.Id, req.CompanyId, req.BranchId, chq.ChqNumber)
 
-			sql_del := `delete from chq_in where uuid=? and ref_id=? and company_id=? and branch_id=? and chq_number=?`
-			chq_del, _ := repo.db.Exec(sql_del, req.Uuid, req.Id, req.CompanyId, req.BranchId, chq.ChqNumber, chq.BankId)
+			sql_del := `delete from chq_in where uuid = ? and ref_id=? and company_id=? and branch_id=? and bank_id=? and chq_number=?`
+			chq_del, _ := repo.db.Exec(sql_del, req.Uuid, req.Id, req.CompanyId, req.BranchId, chq.BankId, chq.ChqNumber)
 			fmt.Println(sql_del)
 			if err != nil {
 				fmt.Println("sql_del = ", err.Error())
 			}
-			fmt.Println(chq_del.RowsAffected())
+			fmt.Println(chq_del)
 
 			verify_chq, _ := verify_chq_in(repo.db, req.Uuid, req.Id, req.CompanyId, req.BranchId, chq.ChqNumber, chq.BankId)
 			fmt.Println("verify_chq = ", verify_chq)
@@ -1275,14 +1276,14 @@ func (repo *salesRepository) CreateDeposit(req *sales.NewDepositTemplate) (inter
 
 		switch {
 		case count_chq_err != 0:
-			return nil, errors.New("ข้อมูลเลขที่เช็ค มีการใช้ไปแล้ว")
+			return nil, errors.New("ข้อมูลเลขที่เช็ค มีอยู่แล้ว")
 		case sum_chq_amount != req.ChqAmount:
 			return nil, errors.New("มูลค่าเช็ค ไม่เท่ากับ มูลค่ารายการเช็ค")
 		}
 
 		for _, i_chq := range req.Chq {
 			i_chq.Description = "รับเงินมัดจำ"
-			sql_chq := `insert into chq_in (company_id,branch_id,uuid,ref_id,ar_id,doc_no,doc_date,chq_number,bank_id,back_branch_id,receive_date,due_date,book_id,chq_status,chq_amount,chq_balance,description,create_by,create_time) values(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`
+			sql_chq := `insert into chq_in (company_id,branch_id,uuid,ref_id,ar_id,doc_no,doc_date,chq_number,bank_id,bank_branch_id,receive_date,due_date,book_id,chq_status,chq_amount,chq_balance,description,create_by,create_time) values(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`
 			chq, _ := repo.db.Exec(sql_chq, req.CompanyId, req.BranchId, req.Uuid, req.Id, req.ArId, req.DocNo, req.DocDate, i_chq.ChqNumber, i_chq.BankId, i_chq.BankBranchId, i_chq.ReceiveDate, i_chq.DueDate, i_chq.BookId, i_chq.ChqStatus, i_chq.ChqAmount, i_chq.ChqAmount, i_chq.Description, req.CreateBy, req.CreateTime)
 			if err != nil {
 				return nil, err
@@ -1433,6 +1434,50 @@ func (repo *salesRepository) SearchDepositByKeyword(req *sales.SearchByKeywordTe
 	}
 
 	return dp, nil
+}
+
+func (repo *salesRepository) SearchReserveToDeposit(req *sales.SearchByKeywordTemplate) (resp interface{}, err error) {
+	var sql string
+
+	rsv := []NewSaleModel{}
+
+	if req.Keyword == "" {
+		sql = `select a.Id,a.DocNo,ifnull(a.DocDate,'') as DocDate,a.CompanyId,a.BranchId,a.DocType,a.BillType,a.TaxType,a.ArId,ifnull(a.ArCode,'') as ArCode,ifnull(a.ArName,'') as ArName,a.SaleId,ifnull(a.SaleCode,'') as SaleCode,ifnull(a.SaleName,'') as SaleName,a.IsConfirm,ifnull(a.MyDescription,'') as MyDescription,a.BillStatus,a.HoldingStatus,a.TotalAmount,a.NetDebtAmount,ifnull(b.address,'') as ArBillAddress,ifnull(b.telephone,'') as ArTelephone from SaleOrder a left join Customer on a.ArId = b.id where DocType = 0 and BillStatus = 0 and IsCancel = 0 and ar_id = ? order by Id desc limit 30`
+		err = repo.db.Select(&rsv, sql, req.ArId)
+	} else {
+		sql = `select a.Id,a.DocNo,ifnull(a.DocDate,'') as DocDate,a.CompanyId,a.BranchId,a.DocType,a.BillType,a.TaxType,a.ArId,ifnull(a.ArCode,'') as ArCode,ifnull(a.ArName,'') as ArName,a.SaleId,ifnull(a.SaleCode,'') as SaleCode,ifnull(a.SaleName,'') as SaleName,a.IsConfirm,ifnull(a.MyDescription,'') as MyDescription,a.BillStatus,a.HoldingStatus,a.TotalAmount,a.NetDebtAmount,ifnull(b.address,'') as ArBillAddress,ifnull(b.telephone,'') as ArTelephone from SaleOrder a left join Customer on a.ArId = b.id where DocType = 0 and BillStatus = 0 and IsCancel = 0 and ar_id = ? and (DocNo like  concat('%',?,'%') or MyDescription like  concat('%',?,'%') )order by Id desc limit 30`
+		err = repo.db.Select(&rsv, sql, req.ArId, req.Keyword, req.Keyword)
+	}
+	if err != nil {
+		fmt.Println("err = ", err.Error())
+		return resp, err
+	}
+
+	ro := []sales.NewSaleTemplate{}
+
+	for _, l := range rsv {
+
+		roline := map_ro_template(l)
+		ro = append(ro, roline)
+	}
+
+	return ro, nil
+}
+
+func map_ro_template(x NewSaleModel) sales.NewSaleTemplate {
+	return sales.NewSaleTemplate{
+		Id:            x.Id,
+		DocNo:         x.DocNo,
+		DocDate:       x.DocDate,
+		ArCode:        x.ArCode,
+		ArName:        x.ArName,
+		SaleCode:      x.SaleCode,
+		SaleName:      x.SaleName,
+		TotalAmount:   x.TotalAmount,
+		MyDescription: x.MyDescription,
+		IsCancel:      x.IsCancel,
+		IsConfirm:     x.IsConfirm,
+	}
 }
 
 func map_deposit_template(x NewDepositModel) sales.NewDepositTemplate {

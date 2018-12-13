@@ -23,6 +23,7 @@ type Service interface {
 	CreateDeposit(req *NewDepositTemplate) (interface{}, error)
 	SearchDepositById(req *SearchByIdTemplate) (interface{}, error)
 	SearchDepositByKeyword(req *SearchByKeywordTemplate) (interface{}, error)
+	SearchReserveToDeposit(req *SearchByKeywordTemplate) (interface{}, error)
 }
 
 func (s *service) CreateQuotation(req *NewQuoTemplate) (interface{}, error) {
@@ -189,6 +190,14 @@ func (s *service) SearchDepositById(req *SearchByIdTemplate) (interface{}, error
 
 func (s *service) SearchDepositByKeyword(req *SearchByKeywordTemplate) (interface{}, error) {
 	resp, err := s.repo.SearchDepositByKeyword(req)
+	if err != nil {
+		return nil, err
+	}
+	return resp, nil
+}
+
+func (s *service) SearchReserveToDeposit(req *SearchByKeywordTemplate) (interface{}, error) {
+	resp, err := s.repo.SearchReserveToDeposit(req)
 	if err != nil {
 		return nil, err
 	}

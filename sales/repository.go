@@ -9,4 +9,5 @@ type Repository interface {
 	CreateDeposit(req *NewDepositTemplate) (interface{}, error)
 	SearchDepositById(req *SearchByIdTemplate) (interface{}, error)
 	SearchDepositByKeyword(req *SearchByKeywordTemplate) (interface{}, error)
+	SearchReserveToDeposit(req *SearchByKeywordTemplate) (interface{}, error)
 }
