@@ -1,15 +1,14 @@
 package sqldb
 
 import (
-	"context"
 	"github.com/mrtomyum/nopadol/pos"
 	"github.com/jmoiron/sqlx"
 	"fmt"
 	"math"
 	"strconv"
-	"errors"
-	"github.com/mrtomyum/nopadol/config"
 	"time"
+	config "github.com/mrtomyum/nopadol/config"
+	"errors"
 	//"github.com/denisenkom/go-mssqldb"
 	//"upper.io/db.v3/mssql"
 )
@@ -30,6 +29,7 @@ type NewPosModel struct {
 	TaxType         int                   `db:"TaxType"`
 	SumOfItemAmount float64               `db:"SumOfItemAmount"`
 	DiscountWord    string                `db:"DiscountWord"`
+	DiscountAmount  float64               `db:"DiscountAmount"`
 	AfterDiscount   float64               `db:"AfterDiscount"`
 	TotalAmount     float64               `db:"TotalAmount"`
 	SumCashAmount   float64               `db:"SumCashAmount"`
@@ -45,18 +45,19 @@ type NewPosModel struct {
 }
 
 type NewPosItemModel struct {
-	ItemCode     string  `db:"ItemCode"`
-	ItemName     string  `db:"ItemName"`
-	WHCode       string  `db:"WHCode"`
-	ShelfCode    string  `db:"ShelfCode"`
-	Qty          float64 `db:"Qty"`
-	Price        float64 `db:"Price"`
-	DiscountWord string  `db:"DiscountWord"`
-	UnitCode     string  `db:"UnitCode"`
-	LineNumber   int     `db:"LineNumber"`
-	BarCode      string  `db:"BarCode"`
-	AverageCost  float64 `db:"AverageCost"`
-	PackingRate1 float64 `db:"PackingRate1"`
+	ItemCode       string  `db:"ItemCode"`
+	ItemName       string  `db:"ItemName"`
+	WHCode         string  `db:"WHCode"`
+	ShelfCode      string  `db:"ShelfCode"`
+	Qty            float64 `db:"Qty"`
+	Price          float64 `db:"Price"`
+	DiscountWord   string  `db:"DiscountWord"`
+	DiscountAmount float64 `db:"DiscountAmount"`
+	UnitCode       string  `db:"UnitCode"`
+	LineNumber     int     `db:"LineNumber"`
+	BarCode        string  `db:"BarCode"`
+	AverageCost    float64 `db:"AverageCost"`
+	PackingRate1   float64 `db:"PackingRate1"`
 }
 
 type ListChqInModel struct {
@@ -113,6 +114,7 @@ type PosModel struct {
 	TaxType         int                   `db:"TaxType"`
 	SumOfItemAmount float64               `db:"SumOfItemAmount"`
 	DiscountWord    string                `db:"DiscountWord"`
+	DiscountAmount  float64               `db:"DiscountAmount"`
 	AfterDiscount   float64               `db:"AfterDiscount"`
 	BeforeTaxAmount float64               `db:"BeforeTaxAmount"`
 	TaxAmount       float64               `db:"TaxAmount"`
@@ -140,7 +142,7 @@ func NewPosRepository(db *sqlx.DB) pos.Repository {
 	return &posRepository{db}
 }
 
-func (repo *posRepository) New(ctx context.Context, req *pos.NewPosTemplate) (resp pos.NewPosResponseTemplate, err error) {
+func (repo *posRepository) Create(req *pos.NewPosTemplate) (resp interface{}, err error) {
 	var check_doc_exist int
 	var count_item int
 	var count_item_qty int
@@ -169,6 +171,8 @@ func (repo *posRepository) New(ctx context.Context, req *pos.NewPosTemplate) (re
 	var item_net_amount float64
 	var sum_of_cost float64
 
+	var lastId int64
+
 	def := config.Default{}
 	def = config.LoadDefaultData("config/config.json")
 
@@ -191,7 +195,7 @@ func (repo *posRepository) New(ctx context.Context, req *pos.NewPosTemplate) (re
 	pos_tax_type = def.PosTaxType
 	req.MachineNo = pos_machine_no
 
-	sum_pay_amount = (req.SumCashAmount + req.SumCreditAmount + req.SumChqAmount + req.SumBankAmount + req.CoupongAmount)
+	sum_pay_amount = (req.SumCashAmount + req.SumCreditAmount + req.SumChqAmount + req.SumBankAmount + req.CoupongAmount + req.ChargeAmount) - req.ChangeAmount
 
 	for _, sub_item := range req.PosSubs {
 		if (sub_item.Qty != 0) {
@@ -216,61 +220,59 @@ func (repo *posRepository) New(ctx context.Context, req *pos.NewPosTemplate) (re
 	err = repo.db.Get(&check_doc_exist, sqlexist, req.DocNo)
 	if err != nil {
 		fmt.Println("Error = ", err.Error())
-		return resp, err
+		return nil, err
 	}
 
 	fmt.Println("Len Chq =", len(req.ChqIns))
 
-	switch {
-	case req.DocDate == "":
-		fmt.Println("error =", "Docdate is null")
-		return resp, errors.New("Docdate is null")
-	case req.ArCode == "":
-		fmt.Println("error =", "Arcode is null")
-		return resp, errors.New("Arcode is null")
-	case count_item == 0:
-		fmt.Println("error =", "Docno is not have item")
-		return resp, errors.New("Docno is not have item")
-	case (req.SumCashAmount == 0 && req.SumCreditAmount == 0 && req.SumChqAmount == 0 && req.SumBankAmount == 0):
-		fmt.Println("error =", "Docno not set money to another type payment")
-		return resp, errors.New("Docno not set money to another type payment")
-	case req.SumOfItemAmount == 0:
-		fmt.Println("error =", "Sumofitemamount = 0")
-		return resp, errors.New("Sumofitemamount = 0")
-	case count_item_qty > 0:
-		fmt.Println("error =", "Docno is null")
-		return resp, errors.New("Item not have qty")
-	case count_item_unit > 0:
-		fmt.Println("error =", "Item not have qty")
-		return resp, errors.New("Item not have unitcode")
-	case sum_pay_amount > req.TotalAmount:
-		fmt.Println("error =", "Rec money is over totalamount")
-		return resp, errors.New("Rec money is over totalamount")
-	case sum_item_amount != sum_pay_amount:
-		fmt.Println("error =", "Rec money is less than totalamount")
-		return resp, errors.New("Rec money is less than totalamount")
-	case (req.MachineCode == "" || req.ShiftNo == 0 || req.ShiftCode == "" || req.CashierCode == ""):
-		fmt.Println("error =", "Docno not have pos data", req.MachineCode, req.MachineNo, req.ShiftNo, req.ShiftCode, req.CashierCode)
-		return resp, errors.New("Docno not have pos data")
-	case req.SumChqAmount != 0 && len(req.ChqIns) == 0:
-		fmt.Println("error =", "Docno not have chq data")
-		return resp, errors.New("Docno not have chq data")
-	case req.SumCreditAmount != 0 && len(req.CreditCards) == 0:
-		fmt.Println("error =", "Docno not have credit card data")
-		return resp, errors.New("Docno not have credit card data")
-	}
+	//switch {
+	//case req.ArCode == "":
+	//	fmt.Println("error =", "Arcode is null")
+	//	return nil, errors.New("Arcode is null")
+	//case count_item == 0:
+	//	fmt.Println("error =", "Docno is not have item")
+	//	return nil, errors.New("Docno is not have item")
+	//case (req.SumCashAmount == 0 && req.SumCreditAmount == 0 && req.SumChqAmount == 0 && req.SumBankAmount == 0):
+	//	fmt.Println("error =", "Docno not set money to another type payment")
+	//	return nil, errors.New("Docno not set money to another type payment")
+	//case req.SumOfItemAmount == 0:
+	//	fmt.Println("error =", "Sumofitemamount = 0")
+	//	return nil, errors.New("Sumofitemamount = 0")
+	//case count_item_qty > 0:
+	//	fmt.Println("error =", "Docno is null")
+	//	return nil, errors.New("Item not have qty")
+	//case count_item_unit > 0:
+	//	fmt.Println("error =", "Item not have qty")
+	//	return nil, errors.New("Item not have unitcode")
+	//case sum_pay_amount > req.TotalAmount:
+	//	fmt.Println("error =", "Rec money is over totalamount")
+	//	return nil, errors.New("Rec money is over totalamount")
+	//case sum_item_amount != sum_pay_amount:
+	//	fmt.Println("error =", "Rec money is less than totalamount")
+	//	return nil, errors.New("Rec money is less than totalamount")
+	//case (req.MachineCode == "" || req.ShiftNo == 0 || req.ShiftCode == "" || req.CashierCode == ""):
+	//	fmt.Println("error =", "Docno not have pos data", req.MachineCode, req.MachineNo, req.ShiftNo, req.ShiftCode, req.CashierCode)
+	//	return nil, errors.New("Docno not have pos data")
+	//case req.SumChqAmount != 0 && len(req.ChqIns) == 0:
+	//	fmt.Println("error =", "Docno not have chq data")
+	//	return nil, errors.New("Docno not have chq data")
+	//case req.SumCreditAmount != 0 && len(req.CreditCards) == 0:
+	//	fmt.Println("error =", "Docno not have credit card data")
+	//	return nil, errors.New("Docno not have credit card data")
+	//}
 
 	before_tax_amount, tax_amount, total_amount := calcTaxItem(pos_tax_type, tax_rate, req.AfterDiscount)
 
 	sum_remain_amount = total_amount - sum_pay_amount
 
+	fmt.Println(sum_remain_amount, total_amount, sum_pay_amount)
+
 	if sum_remain_amount != 0 {
-		return resp, errors.New("Docno have remain money to paid")
+		return nil, errors.New("Docno have remain money to paid")
 	}
 
 	exchange_rate = def.ExchangeRateDefault
 	save_form = def.PosSaveForm
-
 	is_complete_save = 1
 	deposit_inc_tax = 1
 	pos_status = 1
@@ -295,7 +297,7 @@ func (repo *posRepository) New(ctx context.Context, req *pos.NewPosTemplate) (re
 		switch {
 		case req.DocNo == "":
 			fmt.Println("error =", "Docno is null")
-			return resp, errors.New("Docno is null")
+			return nil, errors.New("Docno is null")
 		}
 
 		sql := `set dateformat dmy     insert into dbo.bcarinvoice(DocNo,DocDate,ArCode,TaxType,CashierCode,ShiftNo,MachineNo,MachineCode,PosStatus,BillTime,GrandTotal,CoupongAmount,ChangeAmount,DepartCode,SaleCode,TaxRate,SumOfItemAmount,DiscountWord,DiscountAmount,AfterDiscount,BeforeTaxAmount,TaxAmount,TotalAmount,SumCashAmount,SumChqAmount,SumCreditAmount,SumBankAmount,DepositIncTax,NetDebtAmount,HomeAmount,BillBalance,ExchangeRate,IsCompleteSave,CreatorCode,CreateDateTime) values(?,?,?,?,?,?,?,?,?,convert(varchar(10), GETDATE(), 108),?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,getdate())`
@@ -303,15 +305,15 @@ func (repo *posRepository) New(ctx context.Context, req *pos.NewPosTemplate) (re
 		id, err := repo.db.Exec(sql, req.DocNo, req.DocDate, req.ArCode, pos_tax_type, req.CashierCode, req.ShiftNo, req.MachineNo, req.MachineCode, pos_status, total_amount, req.CoupongAmount, req.ChangeAmount, depart_code, req.SaleCode, tax_rate, req.SumOfItemAmount, req.DiscountWord, discount_amount, req.AfterDiscount, before_tax_amount, tax_amount, req.TotalAmount, req.SumCashAmount, req.SumChqAmount, req.SumCreditAmount, req.SumBankAmount, deposit_inc_tax, req.NetDebtAmount, home_amount, bill_balance, exchange_rate, is_complete_save, req.UserCode)
 		if err != nil {
 			fmt.Println("Error = ", err.Error())
-			return resp, err
+			return nil, err
 		}
 
-		resp.Id, err = id.LastInsertId()
+		lastId, err = id.LastInsertId()
 	} else {
 		switch {
 		case req.DocNo == "":
 			fmt.Println("error =", "Docno is null")
-			return resp, errors.New("Docno is null")
+			return nil, errors.New("Docno is null")
 		}
 
 		sql := `set dateformat dmy     update dbo.bcarinvoice set DocDate=?,ArCode=?,TaxType=?,CashierCode=?,ShiftNo=?,MachineNo=?,MachineCode=?,GrandTotal=?,CoupongAmount=?,ChangeAmount=?,SaleCode=?,TaxRate=?,SumOfItemAmount=?,DiscountWord=?,DiscountAmount=?,AfterDiscount=?,BeforeTaxAmount=?,TaxAmount=?,TotalAmount=?,SumCashAmount=?,SumChqAmount=?,SumCreditAmount=?,SumBankAmount=?,NetDebtAmount=?,HomeAmount=?,BillBalance=?,LastEditorCode=?,LastEditDateT=getdate() where DocNo=?`
@@ -319,17 +321,17 @@ func (repo *posRepository) New(ctx context.Context, req *pos.NewPosTemplate) (re
 		id, err := repo.db.Exec(sql, req.DocDate, req.ArCode, pos_tax_type, req.CashierCode, req.ShiftNo, req.MachineNo, req.MachineCode, total_amount, req.CoupongAmount, req.ChangeAmount, req.SaleCode, tax_rate, req.SumOfItemAmount, req.DiscountWord, discount_amount, req.AfterDiscount, before_tax_amount, tax_amount, req.TotalAmount, req.SumCashAmount, req.SumChqAmount, req.SumCreditAmount, req.SumBankAmount, req.NetDebtAmount, home_amount, bill_balance, req.UserCode, req.DocNo)
 		if err != nil {
 			fmt.Println("Error = ", err.Error())
-			return resp, err
+			return nil, err
 		}
 
-		resp.Id, err = id.LastInsertId()
+		lastId, err = id.LastInsertId()
 	}
 
 	sql_del_sub := `delete dbo.bcarinvoicesub where docno = ?`
 	_, err = repo.db.Exec(sql_del_sub, req.DocNo)
 	if err != nil {
 		fmt.Println("Error = ", err.Error())
-		return resp, err
+		return nil, err
 	}
 
 	for _, item := range req.PosSubs {
@@ -368,7 +370,7 @@ func (repo *posRepository) New(ctx context.Context, req *pos.NewPosTemplate) (re
 		fmt.Println("sqlsub = ", sqlsub, my_type, req.DocNo, pos_tax_type, item.ItemCode, req.DocDate, req.ArCode, depart_code, req.SaleCode, "MobileApp", item.ItemName, item.WHCode, item.ShelfCode, cn_qty, item.Qty, item.Price, item.DiscountWord, item_discount_amount, item_amount, item_net_amount, item_home_amount, sum_of_cost, item.UnitCode, item.LineNumber, item.BarCode, pos_status, item.AverageCost, item.PackingRate1, packing_rate_2)
 		if err != nil {
 			fmt.Println("Error = ", err.Error())
-			return resp, err
+			return nil, err
 		}
 
 		sqlprocess := ` insert into dbo.ProcessStock (ItemCode,ProcessFlag,FlowStatus) values(?, 1, 0)`
@@ -386,7 +388,7 @@ func (repo *posRepository) New(ctx context.Context, req *pos.NewPosTemplate) (re
 	_, err = repo.db.Exec(sqlrecdel, req.DocNo)
 	if err != nil {
 		fmt.Println("Error = ", err.Error())
-		return resp, err
+		return nil, err
 	}
 
 	my_description_recmoney = "ขายเงินสด"
@@ -400,7 +402,7 @@ func (repo *posRepository) New(ctx context.Context, req *pos.NewPosTemplate) (re
 		_, err = repo.db.Exec(sqlrec, req.DocNo, req.DocDate, req.ArCode, exchange_rate, req.SumCashAmount, 0, save_form, linenumber, depart_code, req.SaleCode, my_description_recmoney)
 		if err != nil {
 			fmt.Println("Error = ", err.Error())
-			return resp, err
+			return nil, err
 		}
 	}
 	//case dp.SumCreditAmount != 0: //subs.PaymentType == 1:
@@ -431,7 +433,7 @@ func (repo *posRepository) New(ctx context.Context, req *pos.NewPosTemplate) (re
 		_, err = repo.db.Exec(sqlrec, req.DocNo, req.DocDate, req.ArCode, exchange_rate, req.SumCreditAmount, req.SumCreditAmount, 1, save_form, crd_credit_type, crd_confirm_no, linenumber, crd_credit_no, crd_bank_code, crd_bank_branch_code, depart_code, req.SaleCode, my_description_recmoney, req.DocDate)
 		if err != nil {
 			fmt.Println("Error = ", err.Error())
-			return resp, err
+			return nil, err
 		}
 	}
 
@@ -463,7 +465,7 @@ func (repo *posRepository) New(ctx context.Context, req *pos.NewPosTemplate) (re
 		_, err = repo.db.Exec(sqlrec, req.DocNo, req.DocDate, req.ArCode, exchange_rate, req.SumChqAmount, 2, save_form, linenumber, chq_book_no, chq_bank_code, depart_code, req.SaleCode, chq_bank_branch_code, my_description_recmoney, req.DocDate)
 		if err != nil {
 			fmt.Println("Error = ", err.Error())
-			return resp, err
+			return nil, err
 		}
 	}
 
@@ -494,7 +496,7 @@ func (repo *posRepository) New(ctx context.Context, req *pos.NewPosTemplate) (re
 		_, err = repo.db.Exec(sqlrec, req.DocNo, req.DocDate, req.ArCode, exchange_rate, req.SumBankAmount, 3, save_form, linenumber, req.BankNo, depart_code, req.SaleCode, my_description_recmoney, req.DocDate, req.DocDate)
 		if err != nil {
 			fmt.Println("Error = ", err.Error())
-			return resp, err
+			return nil, err
 		}
 	}
 
@@ -503,7 +505,7 @@ func (repo *posRepository) New(ctx context.Context, req *pos.NewPosTemplate) (re
 		_, err = repo.db.Exec(sqlchqdel, req.DocNo)
 		if err != nil {
 			fmt.Println("Error = ", err.Error())
-			return resp, err
+			return nil, err
 		}
 
 		for _, c := range req.ChqIns {
@@ -517,7 +519,7 @@ func (repo *posRepository) New(ctx context.Context, req *pos.NewPosTemplate) (re
 			_, err = repo.db.Exec(sqlchq, c.BankCode, c.ChqNumber, req.DocNo, req.ArCode, req.SaleCode, c.ReceiveDate, c.DueDate, c.BookNo, c.Status, save_form, c.StatusDate, c.StatusDocNo, depart_code, c.BankBranchCode, c.Amount, c.Balance, my_description_recmoney, exchange_rate, c.RefChqRowOrder)
 			if err != nil {
 				fmt.Println("Error = ", err.Error())
-				return resp, err
+				return nil, err
 			}
 		}
 	}
@@ -527,7 +529,7 @@ func (repo *posRepository) New(ctx context.Context, req *pos.NewPosTemplate) (re
 		_, err = repo.db.Exec(sqlcrddel, req.DocNo)
 		if err != nil {
 			fmt.Println("Error = ", err.Error())
-			return resp, err
+			return nil, err
 		}
 
 		for _, d := range req.CreditCards {
@@ -549,13 +551,17 @@ func (repo *posRepository) New(ctx context.Context, req *pos.NewPosTemplate) (re
 			_, err = repo.db.Exec(sqlcrd, d.BankCode, d.CreditCardNo, req.DocNo, req.ArCode, req.SaleCode, d.ReceiveDate, d.DueDate, d.BookNo, d.Status, save_form, d.StatusDate, d.StatusDocNo, depart_code, d.BankBranchCode, d.Amount, my_description_recmoney, exchange_rate, d.CreditType, d.ConfirmNo, d.ChargeAmount, req.UserCode)
 			if err != nil {
 				fmt.Println("Error = ", err.Error())
-				return resp, err
+				return nil, err
 			}
 		}
 
 	}
 
-	return resp, nil
+	return map[string]interface{}{
+		"Id":     lastId,
+		"doc_no": req.DocNo,
+	}, nil
+	//return resp, nil
 }
 
 func genPosNo(db *sqlx.DB, pos_machine_no string) (doc_no string) {
@@ -689,64 +695,135 @@ func calcTaxItem(taxtype int, taxrate float64, afterdiscountamount float64) (bef
 	return beforetaxamount, taxamount, totalamount
 }
 
-func (repo *posRepository) SearchById(ctx context.Context, req *pos.SearchPosByIdRequestTemplate) (resp pos.SearchPosByIdResponseTemplate, err error) {
+func (repo *posRepository) SearchById(req *pos.SearchPosByIdRequestTemplate) (resp interface{}, err error) {
 	p := PosModel{}
 
-	sql := `select a.roworder as Id,a.DocNo,a.DocDate,isnull(a.TaxNo,'') as TaxNo,isnull(a.docdate,'') as TaxDate,a.PosStatus,a.ArCode,isnull(b.name1,'') as ArName,a.SaleCode,isnull(c.name,'') as SaleName,isnull(ShiftCode,'') as ShiftCode,CashierCode,ShiftNo,MachineNo,MachineCode,CoupongAmount,ChangeAmount,ChargeAmount,a.TaxType,SumOfItemAmount,a.DiscountWord,AfterDiscount,BeforeTaxAmount,TaxAmount,TotalAmount ,SumCashAmount,SumChqAmount,SumCreditAmount,SumBankAmount,'' as BankNo,NetDebtAmount,IsCancel,IsConfirm,a.CreatorCode,a.CreateDateTime,isnull(a.LastEditorCode,'') as LastEditorCode,isnull(a.LastEditDateT,'') as LastEditDateT from dbo.bcarinvoice a  left join dbo.bcar b on a.arcode = b.code left join dbo.bcsale c  on a.salecode = c.code where a.roworder = 5548`
-	err = repo.db.Get(&p, sql)
+	sql := `select a.roworder as Id,a.DocNo,a.DocDate,isnull(a.TaxNo,'') as TaxNo,isnull(a.docdate,'') as TaxDate,a.PosStatus,a.ArCode,isnull(b.name1,'') as ArName,a.SaleCode,isnull(c.name,'') as SaleName,isnull(ShiftCode,'') as ShiftCode,CashierCode,ShiftNo,MachineNo,MachineCode,CoupongAmount,ChangeAmount,ChargeAmount,a.TaxType,SumOfItemAmount,a.DiscountWord,AfterDiscount,BeforeTaxAmount,TaxAmount,TotalAmount ,SumCashAmount,SumChqAmount,SumCreditAmount,SumBankAmount,'' as BankNo,NetDebtAmount,IsCancel,IsConfirm,a.CreatorCode,a.CreateDateTime,isnull(a.LastEditorCode,'') as LastEditorCode,isnull(a.LastEditDateT,'') as LastEditDateT from dbo.bcarinvoice a  left join dbo.bcar b on a.arcode = b.code left join dbo.bcsale c  on a.salecode = c.code where a.roworder = ?`
+	err = repo.db.Get(&p, sql, req.Id)
 	if err != nil {
-		fmt.Println("err = ",err.Error())
+		fmt.Println("err = ", err.Error())
 		return resp, err
 	}
 
+	subpos := []NewPosItemModel{}
+
+	sql_sub := `select a.ItemCode,a.ItemName,a.WHCode,a.ShelfCode,a.Qty,a.Price,isnull(a.DiscountWord,'') as DiscountWord,a.UnitCode,isnull(a.BarCode,'') as BarCode,a.AverageCost,a.PackingRate1,a.LineNumber from dbo.bcarinvoicesub a left join dbo.bcitem b on a.itemcode = b.code where a.docno = ? order by a.linenumber`
+	err = repo.db.Select(&subpos, sql_sub, p.DocNo)
+	if err != nil {
+		fmt.Println("err sub= ", err.Error())
+		return resp, err
+	}
+
+	fmt.Println("Item =", subpos)
+
 	pos_resp := map_pos_template(p)
 
+	for _, sub := range subpos {
+		subline := map_pos_subs_template(sub)
+		pos_resp.PosSubs = append(pos_resp.PosSubs, subline)
+	}
+
+	subCreditCards := []ListCreditCardModel{}
+
+	sql_credit_card := `select isnull(BankCode,'') as BankCode,isnull(CreditCardNo,'') as CreditCardNo,isnull(ReceiveDate,'') as ReceiveDate,isnull(DueDate,'') as DueDate,isnull(BookNo,'') as BookNo,Status,isnull(StatusDate,'') as StatusDate,isnull(StatusDocNo,'') as StatusDocNo,isnull(BankBranchCode,'') as BankBranchCode,Amount,isnull(MyDescription,'') as MyDescription,isnull(CreditType,'') as CreditType,isnull(ConfirmNo,'') as ConfirmNo,ChargeAmount from dbo.bccreditcard where docno = ? order by roworder`
+	err = repo.db.Select(&subCreditCards, sql_credit_card, p.DocNo)
+	if err != nil {
+		fmt.Println("err sub= ", err.Error())
+		return resp, err
+	}
 	//sql_crd := `select `
 
+	for _, c := range subCreditCards {
+		creditcardline := map_pos_creditcard_template(c)
+		pos_resp.CreditCards = append(pos_resp.CreditCards, creditcardline)
+	}
 
-	fmt.Println("Docno = ",pos_resp.DocNo)
+	fmt.Println("Docno = ", pos_resp.DocNo)
 
 	return pos_resp, nil
+
 }
 
-func map_pos_template(x PosModel) pos.SearchPosByIdResponseTemplate{
+func map_pos_template(x PosModel) pos.SearchPosByIdResponseTemplate {
+	var subs []pos.NewPosItemTemplate
+	var crds []pos.ListCreditCardTemplate
 	return pos.SearchPosByIdResponseTemplate{
-		Id:x.Id,
-		DocNo:x.DocNo,
-		DocDate:x.DocDate,
-		TaxNo:x.TaxNo,
-		TaxDate:x.TaxDate,
-		PosStatus:x.PosStatus,
-		ArCode:x.ArCode,
-		ArName:x.ArName,
-		SaleCode:x.SaleCode,
-		SaleName:x.SaleName,
-		ShiftCode:x.ShiftCode,
-		CashierCode:x.CashierCode,
-		ShiftNo:x.ShiftNo,
-		MachineNo:x.MachineNo,
-		MachineCode:x.MachineCode,
-		CoupongAmount:x.CoupongAmount,
-		ChangeAmount:x.ChangeAmount,
-		ChargeAmount:x.ChargeAmount,
-		TaxType:x.TaxType,
-		SumOfItemAmount:x.SumOfItemAmount,
-		DiscountWord:x.DiscountWord,
-		AfterDiscount:x.AfterDiscount,
-		BeforeTaxAmount:x.BeforeTaxAmount,
-		TaxAmount:x.TaxAmount,
-		TotalAmount:x.TotalAmount,
-		SumCashAmount:x.SumCashAmount,
-		SumChqAmount:x.SumChqAmount,
-		SumCreditAmount:x.SumCreditAmount,
-		SumBankAmount:x.SumBankAmount,
-		BankNo:x.BankNo,
-		NetDebtAmount:x.NetDebtAmount,
-		IsCancel:x.IsCancel,
-		IsConfirm:x.IsConfirm,
-		CreatorCode:x.CreatorCode,
-		CreateDateTime:x.CreateDateTime,
-		LastEditorCode:x.LastEditorCode,
-		LastEditDateT:x.LastEditDateT,
+		Id:              x.Id,
+		DocNo:           x.DocNo,
+		DocDate:         x.DocDate,
+		TaxNo:           x.TaxNo,
+		TaxDate:         x.TaxDate,
+		PosStatus:       x.PosStatus,
+		ArCode:          x.ArCode,
+		ArName:          x.ArName,
+		SaleCode:        x.SaleCode,
+		SaleName:        x.SaleName,
+		ShiftCode:       x.ShiftCode,
+		CashierCode:     x.CashierCode,
+		ShiftNo:         x.ShiftNo,
+		MachineNo:       x.MachineNo,
+		MachineCode:     x.MachineCode,
+		CoupongAmount:   x.CoupongAmount,
+		ChangeAmount:    x.ChangeAmount,
+		ChargeAmount:    x.ChargeAmount,
+		TaxType:         x.TaxType,
+		SumOfItemAmount: x.SumOfItemAmount,
+		DiscountWord:    x.DiscountWord,
+		DiscountAmount:  x.DiscountAmount,
+		AfterDiscount:   x.AfterDiscount,
+		BeforeTaxAmount: x.BeforeTaxAmount,
+		TaxAmount:       x.TaxAmount,
+		TotalAmount:     x.TotalAmount,
+		SumCashAmount:   x.SumCashAmount,
+		SumChqAmount:    x.SumChqAmount,
+		SumCreditAmount: x.SumCreditAmount,
+		SumBankAmount:   x.SumBankAmount,
+		BankNo:          x.BankNo,
+		NetDebtAmount:   x.NetDebtAmount,
+		IsCancel:        x.IsCancel,
+		IsConfirm:       x.IsConfirm,
+		CreatorCode:     x.CreatorCode,
+		CreateDateTime:  x.CreateDateTime,
+		LastEditorCode:  x.LastEditorCode,
+		LastEditDateT:   x.LastEditDateT,
+		PosSubs:         subs,
+		CreditCards:     crds,
+	}
+}
+
+func map_pos_subs_template(x NewPosItemModel) pos.NewPosItemTemplate {
+	return pos.NewPosItemTemplate{
+		ItemCode:       x.ItemCode,
+		ItemName:       x.ItemName,
+		WHCode:         x.WHCode,
+		ShelfCode:      x.ShelfCode,
+		Qty:            x.Qty,
+		Price:          x.Price,
+		DiscountWord:   x.DiscountWord,
+		DiscountAmount: x.DiscountAmount,
+		UnitCode:       x.UnitCode,
+		BarCode:        x.BarCode,
+		LineNumber:     x.LineNumber,
+		AverageCost:    x.AverageCost,
+		PackingRate1:   x.PackingRate1,
+	}
+}
+
+func map_pos_creditcard_template(x ListCreditCardModel) pos.ListCreditCardTemplate {
+	return pos.ListCreditCardTemplate{
+		BankCode:       x.BankCode,
+		CreditCardNo:   x.CreditCardNo,
+		ReceiveDate:    x.ReceiveDate,
+		DueDate:        x.DueDate,
+		BookNo:         x.BookNo,
+		Status:         x.Status,
+		StatusDate:     x.StatusDate,
+		StatusDocNo:    x.StatusDocNo,
+		BankBranchCode: x.BankBranchCode,
+		Amount:         x.Amount,
+		MyDescription:  x.MyDescription,
+		CreditType:     x.CreditType,
+		ConfirmNo:      x.ConfirmNo,
+		ChargeAmount:   x.ChargeAmount,
 	}
 }

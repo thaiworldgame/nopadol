@@ -3,18 +3,19 @@ package mariadb
 import (
 	"github.com/mrtomyum/nopadol/sale"
 	"context"
+	"fmt"
 )
 
-// NewDomain1Repository creates domain1 repository implements by domain4
+// NewSaleRepository creates sale repository implements by mariadb
 func NewSaleRepository() sale.Repository {
 	return &saleRepository{}
 }
 
-type saleRepository struct {}
-<<<<<<< HEAD
-=======
+
+type saleRepository struct{}
 
 func (saleRepository) Register(ctx context.Context, entity *sale.Entity1) (string, error) {
+	//fmt.Errorf()
 	return "", nil
 }
 
@@ -23,4 +24,4 @@ func (saleRepository) SetField3(ctx context.Context, entityID string, field3 int
 	return nil
 }
 
->>>>>>> 9ac04656f87c91029ac46d7f1357a258638af627
+

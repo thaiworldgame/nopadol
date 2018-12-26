@@ -20,6 +20,7 @@ func NewHTTPTransport(ep Endpoint) http.Handler {
 		case ErrEntity1NotFound:
 			status = http.StatusNotFound
 		}
+
 		httptransport.EncodeJSON(w, status, &httpError{Message: err.Error()})
 	}
 
@@ -42,6 +43,7 @@ func NewHTTPTransport(ep Endpoint) http.Handler {
 	mux.Handle("/search", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		var req SearchSaleOrderRequest
 		err := httptransport.DecodeJSON(r.Body, &req)
+		enableCors(&w)
 		if err != nil {
 			errorEncoder(w, err)
 			return
@@ -104,4 +106,10 @@ func NewHTTPTransport(ep Endpoint) http.Handler {
 	// mux.Handle("/create", m.Handler(ep.Create))
 
 	return mux
+}
+
+func enableCors(w *http.ResponseWriter) {
+	(*w).Header().Set("Access-Control-Allow-Origin", "*")
+	(*w).Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE")
+	(*w).Header().Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
 }

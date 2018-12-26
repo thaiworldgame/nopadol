@@ -1,5 +1,8 @@
 package pos
 
+
+
+
 type NewPosResponseTemplate struct {
 	Id int64 `json:"id"`
 }
@@ -21,6 +24,7 @@ type NewPosTemplate struct {
 	TaxType         int                      `json:"tax_type"`
 	SumOfItemAmount float64                  `json:"sum_of_item_amount"`
 	DiscountWord    string                   `json:"discount_word"`
+	DiscountAmount  float64                  `json:"discount_amount"`
 	AfterDiscount   float64                  `json:"after_discount"`
 	TotalAmount     float64                  `json:"total_amount"`
 	SumCashAmount   float64                  `json:"sum_cash_amount"`
@@ -36,18 +40,19 @@ type NewPosTemplate struct {
 }
 
 type NewPosItemTemplate struct {
-	ItemCode     string  `json:"item_code"`
-	ItemName     string  `json:"item_name"`
-	WHCode       string  `json:"wh_code"`
-	ShelfCode    string  `json:"shelf_code"`
-	Qty          float64 `json:"qty"`
-	Price        float64 `json:"price"`
-	DiscountWord string  `json:"discount_word"`
-	UnitCode     string  `json:"unit_code"`
-	LineNumber   int     `json:"line_number"`
-	BarCode      string  `json:"bar_code"`
-	AverageCost  float64 `json:"averagecost"`
-	PackingRate1 float64 `json:"packing_rate_1"`
+	ItemCode       string  `json:"item_code"`
+	ItemName       string  `json:"item_name"`
+	WHCode         string  `json:"wh_code"`
+	ShelfCode      string  `json:"shelf_code"`
+	Qty            float64 `json:"qty"`
+	Price          float64 `json:"price"`
+	DiscountWord   string  `json:"discount_word"`
+	DiscountAmount float64 `json:"discount_amount"`
+	UnitCode       string  `json:"unit_code"`
+	LineNumber     int     `json:"line_number"`
+	BarCode        string  `json:"bar_code"`
+	AverageCost    float64 `json:"averagecost"`
+	PackingRate1   float64 `json:"packing_rate_1"`
 }
 
 type ListChqInTemplate struct {
@@ -104,6 +109,7 @@ type SearchPosByIdResponseTemplate struct {
 	TaxType         int                      `json:"tax_type"`
 	SumOfItemAmount float64                  `json:"sum_of_item_amount"`
 	DiscountWord    string                   `json:"discount_word"`
+	DiscountAmount  float64                  `json:"discount_amount"`
 	AfterDiscount   float64                  `json:"after_discount"`
 	BeforeTaxAmount float64                  `json:"before_tax_amount"`
 	TaxAmount       float64                  `json:"tax_amount"`

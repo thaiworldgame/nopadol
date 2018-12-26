@@ -4,6 +4,10 @@ type SearchByBarcodeTemplate struct {
 	BarCode string `json:"bar_code"`
 }
 
+type SearchByKeywordTemplate struct {
+	Keyword string `json:"keyword"`
+}
+
 type ProductTemplate struct {
 	Id       int     `json:"id"`
 	ItemCode string  `json:"item_code"`
