@@ -9,10 +9,9 @@ type SearchByIdTemplate struct {
 }
 
 type CustomerTemplate struct {
-	Id         int64  `json:"id"`
-	Code       string `json:"code"`
-	Name       string `json:"name"`
-	Address    string `json:"address"`
-	Telephone  string `json:"telephone"`
-	BillCredit int64  `json:"bill_credit"`
+	CustomerId        int64  `json:"customer_id"`
+	CustomerCode      string `json:"customer_code"`
+	CustomerName      string `json:"customer_name"`
+	CustomerAddress   string `json:"customer_address"`
+	CustomerTelephone string `json:"customer_telephone"`
 }
