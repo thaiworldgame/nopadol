@@ -126,13 +126,6 @@ func init() {
 
 func main() {
 
-	//// Attemping to establish a connection to the database.
-	//sess, err := mssql.Open(settings)
-	//if err != nil {
-	//	log.Fatalf("db.Open(): %q\n", err)
-	//}
-	//defer sess.Close() // Remember to close the database session.
-	// Postgresql  Connect
 	pgConn := fmt.Sprintf("dbname=%s user=%s password=%s host=%s port=%s sslmode=%s",
 		pgDbName, pgDbUser, pgDbPass, pgDbHost, pgDbPort, pgSSLMode)
 
@@ -170,9 +163,6 @@ func main() {
 	posRepo := sqldb.NewPosRepository(sql_dbc)
 	posService := posservice.New(posRepo)
 	//posEndpoint := posendpoint.New(posService)
-
-	//saleRepo := mysqldb.NewSaleRepository(mysql_dbc)
-	//saleService := saleservice.New(saleRepo)
 
 	printRepo := sqldb.NewPrintRepository(sql_dbc)
 	printService := printservice.New(printRepo)
