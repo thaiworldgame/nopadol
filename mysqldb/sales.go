@@ -280,6 +280,7 @@ type NewDepositModel struct {
 	ConfirmBy        string                `db:"confirm_by"`
 	ConfirmTime      string                `db:"confirm_time"`
 	Subs             []NewDepositItemModel `db:"subs"`
+	RecMoney         []RecMoneyModel       `db:"rec_money"`
 	CreditCard       []CreditCardModel     `db:"credit_card"`
 	Chq              []ChqInModel          `db:"chq"`
 }
@@ -339,6 +340,136 @@ type ChqInModel struct {
 	ChqAmount    float64 `db:"chq_amount"`
 	ChqBalance   float64 `db:"chq_balance"`
 	Description  string  `db:"description"`
+}
+
+type RecMoneyModel struct {
+	Id             int64   `db:"id"`
+	DocType        int64   `db:"doc_type"`
+	RefId          int64   `db:"ref_id"`
+	ArId           int64   `db:"ar_id"`
+	PaymentType    int64   `db:"payment_type"`
+	PayAmount      float64 `db:"pay_amount"`
+	ChqTotalAmount float64 `db:"chq_total_amount"`
+	CreditType     int64   `db:"credit_type"`
+	ChargeAmount   float64 `db:"charge_amount"`
+	ConfirmNo      string  `db:"confirm_no"`
+	RefNo          string  `db:"ref_no"`
+	BankCode       string  `db:"bank_code"`
+	BankBranchCode string  `db:"bank_branch_code"`
+	RefDate        string  `db:"ref_date"`
+	BankTransDate  string  `db:"bank_trans_date"`
+	LineNumber     int64   `db:"line_number"`
+}
+
+type NewInvoiceModel struct {
+	Id                  int64                 `db:"id"`
+	CompanyId           int64                 `db:"company_id"`
+	BranchId            int64                 `db:"branch_id"`
+	Uuid                string                `db:"uuid"`
+	DocNo               string                `db:"doc_no"`
+	TaxNo               string                `db:"tax_no"`
+	BillType            int64                 `db:"bill_type"`
+	DocDate             string                `db:"doc_date"`
+	ArId                int64                 `db:"ar_id"`
+	ArCode              string                `db:"ar_code"`
+	ArName              string                `db:"ar_name"`
+	ArBillAddress       string                `db:"ar_bill_address"`
+	ArTelephone         string                `db:"ar_telephone"`
+	SaleId              int64                 `db:"sale_id"`
+	SaleCode            string                `db:"sale_code"`
+	SaleName            string                `db:"sale_name"`
+	PosMachineId        int64                 `db:"pos_machine_id"`
+	PeriodId            int64                 `db:"period_id"`
+	CashId              int64                 `db:"cash_id"`
+	TaxType             int64                 `db:"tax_type"`
+	TaxRate             float64               `db:"tax_rate"`
+	NumberOfItem        float64               `db:"number_of_item"`
+	DepartId            int64                 `db:"depart_id"`
+	AllocateId          int64                 `db:"allocate_id"`
+	ProjectId           int64                 `db:"project_id"`
+	PosStatus           int64                 `db:"pos_status"`
+	CreditDay           int64                 `db:"credit_day"`
+	DueDate             string                `db:"due_date"`
+	DeliveryDay         int64                 `db:"delivery_day"`
+	DeliveryDate        string                `db:"delivery_date"`
+	IsConfirm           int64                 `db:"is_confirm"`
+	IsConditionSend     int64                 `db:"is_condition_send"`
+	MyDescription       string                `db:"my_description"`
+	SoRefNo             string                `db:"so_ref_no"`
+	ChangeAmount        float64               `db:"change_amount"`
+	SumCashAmount       float64               `db:"sum_cash_amount"`
+	SumCreditAmount     float64               `db:"sum_credit_amount"`
+	SumChqAmount        float64               `db:"sum_chq_amount"`
+	SumBankAmount       float64               `db:"sum_bank_amount"`
+	SumOfDeposit        float64               `db:"sum_of_deposit"`
+	SumOnLineAmount     float64               `db:"sum_on_line_amount"`
+	CouponAmount        float64               `db:"coupon_amount"`
+	SumOfItemAmount     float64               `db:"sum_of_item_amount"`
+	DiscountWord        string                `db:"discount_word"`
+	DiscountAmount      float64               `db:"discount_amount"`
+	AfterDiscountAmount float64               `db:"after_discount_amount"`
+	BeforeTaxAmount     float64               `db:"before_tax_amount"`
+	TaxAmount           float64               `db:"tax_amount"`
+	TotalAmount         float64               `db:"total_amount"`
+	NetDebtAmount       float64               `db:"net_debt_amount"`
+	BillBalance         float64               `db:"bill_balance"`
+	PayBillStatus       int64                 `db:"pay_bill_status"`
+	PayBillAmount       float64               `db:"pay_bill_amount"`
+	DeliveryStatus      int64                 `db:"delivery_status"`
+	ReceiveName         string                `db:"receive_name"`
+	ReceiveTel          string                `db:"receive_tel"`
+	CarLicense          string                `db:"car_license"`
+	IsCancel            int64                 `db:"is_cancel"`
+	IsHold              int64                 `db:"is_hold"`
+	IsPosted            int64                 `db:"is_posted"`
+	IsCreditNote        int64                 `db:"is_credit_note"`
+	IsDebitNote         int64                 `db:"is_debit_note"`
+	GlStatus            int64                 `db:"gl_status"`
+	JobId               string                `db:"job_id"`
+	JobNo               string                `db:"job_no"`
+	CouponNo            string                `db:"coupon_no"`
+	RedeemNo            string                `db:"redeem_no"`
+	ScgNumber           string                `db:"scg_number"`
+	ScgId               string                `db:"scg_id"`
+	CreateBy            string                `db:"create_by"`
+	CreateTime          string                `db:"create_time"`
+	EditBy              string                `db:"edit_by"`
+	EditTime            string                `db:"edit_time"`
+	ConfirmBy           string                `db:"confirm_by"`
+	ConfirmTime         string                `db:"confirm_time"`
+	CancelBy            string                `db:"cancel_by"`
+	CancelTime          string                `db:"cancel_time"`
+	CancelDescId        int64                 `db:"cancel_desc_id"`
+	CancelDesc          string                `db:"cancel_desc"`
+	Subs                []NewInvoiceItemModel `db:"subs"`
+	RecMoney            []RecMoneyModel       `db:"rec_money"`
+	CreditCard          []CreditCardModel     `db:"credit_card"`
+	Chq                 []ChqInModel          `db:"chq"`
+}
+
+type NewInvoiceItemModel struct {
+	Id              int64   `db:"id"`
+	InvId           int64   `db:"inv_id"`
+	ItemId          int64   `db:"item_id"`
+	ItemCode        string  `db:"item_code"`
+	ItemName        string  `db:"item_name"`
+	BarCode         string  `db:"bar_code"`
+	WhId            int64   `db:"wh_id"`
+	ShelfId         int64   `db:"shelf_id"`
+	Price           float64 `db:"price"`
+	UnitICode       int64   `db:"unit_code"`
+	Qty             float64 `db:"qty"`
+	CnQty           float64 `db:"cn_qty"`
+	ItemDescription string  `db:"item_description"`
+	IsCreditNote    int64   `db:"is_credit_note"`
+	IsDebitNote     int64   `db:"is_debit_note"`
+	PackingRate1    int64   `db:"packing_rate_1"`
+	PackingRate2    int64   `db:"packing_rate_2"`
+	SoRefNo         string  `db:"so_ref_no"`
+	AverageCost     float64 `db:"average_cost"`
+	SumOfCost       float64 `db:"sum_of_cost"`
+	RefLineNumber   int64   `db:"ref_line_number"`
+	LineNumber      int64   `db:"line_number"`
 }
 
 type salesRepository struct{ db *sqlx.DB }
@@ -415,7 +546,7 @@ func (repo *salesRepository) CreateQuotation(req *sales.NewQuoTemplate) (resp in
 		//	log.Fatal("NewRequest: ", err)
 		//	return nil, err
 		//}
-
+		//
 		//client := &http.Client{}
 		//
 		//resp, err := client.Do(reqs)
@@ -429,8 +560,8 @@ func (repo *salesRepository) CreateQuotation(req *sales.NewQuoTemplate) (resp in
 		//if err := json.NewDecoder(resp.Body).Decode(&new_doc_no); err != nil {
 		//	log.Println(err)
 		//}
-
-		//API Get Post API
+		//
+		////API Get Post API
 		//url := "http://venus.nopadol.com:8081/gendocno/v1/gen"
 		//var jsonStr []byte
 		//
@@ -602,6 +733,64 @@ func (repo *salesRepository) CreateQuotation(req *sales.NewQuoTemplate) (resp in
 		}
 
 		line_number = line_number + 1
+	}
+
+	return map[string]interface{}{
+		"id":       req.Id,
+		"doc_no":   req.DocNo,
+		"doc_date": req.DocDate,
+		"ar_code":  req.ArCode,
+	}, nil
+}
+
+func (repo *salesRepository) CancelQuotation(req *sales.NewQuoTemplate) (resp interface{}, err error) {
+	var check_doc_exist int64
+
+	now := time.Now()
+
+	req.CancelTime = now.String()
+
+	switch {
+	case req.DocNo == "":
+		return nil, errors.New("Docno is null")
+	case req.IsConfirm == 1:
+		return nil, errors.New("เอกสารถูกอ้างอิงไปแล้ว ไม่สามารถยกเลิกได้")
+	case req.IsCancel == 1:
+		return nil, errors.New("เอกสารถูกยกเลิกไปแล้ว ไม่สามารถยกเลิกได้")
+	}
+
+	sqlexist := `select count(DocNo) as check_exist from Quotation where id = ?`
+	fmt.Println("DocNo Id", req.Id)
+	err = repo.db.Get(&check_doc_exist, sqlexist, req.Id)
+	if err != nil {
+		fmt.Println("Error = ", err.Error())
+		return nil, err
+	}
+
+	fmt.Println("check_doc_exist", check_doc_exist)
+
+	if (check_doc_exist != 0) {
+		fmt.Println("Cancel")
+
+		sql := `Update Quotation set IsCancel=1,CancelBy=?,CancelTime=? where Id=?`
+		fmt.Println("sql update = ", sql)
+		id, err := repo.db.Exec(sql, req.EditBy, req.EditTime, req.Id)
+		if err != nil {
+			fmt.Println("Error = ", err.Error())
+			return nil, err
+		}
+
+		rowAffect, err := id.RowsAffected()
+		fmt.Println("Row Affect = ", rowAffect)
+
+		fmt.Println("ReqID=", req.Id)
+
+		sql_del_sub := `update from QuotationSub set IsCancel = 1 where QuoId = ?`
+		_, err = repo.db.Exec(sql_del_sub, req.Id)
+		if err != nil {
+			fmt.Println("Error = ", err.Error())
+			return nil, err
+		}
 	}
 
 	return map[string]interface{}{
@@ -1173,6 +1362,11 @@ func (repo *salesRepository) CreateDeposit(req *sales.NewDepositTemplate) (inter
 
 	fmt.Println("check_doc_exist = ", check_doc_exist, sqlexist, req.Id)
 
+	switch {
+	case req.TotalAmount != (req.CashAmount + req.CreditcardAmount + req.ChqAmount + req.BankAmount):
+		return nil, errors.New("มูลค่ารวมทั้งหมดไม่ตรงกับมูลค่ารับชำระ")
+	}
+
 	if (check_doc_exist == 0) {
 		sql := `insert into ar_deposit(company_id, branch_id, uuid, doc_no, tax_no, doc_date, bill_type, ar_id, ar_code, ar_name, sale_id, sale_code, sale_name, tax_type, tax_rate, ref_no, credit_day, due_date, depart_id, allocate_id, project_id, my_description, before_tax_amount, tax_amount, total_amount, net_amount ,bill_balance ,cash_amount ,creditcard_amount, chq_amount, bank_amount, is_return_money, is_cancel, is_confirm, scg_id, job_no, create_by, create_time) values(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ? ,? ,? ,?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
 		resp, err := repo.db.Exec(sql, req.CompanyId, req.BranchId, req.Uuid, req.DocNo, req.TaxNo, req.DocDate, req.BillType, req.ArId, req.ArCode, req.ArName, req.SaleId, req.SaleCode, req.SaleName, req.TaxType, req.TaxRate, req.RefNo, req.CreditDay, req.DueDate, req.DepartId, req.AllocateId, req.ProjectId, req.MyDescription, req.BeforeTaxAmount, req.TaxAmount, req.TotalAmount, req.NetAmount, req.BillBalance, req.CashAmount, req.CreditcardAmount, req.ChqAmount, req.BankAmount, req.IsReturnMoney, req.IsCancel, req.IsConfirm, req.ScgId, req.JobNo, req.CreateBy, req.CreateTime)
@@ -1202,6 +1396,12 @@ func (repo *salesRepository) CreateDeposit(req *sales.NewDepositTemplate) (inter
 	var sum_crd_amount float64
 
 	fmt.Println("UUID1 = ", req.Uuid)
+
+	sql_del_crd := `delete from credit_card where uuid=? and ref_id=? and company_id=? and branch_id=? `
+	_, err = repo.db.Exec(sql_del_crd, req.Uuid, req.Id, req.CompanyId, req.BranchId)
+	if err != nil {
+		fmt.Println("sql_del = ", err.Error())
+	}
 
 	count_crd_err = 0
 	if req.CreditcardAmount != 0 {
@@ -1251,6 +1451,12 @@ func (repo *salesRepository) CreateDeposit(req *sales.NewDepositTemplate) (inter
 
 	var count_chq_err int64
 	var sum_chq_amount float64
+
+	sql_del_chq := `delete from chq_in where uuid = ? and ref_id=? and company_id=? and branch_id=?`
+	_, err = repo.db.Exec(sql_del_chq, req.Uuid, req.Id, req.CompanyId, req.BranchId)
+	if err != nil {
+		fmt.Println("sql_del = ", err.Error())
+	}
 
 	count_chq_err = 0
 	if req.ChqAmount != 0 {
@@ -1309,9 +1515,9 @@ func (repo *salesRepository) CreateDeposit(req *sales.NewDepositTemplate) (inter
 func verify_creditcard(db *sqlx.DB, Uuid string, RefId int64, CompanyId int64, BranchId int64, CreditCardNo string, ConfirmNo string, BankId int64) (bool, error) {
 	var exist int64
 
-	sql_verify_crd := `select ifnull(count(doc_no),0) as vcount from credit_card where uuid = ? and ref_id = ? and company_id = ? and branch_id = ? and credit_card_no = ? and confirm_no = ? and bank_id = ?`
-	err := db.Get(&exist, sql_verify_crd, Uuid, RefId, CompanyId, BranchId, CreditCardNo, ConfirmNo, BankId)
-	fmt.Println("sql_verify_crd = ", sql_verify_crd, Uuid, RefId, CompanyId, BranchId, CreditCardNo, ConfirmNo, BankId)
+	sql_verify_crd := `select ifnull(count(doc_no),0) as vcount from credit_card where credit_card_no = ? and confirm_no = ? and bank_id = ?`
+	err := db.Get(&exist, sql_verify_crd, CreditCardNo, ConfirmNo, BankId)
+	fmt.Println("sql_verify_crd = ", sql_verify_crd, CreditCardNo, ConfirmNo, BankId)
 	if err != nil {
 		fmt.Println("sql_verify_crd err = ", err.Error())
 		return false, err
@@ -1592,5 +1798,147 @@ func map_deposit_chq_template(x ChqInModel) sales.ChqInTemplate {
 		Id:           x.Id,
 		ReceiveDate:  x.ReceiveDate,
 		RefId:        x.RefId,
+	}
+}
+
+func (repo *salesRepository) SearchInvoiceById(req *sales.SearchByIdTemplate) (resp interface{}, err error) {
+
+	i := NewInvoiceModel{}
+
+	sql := `select a.id,a.company_id,a.branch_id,ifnull(a.uuid,'') as uuid,a.doc_no,ifnull(a.tax_no,'') as tax_no,a.bill_type,a.doc_date,a.ar_id,a.ar_code,ifnull(b.name,'') as ar_name,ifnull(b.address,'') as ar_bill_address,ifnull(b.telephone,'') as ar_telephone,a.sale_id,a.sale_code,ifnull(c.SaleName,'') sale_name,a.pos_machine_id,a.period_id,a.cash_id,a.tax_type,a.tax_rate,a.number_of_item,a.depart_id,a.allocate_id,a.project_id,a.pos_status,a.credit_day,ifnull(a.due_date,'') as due_date,a.delivery_day,ifnull(a.delivery_date,'') as delivery_date,a.is_confirm,a.is_condition_send,ifnull(a.my_description,'') as my_description,ifnull(a.so_ref_no,'') as so_ref_no,a.change_amount,a.sum_cash_amount,a.sum_credit_amount,a.sum_chq_amount,a.sum_bank_amount,a.sum_of_deposit,a.sum_on_line_amount,a.coupon_amount,a.sum_of_item_amount,ifnull(a.discount_word,'') as discount_word,a.discount_amount,a.after_discount_amount,a.before_tax_amount,a.tax_amount,a.total_amount,a.net_debt_amount,a.bill_balance,a.pay_bill_status,a.pay_bill_amount,a.delivery_status,ifnull(a.receive_name,'') as receive_name,ifnull(a.receive_tel,'') as receive_tel,ifnull(a.car_license,'') as car_license,a.is_cancel,a.is_hold,a.is_posted,a.is_credit_note,a.is_debit_note,a.gl_status,ifnull(a.job_id,'') as job_id,ifnull(a.job_no,'') as job_no,ifnull(a.coupon_no,'') as coupon_no,ifnull(a.redeem_no,'') as redeem_no,ifnull(a.scg_number,'') as scg_number,ifnull(a.scg_id,'') as scg_id,a.create_by,a.create_time,ifnull(a.edit_by,'') as edit_by,ifnull(a.edit_time,'') as edit_time,ifnull(a.confirm_by,'') as confirm_by,ifnull(a.confirm_time,'') as confirm_time,ifnull(a.cancel_by,'') as cancel_by,ifnull(a.cancel_time,'') as cancel_time,a.cancel_desc_id,ifnull(a.cancel_desc,'') as cancel_desc     from ar_invoice a left join Customer b on a.ar_id = b.id left join Sale c on a.sale_id = c.id where a.id=?`
+	err = repo.db.Get(&i, sql, req.Id)
+	fmt.Println("sql = ",sql)
+	if err != nil {
+		fmt.Println("err = ", err.Error())
+		return resp, err
+	}
+
+	inv_resp := map_invoice_template(i)
+
+	fmt.Println("CompanyId,BranchId,Uuid", i.CompanyId, i.BranchId, i.Uuid)
+
+	//subs := []NewInvoiceItemModel{}
+	//
+	//sql_sub := `select id,inv_id,item_id,ifnull(item_code,'') as item_code,ifnull(bar_code,'') as bar_code,ifnull(item_name,'') as item_name,wh_id,shelf_id,qty,cn_qty,ifnull(unit_code,'') as unit_code,price,ifnull(discount_word_sub,'') as discount_word_sub,discount_amount_sub,amount,net_amount,average_cost,sum_of_cost,ifnull(item_decription,'') as item_decription,is_cancel,is_credit_note,is_debit_note,packing_rate_1,packing_rate_2,ifnull(ref_no,'') as ref_no,ref_line_number,line_number from ar_invoice_sub where inv_id = ?`
+	//err = repo.db.Select(&subs, sql_sub, req.Id)
+	//if err != nil {
+	//	fmt.Println("err = ", err.Error())
+	//	return resp, err
+	//}
+
+	//crds := []CreditCardModel{}
+	//sql_crd := `select id, ref_id, credit_card_no, credit_type, confirm_no, amount, charge_amount, ifnull(description,'') as description, bank_id, bank_branch_id,receive_date,due_date,book_id from credit_card where company_id = ? and branch_id = ? and ref_id=?`
+	//err = repo.db.Select(&crds, sql_crd, i.CompanyId, i.BranchId, req.Id)
+	//if err != nil {
+	//	fmt.Println("err sub= ", err.Error())
+	//	return resp, err
+	//}
+
+	//for _, crd := range crds {
+	//	crd_line := map_deposit_crd_template(crd)
+	//	dp_resp.CreditCard = append(dp_resp.CreditCard, crd_line)
+	//}
+
+	//chqs := []ChqInModel{}
+	//sql_chq := `select id,ref_id,chq_number,bank_id,bank_branch_id,receive_date,due_date,book_id,chq_status,chq_amount,chq_balance,description from chq_in where company_id = ? and branch_id = ? and ref_id = ? `
+	//err = repo.db.Select(&chqs, sql_chq, i.CompanyId, i.BranchId, i.Id)
+	//if err != nil {
+	//	fmt.Println("err sub= ", err.Error())
+	//	return resp, err
+	//}
+
+	//for _, chq := range chqs {
+	//	chq_line := map_deposit_chq_template(chq)
+	//	dp_resp.Chq = append(dp_resp.Chq, chq_line)
+	//}
+
+	return inv_resp, nil
+}
+
+func map_invoice_template(x NewInvoiceModel) sales.NewInvoiceTemplate {
+	return sales.NewInvoiceTemplate{
+		AllocateId:          x.AllocateId,
+		ArCode:              x.ArCode,
+		ArId:                x.ArId,
+		ArName:              x.ArName,
+		ArBillAddress:       x.ArBillAddress,
+		ArTelephone:         x.ArTelephone,
+		BeforeTaxAmount:     x.BeforeTaxAmount,
+		BranchId:            x.BranchId,
+		BillType:            x.BillType,
+		SumBankAmount:       x.SumBankAmount,
+		BillBalance:         x.BillBalance,
+		ConfirmTime:         x.ConfirmTime,
+		ConfirmBy:           x.ConfirmBy,
+		CancelBy:            x.CancelBy,
+		CancelTime:          x.CancelTime,
+		CompanyId:           x.CompanyId,
+		CreateBy:            x.CreateBy,
+		CreateTime:          x.CreateTime,
+		CreditDay:           x.CreditDay,
+		SumChqAmount:        x.SumChqAmount,
+		SumCreditAmount:     x.SumCreditAmount,
+		SumCashAmount:       x.SumCashAmount,
+		DocNo:               x.DocNo,
+		DocDate:             x.DocDate,
+		DepartId:            x.DepartId,
+		DueDate:             x.DueDate,
+		EditTime:            x.EditTime,
+		EditBy:              x.EditBy,
+		Id:                  x.Id,
+		IsCancel:            x.IsCancel,
+		IsConfirm:           x.IsConfirm,
+		IsCreditNote:        x.IsCreditNote,
+		IsDebitNote:         x.IsDebitNote,
+		JobNo:               x.JobNo,
+		MyDescription:       x.MyDescription,
+		NetDebtAmount:       x.NetDebtAmount,
+		ProjectId:           x.ProjectId,
+		SoRefNo:             x.SoRefNo,
+		SaleName:            x.SaleName,
+		SaleId:              x.SaleId,
+		SaleCode:            x.SaleCode,
+		ScgId:               x.ScgId,
+		TaxType:             x.TaxType,
+		TaxRate:             x.TaxRate,
+		TaxAmount:           x.TaxAmount,
+		TotalAmount:         x.TotalAmount,
+		TaxNo:               x.TaxNo,
+		Uuid:                x.Uuid,
+		AfterDiscountAmount: x.AfterDiscountAmount,
+		CarLicense:          x.CarLicense,
+		CashId:              x.CashId,
+		ChangeAmount:        x.ChangeAmount,
+		CouponAmount:        x.CouponAmount,
+		CancelDesc:          x.CancelDesc,
+		CancelDescId:        x.CancelDescId,
+		CouponNo:            x.CouponNo,
+		DiscountAmount:      x.DiscountAmount,
+		DiscountWord:        x.DiscountWord,
+		DeliveryDate:        x.DeliveryDate,
+		DeliveryDay:         x.DeliveryDay,
+		DeliveryStatus:      x.DeliveryStatus,
+		GlStatus:            x.GlStatus,
+		IsConditionSend:     x.IsConditionSend,
+		IsPosted:            x.IsPosted,
+		IsHold:              x.IsHold,
+		JobId:               x.JobId,
+		NumberOfItem:        x.NumberOfItem,
+		PosMachineId:        x.PosMachineId,
+		PosStatus:           x.PosStatus,
+		PeriodId:            x.PeriodId,
+		PayBillAmount:       x.PayBillAmount,
+		PayBillStatus:       x.PayBillStatus,
+		ReceiveName:         x.ReceiveName,
+		ReceiveTel:          x.ReceiveTel,
+		RedeemNo:            x.RedeemNo,
+		SumOfItemAmount:     x.SumOfItemAmount,
+		ScgNumber:           x.ScgNumber,
+		SumOfDeposit:        x.SumOfDeposit,
+		SumOnLineAmount:     x.SumOnLineAmount,
+		//Subs:                subs,
+		//RecMoney:            recmoneys,
+		//CreditCard:          crds,
+		//Chq:                 chqs,
 	}
 }

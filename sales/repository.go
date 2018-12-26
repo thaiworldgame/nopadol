@@ -10,4 +10,5 @@ type Repository interface {
 	SearchDepositById(req *SearchByIdTemplate) (interface{}, error)
 	SearchDepositByKeyword(req *SearchByKeywordTemplate) (interface{}, error)
 	SearchReserveToDeposit(req *SearchByKeywordTemplate) (interface{}, error)
+	SearchInvoiceById(req *SearchByIdTemplate) (interface{}, error)
 }
