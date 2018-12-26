@@ -19,11 +19,12 @@ type (
 	}
 
 	SearchCustomerResponse struct {
-		CustomerId        int64  `json:"customer_id"`
-		CustomerCode      string `json:"customer_code"`
-		CustomerName      string `json:"customer_name"`
-		CustomerAddress   string `json:"customer_address"`
-		CustomerTelephone string `json:"customer_telephone"`
+		Id         int64  `json:"id"`
+		Code       string `json:"code"`
+		Name       string `json:"name"`
+		Address    string `json:"address"`
+		Telephone  string `json:"telephone"`
+		BillCredit int64  `json:"bill_credit"`
 	}
 )
 
@@ -42,7 +43,7 @@ func SearchById(s Service) interface{} {
 
 func SearchByKeyword(s Service) interface{} {
 	return func(ctx context.Context, req *SearchByKeywordRequest) (interface{}, error) {
-		resp, err := s.SearchByKeyword(&SearchByKeywordTemplate{Keyword:req.Keyword})
+		resp, err := s.SearchByKeyword(&SearchByKeywordTemplate{Keyword: req.Keyword})
 		if err != nil {
 			fmt.Println("endpoint error ", err.Error())
 			return nil, fmt.Errorf(err.Error())

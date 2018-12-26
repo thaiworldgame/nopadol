@@ -24,4 +24,3 @@ func (saleRepository) SetField3(ctx context.Context, entityID string, field3 int
 	return nil
 }
 
-

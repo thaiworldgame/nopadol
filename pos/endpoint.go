@@ -5,10 +5,6 @@ import (
 	"fmt"
 )
 
-//type Endpoint interface {
-//	New(context.Context, NewPosRequest) (*NewPosResponse, error)
-//	SearchById(context.Context, *SearchPosByIdRequest) (*SearchPosByIdResponse, error)
-//}
 
 type (
 	NewPosRequest struct {
@@ -219,7 +215,6 @@ func SearchById(s Service) interface{} {
 		}, nil
 	}
 }
-
 
 func map_search_pos_response(x SearchPosByIdResponseTemplate) SearchPosByIdResponse {
 	return SearchPosByIdResponse{
