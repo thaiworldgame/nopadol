@@ -26,6 +26,8 @@ import (
 	envservice "github.com/mrtomyum/nopadol/environment"
 	configservice "github.com/mrtomyum/nopadol/companyconfig"
 	p9service "github.com/mrtomyum/nopadol/p9"
+	sync "github.com/mrtomyum/nopadol/dataimport"
+
 )
 
 var mysql_np *sqlx.DB
@@ -182,6 +184,9 @@ func main() {
 	p9Repo := mysqldb.NewP9Repository(mysql_np)
 	p9Service := p9service.New(p9Repo)
 
+	syncRepo := mysqldb.NewSyncRepository(mysql_np)
+	syncService := sync.New(syncRepo)
+
 	mux := http.NewServeMux()
 	mux.Handle("/delivery/", http.StripPrefix("/delivery", delivery.MakeHandler(doService)))
 	mux.Handle("/customer/", http.StripPrefix("/customer/v1", customerservice.MakeHandler(customerService)))
@@ -196,6 +201,9 @@ func main() {
 	mux.Handle("/config/",http.StripPrefix("/config/v1", configservice.MakeHandler(configService)))
 
 	mux.Handle("/p9/",http.StripPrefix("/p9/v1", p9service.MakeHandler(p9Service)))
+
+	mux.Handle("/import/",http.StripPrefix("/import/v1", sync.MakeHandler(syncService)))
+
 
 	http.ListenAndServe(":8081", mux)
 }

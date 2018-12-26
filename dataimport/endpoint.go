@@ -1,4 +1,4 @@
-package sync
+package dataimport
 
 import (
 	"context"
@@ -11,7 +11,7 @@ func makeCreateProductEndpoint(s Service) interface{} {
 		product.ProductTemplate
 	}
 	return func(ctx context.Context, req *itemUpdateRequest) (interface{}, error) {
-		resp, err := s.ProductUpdate(req)
+		resp, err := s.ProductUpdate(req.ProductTemplate)
 		if err != nil {
 			fmt.Println("endpoint error =", err.Error())
 			return nil, fmt.Errorf(err.Error())

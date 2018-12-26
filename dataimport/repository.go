@@ -1,4 +1,4 @@
-package sync
+package dataimport
 
 import "github.com/mrtomyum/nopadol/product"
 
