@@ -29,6 +29,8 @@ func MakeHandler(s Service) http.Handler {
 
 	mux := http.NewServeMux()
 	mux.Handle("/search/barcode", m.Handler(SearchByBarcode(s)))
+	mux.Handle("/search/itemcode", m.Handler(SearchByItemCode(s)))
+	mux.Handle("/search/itemstock", m.Handler(SearchByItemStockLocation(s)))
 	mux.Handle("/search/keyword", m.Handler(SearchByKeyword(s)))
 	return mustLogin()(mux)
 }
@@ -71,9 +73,9 @@ func errorEncoder(w http.ResponseWriter, r *http.Request, err error) {
 	fmt.Println("Error Encode = ", err)
 	switch err.Error() {
 	case StatusNotFound.Error():
-		status = http.StatusNotFound
+		status = http.StatusOK
 	default:
-		status = http.StatusNoContent
+		status = http.StatusOK
 	}
 
 	encoder(w, status, &errorResponse{err.Error()})

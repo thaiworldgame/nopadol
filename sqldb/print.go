@@ -207,7 +207,7 @@ func (repo *printRepository) PosSlip(req *print.PosSlipRequestTemplate) (resp in
 	pt.SetFont("A")
 	pt.WriteStringLines(" " + strconv.Itoa(int(CountItem)) + " รายการ " + strconv.Itoa(int(CountQty)) + " ชิ้น\n")
 	pt.WriteStringLines("TOTAL: ")
-	pt.WriteStringLines("                           ")
+	pt.WriteStringLines("                          ")
 	//pt.WriteStringLines(strconv.FormatFloat(s.TotalAmount, 'f', 2, 64)+"\n")
 	pt.WriteStringLines(CommaFloat(s.NetDebtAmount) + "\n")
 	////////////////////////////////////////////////////////////////////////////////////
@@ -215,16 +215,16 @@ func (repo *printRepository) PosSlip(req *print.PosSlipRequestTemplate) (resp in
 	//pt.WriteStringLines(" มูลค่าสินค้ามีภาษีมูลค่าเพิ่ม"+"                       "+Commaf(vBeforeTaxAmount)+"\n")
 	//pt.WriteStringLines(" ภาษีมูลค่าเพิ่ม"+strconv.Itoa(c.TaxRate)+"%"+"                                "+Commaf(vTaxAmount)+"\n")
 	if (s.CoupongAmount != 0) {
-		pt.WriteStringLines("COUPON: " + "                          " + CommaFloat(s.CoupongAmount) + "\n")
+		pt.WriteStringLines("COUPON: " + "                         " + CommaFloat(s.CoupongAmount) + "\n")
 	}
 	if (s.SumCashAmount != 0) {
-		pt.WriteStringLines("CASH: " + "                            " + CommaFloat(s.SumCashAmount) + "\n")
+		pt.WriteStringLines("CASH: " + "                           " + CommaFloat(s.SumCashAmount) + "\n")
 	}
 	if (s.SumCreditAmount != 0) {
-		pt.WriteStringLines("CREDIT: " + "                          " + CommaFloat(s.SumCreditAmount) + "\n")
+		pt.WriteStringLines("CREDIT: " + "                         " + CommaFloat(s.SumCreditAmount) + "\n")
 	}
 	if (s.ChangeAmount != 0) {
-		pt.WriteStringLines("CHANGE: " + "                            " + CommaFloat(s.ChangeAmount) + "\n")
+		pt.WriteStringLines("CHANGE: " + "                         " + CommaFloat(s.ChangeAmount) + "\n")
 	}
 
 	pt.SetFont("A")
@@ -243,14 +243,14 @@ func (repo *printRepository) PosSlip(req *print.PosSlipRequestTemplate) (resp in
 }
 
 func (repo *printRepository) PosDriveThruSlip(req *print.PosDriveThruSlipRequestTemplate) (resp interface{}, err error) {
-	sql_db, err := SqlConn("192.168.2.100", "POS_Test", "vbuser", "132")
+	sql_db, err := SqlConn("192.168.2.100", "POS", "vbuser", "132")
 	if err != nil {
 		fmt.Println(err.Error())
 		return nil, err
 	}
 	sql_dbc = sql_db
 
-	host := "192.168.0.247:9100"
+	host := "192.168.2.11:9100"
 
 	f, err := net.Dial("tcp", host)
 	if err != nil {
@@ -357,7 +357,7 @@ func (repo *printRepository) PosDriveThruSlip(req *print.PosDriveThruSlipRequest
 	pt.SetFont("A")
 	pt.WriteStringLines(" " + strconv.Itoa(int(CountItem)) + " รายการ " + strconv.Itoa(int(CountQty)) + " ชิ้น\n")
 	pt.WriteStringLines("TOTAL: ")
-	pt.WriteStringLines("                           ")
+	pt.WriteStringLines("                          ")
 	//pt.WriteStringLines(strconv.FormatFloat(s.TotalAmount, 'f', 2, 64)+"\n")
 	pt.WriteStringLines(CommaFloat(s.NetDebtAmount) + "\n")
 	////////////////////////////////////////////////////////////////////////////////////
@@ -365,16 +365,16 @@ func (repo *printRepository) PosDriveThruSlip(req *print.PosDriveThruSlipRequest
 	//pt.WriteStringLines(" มูลค่าสินค้ามีภาษีมูลค่าเพิ่ม"+"                       "+Commaf(vBeforeTaxAmount)+"\n")
 	//pt.WriteStringLines(" ภาษีมูลค่าเพิ่ม"+strconv.Itoa(c.TaxRate)+"%"+"                                "+Commaf(vTaxAmount)+"\n")
 	if (s.CoupongAmount != 0) {
-		pt.WriteStringLines("COUPON: " + "                          " + CommaFloat(s.CoupongAmount) + "\n")
+		pt.WriteStringLines("COUPON: " + "                         " + CommaFloat(s.CoupongAmount) + "\n")
 	}
 	if (s.SumCashAmount != 0) {
-		pt.WriteStringLines("CASH: " + "                            " + CommaFloat(s.SumCashAmount) + "\n")
+		pt.WriteStringLines("CASH: " + "                           " + CommaFloat(s.SumCashAmount) + "\n")
 	}
 	if (s.SumCreditAmount != 0) {
-		pt.WriteStringLines("CREDIT: " + "                          " + CommaFloat(s.SumCreditAmount) + "\n")
+		pt.WriteStringLines("CREDIT: " + "                         " + CommaFloat(s.SumCreditAmount) + "\n")
 	}
 	if (s.ChangeAmount != 0) {
-		pt.WriteStringLines("CHANGE: " + "                            " + CommaFloat(s.ChangeAmount) + "\n")
+		pt.WriteStringLines("CHANGE: " + "                         " + CommaFloat(s.ChangeAmount) + "\n")
 	}
 
 	pt.SetFont("A")
@@ -396,7 +396,7 @@ func (repo *printRepository) PosDriveThruSlip(req *print.PosDriveThruSlipRequest
 
 func (repo *printRepository) PosDriveThruSlipCopy(req PosSlipModel) () {
 
-	host := "192.168.0.247:9100"
+	host := "192.168.2.12:9100"
 
 	f, err := net.Dial("tcp", host)
 	if err != nil {
@@ -484,7 +484,7 @@ func (repo *printRepository) PosDriveThruSlipCopy(req PosSlipModel) () {
 	pt.SetFont("A")
 	pt.WriteStringLines(" " + strconv.Itoa(int(CountItem)) + " รายการ " + strconv.Itoa(int(CountQty)) + " ชิ้น\n")
 	pt.WriteStringLines("TOTAL: ")
-	pt.WriteStringLines("                           ")
+	pt.WriteStringLines("                          ")
 	//pt.WriteStringLines(strconv.FormatFloat(s.TotalAmount, 'f', 2, 64)+"\n")
 	pt.WriteStringLines(CommaFloat(req.NetDebtAmount) + "\n")
 	////////////////////////////////////////////////////////////////////////////////////
@@ -492,16 +492,16 @@ func (repo *printRepository) PosDriveThruSlipCopy(req PosSlipModel) () {
 	//pt.WriteStringLines(" มูลค่าสินค้ามีภาษีมูลค่าเพิ่ม"+"                       "+Commaf(vBeforeTaxAmount)+"\n")
 	//pt.WriteStringLines(" ภาษีมูลค่าเพิ่ม"+strconv.Itoa(c.TaxRate)+"%"+"                                "+Commaf(vTaxAmount)+"\n")
 	if (req.CoupongAmount != 0) {
-		pt.WriteStringLines("COUPON: " + "                          " + CommaFloat(req.CoupongAmount) + "\n")
+		pt.WriteStringLines("COUPON: " + "                         " + CommaFloat(req.CoupongAmount) + "\n")
 	}
 	if (req.SumCashAmount != 0) {
-		pt.WriteStringLines("CASH: " + "                            " + CommaFloat(req.SumCashAmount) + "\n")
+		pt.WriteStringLines("CASH: " + "                           " + CommaFloat(req.SumCashAmount) + "\n")
 	}
 	if (req.SumCreditAmount != 0) {
-		pt.WriteStringLines("CREDIT: " + "                          " + CommaFloat(req.SumCreditAmount) + "\n")
+		pt.WriteStringLines("CREDIT: " + "                         " + CommaFloat(req.SumCreditAmount) + "\n")
 	}
 	if (req.ChangeAmount != 0) {
-		pt.WriteStringLines("CHANGE: " + "                            " + CommaFloat(req.ChangeAmount) + "\n")
+		pt.WriteStringLines("CHANGE: " + "                         " + CommaFloat(req.ChangeAmount) + "\n")
 	}
 
 	pt.SetFont("A")

@@ -80,13 +80,13 @@ func errorEncoder(w http.ResponseWriter, r *http.Request, err error) {
 	fmt.Println("Error Encode = ", err)
 	switch err.Error() {
 	case StatusNotFound.Error():
-		status = http.StatusConflict
+		status = http.StatusOK
 	case ErrMethodNotAllowed.Error():
-		status = http.StatusMethodNotAllowed
+		status = http.StatusOK
 	case ErrForbidden.Error():
-		status = http.StatusForbidden
+		status = http.StatusOK
 	default:
-		status = http.StatusNoContent
+		status = http.StatusOK
 	}
 
 	encoder(w, status, &errorResponse{err.Error()})

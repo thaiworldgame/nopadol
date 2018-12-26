@@ -41,9 +41,9 @@ func (pd *productRepository) SearchByBarcode(req *product.SearchByBarcodeTemplat
 		"item_name": pdt_resp.ItemName,
 		"barcode":   pdt_resp.BarCode,
 		"unit_code": pdt_resp.UnitCode,
-		"price":     pdt_resp.Price,
+		"price":     pdt_resp.SalePrice1 ,
 		"rate1":     pdt_resp.Rate1,
-		"pic_path":  pdt_resp.PicPath,
+		"pic_path":  pdt_resp.PicPath1,
 	}, nil
 	//return pdt_resp, nil
 }
@@ -70,13 +70,14 @@ func (pd *productRepository) SearchByKeyword(req *product.SearchByKeywordTemplat
 
 func map_product_template(x ProductModel) product.ProductTemplate {
 	return product.ProductTemplate{
-		Id:       x.Id,
-		BarCode:  x.BarCode,
-		ItemCode: x.ItemCode,
-		ItemName: x.ItemName,
-		Price:    x.Price,
-		UnitCode: x.UnitCode,
-		Rate1:    x.Rate1,
-		PicPath:  x.PicPath,
+		Id:         x.Id,
+		BarCode:    x.BarCode,
+		ItemCode:   x.ItemCode,
+		ItemName:   x.ItemName,
+		SalePrice1: x.Price,
+		SalePrice2: x.Price,
+		UnitCode:   x.UnitCode,
+		Rate1:      x.Rate1,
+		PicPath1:   x.PicPath,
 	}
 }
