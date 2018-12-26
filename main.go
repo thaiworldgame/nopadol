@@ -23,9 +23,16 @@ import (
 	posservice "github.com/mrtomyum/nopadol/pos"
 	"github.com/mrtomyum/nopadol/posconfig"
 	posconfigservice "github.com/mrtomyum/nopadol/posconfig"
-	"github.com/mrtomyum/nopadol/print"
-	"log"
-	"github.com/mrtomyum/nopadol/sqldb"
+
+	printservice "github.com/mrtomyum/nopadol/print"
+	salesservice "github.com/mrtomyum/nopadol/sales"
+	gendocnoservice "github.com/mrtomyum/nopadol/gendocno"
+	envservice "github.com/mrtomyum/nopadol/environment"
+	configservice "github.com/mrtomyum/nopadol/companyconfig"
+	p9service "github.com/mrtomyum/nopadol/p9"
+	sync "github.com/mrtomyum/nopadol/dataimport"
+
+
 )
 
 var mysql_dbc *sqlx.DB
@@ -115,13 +122,6 @@ func ConnectNebula() (msdb *sqlx.DB, err error) {
 
 func main() {
 
-	//// Attemping to establish a connection to the database.
-	//sess, err := mssql.Open(settings)
-	//if err != nil {
-	//	log.Fatalf("db.Open(): %q\n", err)
-	//}
-	//defer sess.Close() // Remember to close the database session.
-	// Postgresql  Connect
 	pgConn := fmt.Sprintf("dbname=%s user=%s password=%s host=%s port=%s sslmode=%s",
 		pgDbName, pgDbUser, pgDbPass, pgDbHost, pgDbPort, pgSSLMode)
 
@@ -171,6 +171,9 @@ func main() {
 	printRepo := sqldb.NewPrintRepository(sql_dbc)
 	printService := print.New(printRepo)
 
+	syncRepo := mysqldb.NewSyncRepository(mysql_np)
+	syncService := sync.New(syncRepo)
+
 	mux := http.NewServeMux()
 	//mux.Handle("/","")
 	mux.Handle("/sale/", http.StripPrefix("/sale", sale.NewHTTPTransport(saleEndpoint)))
@@ -186,6 +189,9 @@ func main() {
 	mux.Handle("/posconfig/", http.StripPrefix("/posconfig/v1", posconfig.MakeHandler(posconfigService)))
 	mux.Handle("/pos/", http.StripPrefix("/pos/v1", pos.MakeHandler(posService)))
 	mux.Handle("/print/", http.StripPrefix("/print/v1", print.MakeHandler(printService)))
+
+	mux.Handle("/import/",http.StripPrefix("/import/v1", sync.MakeHandler(syncService)))
+
 
 	http.ListenAndServe(":8081", mux)
 }
