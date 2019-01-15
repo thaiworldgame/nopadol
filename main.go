@@ -27,6 +27,8 @@ import (
 	configservice "github.com/mrtomyum/nopadol/companyconfig"
 	pointofsaleservice "github.com/mrtomyum/nopadol/pointofsale"
 
+	drivethruservice "github.com/mrtomyum/nopadol/drivethru"
+
 )
 
 var mysql_np *sqlx.DB
@@ -196,6 +198,9 @@ func main() {
 	pointofsaleRepo := mysqldb.NewPointOfSaleRepository(mysql_np)
 	pointofsaleService := pointofsaleservice.New(pointofsaleRepo)
 
+	drivethruRepo := mysqldb.NewDriveThruRepository(mysql_np)
+	drivethruService := drivethruservice.New(drivethruRepo)
+
 	mux := http.NewServeMux()
 	mux.Handle("/delivery/", http.StripPrefix("/delivery", delivery.MakeHandler(doService)))
 	mux.Handle("/customer/", http.StripPrefix("/customer/v1", customerservice.MakeHandler(customerService)))
@@ -208,6 +213,7 @@ func main() {
 	mux.Handle("/gendocno/", http.StripPrefix("/gendocno/v1", gendocnoservice.MakeHandler(gendocnoService)))
 	mux.Handle("/env/",http.StripPrefix("/env/v1",envservice.MakeHandler(envService)))
 	mux.Handle("/config/",http.StripPrefix("/config/v1", configservice.MakeHandler(configService)))
+	mux.Handle("/drivethru/",http.StripPrefix("/drivethru/v3",drivethruservice.MakeHandler(drivethruService)))
 
 	//mux.Handle("/p9/",http.StripPrefix("/p9/v1", p9service.MakeHandler(p9Service)))
 	mux.Handle("/pointofsale/",http.StripPrefix("/pointofsale/v1", pointofsaleservice.MakeHandler(pointofsaleService)))
