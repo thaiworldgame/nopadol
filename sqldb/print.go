@@ -1,17 +1,17 @@
 package sqldb
 
 import (
+	"bufio"
+	"bytes"
+	"fmt"
 	"github.com/jmoiron/sqlx"
+	"github.com/knq/escpos"
+	"github.com/mrtomyum/nopadol/hw"
+	"github.com/mrtomyum/nopadol/pos"
 	"github.com/mrtomyum/nopadol/print"
 	"strconv"
-	"bufio"
-	"github.com/knq/escpos"
-	"fmt"
 	"strings"
 	"time"
-	"github.com/mrtomyum/nopadol/hw"
-	"bytes"
-	"github.com/mrtomyum/nopadol/pos"
 	//"os"
 	"net"
 )
@@ -108,8 +108,8 @@ func (repo *printRepository) PosSlip(req *print.PosSlipRequestTemplate) (resp in
 	defer f.Close()
 
 	w := bufio.NewWriter(f)
-	p := escpos.New(w)
-
+	//p := escpos.New(w)
+	p := escpos.New(f)
 	s := PosSlipModel{}
 
 	sql := `select a.roworder as Id,a.DocNo,a.DocDate,isnull(a.TaxNo,'') as TaxNo,isnull(a.docdate,'') as TaxDate,a.PosStatus,a.ArCode,isnull(b.name1,'') as ArName,a.SaleCode,isnull(c.name,'') as SaleName,isnull(ShiftCode,'') as ShiftCode,CashierCode,isnull(ShiftNo,'') as ShiftNo,isnull(MachineNo,'') as MachineNo,isnull(MachineCode,'') as MachineCode,CoupongAmount,ChangeAmount,ChargeAmount,a.TaxType,SumOfItemAmount,isnull(a.DiscountWord,'') as DiscountWord,AfterDiscount,BeforeTaxAmount,TaxAmount,TotalAmount ,SumCashAmount,SumChqAmount,SumCreditAmount,SumBankAmount,'' as BankNo,NetDebtAmount,IsCancel,IsConfirm,isnull(a.CreatorCode,'') as CreatorCode,isnull(a.CreateDateTime,'') as CreateDateTime,isnull(a.LastEditorCode,'') as LastEditorCode,isnull(a.LastEditDateT,'') as LastEditDateT from dbo.bcarinvoice a  left join dbo.bcar b on a.arcode = b.code left join dbo.bcsale c  on a.salecode = c.code where a.docno = ?`
@@ -187,7 +187,7 @@ func (repo *printRepository) PosSlip(req *print.PosSlipRequestTemplate) (resp in
 		vLen := len(vItemPriceAmount)
 		vDiff := 25 - (vLen / 3)
 
-		if (vDiff < 0) {
+		if vDiff < 0 {
 			vDiffEmpty = 0
 		} else {
 			vDiffEmpty = vDiff
@@ -214,16 +214,16 @@ func (repo *printRepository) PosSlip(req *print.PosSlipRequestTemplate) (resp in
 	pt.SetFont("A")
 	//pt.WriteStringLines(" มูลค่าสินค้ามีภาษีมูลค่าเพิ่ม"+"                       "+Commaf(vBeforeTaxAmount)+"\n")
 	//pt.WriteStringLines(" ภาษีมูลค่าเพิ่ม"+strconv.Itoa(c.TaxRate)+"%"+"                                "+Commaf(vTaxAmount)+"\n")
-	if (s.CoupongAmount != 0) {
+	if s.CoupongAmount != 0 {
 		pt.WriteStringLines("COUPON: " + "                         " + CommaFloat(s.CoupongAmount) + "\n")
 	}
-	if (s.SumCashAmount != 0) {
+	if s.SumCashAmount != 0 {
 		pt.WriteStringLines("CASH: " + "                           " + CommaFloat(s.SumCashAmount) + "\n")
 	}
-	if (s.SumCreditAmount != 0) {
+	if s.SumCreditAmount != 0 {
 		pt.WriteStringLines("CREDIT: " + "                         " + CommaFloat(s.SumCreditAmount) + "\n")
 	}
-	if (s.ChangeAmount != 0) {
+	if s.ChangeAmount != 0 {
 		pt.WriteStringLines("CHANGE: " + "                         " + CommaFloat(s.ChangeAmount) + "\n")
 	}
 
@@ -259,8 +259,8 @@ func (repo *printRepository) PosDriveThruSlip(req *print.PosDriveThruSlipRequest
 	defer f.Close()
 
 	w := bufio.NewWriter(f)
-	p := escpos.New(w)
-
+	//p := escpos.New(w)
+	p := escpos.New(f)
 	s := PosSlipModel{}
 
 	sql := `select a.roworder as Id,a.DocNo,a.DocDate,isnull(a.TaxNo,'') as TaxNo,isnull(a.docdate,'') as TaxDate,a.PosStatus,a.ArCode,isnull(b.name1,'') as ArName,a.SaleCode,isnull(c.name,'') as SaleName,isnull(ShiftCode,'') as ShiftCode,CashierCode,isnull(ShiftNo,'') as ShiftNo,isnull(MachineNo,'') as MachineNo,isnull(MachineCode,'') as MachineCode,CoupongAmount,ChangeAmount,ChargeAmount,a.TaxType,SumOfItemAmount,isnull(a.DiscountWord,'') as DiscountWord,AfterDiscount,BeforeTaxAmount,TaxAmount,TotalAmount ,SumCashAmount,SumChqAmount,SumCreditAmount,SumBankAmount,'' as BankNo,NetDebtAmount,IsCancel,IsConfirm,isnull(a.CreatorCode,'') as CreatorCode,isnull(a.CreateDateTime,'') as CreateDateTime,isnull(a.LastEditorCode,'') as LastEditorCode,isnull(a.LastEditDateT,'') as LastEditDateT from dbo.bcarinvoice a  left join dbo.bcar b on a.arcode = b.code left join dbo.bcsale c  on a.salecode = c.code where a.docno = ?`
@@ -337,7 +337,7 @@ func (repo *printRepository) PosDriveThruSlip(req *print.PosDriveThruSlipRequest
 		vLen := len(vItemPriceAmount)
 		vDiff := 25 - (vLen / 3)
 
-		if (vDiff < 0) {
+		if vDiff < 0 {
 			vDiffEmpty = 0
 		} else {
 			vDiffEmpty = vDiff
@@ -364,16 +364,16 @@ func (repo *printRepository) PosDriveThruSlip(req *print.PosDriveThruSlipRequest
 	pt.SetFont("A")
 	//pt.WriteStringLines(" มูลค่าสินค้ามีภาษีมูลค่าเพิ่ม"+"                       "+Commaf(vBeforeTaxAmount)+"\n")
 	//pt.WriteStringLines(" ภาษีมูลค่าเพิ่ม"+strconv.Itoa(c.TaxRate)+"%"+"                                "+Commaf(vTaxAmount)+"\n")
-	if (s.CoupongAmount != 0) {
+	if s.CoupongAmount != 0 {
 		pt.WriteStringLines("COUPON: " + "                         " + CommaFloat(s.CoupongAmount) + "\n")
 	}
-	if (s.SumCashAmount != 0) {
+	if s.SumCashAmount != 0 {
 		pt.WriteStringLines("CASH: " + "                           " + CommaFloat(s.SumCashAmount) + "\n")
 	}
-	if (s.SumCreditAmount != 0) {
+	if s.SumCreditAmount != 0 {
 		pt.WriteStringLines("CREDIT: " + "                         " + CommaFloat(s.SumCreditAmount) + "\n")
 	}
-	if (s.ChangeAmount != 0) {
+	if s.ChangeAmount != 0 {
 		pt.WriteStringLines("CHANGE: " + "                         " + CommaFloat(s.ChangeAmount) + "\n")
 	}
 
@@ -394,7 +394,7 @@ func (repo *printRepository) PosDriveThruSlip(req *print.PosDriveThruSlipRequest
 	return req.DocNo, err
 }
 
-func (repo *printRepository) PosDriveThruSlipCopy(req PosSlipModel) () {
+func (repo *printRepository) PosDriveThruSlipCopy(req PosSlipModel) {
 
 	host := "192.168.2.12:9100"
 
@@ -405,8 +405,8 @@ func (repo *printRepository) PosDriveThruSlipCopy(req PosSlipModel) () {
 	defer f.Close()
 
 	w := bufio.NewWriter(f)
-	p := escpos.New(w)
-
+	//p := escpos.New(w)
+	p := escpos.New(f)
 	pt := hw.PosPrinter{p, w}
 	pt.Init()
 	pt.SetLeftMargin(20)
@@ -464,7 +464,7 @@ func (repo *printRepository) PosDriveThruSlipCopy(req PosSlipModel) () {
 		vLen := len(vItemPriceAmount)
 		vDiff := 25 - (vLen / 3)
 
-		if (vDiff < 0) {
+		if vDiff < 0 {
 			vDiffEmpty = 0
 		} else {
 			vDiffEmpty = vDiff
@@ -491,16 +491,16 @@ func (repo *printRepository) PosDriveThruSlipCopy(req PosSlipModel) () {
 	pt.SetFont("A")
 	//pt.WriteStringLines(" มูลค่าสินค้ามีภาษีมูลค่าเพิ่ม"+"                       "+Commaf(vBeforeTaxAmount)+"\n")
 	//pt.WriteStringLines(" ภาษีมูลค่าเพิ่ม"+strconv.Itoa(c.TaxRate)+"%"+"                                "+Commaf(vTaxAmount)+"\n")
-	if (req.CoupongAmount != 0) {
+	if req.CoupongAmount != 0 {
 		pt.WriteStringLines("COUPON: " + "                         " + CommaFloat(req.CoupongAmount) + "\n")
 	}
-	if (req.SumCashAmount != 0) {
+	if req.SumCashAmount != 0 {
 		pt.WriteStringLines("CASH: " + "                           " + CommaFloat(req.SumCashAmount) + "\n")
 	}
-	if (req.SumCreditAmount != 0) {
+	if req.SumCreditAmount != 0 {
 		pt.WriteStringLines("CREDIT: " + "                         " + CommaFloat(req.SumCreditAmount) + "\n")
 	}
-	if (req.ChangeAmount != 0) {
+	if req.ChangeAmount != 0 {
 		pt.WriteStringLines("CHANGE: " + "                         " + CommaFloat(req.ChangeAmount) + "\n")
 	}
 
