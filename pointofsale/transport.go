@@ -1,10 +1,10 @@
-package sales
+package pointofsale
 
 import (
 	"net/http"
+	"github.com/acoshift/hrpc"
 	"encoding/json"
 	"fmt"
-	"github.com/acoshift/hrpc"
 )
 
 type errorResponse struct {
@@ -26,19 +26,9 @@ func MakeHandler(s Service) http.Handler {
 		ErrorEncoder:    errorEncoder,
 	})
 	mux := http.NewServeMux()
-	mux.Handle("/quo/new",m.Handler(CreateQuotation(s)))
-	mux.Handle("/quo/search/id", m.Handler(SearchQuoById(s)))
-	mux.Handle("/sale/new", m.Handler(CreateSaleOrder(s)))
-	mux.Handle("/sale/search/id", m.Handler(SearchSaleOrderById(s)))
-	mux.Handle("/sale/doc/search",m.Handler(SearchDocByKeyword(s)))
-	mux.Handle("/dep/new",m.Handler(CreateDeposit(s)))
-	mux.Handle("/dep/search/id", m.Handler(SearchDepositById(s)))
-	mux.Handle("/dep/search/keyword",m.Handler(SearchDepositByKeyword(s)))
-	mux.Handle("/dep/reserve/search",m.Handler(SearchReserveToDeposit(s)))
-	mux.Handle("/inv/search/id",m.Handler(SearchInvoiceById(s)))
-	mux.Handle("/inv/new", m.Handler(CreateInvoice(s)))
+	mux.Handle("/basket/new", m.Handler(Create(s)))
+	mux.Handle("/basket/pickup",m.Handler(ManageBasket(s)))
 	return mustLogin()(mux)
-
 }
 
 func mustLogin() func(http.Handler) http.Handler {
@@ -46,7 +36,6 @@ func mustLogin() func(http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			enableCors(&w)
 			h.ServeHTTP(w, r)
-
 		})
 	}
 }
@@ -56,8 +45,6 @@ func jsonDecoder(r *http.Request, v interface{}) error {
 }
 
 func jsonEncoder(w http.ResponseWriter, status int, v interface{}) error {
-	w.Header().Set("Content-Type", "application/json; charset=utf-8")
-	w.Header().Set("Access-Control-Allow-Origin", "*")
 	w.WriteHeader(status)
 	return json.NewEncoder(w).Encode(v)
 }
@@ -78,37 +65,38 @@ func responseEncoder(w http.ResponseWriter, r *http.Request, v interface{}) {
 func errorEncoder(w http.ResponseWriter, r *http.Request, err error) {
 	encoder := jsonEncoder
 
-	var status = http.StatusOK
+	var status = http.StatusNoContent
 
 	fmt.Println("Error Encode = ", err.Error())
 	switch err.Error() {
 	case StatusNotFound.Error():
-		status = http.StatusOK
+		status = http.StatusNotFound
 	case ArCodeNull.Error():
-		status = http.StatusOK
+		status = http.StatusNotFound
 	case NotHaveItem.Error():
-		status = http.StatusOK
+		status = http.StatusNotFound
 	case NotHavePayMoney.Error():
-		status = http.StatusOK
+		status = http.StatusNotFound
 	case NotHaveSumOfItem.Error():
-		status = http.StatusOK
+		status = http.StatusNotFound
 	case ItemNotHaveQty.Error():
-		status = http.StatusOK
+		status = http.StatusNotFound
 	case ItemNotHaveUnit.Error():
-		status = http.StatusOK
+		status = http.StatusNotFound
 	case MoneyOverTotalAmount.Error():
-		status = http.StatusOK
+		status = http.StatusNotFound
 	case MoneyLessThanTotalAmount.Error():
-		status = http.StatusOK
+		status = http.StatusNotFound
 	case PosNotHaveDate.Error():
-		status = http.StatusOK
+		status = http.StatusNotFound
 	case PosNotHaveChqData.Error():
-		status = http.StatusOK
+		status = http.StatusNotFound
 	case PosNotHaveCreditCardData.Error():
-		status = http.StatusOK
+		status = http.StatusNotFound
 	default:
-		status = http.StatusOK
+		status = http.StatusForbidden
 	}
 
 	encoder(w, status, &errorResponse{err.Error()})
+
 }

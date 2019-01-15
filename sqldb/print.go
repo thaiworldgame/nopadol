@@ -239,7 +239,7 @@ func (repo *printRepository) PosSlip(req *print.PosSlipRequestTemplate) (resp in
 	pt.OpenCashBox()
 	pt.End()
 
-	return req.DocNo, err
+	return req.DocNo, nil
 }
 
 func (repo *printRepository) PosDriveThruSlip(req *print.PosDriveThruSlipRequestTemplate) (resp interface{}, err error) {

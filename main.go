@@ -25,7 +25,8 @@ import (
 	gendocnoservice "github.com/mrtomyum/nopadol/gendocno"
 	envservice "github.com/mrtomyum/nopadol/environment"
 	configservice "github.com/mrtomyum/nopadol/companyconfig"
-	p9service "github.com/mrtomyum/nopadol/p9"
+	pointofsaleservice "github.com/mrtomyum/nopadol/pointofsale"
+
 )
 
 var mysql_np *sqlx.DB
@@ -189,8 +190,11 @@ func main() {
 	configRepo := mysqldb.NewConfigRepository(mysql_np)
 	configService := configservice.New(configRepo)
 
-	p9Repo := mysqldb.NewP9Repository(mysql_np)
-	p9Service := p9service.New(p9Repo)
+	//p9Repo := mysqldb.NewP9Repository(mysql_np)
+	//p9Service := p9service.New(p9Repo)
+
+	pointofsaleRepo := mysqldb.NewPointOfSaleRepository(mysql_np)
+	pointofsaleService := pointofsaleservice.New(pointofsaleRepo)
 
 	mux := http.NewServeMux()
 	mux.Handle("/delivery/", http.StripPrefix("/delivery", delivery.MakeHandler(doService)))
@@ -205,7 +209,8 @@ func main() {
 	mux.Handle("/env/",http.StripPrefix("/env/v1",envservice.MakeHandler(envService)))
 	mux.Handle("/config/",http.StripPrefix("/config/v1", configservice.MakeHandler(configService)))
 
-	mux.Handle("/p9/",http.StripPrefix("/p9/v1", p9service.MakeHandler(p9Service)))
+	//mux.Handle("/p9/",http.StripPrefix("/p9/v1", p9service.MakeHandler(p9Service)))
+	mux.Handle("/pointofsale/",http.StripPrefix("/pointofsale/v1", pointofsaleservice.MakeHandler(pointofsaleService)))
 
 	http.ListenAndServe(":8081", mux)
 }
