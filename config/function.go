@@ -5,7 +5,7 @@ import (
 	"math"
 )
 
-func CalcTaxItem(taxtype int, taxrate float64, afterdiscountamount float64) (beforetaxamount float64, taxamount float64, totalamount float64) {
+func CalcTaxItem(taxtype int64, taxrate float64, afterdiscountamount float64) (beforetaxamount float64, taxamount float64, totalamount float64) {
 	switch taxtype {
 	case 0:
 		beforetaxamount = toFixed(afterdiscountamount, 2)
