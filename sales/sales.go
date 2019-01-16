@@ -12,11 +12,11 @@ type NewQuoTemplate struct {
 	ArName              string               `json:"ar_name"`
 	ArBillAddress       string               `json:"ar_bill_address"`
 	ArTelephone         string               `json:"ar_telephone"`
-	SaleId              int                  `json:"sale_id"`
+	SaleId              int64                 `json:"sale_id"`
 	SaleCode            string               `json:"sale_code"`
 	SaleName            string               `json:"sale_name"`
 	BillType            int64                `json:"bill_type"`
-	TaxType             int                  `json:"tax_type"`
+	TaxType             int64                  `json:"tax_type"`
 	TaxRate             float64              `json:"tax_rate"`
 	DepartId            int64                `json:"depart_id"`
 	RefNo               string               `json:"ref_no"`
@@ -85,11 +85,11 @@ type NewSaleTemplate struct {
 	ArName              string                `json:"ar_name"`
 	ArBillAddress       string                `json:"ar_bill_address"`
 	ArTelephone         string                `json:"ar_telephone"`
-	SaleId              int                   `json:"sale_id"`
+	SaleId              int64                   `json:"sale_id"`
 	SaleCode            string                `json:"sale_code"`
 	SaleName            string                `json:"sale_name"`
 	BillType            int64                 `json:"bill_type"`
-	TaxType             int                   `json:"tax_type"`
+	TaxType             int64                   `json:"tax_type"`
 	TaxRate             float64               `json:"tax_rate"`
 	DepartId            int64                 `json:"depart_id"`
 	RefNo               string                `json:"ref_no"`
@@ -392,9 +392,9 @@ type NewInvoiceTemplate struct {
 	CancelDescId        int64                    `json:"cancel_desc_id"`
 	CancelDesc          string                   `json:"cancel_desc"`
 	Subs                []NewInvoiceItemTemplate `json:"subs"`
-	RecMoney            []RecMoney               `json:"rec_money"`
-	CreditCard          []CreditCard             `json:"credit_card"`
-	Chq                 []ChqIn                  `json:"chq"`
+	RecMoney            []RecMoneyTemplate       `json:"rec_money"`
+	CreditCard          []CreditCardTemplate     `json:"credit_card"`
+	Chq                 []ChqInTemplate          `json:"chq"`
 }
 
 type NewInvoiceItemTemplate struct {
