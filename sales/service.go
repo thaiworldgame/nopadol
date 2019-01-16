@@ -24,6 +24,7 @@ type Service interface {
 	SearchDepositById(req *SearchByIdTemplate) (interface{}, error)
 	SearchDepositByKeyword(req *SearchByKeywordTemplate) (interface{}, error)
 	SearchReserveToDeposit(req *SearchByKeywordTemplate) (interface{}, error)
+	CreateInvoice(req *NewInvoiceTemplate) (interface{}, error)
 	SearchInvoiceById(req *SearchByIdTemplate) (interface{}, error)
 }
 
@@ -199,6 +200,31 @@ func (s *service) SearchDepositByKeyword(req *SearchByKeywordTemplate) (interfac
 
 func (s *service) SearchReserveToDeposit(req *SearchByKeywordTemplate) (interface{}, error) {
 	resp, err := s.repo.SearchReserveToDeposit(req)
+	if err != nil {
+		return nil, err
+	}
+	return resp, nil
+}
+
+func (s *service) CreateInvoice(req *NewInvoiceTemplate) (interface{}, error) {
+	var sum_pay_all float64
+
+	sum_pay_all = req.SumCashAmount + req.SumCreditAmount + req.SumChqAmount + req.SumBankAmount+req.SumOfDeposit+req.CouponAmount
+	switch {
+	case req.ArId == 0:
+		return nil, errors.New("เอกสารไม่ได้ระบุ ลูกค้า")
+	case req.TotalAmount == 0:
+		return nil, errors.New("มูลค่าเอกสาร = 0")
+	case req.SaleId == 0:
+		return nil, errors.New("เอกสารไม่ได้ระบุ พนักงานขาย")
+	case req.BillType == 0 && req.SumCashAmount == 0 && req.SumCreditAmount ==0 && req.SumChqAmount == 0 && req.SumBankAmount == 0 && req.SumOfDeposit == 0 && req.CouponAmount==0:
+		return nil, errors.New("เอกสารไม่ได้ระบุยอดชำระ")
+	case req.BillType == 0 && sum_pay_all != req.TotalAmount:
+		return nil,errors.New("ยอดชำระไม่เท่ากับมูลค่าเอกสาร")
+	}
+
+
+	resp, err := s.repo.CreateInvoice(req)
 	if err != nil {
 		return nil, err
 	}

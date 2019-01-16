@@ -10,7 +10,7 @@ import (
 //	return &incentiveRepository{}
 //}
 
-//type incentiveRepository struct {}
+type incentiveRepository struct {}
 
 //func (incentiveRepository) Register(ctx context.Context, entity *incentive.Entity1) (string, error) {
 //	return "", nil

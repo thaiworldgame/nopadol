@@ -18,11 +18,11 @@ type (
 		ArName              string              `json:"ar_name"`
 		ArBillAddress       string              `json:"ar_bill_address"`
 		ArTelephone         string              `json:"ar_telephone"`
-		SaleId              int                 `json:"sale_id"`
+		SaleId              int64                 `json:"sale_id"`
 		SaleCode            string              `json:"sale_code"`
 		SaleName            string              `json:"sale_name"`
 		BillType            int64               `json:"bill_type"`
-		TaxType             int                 `json:"tax_type"`
+		TaxType             int64                 `json:"tax_type"`
 		TaxRate             float64             `json:"tax_rate"`
 		DepartId            int64               `json:"depart_id"`
 		RefNo               string              `json:"ref_no"`
@@ -91,11 +91,11 @@ type (
 		ArName              string               `json:"ar_name"`
 		ArBillAddress       string               `json:"ar_bill_address"`
 		ArTelephone         string               `json:"ar_telephone"`
-		SaleId              int                  `json:"sale_id"`
+		SaleId              int64                  `json:"sale_id"`
 		SaleCode            string               `json:"sale_code"`
 		SaleName            string               `json:"sale_name"`
 		BillType            int64                `json:"bill_type"`
-		TaxType             int                  `json:"tax_type"`
+		TaxType             int64                  `json:"tax_type"`
 		TaxRate             float64              `json:"tax_rate"`
 		DepartId            int64                `json:"depart_id"`
 		RefNo               string               `json:"ref_no"`
@@ -930,6 +930,210 @@ func SearchReserveToDeposit(s Service) interface{} {
 		return map[string]interface{}{
 			"data": resp,
 		}, nil
+	}
+}
+
+////// Invoice /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+func CreateInvoice(s Service) interface{} {
+	return func(ctx context.Context, req *NewInvoiceRequest) (interface{}, error) {
+
+		iv := map_invoice_request(req)
+
+		for _, crds := range req.CreditCard {
+			crdline := map_creditcard_request(crds)
+			iv.CreditCard = append(iv.CreditCard, crdline)
+		}
+
+		for _, chqs := range req.Chq {
+			chqline := map_chq_request(chqs)
+			iv.Chq = append(iv.Chq, chqline)
+		}
+
+		resp, err := s.CreateInvoice(&NewInvoiceTemplate{
+			Id:                  req.Id,
+			CompanyId:           req.CompanyId,
+			BranchId:            req.BranchId,
+			DocNo:               req.DocNo,
+			TaxNo:               req.TaxNo,
+			DocDate:             req.DocDate,
+			BillType:            req.BillType,
+			ArId:                req.ArId,
+			ArCode:              req.ArCode,
+			ArName:              req.ArName,
+			ArBillAddress:       req.ArBillAddress,
+			ArTelephone:         req.ArTelephone,
+			SaleId:              req.SaleId,
+			SaleCode:            req.SaleCode,
+			SaleName:            req.SaleName,
+			TaxType:             req.TaxType,
+			TaxRate:             req.TaxRate,
+			CreditDay:           req.CreditDay,
+			DueDate:             req.DueDate,
+			DepartId:            req.DepartId,
+			AllocateId:          req.AllocateId,
+			ProjectId:           req.ProjectId,
+			MyDescription:       req.MyDescription,
+			BeforeTaxAmount:     req.BeforeTaxAmount,
+			TaxAmount:           req.TaxAmount,
+			TotalAmount:         req.TotalAmount,
+			BillBalance:         req.BillBalance,
+			IsCancel:            req.IsCancel,
+			IsConfirm:           req.IsConfirm,
+			ScgId:               req.ScgId,
+			JobNo:               req.JobNo,
+			CreateBy:            req.CreateBy,
+			CreateTime:          req.CreateTime,
+			EditBy:              req.EditBy,
+			Uuid:                req.Uuid,
+			AfterDiscountAmount: req.AfterDiscountAmount,
+			CarLicense:          req.CarLicense,
+			CashId:              req.CashId,
+			ChangeAmount:        req.ChangeAmount,
+			CouponAmount:        req.CouponAmount,
+			CancelDesc:          req.CancelDesc,
+			CancelDescId:        req.CancelDescId,
+			CouponNo:            req.CouponNo,
+			ConfirmTime:         req.ConfirmTime,
+			ConfirmBy:           req.ConfirmBy,
+			CancelBy:            req.CancelBy,
+			CancelTime:          req.CancelTime,
+			DiscountWord:        req.DiscountWord,
+			DeliveryDate:        req.DeliveryDate,
+			DeliveryDay:         req.DeliveryDay,
+			DeliveryStatus:      req.DeliveryStatus,
+			DiscountAmount:      req.DiscountAmount,
+			EditTime:            req.EditTime,
+			GlStatus:            req.GlStatus,
+			IsCreditNote:        req.IsCreditNote,
+			IsDebitNote:         req.IsDebitNote,
+			IsConditionSend:     req.IsConditionSend,
+			IsPosted:            req.IsPosted,
+			IsHold:              req.IsHold,
+			JobId:               req.JobId,
+			NetDebtAmount:       req.NetDebtAmount,
+			NumberOfItem:        req.NumberOfItem,
+			PosMachineId:        req.PosMachineId,
+			PosStatus:           req.PosStatus,
+			PeriodId:            req.PeriodId,
+			PayBillAmount:       req.PayBillAmount,
+			PayBillStatus:       req.PayBillStatus,
+			ReceiveName:         req.ReceiveName,
+			ReceiveTel:          req.ReceiveTel,
+			RedeemNo:            req.RedeemNo,
+			SumBankAmount:       req.SumBankAmount,
+			SumChqAmount:        req.SumChqAmount,
+			SumCashAmount:       req.SumCashAmount,
+			SumCreditAmount:     req.SumCreditAmount,
+			SoRefNo:             req.SoRefNo,
+			ScgNumber:           req.ScgNumber,
+			SumOfDeposit:        req.SumOfDeposit,
+			SumOnLineAmount:     req.SumOnLineAmount,
+			SumOfItemAmount:     req.SumOfItemAmount,
+			Subs:                iv.Subs,
+			RecMoney:            iv.RecMoney,
+			CreditCard:          iv.CreditCard,
+			Chq:                 iv.Chq,
+		})
+		if err != nil {
+			fmt.Println("endpoint error =", err.Error())
+			return nil, fmt.Errorf(err.Error())
+		}
+		return map[string]interface{}{
+			"data": resp,
+		}, nil
+	}
+}
+
+func map_invoice_request(x *NewInvoiceRequest) NewInvoiceTemplate {
+	var subs []NewInvoiceItemTemplate
+	var credit_cards []CreditCardTemplate
+	var chqs []ChqInTemplate
+	var rec_moneys []RecMoneyTemplate
+
+	return NewInvoiceTemplate{
+		Id:                  x.Id,
+		DocNo:               x.DocNo,
+		DocDate:             x.DocDate,
+		ArId:                x.ArId,
+		ArTelephone:         x.ArTelephone,
+		ArBillAddress:       x.ArBillAddress,
+		ArName:              x.ArName,
+		ArCode:              x.ArCode,
+		AllocateId:          x.AllocateId,
+		BranchId:            x.BranchId,
+		BillBalance:         x.BillBalance,
+		BillType:            x.BillType,
+		BeforeTaxAmount:     x.BeforeTaxAmount,
+		CompanyId:           x.CompanyId,
+		CreditDay:           x.CreditDay,
+		CreateTime:          x.CreateTime,
+		CreateBy:            x.CreateBy,
+		CancelTime:          x.CancelTime,
+		CancelBy:            x.CancelBy,
+		ConfirmBy:           x.ConfirmBy,
+		ConfirmTime:         x.ConfirmTime,
+		DueDate:             x.DueDate,
+		DepartId:            x.DepartId,
+		EditBy:              x.EditBy,
+		EditTime:            x.EditTime,
+		IsConfirm:           x.IsConfirm,
+		IsCancel:            x.IsCancel,
+		JobNo:               x.JobNo,
+		MyDescription:       x.MyDescription,
+		ProjectId:           x.ProjectId,
+		SaleName:            x.SaleName,
+		SaleCode:            x.SaleCode,
+		SaleId:              x.SaleId,
+		ScgId:               x.ScgId,
+		TaxNo:               x.TaxNo,
+		TotalAmount:         x.TotalAmount,
+		TaxAmount:           x.TaxAmount,
+		TaxRate:             x.TaxRate,
+		TaxType:             x.TaxType,
+		Uuid:                x.Uuid,
+		AfterDiscountAmount: x.AfterDiscountAmount,
+		CouponNo:            x.CouponNo,
+		CancelDescId:        x.CancelDescId,
+		CancelDesc:          x.CancelDesc,
+		CouponAmount:        x.CouponAmount,
+		ChangeAmount:        x.ChangeAmount,
+		CashId:              x.CashId,
+		CarLicense:          x.CarLicense,
+		DiscountAmount:      x.DiscountAmount,
+		DeliveryStatus:      x.DeliveryStatus,
+		DeliveryDay:         x.DeliveryDay,
+		DeliveryDate:        x.DeliveryDate,
+		DiscountWord:        x.DiscountWord,
+		IsHold:              x.IsHold,
+		IsPosted:            x.IsPosted,
+		IsConditionSend:     x.IsConditionSend,
+		IsDebitNote:         x.IsDebitNote,
+		IsCreditNote:        x.IsCreditNote,
+		JobId:               x.JobId,
+		NumberOfItem:        x.NumberOfItem,
+		NetDebtAmount:       x.NetDebtAmount,
+		PayBillStatus:       x.PayBillStatus,
+		PayBillAmount:       x.PayBillAmount,
+		PeriodId:            x.PeriodId,
+		PosStatus:           x.PosStatus,
+		PosMachineId:        x.PosMachineId,
+		RedeemNo:            x.RedeemNo,
+		ReceiveTel:          x.ReceiveTel,
+		ReceiveName:         x.ReceiveName,
+		SumOfItemAmount:     x.SumOfItemAmount,
+		SumOnLineAmount:     x.SumOnLineAmount,
+		SumOfDeposit:        x.SumOfDeposit,
+		ScgNumber:           x.ScgNumber,
+		SumCreditAmount:     x.SumCreditAmount,
+		SumCashAmount:       x.SumCashAmount,
+		SoRefNo:             x.SoRefNo,
+		SumBankAmount:       x.SumBankAmount,
+		SumChqAmount:        x.SumChqAmount,
+		Subs:                subs,
+		RecMoney:            rec_moneys,
+		CreditCard:          credit_cards,
+		Chq:                 chqs,
 	}
 }
 
