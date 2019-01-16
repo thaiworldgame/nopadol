@@ -64,3 +64,42 @@ func (d *drivethruRepository)SearchListMachine()(interface{},error){
 	fmt.Println("mysqldb recive databranch -> ",Mcs)
 	return Mcs,nil
 }
+
+
+func (d *drivethruRepository)SearchCarBrand(keyword string)(interface{},error){
+	lccommand := "select id,"+
+			 "company_id,"+
+			 "branch_id,"+
+			 "machine_no,"+
+			 "machine_code,"+
+			 "def_wh_id,"+
+			 "def_shelf_id,"+
+			 "is_open"+
+		      " from npdl.pos_machine where machine_code like '%"+keyword+"%'"
+	fmt.Println(lccommand)
+	rs,err := d.db.Query(lccommand)
+	if err != nil {
+		fmt.Println("error query database ")
+		return nil,err
+	}
+	type brandModel struct {
+		id          int64 `json:"id"`
+		CompanyID   int64 `json:"company_id" `
+		BranchID    int64 `json:"branch_id"`
+		MachineNo   string `json:"machine_no"`
+		MachineCode string `json:"machine_code"`
+		DefWhID     int64 `json:"def_wh_id"`
+		DefShelfID  int64 `json:"def_shelf_id"`
+		IsOpen      int `json:"is_open"`
+	}
+	Mcs := []brandModel{}
+	mc := brandModel{}
+	for rs.Next() {
+		rs.Scan(&mc.id,&mc.CompanyID,&mc.BranchID,&mc.MachineNo,&mc.MachineCode,&mc.DefWhID,&mc.DefShelfID,&mc.IsOpen)
+		Mcs = append(Mcs,mc)
+	}
+
+	fmt.Println("mysqldb recived brand data -> ",Mcs)
+	return Mcs,nil
+}
+

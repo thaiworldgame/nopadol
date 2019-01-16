@@ -44,4 +44,24 @@ func MakeListMachine(s Service) interface{}{
 	}
 }
 
+func makeSearchCarBranch(s Service) interface{}{
+	type request struct {
+		Keyword string `json:"keyword"`
+	}
+	return func(ctx context.Context,req *request)(interface{},error){
+		fmt.Println("endpoint keyword is =>",req.Keyword)
+		resp,err := s.SearchCarBrand(req.Keyword)
+		if err != nil {
+			return nil,err
+		}
+		return map[string]interface{}{
+			"response": map[string]interface{}{
+				"process":"Search car brand",
+				"processDesc":"Success",
+				"isSuccess":true,
+			},
+			"data": resp,
+		}, nil
+	}
+}
 
