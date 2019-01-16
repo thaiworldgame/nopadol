@@ -27,8 +27,9 @@ func MakeHandler(s Service) http.Handler {
 	})
 	mux := http.NewServeMux()
 	mux.Handle("/zone", m.Handler(SearchListCompany(s)))
-	mux.Handle("/machine", m.Handler(MakeListMachine(s)))
+	mux.Handle("/machine", m.Handler(makeListMachine(s)))
 	mux.Handle("/carbrand", m.Handler(makeSearchCarBranch(s)))
+	mux.Handle("/customer", m.Handler(makeSearchCustomer(s)))
 	return mustLogin()(mux)
 }
 

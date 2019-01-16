@@ -27,7 +27,7 @@ func SearchListCompany(s Service) interface{} {
 	}
 }
 
-func MakeListMachine(s Service) interface{}{
+func makeListMachine(s Service) interface{}{
 	return func(ctx context.Context)(interface{}, error){
 		resp,err := s.SearchListMachine()
 		if err != nil {
@@ -65,3 +65,23 @@ func makeSearchCarBranch(s Service) interface{}{
 	}
 }
 
+func makeSearchCustomer(s Service) interface{} {
+	type request struct {
+		Keyword string `json:"keyword"`
+	}
+	return func(ctx context.Context, req *request) (interface{}, error) {
+		fmt.Println("endpoint keyword is =>", req.Keyword)
+		resp, err := s.SearchCustomer(req.Keyword)
+		if err != nil {
+			return nil, err
+		}
+		return map[string]interface{}{
+			"response": map[string]interface{}{
+				"process":"Search customer",
+				"processDesc":"Success",
+				"isSuccess":true,
+			},
+			"data": resp,
+		}, nil
+	}
+}

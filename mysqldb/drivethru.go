@@ -103,3 +103,7 @@ func (d *drivethruRepository)SearchCarBrand(keyword string)(interface{},error){
 	return Mcs,nil
 }
 
+func (d *drivethruRepository)SearchCustomer(keyword string) (interface{},error){
+	// todo: search by keyword here  by code,name,telno
+	return nil,nil
+}
