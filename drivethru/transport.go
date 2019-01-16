@@ -49,9 +49,9 @@ func jsonEncoder(w http.ResponseWriter, status int, v interface{}) error {
 }
 
 func requestDecoder(r *http.Request, v interface{}) error {
-	if r.Method != http.MethodPost {
-		return ErrMethodNotAllowed
-	}
+	//if r.Method != http.MethodPost {
+	//	return ErrMethodNotAllowed
+	//}
 
 	return jsonDecoder(r, v)
 }

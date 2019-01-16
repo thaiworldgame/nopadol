@@ -1,5 +1,7 @@
 package drivethru
 
+import "fmt"
+
 func New(repo Repository) (Service){
 	return &service{repo}
 }
@@ -17,5 +19,6 @@ func (s *service) SearchListCompany() (interface{}, error){
 	if err != nil {
 		return nil, err
 	}
+	fmt.Println("service recive data -> ",resp)
 	return resp, nil
 }
