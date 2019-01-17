@@ -14,5 +14,6 @@ func NewDrivethruRepository(db *sqlx.DB) drivethru.Repository {
 
 
 func (repo *drivethruRepository) SearchListCompany() (interface{}, error) {
+	sql := `select `
 	return nil,nil
 }
