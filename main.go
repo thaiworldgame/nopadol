@@ -198,7 +198,7 @@ func main() {
 	pointofsaleRepo := mysqldb.NewPointOfSaleRepository(mysql_np)
 	pointofsaleService := pointofsaleservice.New(pointofsaleRepo)
 
-	drivethruRepo := mysqldb.NewDriveThruRepository(mysql_np)
+	drivethruRepo := mysqldb.NewDrivethruRepository(mysql_np)
 	drivethruService := drivethruservice.New(drivethruRepo)
 
 	mux := http.NewServeMux()
