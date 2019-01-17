@@ -35,7 +35,7 @@ type (
 )
 
 
-func SearchListCompany(s Service) interface{} {
+func makeListCompany(s Service) interface{} {
 	return func(ctx context.Context) (interface{}, error) {
 		resp, err := s.SearchListCompany()
 		if err != nil {
