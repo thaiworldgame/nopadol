@@ -85,3 +85,24 @@ func makeSearchCustomer(s Service) interface{} {
 		}, nil
 	}
 }
+
+func makeItemSearch(s Service) interface{}{
+	type request struct {
+		Keyword string `json:"keyword"`
+	}
+	return func(ctx context.Context, req *request) (interface{},error){
+		fmt.Println("start endpoint item search keyword is => ",req.Keyword)
+		resp, err := s.SearchItem(req.Keyword)
+		if err != nil {
+			return nil,err
+		}
+		return map[string]interface{}{
+			"response": map[string]interface{}{
+				"success":true,
+				"error":false,
+				"message":"",
+			},
+			"item": resp,
+		}, nil
+	}
+}

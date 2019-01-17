@@ -122,3 +122,40 @@ func (d *drivethruRepository) SearchCustomer(keyword string) (interface{}, error
 	fmt.Println("mysqldb recived brand data -> ", Mcs)
 	return Mcs, nil
 }
+
+func (d *drivethruRepository)SearchItem(keyword string)(interface{},error){
+	fmt.Println("mysql recived param keyword -> ",keyword)
+	type itemModel struct {
+		ItemBarcode string `json:"item_barcode"`
+		ItemCode string `json:"item_code"`
+		ItemName string `json:"item_name"`
+		ItemCategory string `json:"item_category"`
+		ItemPrice float64 `json:"item_price"`
+		ItemPrice2 float64 `json:"item_price_2"`
+		ItemUnitCode string `json:"item_unit_code"`
+		ItemRemark string `json:"item_remark"`
+		ItemShortName string `json:"item_short_name"`
+		ItemFilePath string `json:"item_file_path"`
+	}
+	lccommand := "select 	a.bar_code ,"+
+		"a.item_code,"+
+		"a.unit_code ,"+
+		"c.sale_price_1 as price ,"+
+		"c.sale_price_2 as price2,"+
+		"b.item_name ,"+
+		"b.short_name ,"+
+		"'-' as item_category,"+
+		"'-' as item_remark,"+
+		"b.pic_path1 as item_file_path "+
+	"from npdl.Barcode a left outer join npdl.Item b on a.item_code=b.code "+
+	"left join npdl.Price c on b.code = c.item_code and a.unit_code = c.unit_code "+
+	" where a.bar_code='"+keyword+"' limit 1 "
+	fmt.Println(lccommand)
+	rs := d.db.QueryRow(lccommand)
+	it :=itemModel{}
+	rs.Scan(&it.ItemBarcode,&it.ItemCode,&it.ItemUnitCode,&it.ItemPrice,&it.ItemPrice2,
+	&it.ItemName,&it.ItemShortName,&it.ItemCategory,&it.ItemRemark,&it.ItemFilePath)
+
+	fmt.Println("before mysql return -> ",it)
+	return it,nil
+}

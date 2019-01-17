@@ -30,6 +30,7 @@ func MakeHandler(s Service) http.Handler {
 	mux.Handle("/machine", m.Handler(makeListMachine(s)))
 	mux.Handle("/carbrand", m.Handler(makeSearchCarBranch(s)))
 	mux.Handle("/customer", m.Handler(makeSearchCustomer(s)))
+	mux.Handle("/item/search", m.Handler(makeItemSearch(s)))
 	return mustLogin()(mux)
 }
 
