@@ -34,7 +34,6 @@ type (
 	}
 )
 
-
 func makeListCompany(s Service) interface{} {
 	return func(ctx context.Context) (interface{}, error) {
 		resp, err := s.SearchListCompany()
@@ -93,7 +92,6 @@ func makeSearchCarBranch(s Service) interface{}{
 	}
 }
 
-
 func makeSearchCustomer(s Service) interface{} {
 	type request struct {
 		Keyword string `json:"keyword"`
@@ -136,3 +134,25 @@ func makeItemSearch(s Service) interface{}{
 	}
 }
 
+
+func userLogIn(s Service) interface{}{
+	return func(ctx context.Context, req *UserLogInRequest) (interface{},error){
+		fmt.Println("start endpoint userlogin usercode is => ",req.UserCode)
+		resp, err := s.UserLogIn(req)
+		if err != nil {
+			return nil,err
+		}
+		return map[string]interface{}{
+			"response": map[string]interface{}{
+				"process":"login",
+				"processDesc":"successful",
+				"isSuccess":true,
+			},
+			"accessToken":"",
+			"accessDatetime":"",
+			"pathPHPUpload":"http://qserver.nopadol.com/drivethru/upload.php",
+			"pathFile":"http://qserver.nopadol.com/drivethru/tmp/",
+			"user": resp,
+		}, nil
+	}
+}
