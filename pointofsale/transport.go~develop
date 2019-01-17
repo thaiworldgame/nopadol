@@ -1,4 +1,4 @@
-package drivethru
+package pointofsale
 
 import (
 	"net/http"
@@ -26,11 +26,8 @@ func MakeHandler(s Service) http.Handler {
 		ErrorEncoder:    errorEncoder,
 	})
 	mux := http.NewServeMux()
-	mux.Handle("/zone", m.Handler(SearchListCompany(s)))
-	mux.Handle("/machine", m.Handler(makeListMachine(s)))
-	mux.Handle("/carbrand", m.Handler(makeSearchCarBranch(s)))
-	mux.Handle("/customer", m.Handler(makeSearchCustomer(s)))
-	mux.Handle("/item/search", m.Handler(makeItemSearch(s)))
+	mux.Handle("/basket/new", m.Handler(Create(s)))
+	mux.Handle("/basket/pickup",m.Handler(ManageBasket(s)))
 	return mustLogin()(mux)
 }
 
@@ -101,4 +98,5 @@ func errorEncoder(w http.ResponseWriter, r *http.Request, err error) {
 	}
 
 	encoder(w, status, &errorResponse{err.Error()})
+
 }

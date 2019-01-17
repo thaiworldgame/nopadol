@@ -5,4 +5,5 @@ type Repository interface {
 	SearchListMachine() (interface{}, error)
 	SearchCarBrand(string) (interface{}, error)
 	SearchCustomer(string) (interface{},error)
+	SearchItem(string) (interface{},error)
 }
