@@ -8,11 +8,13 @@ import (
 
 type drivethruRepository struct{ db *sqlx.DB }
 
+
 type BranchModel struct {
 	Id   int64  `json:"id" db:"id"`
 	Code string `json:"code" db:"code"`
 	Name string `json:"name" db:"branch_name"`
 }
+
 
 func NewDrivethruRepository(db *sqlx.DB) drivethru.Repository {
 	return &drivethruRepository{db}

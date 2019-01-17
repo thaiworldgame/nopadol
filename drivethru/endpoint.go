@@ -5,6 +5,34 @@ import (
 	"context"
 )
 
+type (
+	SearchById struct {
+		Id int64 `json:"keyword"`
+	}
+
+	CompanyList struct {
+		ListCompany []Company `json:"list_company"`
+	}
+
+	Company struct {
+		CompanyId   string `json:"company_id"`
+		CompanyName string `json:"company_name"`
+		ListZone    []Zone `json:"list_zone"`
+	}
+
+	Zone struct {
+		ZoneId   string `json:"zone_id"`
+		ZoneName string `json:"zone_name"`
+	}
+
+	UserLogInRequest struct {
+		UserCode     string `json:"user_code"`
+		Password     string `json:"password"`
+		BranchId     int64  `json:"branch_id"`
+		ServerName   string `json:"server_name"`
+		DataBaseName string `json:"data_base_name"`
+	}
+)
 
 
 func SearchListCompany(s Service) interface{} {
@@ -65,6 +93,7 @@ func makeSearchCarBranch(s Service) interface{}{
 	}
 }
 
+
 func makeSearchCustomer(s Service) interface{} {
 	type request struct {
 		Keyword string `json:"keyword"`
@@ -106,3 +135,4 @@ func makeItemSearch(s Service) interface{}{
 		}, nil
 	}
 }
+
