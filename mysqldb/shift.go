@@ -5,6 +5,9 @@ import (
 	"fmt"
 	"github.com/go-sql-driver/mysql"
 	"github.com/jmoiron/sqlx"
+	"github.com/mrtomyum/nopadol/drivethru"
+	"time"
+
 )
 
 type ShiftModel struct {
@@ -25,8 +28,14 @@ type ShiftModel struct {
 
 
 
-func (sh *ShiftModel) Open(db *sqlx.DB) (newUUID string, err error) {
+func (sh *ShiftModel) Open(db *sqlx.DB,token string,req drivethru.ShiftOpenRequest) ( newuid string ,err error) {
 	// todo : create new Shift record in db
+	uac := UserAccess{}
+	uac.GetProfileByToken(db,token)
+	sh.docDate = time.Now()
+	sh.companyID = uac.CompanyID
+	sh.branchID = uac.BranchID
+	sh.cashierID = req.CashierCode
 	return // new uuid
 }
 

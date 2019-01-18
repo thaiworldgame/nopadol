@@ -2,6 +2,7 @@ package mysqldb
 
 import (
 	"testing"
+	"time"
 )
 
 
@@ -14,6 +15,11 @@ func Test_getShiftProfileByUUID(t *testing.T){
 	_shift.Get(testDB,"xxxxxx")
 }
 
+
+
 func Test_shiftOpen(t *testing.T){
 
+	sh := ShiftModel{}
+	sh.docDate = time.Now()
+	sh.Co
 }
