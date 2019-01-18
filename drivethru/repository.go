@@ -6,4 +6,5 @@ type Repository interface {
 	SearchCarBrand(string) (interface{}, error)
 	SearchCustomer(string) (interface{},error)
 	SearchItem(string) (interface{},error)
+	ShiftOpen(string,float64,string)(interface{},error)
 }

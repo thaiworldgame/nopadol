@@ -161,3 +161,15 @@ func (d *drivethruRepository)SearchItem(keyword string)(interface{},error){
 	fmt.Println("before mysql return -> ",it)
 	return it,nil
 }
+
+
+func (d *drivethruRepository)ShiftOpen(machineCode string,changeAmount float64,remarkstr string)(resp interface{},err error){
+	// todo:get token user info
+	// todo:get machine info ex:posno
+	// todo : open shift by machinecode & stamp user create shift
+	// todo : return shift_UUID
+
+
+	return nil,err
+}
+

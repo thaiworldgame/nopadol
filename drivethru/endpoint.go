@@ -1,8 +1,8 @@
 package drivethru
 
 import (
-	"fmt"
 	"context"
+	"fmt"
 )
 
 type (
@@ -34,7 +34,6 @@ type (
 	}
 )
 
-
 func SearchListCompany(s Service) interface{} {
 	return func(ctx context.Context) (interface{}, error) {
 		resp, err := s.SearchListCompany()
@@ -43,56 +42,54 @@ func SearchListCompany(s Service) interface{} {
 			return nil, fmt.Errorf(err.Error())
 		}
 
-
 		return map[string]interface{}{
 			"response": map[string]interface{}{
-				"process":"Search Brand",
-				"processDesc":"Success",
-				"isSuccess":true,
+				"process":     "Search Brand",
+				"processDesc": "Success",
+				"isSuccess":   true,
 			},
 			"data": resp,
 		}, nil
 	}
 }
 
-func makeListMachine(s Service) interface{}{
-	return func(ctx context.Context)(interface{}, error){
-		resp,err := s.SearchListMachine()
+func makeListMachine(s Service) interface{} {
+	return func(ctx context.Context) (interface{}, error) {
+		resp, err := s.SearchListMachine()
 		if err != nil {
-			return nil,err
+			return nil, err
 		}
 		return map[string]interface{}{
 			"response": map[string]interface{}{
-				"process":"List Pos Machine",
-				"processDesc":"Success",
-				"isSuccess":true,
+				"process":     "List Pos Machine",
+				"processDesc": "Success",
+				"isSuccess":   true,
 			},
 			"data": resp,
 		}, nil
 	}
 }
 
-func makeSearchCarBranch(s Service) interface{}{
+func makeSearchCarBranch(s Service) interface{} {
 	type request struct {
 		Keyword string `json:"keyword"`
 	}
-	return func(ctx context.Context,req *request)(interface{},error){
-		fmt.Println("endpoint keyword is =>",req.Keyword)
-		resp,err := s.SearchCarBrand(req.Keyword)
+	return func(ctx context.Context, req *request) (interface{}, error) {
+		fmt.Println("endpoint keyword is =>", req.Keyword)
+		resp, err := s.SearchCarBrand(req.Keyword)
 		if err != nil {
-			return nil,err
+			return nil, err
 		}
 		return map[string]interface{}{
 			"response": map[string]interface{}{
-				"process":"Search car brand",
-				"processDesc":"Success",
-				"isSuccess":true,
+				"process":     "Search car brand",
+				"processDesc": "Success",
+				"isSuccess":   true,
 			},
 			"data": resp,
 		}, nil
 	}
 }
-
 
 func makeSearchCustomer(s Service) interface{} {
 	type request struct {
@@ -106,33 +103,57 @@ func makeSearchCustomer(s Service) interface{} {
 		}
 		return map[string]interface{}{
 			"response": map[string]interface{}{
-				"process":"Search customer",
-				"processDesc":"Success",
-				"isSuccess":true,
+				"process":     "Search customer",
+				"processDesc": "Success",
+				"isSuccess":   true,
 			},
 			"data": resp,
 		}, nil
 	}
 }
 
-func makeItemSearch(s Service) interface{}{
+func makeItemSearch(s Service) interface{} {
 	type request struct {
 		Keyword string `json:"keyword"`
 	}
-	return func(ctx context.Context, req *request) (interface{},error){
-		fmt.Println("start endpoint item search keyword is => ",req.Keyword)
+	return func(ctx context.Context, req *request) (interface{}, error) {
+		fmt.Println("start endpoint item search keyword is => ", req.Keyword)
 		resp, err := s.SearchItem(req.Keyword)
 		if err != nil {
-			return nil,err
+			return nil, err
 		}
 		return map[string]interface{}{
 			"response": map[string]interface{}{
-				"success":true,
-				"error":false,
-				"message":"",
+				"success": true,
+				"error":   false,
+				"message": "",
 			},
 			"item": resp,
 		}, nil
 	}
 }
 
+func makeShiftOpen(s Service) interface{} {
+	type request struct {
+		MachineCode  string  `json:"machine_code"`
+		ChangeAmount float64 `json:"change_amount"`
+		Remark       string  `json:"remark"`
+	}
+	//maybe : use token to get user to open shift ?
+	return func(ctx context.Context, req *request) (interface{}, error) {
+		fmt.Println("start endpoint shift open ....")
+		resp, err := s.ShiftOpen(req.MachineCode,req.ChangeAmount,req.Remark)
+		if err != nil {
+			return nil, err
+		}
+		return map[string]interface{}{
+			"response": map[string]interface{}{
+				"process":     "Shift Open",
+				"processDesc": "Success",
+				"isSuccess":   true,
+			},
+			"data": resp,
+		}, nil
+	}
+
+}
