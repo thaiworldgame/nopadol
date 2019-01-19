@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"github.com/jmoiron/sqlx"
 	"github.com/mrtomyum/nopadol/drivethru"
+	"time"
+	"github.com/google/uuid"
 )
 
 type drivethruRepository struct{ db *sqlx.DB }
@@ -163,13 +165,30 @@ func (d *drivethruRepository)SearchItem(keyword string)(interface{},error){
 }
 
 
-func (d *drivethruRepository)ShiftOpen(machineCode string,changeAmount float64,remarkstr string)(resp interface{},err error){
+func (d *drivethruRepository)ShiftOpen(req *drivethru.ShiftOpenRequest)(resp interface{},err error){
 	// todo:get token user info
 	// todo:get machine info ex:posno
 	// todo : open shift by machinecode & stamp user create shift
 	// todo : return shift_UUID
 
+	uac := UserAccess{}
+	uac.GetProfileByToken(d.db, req.Token)
 
-	return nil,err
+	// init shift objects
+	sh := ShiftModel{}
+	sh.docDate.Time = time.Now()
+	sh.companyID = uac.CompanyID
+	sh.branchID = uac.BranchID
+	sh.cashierID = req.CashierID
+	sh.changeAmount.Float64 = req.ChangeAmount
+	sh.openBy = uac.UserCode
+	sh.openTime.Time = time.Now()
+	sh.machineID = req.MachineID
+	sh.shiftUUid = uuid.New().String()
+	newShiftUID,err := sh.Open(d.db)
+	if err != nil {
+		return "",err
+	}
+	return newShiftUID,err
 }
 

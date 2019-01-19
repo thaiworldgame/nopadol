@@ -3,6 +3,7 @@ package drivethru
 import (
 	"context"
 	"fmt"
+	"time"
 )
 
 type (
@@ -135,14 +136,24 @@ func makeItemSearch(s Service) interface{} {
 
 func makeShiftOpen(s Service) interface{} {
 	type request struct {
-		MachineCode  string  `json:"machine_code"`
+		Token        string  `json:"token"`
+		MachineID    int     `json:"machine_id"`
 		ChangeAmount float64 `json:"change_amount"`
+		CashierID    int     `json:"cashier_id"`
+		WhID         int     `json:"wh_id"`
 		Remark       string  `json:"remark"`
 	}
 	//maybe : use token to get user to open shift ?
 	return func(ctx context.Context, req *request) (interface{}, error) {
 		fmt.Println("start endpoint shift open ....")
-		resp, err := s.ShiftOpen(req.MachineCode,req.ChangeAmount,req.Remark)
+		resp, err := s.ShiftOpen(&ShiftOpenRequest{
+			Token:     req.Token,
+			MachineID: req.MachineID,
+			CashierID: req.CashierID,
+			Remark:    req.Remark,
+			Created:   time.Now(),
+			WhID:      req.WhID,
+		})
 		if err != nil {
 			return nil, err
 		}

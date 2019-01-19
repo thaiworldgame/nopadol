@@ -17,7 +17,7 @@ type Service interface {
 	SearchCarBrand(string) (interface{}, error)
 	SearchCustomer(string) (interface{}, error)
 	SearchItem(string) (interface{}, error)
-	ShiftOpen(machineCode string,changeAmount float64,remark string) (interface{},error)
+	ShiftOpen(*ShiftOpenRequest) (interface{},error)
 }
 
 func (s *service) SearchListCompany() (interface{}, error) {
@@ -72,6 +72,6 @@ func (s *service) SearchItem(keyword string) (interface{}, error){
 	return resp, nil
 }
 
-func (s *service)ShiftOpen(machineCode string,changeAmount float64,remark string)(interface{},error){
-	return s.repo.ShiftOpen(machineCode,changeAmount,remark)
+func (s *service)ShiftOpen(req *ShiftOpenRequest)(interface{},error){
+	return s.repo.ShiftOpen(req)
 }
