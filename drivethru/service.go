@@ -17,16 +17,19 @@ type Service interface {
 	SearchCarBrand(string) (interface{}, error)
 	SearchCustomer(string) (interface{}, error)
 	SearchItem(string) (interface{}, error)
+	ShiftOpen(*ShiftOpenRequest) (interface{},error)
+	ShiftClose(*ShiftCloseRequest) (interface{},error)
+
 }
 
 func (s *service) SearchListCompany() (interface{}, error) {
-	resp, err := s.repo.SearchListCompany()
-	if err != nil {
-		return nil, err
-	}
-	fmt.Println("service recive data -> ", resp)
-
-	return resp, nil
+	return  s.repo.SearchListCompany()
+	//if err != nil {
+	//	return nil, err
+	//}
+	//fmt.Println("service recive data -> ", resp)
+	//
+	//return resp, nil
 }
 
 func (s *service) SearchListMachine() (interface{}, error) {
@@ -35,7 +38,7 @@ func (s *service) SearchListMachine() (interface{}, error) {
 		fmt.Println("error service level ", err.Error())
 		return nil, err
 	}
-	fmt.Println("service SearchListMachine data -> ", resp)
+	fmt.Println("service Search Machine data -> ", resp)
 
 	return resp, nil
 }
@@ -46,7 +49,7 @@ func (s *service) SearchCarBrand(keyword string) (interface{}, error) {
 		fmt.Println("error service level ", err.Error())
 		return nil, err
 	}
-	fmt.Println("service SearchListMachine data -> ", resp)
+	fmt.Println("service Search Car Brand data -> ", resp)
 
 	return resp, nil
 }
@@ -67,6 +70,15 @@ func (s *service) SearchItem(keyword string) (interface{}, error){
 		fmt.Println("error service level ", err.Error())
 		return nil, err
 	}
-	fmt.Println("service SearchListCustommer data -> ", resp)
+	fmt.Println("service Search Item data -> ", resp)
 	return resp, nil
 }
+
+func (s *service)ShiftOpen(req *ShiftOpenRequest)(interface{},error){
+	return s.repo.ShiftOpen(req)
+}
+
+func (s *service)ShiftClose(req *ShiftCloseRequest)(interface{},error){
+	return s.repo.ShiftClose(req)
+}
+
