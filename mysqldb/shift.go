@@ -114,13 +114,16 @@ func (sh *ShiftModel) Close(db *sqlx.DB) error {
 		fmt.Println("error when update table shift to close status ...")
 		return fmt.Errorf("Error When Update Table Shift : ",err.Error())
 	}
+
+	// check row update must by 1 record ...
 	rowUpdate,err := rs.RowsAffected()
 	if rowUpdate != 1 {
 		return fmt.Errorf("Update not Equal %v record ...",rowUpdate)
 	}
 
-	return nil
 	// todo : add type of cash (further)
+
+	return nil
 
 }
 
