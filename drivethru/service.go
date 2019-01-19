@@ -1,6 +1,5 @@
 package drivethru
 
-
 import "fmt"
 
 func New(repo Repository) Service {
@@ -18,6 +17,7 @@ type Service interface {
 	SearchCarBrand(string) (interface{}, error)
 	SearchCustomer(string) (interface{}, error)
 	SearchItem(string) (interface{}, error)
+	pickupNew(req *NewPickupRequest) (interface{}, error)
 }
 
 func (s *service) SearchListCompany() (interface{}, error) {
@@ -62,7 +62,7 @@ func (s *service) SearchCustomer(keyword string) (interface{}, error) {
 	return resp, nil
 }
 
-func (s *service) SearchItem(keyword string) (interface{}, error){
+func (s *service) SearchItem(keyword string) (interface{}, error) {
 	resp, err := s.repo.SearchItem(keyword)
 	if err != nil {
 		fmt.Println("error service level ", err.Error())
@@ -72,12 +72,22 @@ func (s *service) SearchItem(keyword string) (interface{}, error){
 	return resp, nil
 }
 
-func (s *service) UserLogIn(req *UserLogInRequest) (interface{}, error){
+func (s *service) UserLogIn(req *UserLogInRequest) (interface{}, error) {
 	resp, err := s.repo.UserLogIn(req)
 	if err != nil {
 		fmt.Println("error service level ", err.Error())
 		return nil, err
 	}
 	fmt.Println("service UserLogIn data -> ", resp)
+	return resp, nil
+}
+
+func (s *service) pickupNew(req *NewPickupRequest) (interface{}, error) {
+	resp, err := s.repo.PickupNew(req)
+	if err != nil {
+		fmt.Println("error service level ", err.Error())
+		return nil, err
+	}
+	fmt.Println("service Pickup New data -> ", resp)
 	return resp, nil
 }

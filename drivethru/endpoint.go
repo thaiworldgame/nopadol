@@ -32,6 +32,12 @@ type (
 		ServerName   string `json:"server_name"`
 		DataBaseName string `json:"data_base_name"`
 	}
+
+	NewPickupRequest struct {
+		CarNumber   string `json:"car_number"`
+		CarBrand    string `json:"car_brand"`
+		AccessToken string `json:"access_token"`
+	}
 )
 
 func makeListCompany(s Service) interface{} {
@@ -140,18 +146,18 @@ func userLogIn(s Service) interface{} {
 		if err != nil {
 			return nil, err
 		}
-		//return map[string]interface{}{
-		//	"response": map[string]interface{}{
-		//		"process":     "login",
-		//		"processDesc": "successful",
-		//		"isSuccess": resp,
-		//	},
-		//	"accessToken":    "",
-		//	"accessDatetime": "",
-		//	"pathPHPUpload":  "http://qserver.nopadol.com/drivethru/upload.php",
-		//	"pathFile":       "http://qserver.nopadol.com/drivethru/tmp/",
-		//	"user":           resp,
-		//}, nil
+
+		return resp, nil
+	}
+}
+
+func pickupNew(s Service) interface{} {
+	return func(ctx context.Context, req *NewPickupRequest) (interface{}, error) {
+		fmt.Println("start endpoint userlogin usercode is => ", req.CarNumber)
+		resp, err := s.pickupNew(&NewPickupRequest{CarNumber:req.CarNumber,CarBrand:req.CarBrand,AccessToken:req.AccessToken})
+		if err != nil {
+			return nil, err
+		}
 
 		return resp, nil
 	}
