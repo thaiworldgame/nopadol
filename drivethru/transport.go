@@ -32,7 +32,7 @@ func MakeHandler(s Service) http.Handler {
 	mux.Handle("/customer", m.Handler(makeSearchCustomer(s)))
 	mux.Handle("/item/search", m.Handler(makeItemSearch(s)))
 	mux.Handle("/shift/open", m.Handler(makeShiftOpen(s)))
-
+	mux.Handle("/shift/close", m.Handler(makeShiftClose(s)))
 	return mustLogin()(mux)
 }
 

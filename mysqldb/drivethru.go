@@ -192,3 +192,22 @@ func (d *drivethruRepository)ShiftOpen(req *drivethru.ShiftOpenRequest)(resp int
 	return newShiftUID,err
 }
 
+func (d *drivethruRepository)ShiftClose(req *drivethru.ShiftCloseRequest)(resp interface{},err error){
+	uac := UserAccess{}
+	uac.GetProfileByToken(d.db, req.Token)
+
+	sh := ShiftModel{}
+	sh.shiftUUid = req.ShiftUUID
+	sh.sumOfCashAmount = req.SumCashAmount
+	sh.sumOfCreditAmount = req.SumCreditAmount
+	sh.sumOfBankAmount = req.SumBankAmount
+	sh.sumOfCouponAmount = req.SumCouponAmount
+	sh.closeTime.Time = time.Now()
+	sh.closeBy = uac.UserCode
+
+	err = sh.Close(d.db)
+	if err != nil {
+		return "",err
+	}
+	return "success",nil
+}

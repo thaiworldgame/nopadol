@@ -18,6 +18,8 @@ type Service interface {
 	SearchCustomer(string) (interface{}, error)
 	SearchItem(string) (interface{}, error)
 	ShiftOpen(*ShiftOpenRequest) (interface{},error)
+	ShiftClose(*ShiftCloseRequest) (interface{},error)
+
 }
 
 func (s *service) SearchListCompany() (interface{}, error) {
@@ -75,3 +77,8 @@ func (s *service) SearchItem(keyword string) (interface{}, error){
 func (s *service)ShiftOpen(req *ShiftOpenRequest)(interface{},error){
 	return s.repo.ShiftOpen(req)
 }
+
+func (s *service)ShiftClose(req *ShiftCloseRequest)(interface{},error){
+	return s.repo.ShiftClose(req)
+}
+
