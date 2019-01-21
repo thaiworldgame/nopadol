@@ -5,8 +5,12 @@ type Repository interface {
 	SearchListCompany() (interface{}, error)
 	SearchListMachine() (interface{}, error)
 	SearchCarBrand(string) (interface{}, error)
-	SearchCustomer(string) (interface{},error)
-	SearchItem(string) (interface{},error)
+
 	PickupNew(req *NewPickupRequest) (interface{}, error)
-	//ShiftOpen(string,float64,string)(interface{},error)
+
+	SearchCustomer(string) (interface{}, error)
+	SearchItem(string) (interface{}, error)
+	ShiftOpen(*ShiftOpenRequest) (interface{}, error)
+	ShiftClose(*ShiftCloseRequest) (interface{}, error)
+
 }

@@ -3,6 +3,8 @@ package drivethru
 import (
 	"fmt"
 	"context"
+	"time"
+
 )
 
 type (
@@ -139,10 +141,34 @@ func makeItemSearch(s Service) interface{} {
 	}
 }
 
+
 func userLogIn(s Service) interface{} {
 	return func(ctx context.Context, req *UserLogInRequest) (interface{}, error) {
 		fmt.Println("start endpoint userlogin usercode is => ", req.UserCode)
 		resp, err := s.UserLogIn(&UserLogInRequest{BranchId: req.BranchId, UserCode: req.UserCode, Password: req.Password})
+
+func makeShiftOpen(s Service) interface{} {
+	type request struct {
+		token        string  `json:"token"`
+		machineID    int     `json:"machine_id"`
+		changeAmount float64 `json:"change_amount"`
+		cashierID    int     `json:"cashier_id"`
+		whID         int     `json:"wh_id"`
+		remark       string  `json:"remark"`
+	}
+	//maybe : use token to get user to open shift ?
+	return func(ctx context.Context, req *request) (interface{}, error) {
+		fmt.Println("start endpoint shift open ....")
+		resp, err := s.ShiftOpen(&ShiftOpenRequest{
+			Token:        req.token,
+			ChangeAmount: req.changeAmount,
+			MachineID:    req.machineID,
+			CashierID:    req.cashierID,
+			Remark:       req.remark,
+			Created:      time.Now(),
+			WhID:         req.whID,
+		})
+
 		if err != nil {
 			return nil, err
 		}
@@ -160,5 +186,41 @@ func pickupNew(s Service) interface{} {
 		}
 
 		return resp, nil
+	}
+}
+
+func makeShiftClose(s Service) interface{} {
+	type request struct {
+		token            string  `json:"token"`
+		shiftUUID        string  `json:"shift_uuid"`
+		sumCashAmount    float64 `json:"sum_cash_amount"`
+		sumCreditAmount  float64 `json:"sum_credit_amount"`
+		sumBankAmount    float64 `json:"sum_bank_amount"`
+		sumCouponAmount  float64 `json:"sum_coupon_amount"`
+		sumDepositAmount float64 `json:"sum_deposit_amount"`
+	}
+	return func(ctx context.Context, req *request) (interface{}, error) {
+		fmt.Println("start endpoint shift open ....")
+		resp, err := s.ShiftClose(&ShiftCloseRequest{
+			Token:            req.token,
+			ShiftUUID:        req.shiftUUID,
+			SumCashAmount:    req.sumCashAmount,
+			SumCreditAmount:  req.sumCreditAmount,
+			SumBankAmount:    req.sumBankAmount,
+			SumCouponAmount:  req.sumCouponAmount,
+			SumDepositAmount: req.sumDepositAmount,
+			ClosedAt:         time.Now(),
+		})
+		if err != nil {
+			return nil, err
+		}
+		return map[string]interface{}{
+			"response": map[string]interface{}{
+				"process":     "Shift Close",
+				"processDesc": "Success",
+				"isSuccess":   true,
+			},
+			"data": resp,
+		}, nil
 	}
 }
