@@ -1,9 +1,10 @@
 package drivethru
 
 import (
-	"context"
 	"fmt"
+	"context"
 	"time"
+
 )
 
 type (
@@ -29,13 +30,19 @@ type (
 	UserLogInRequest struct {
 		UserCode     string `json:"user_code"`
 		Password     string `json:"password"`
-		BranchId     int64  `json:"branch_id"`
+		BranchId     int    `json:"branch_id"`
 		ServerName   string `json:"server_name"`
 		DataBaseName string `json:"data_base_name"`
 	}
+
+	NewPickupRequest struct {
+		CarNumber   string `json:"car_number"`
+		CarBrand    string `json:"car_brand"`
+		AccessToken string `json:"access_token"`
+	}
 )
 
-func SearchListCompany(s Service) interface{} {
+func makeListCompany(s Service) interface{} {
 	return func(ctx context.Context) (interface{}, error) {
 		resp, err := s.SearchListCompany()
 		if err != nil {
@@ -134,6 +141,12 @@ func makeItemSearch(s Service) interface{} {
 	}
 }
 
+
+func userLogIn(s Service) interface{} {
+	return func(ctx context.Context, req *UserLogInRequest) (interface{}, error) {
+		fmt.Println("start endpoint userlogin usercode is => ", req.UserCode)
+		resp, err := s.UserLogIn(&UserLogInRequest{BranchId: req.BranchId, UserCode: req.UserCode, Password: req.Password})
+
 func makeShiftOpen(s Service) interface{} {
 	type request struct {
 		token        string  `json:"token"`
@@ -155,19 +168,25 @@ func makeShiftOpen(s Service) interface{} {
 			Created:      time.Now(),
 			WhID:         req.whID,
 		})
+
 		if err != nil {
 			return nil, err
 		}
-		return map[string]interface{}{
-			"response": map[string]interface{}{
-				"process":     "Shift Open",
-				"processDesc": "Success",
-				"isSuccess":   true,
-			},
-			"data": resp,
-		}, nil
-	}
 
+		return resp, nil
+	}
+}
+
+func pickupNew(s Service) interface{} {
+	return func(ctx context.Context, req *NewPickupRequest) (interface{}, error) {
+		fmt.Println("start endpoint userlogin usercode is => ", req.CarNumber)
+		resp, err := s.pickupNew(&NewPickupRequest{CarNumber:req.CarNumber,CarBrand:req.CarBrand,AccessToken:req.AccessToken})
+		if err != nil {
+			return nil, err
+		}
+
+		return resp, nil
+	}
 }
 
 func makeShiftClose(s Service) interface{} {
