@@ -126,7 +126,7 @@ func NewPointOfSaleRepository(db *sqlx.DB) pointofsale.Repository {
 	return &pointofsaleRepository{db}
 }
 
-func GetUUID() string {
+func GetUUID_POS() string {
 	uuid, err := uuid.NewV4()
 	if err != nil {
 		fmt.Printf("Something went wrong: %s", err)
@@ -160,7 +160,7 @@ func GenQueId(db *sqlx.DB) int64 {
 
 func (repo *pointofsaleRepository) Create(req *pointofsale.BasketTemplate) (interface{}, error) {
 	que_id := GenQueId(repo.db)
-	uuid := GetUUID()
+	uuid := GetUUID_POS()
 
 	fmt.Println("Que Id = ", que_id, uuid)
 	req.UUID = uuid

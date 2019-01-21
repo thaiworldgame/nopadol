@@ -455,6 +455,7 @@ func (repo *printRepository) PosDriveThruSlipCopy(req PosSlipModel) {
 
 		pt.SetFont("A")
 
+		fmt.Println("Moo")
 		pt.WriteStringLines(" " + sub.ItemName + "\n")
 
 		vItemAmount = sub.Qty * (sub.Price - sub.DiscountAmount)

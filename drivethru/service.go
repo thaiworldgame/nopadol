@@ -1,6 +1,5 @@
 package drivethru
 
-
 import "fmt"
 
 func New(repo Repository) Service {
@@ -12,24 +11,29 @@ type service struct {
 }
 
 type Service interface {
+	UserLogIn(req *UserLogInRequest) (interface{}, error)
 	SearchListCompany() (interface{}, error)
 	SearchListMachine() (interface{}, error)
 	SearchCarBrand(string) (interface{}, error)
 	SearchCustomer(string) (interface{}, error)
 	SearchItem(string) (interface{}, error)
+
+	pickupNew(req *NewPickupRequest) (interface{}, error)
+
 	ShiftOpen(*ShiftOpenRequest) (interface{},error)
 	ShiftClose(*ShiftCloseRequest) (interface{},error)
+
 
 }
 
 func (s *service) SearchListCompany() (interface{}, error) {
-	return  s.repo.SearchListCompany()
-	//if err != nil {
-	//	return nil, err
-	//}
-	//fmt.Println("service recive data -> ", resp)
-	//
-	//return resp, nil
+	resp, err := s.repo.SearchListCompany()
+	if err != nil {
+		return nil, err
+	}
+	fmt.Println("service recive data -> ", resp)
+
+	return resp, nil
 }
 
 func (s *service) SearchListMachine() (interface{}, error) {
@@ -38,7 +42,7 @@ func (s *service) SearchListMachine() (interface{}, error) {
 		fmt.Println("error service level ", err.Error())
 		return nil, err
 	}
-	fmt.Println("service Search Machine data -> ", resp)
+	fmt.Println("service SearchListMachine data -> ", resp)
 
 	return resp, nil
 }
@@ -49,7 +53,7 @@ func (s *service) SearchCarBrand(keyword string) (interface{}, error) {
 		fmt.Println("error service level ", err.Error())
 		return nil, err
 	}
-	fmt.Println("service Search Car Brand data -> ", resp)
+	fmt.Println("service SearchListMachine data -> ", resp)
 
 	return resp, nil
 }
@@ -64,13 +68,34 @@ func (s *service) SearchCustomer(keyword string) (interface{}, error) {
 	return resp, nil
 }
 
-func (s *service) SearchItem(keyword string) (interface{}, error){
+func (s *service) SearchItem(keyword string) (interface{}, error) {
 	resp, err := s.repo.SearchItem(keyword)
 	if err != nil {
 		fmt.Println("error service level ", err.Error())
 		return nil, err
 	}
-	fmt.Println("service Search Item data -> ", resp)
+	fmt.Println("service SearchListCustommer data -> ", resp)
+	return resp, nil
+}
+
+func (s *service) UserLogIn(req *UserLogInRequest) (interface{}, error) {
+	resp, err := s.repo.UserLogIn(req)
+	if err != nil {
+		fmt.Println("error service level ", err.Error())
+		return nil, err
+	}
+	fmt.Println("service UserLogIn data -> ", resp)
+	return resp, nil
+}
+
+
+func (s *service) pickupNew(req *NewPickupRequest) (interface{}, error) {
+	resp, err := s.repo.PickupNew(req)
+	if err != nil {
+		fmt.Println("error service level ", err.Error())
+		return nil, err
+	}
+	fmt.Println("service Pickup New data -> ", resp)
 	return resp, nil
 }
 
