@@ -146,7 +146,13 @@ func userLogIn(s Service) interface{} {
 	return func(ctx context.Context, req *UserLogInRequest) (interface{}, error) {
 		fmt.Println("start endpoint userlogin usercode is => ", req.UserCode)
 		resp, err := s.UserLogIn(&UserLogInRequest{BranchId: req.BranchId, UserCode: req.UserCode, Password: req.Password})
+		if err != nil {
+			return nil, err
+		}
 
+		return resp, nil
+	}
+}
 func makeShiftOpen(s Service) interface{} {
 	type request struct {
 		token        string  `json:"token"`
