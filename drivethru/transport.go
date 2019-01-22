@@ -26,11 +26,17 @@ func MakeHandler(s Service) http.Handler {
 		ErrorEncoder:    errorEncoder,
 	})
 	mux := http.NewServeMux()
-	mux.Handle("/zone", m.Handler(SearchListCompany(s)))
+	mux.Handle("/userlogin",m.Handler(userLogIn(s)))
+	mux.Handle("/zone", m.Handler(makeListCompany(s)))
 	mux.Handle("/machine", m.Handler(makeListMachine(s)))
 	mux.Handle("/carbrand", m.Handler(makeSearchCarBranch(s)))
 	mux.Handle("/customer", m.Handler(makeSearchCustomer(s)))
 	mux.Handle("/item/search", m.Handler(makeItemSearch(s)))
+
+	mux.Handle("/pickup/new",m.Handler(pickupNew(s)))
+	//mux.Handle("/shift/open", m.Handler(makeShiftOpen(s)))
+
+
 	mux.Handle("/shift/open", m.Handler(makeShiftOpen(s)))
 	mux.Handle("/shift/close", m.Handler(makeShiftClose(s)))
 	return mustLogin()(mux)
@@ -98,6 +104,7 @@ func errorEncoder(w http.ResponseWriter, r *http.Request, err error) {
 		status = http.StatusNotFound
 	case PosNotHaveCreditCardData.Error():
 		status = http.StatusNotFound
+
 	default:
 		status = http.StatusForbidden
 	}

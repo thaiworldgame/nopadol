@@ -4,19 +4,21 @@ import (
 	"fmt"
 	"github.com/jmoiron/sqlx"
 	"github.com/mrtomyum/nopadol/drivethru"
+
+	//"github.com/satori/go.uuid"
+
 	"time"
 	"github.com/google/uuid"
+
 )
 
 type drivethruRepository struct{ db *sqlx.DB }
-
 
 type BranchModel struct {
 	Id   int64  `json:"id" db:"id"`
 	Code string `json:"code" db:"code"`
 	Name string `json:"name" db:"branch_name"`
 }
-
 
 func NewDrivethruRepository(db *sqlx.DB) drivethru.Repository {
 	return &drivethruRepository{db}
@@ -164,6 +166,31 @@ func (d *drivethruRepository)SearchItem(keyword string)(interface{},error){
 	return it,nil
 }
 
+func (d *drivethruRepository) UserLogIn(req *drivethru.UserLogInRequest) (interface{}, error) {
+	user := userLogInModel{}
+	return user.Userlogin(d.db, req)
+}
+
+
+
+func (d *drivethruRepository) PickupNew(req *drivethru.NewPickupRequest) (interface{}, error) {
+	pickup := pickupModel{}
+	return pickup.PickupNew(d.db, req)
+}
+
+func getBranch(db *sqlx.DB, branch_id int) string {
+	var branch_code string
+
+	lccommand := `select code from branch where id = ?`
+	err := db.Get(&branch_code, lccommand, branch_id)
+	if err != nil {
+		fmt.Println(err.Error())
+	}
+
+	fmt.Println("Branch Code =", branch_code)
+	return branch_code
+}
+
 
 func (d *drivethruRepository)ShiftOpen(req *drivethru.ShiftOpenRequest)(resp interface{},err error){
 	// todo:get token user info
@@ -211,3 +238,4 @@ func (d *drivethruRepository)ShiftClose(req *drivethru.ShiftCloseRequest)(resp i
 	}
 	return "success",nil
 }
+
