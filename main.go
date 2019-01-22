@@ -29,6 +29,7 @@ import (
 
 	drivethruservice "github.com/mrtomyum/nopadol/drivethru"
 
+	"encoding/json"
 )
 
 var mysql_np *sqlx.DB
@@ -199,6 +200,7 @@ func main() {
 	drivethruService := drivethruservice.New(drivethruRepo)
 
 	mux := http.NewServeMux()
+	mux.HandleFunc("/",healthCheckHandler)
 	//mux.Handle("/delivery/", http.StripPrefix("/delivery", delivery.MakeHandler(doService)))
 	//mux.Handle("/customer/", http.StripPrefix("/customer/v1", customerservice.MakeHandler(customerService)))
 	//mux.Handle("/employee/", http.StripPrefix("/employee/v1", employeeservice.MakeHandler(employeeService)))
@@ -223,4 +225,32 @@ func must(err error) {
 		fmt.Println("Error:", err)
 		log.Fatal(err)
 	}
+}
+
+
+func healthCheckHandler(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json; charset=utf-8")
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(struct {
+		Success bool `json:"success"`
+	}{true})
+}
+
+
+
+func apiVersionHandler(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json; charset=utf-8")
+	w.WriteHeader(http.StatusOK)
+	//t := time.Now()
+	json.NewEncoder(w).Encode(struct {
+		Version     string `json:"version"`
+		Description string `json:"description"`
+		Creator     string `json:"creator"`
+		LastUpdate  string `json:"lastupdate"`
+	}{
+		"0.1.0 BETA",
+		"Paybox Cloud Client Service",
+		"Paybox dev team 2016",
+		"2018-04-20",
+	})
 }

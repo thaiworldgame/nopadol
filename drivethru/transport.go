@@ -104,6 +104,7 @@ func errorEncoder(w http.ResponseWriter, r *http.Request, err error) {
 		status = http.StatusNotFound
 	case PosNotHaveCreditCardData.Error():
 		status = http.StatusNotFound
+
 	default:
 		status = http.StatusForbidden
 	}
