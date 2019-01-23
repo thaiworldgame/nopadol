@@ -101,9 +101,6 @@ func (q *ListQueueModel) SearchQueueList(db *sqlx.DB, req *drivethru.ListQueueRe
 		}, nil
 	}
 
-	//for queue, _ := range que{
-	//
-	//}
 	fmt.Println("q CarBrand = ", q.Id, q.QueueId, q.CarBrand, q.PlateNumber)
 	return que, nil
 }

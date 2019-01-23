@@ -100,7 +100,7 @@ func (s *service) ManagePickup(req *ManagePickupRequest) (interface{}, error) {
 		fmt.Println("error service level ", err.Error())
 		return nil, err
 	}
-	fmt.Println("service Pickup Manage data -> ", resp)
+	fmt.Println("service Pickup Manage Data -> ", resp)
 	return resp, nil
 }
 
