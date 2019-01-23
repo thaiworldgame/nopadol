@@ -201,6 +201,8 @@ func main() {
 
 	mux := http.NewServeMux()
 	mux.HandleFunc("/",healthCheckHandler)
+	mux.HandleFunc("/version", apiVersionHandler)
+
 	//mux.Handle("/delivery/", http.StripPrefix("/delivery", delivery.MakeHandler(doService)))
 	//mux.Handle("/customer/", http.StripPrefix("/customer/v1", customerservice.MakeHandler(customerService)))
 	//mux.Handle("/employee/", http.StripPrefix("/employee/v1", employeeservice.MakeHandler(employeeService)))
