@@ -26,13 +26,15 @@ func MakeHandler(s Service) http.Handler {
 		ErrorEncoder:    errorEncoder,
 	})
 	mux := http.NewServeMux()
-	mux.Handle("/userlogin",m.Handler(userLogIn(s)))
+	mux.Handle("/userlogin", m.Handler(userLogIn(s)))
 	mux.Handle("/zone", m.Handler(makeListCompany(s)))
 	mux.Handle("/machine", m.Handler(makeListMachine(s)))
 	mux.Handle("/carbrand", m.Handler(makeSearchCarBranch(s)))
 	mux.Handle("/customer", m.Handler(makeSearchCustomer(s)))
 	mux.Handle("/item/search", m.Handler(makeItemSearch(s)))
-	mux.Handle("/pickup/new",m.Handler(pickupNew(s)))
+	mux.Handle("/pickup/new", m.Handler(pickupNew(s)))
+	mux.Handle("/pickup/manage", m.Handler(managePickup(s)))
+	mux.Handle("/list_queue", m.Handler(makeSearchListQueue(s)))
 	//mux.Handle("/shift/open", m.Handler(makeShiftOpen(s)))
 
 	return mustLogin()(mux)

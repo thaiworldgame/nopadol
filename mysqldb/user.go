@@ -61,7 +61,7 @@ func (u *userLogInModel) Userlogin(db *sqlx.DB, req *drivethru.UserLogInRequest)
 	var check_exist int
 	var uuid string
 
-	lccommand_check := `select count(*) as vCount from user_access where user_id = ? and user_code = ? and expire_time > CURRENT_TIMESTAMP`
+	lccommand_check := `select count(*) as vCount from user_access where user_id = ? and user_code = ? and CONVERT_TZ(CURRENT_TIMESTAMP,'+00:00','+7:00') < expire_time`
 	err = db.Get(&check_exist, lccommand_check, user.Id, req.UserCode)
 	if err != nil {
 		fmt.Println(err.Error())

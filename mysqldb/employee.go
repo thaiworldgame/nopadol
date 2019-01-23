@@ -63,3 +63,10 @@ func map_employee_template(x EmployeeModel) employee.EmployeeTemplate {
 		SaleName: x.SaleName,
 	}
 }
+
+func (e *EmployeeModel) SearchBySaleCode(db *sqlx.DB, sale_code string) {
+	lcCommand := `select Id,SaleCode,SaleName from Sale where SaleCode = ? and ActiveStatus = 1`
+	rs := db.QueryRow(lcCommand, sale_code)
+	rs.Scan(&e.Id, &e.SaleCode, &e.SaleName)
+	return
+}

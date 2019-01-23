@@ -38,6 +38,25 @@ type (
 		CarBrand    string `json:"car_brand"`
 		AccessToken string `json:"access_token"`
 	}
+
+	ListQueueRequest struct {
+		AccessToken string `json:"access_token"`
+		CreateDate  string `json:"create_date"`
+		PickDate    string `json:"pick_date"`
+		Status      int    `json:"status"`
+		Page        string `json:"page"`
+		Keyword     string `json:"keyword"`
+		QueId       int    `json:"que_id"`
+	}
+
+	ManagePickupRequest struct {
+		AccessToken string  `json:"access_token"`
+		QueueId     int     `json:"queue_id"`
+		ItemBarcode string  `json:"item_barcode"`
+		QtyBefore   float64 `json:"qty_before"`
+		IsCancel    int     `json:"is_cancel"`
+		LineNumber  int     `json:"line_number"`
+	}
 )
 
 func makeListCompany(s Service) interface{} {
@@ -50,7 +69,7 @@ func makeListCompany(s Service) interface{} {
 
 		return map[string]interface{}{
 			"response": map[string]interface{}{
-				"process":     "Search Brand",
+				"process":     "Search Zone",
 				"processDesc": "Success",
 				"isSuccess":   true,
 			},
@@ -153,8 +172,32 @@ func userLogIn(s Service) interface{} {
 
 func pickupNew(s Service) interface{} {
 	return func(ctx context.Context, req *NewPickupRequest) (interface{}, error) {
-		fmt.Println("start endpoint userlogin usercode is => ", req.CarNumber)
-		resp, err := s.pickupNew(&NewPickupRequest{CarNumber:req.CarNumber,CarBrand:req.CarBrand,AccessToken:req.AccessToken})
+		fmt.Println("start endpoint pickupnew car number is => ", req.CarNumber)
+		resp, err := s.PickupNew(&NewPickupRequest{CarNumber: req.CarNumber, CarBrand: req.CarBrand, AccessToken: req.AccessToken})
+		if err != nil {
+			return nil, err
+		}
+
+		return resp, nil
+	}
+}
+
+func managePickup(s Service) interface{} {
+	return func(ctx context.Context, req *ManagePickupRequest) (interface{}, error) {
+		fmt.Println("start endpoint mange pickup que id is => ", req.QueueId)
+		resp, err := s.ManagePickup(&ManagePickupRequest{AccessToken: req.AccessToken, QueueId: req.QueueId, ItemBarcode: req.ItemBarcode, QtyBefore: req.QtyBefore, IsCancel: req.IsCancel})
+		if err != nil {
+			return nil, err
+		}
+
+		return resp, nil
+	}
+}
+
+func makeSearchListQueue(s Service) interface{} {
+	return func(ctx context.Context, req *ListQueueRequest) (interface{}, error) {
+		fmt.Println("start endpoint list queue createdate is => ", req.CreateDate)
+		resp, err := s.ListQueue(&ListQueueRequest{CreateDate: req.CreateDate, PickDate: req.PickDate, Status: req.Status, Page: req.Page, Keyword: req.Keyword, QueId: req.QueId, AccessToken: req.AccessToken})
 		if err != nil {
 			return nil, err
 		}
