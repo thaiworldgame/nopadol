@@ -155,24 +155,30 @@ func userLogIn(s Service) interface{} {
 }
 func makeShiftOpen(s Service) interface{} {
 	type request struct {
-		token        string  `json:"token"`
-		machineID    int     `json:"machine_id"`
-		changeAmount float64 `json:"change_amount"`
-		cashierID    int     `json:"cashier_id"`
-		whID         int     `json:"wh_id"`
-		remark       string  `json:"remark"`
+		Token        string  `json:"token"`
+		MachineID    int     `json:"machine_id"`
+		ChangeAmount float64 `json:"change_amount"`
+		CashierID    int     `json:"cashier_id"`
+		WhID         int     `json:"wh_id"`
+		Remark       string  `json:"remark"`
 	}
 	//maybe : use token to get user to open shift ?
 	return func(ctx context.Context, req *request) (interface{}, error) {
 		fmt.Println("start endpoint shift open ....")
+
+		//validate request data
+		if req.Token==""  {
+			return nil,fmt.Errorf("access token is require..")
+		}
+
 		resp, err := s.ShiftOpen(&ShiftOpenRequest{
-			Token:        req.token,
-			ChangeAmount: req.changeAmount,
-			MachineID:    req.machineID,
-			CashierID:    req.cashierID,
-			Remark:       req.remark,
+			Token:        req.Token,
+			ChangeAmount: req.ChangeAmount,
+			MachineID:    req.MachineID,
+			CashierID:    req.CashierID,
+			Remark:       req.Remark,
 			Created:      time.Now(),
-			WhID:         req.whID,
+			WhID:         req.WhID,
 		})
 
 		if err != nil {
@@ -204,26 +210,32 @@ func pickupNew(s Service) interface{} {
 
 func makeShiftClose(s Service) interface{} {
 	type request struct {
-		token            string  `json:"token"`
-		shiftUUID        string  `json:"shift_uuid"`
-		sumCashAmount    float64 `json:"sum_cash_amount"`
-		sumCreditAmount  float64 `json:"sum_credit_amount"`
-		sumBankAmount    float64 `json:"sum_bank_amount"`
-		sumCouponAmount  float64 `json:"sum_coupon_amount"`
-		sumDepositAmount float64 `json:"sum_deposit_amount"`
+		Token            string  `json:"token"`
+		ShiftUUID        string  `json:"shift_uuid"`
+		SumCashAmount    float64 `json:"sum_cash_amount"`
+		SumCreditAmount  float64 `json:"sum_credit_amount"`
+		SumBankAmount    float64 `json:"sum_bank_amount"`
+		SumCouponAmount  float64 `json:"sum_coupon_amount"`
+		SumDepositAmount float64 `json:"sum_deposit_amount"`
 	}
 	return func(ctx context.Context, req *request) (interface{}, error) {
-		fmt.Println("start endpoint shift open ....")
+		fmt.Println("start endpoint shift close ..request -> ",req)
+		//validate request data
+		if req.ShiftUUID=="" || req.Token=="" {
+			return nil,fmt.Errorf("shift id is empty value")
+		}
+
 		resp, err := s.ShiftClose(&ShiftCloseRequest{
-			Token:            req.token,
-			ShiftUUID:        req.shiftUUID,
-			SumCashAmount:    req.sumCashAmount,
-			SumCreditAmount:  req.sumCreditAmount,
-			SumBankAmount:    req.sumBankAmount,
-			SumCouponAmount:  req.sumCouponAmount,
-			SumDepositAmount: req.sumDepositAmount,
+			Token:            req.Token,
+			ShiftUUID:        req.ShiftUUID,
+			SumCashAmount:    req.SumCashAmount,
+			SumCreditAmount:  req.SumCreditAmount,
+			SumBankAmount:    req.SumBankAmount,
+			SumCouponAmount:  req.SumCouponAmount,
+			SumDepositAmount: req.SumDepositAmount,
 			ClosedAt:         time.Now(),
 		})
+
 		if err != nil {
 			return nil, err
 		}

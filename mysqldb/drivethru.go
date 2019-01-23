@@ -232,6 +232,8 @@ func (d *drivethruRepository)ShiftClose(req *drivethru.ShiftCloseRequest)(resp i
 	sh.closeTime.Time = time.Now()
 	sh.closeBy = uac.UserCode
 
+
+	fmt.Printf("shift_uid %s",sh.shiftUUid)
 	err = sh.Close(d.db)
 	if err != nil {
 		return "",err

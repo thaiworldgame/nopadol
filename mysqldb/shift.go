@@ -108,8 +108,16 @@ func (sh *ShiftModel) Close(db *sqlx.DB) error {
 	 			close_by = ?,
 	 			close_time = ?
 	 			where shift_uid = ?`
-	rs ,err := db.Exec(lcCommand,shiftStatusClose,sh.sumOfCashAmount,sh.sumOfCreditAmount,sh.sumOfBankAmount,
-	sh.sumOfCouponAmount,sh.sumOfDepositAmount,sh.closeBy,sh.closeTime.Time,sh.shiftUUid)
+	rs ,err := db.Exec(lcCommand,
+			shiftStatusClose,
+			sh.sumOfCashAmount,
+			sh.sumOfCreditAmount,
+			sh.sumOfBankAmount,
+			sh.sumOfCouponAmount,
+			sh.sumOfDepositAmount,
+			sh.closeBy,
+			sh.closeTime.Time,
+			sh.shiftUUid)
 	if err != nil {
 		fmt.Println("error when update table shift to close status ...")
 		return fmt.Errorf("Error When Update Table Shift : ",err.Error())
