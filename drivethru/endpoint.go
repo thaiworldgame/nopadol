@@ -179,7 +179,14 @@ func makeShiftOpen(s Service) interface{} {
 			return nil, err
 		}
 
-		return resp, nil
+		return map[string]interface{}{
+			"response": map[string]interface{}{
+				"process":     "Shift Open",
+				"processDesc": "Success",
+				"isSuccess":   true,
+			},
+			"shift_uuid": resp,
+		}, nil
 	}
 }
 
