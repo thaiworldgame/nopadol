@@ -61,7 +61,7 @@ func ConnectMySqlDB(dbName string) (db *sqlx.DB, err error) {
 func ConnectMysqlNP(dbName string) (db *sqlx.DB, err error) {
 	fmt.Println("Connect MySql")
 	dsn := "root:[ibdkifu88@tcp(nopadol.net:3306)/" + dbName + "?parseTime=true&charset=utf8&loc=Local"
-	fmt.Println(dsn,"DBName =", dbName)
+	//fmt.Println(dsn,"DBName =", dbName)
 	db, err = sqlx.Connect("mysql", dsn)
 	if err != nil {
 		fmt.Println("sql error =", err)
@@ -201,6 +201,8 @@ func main() {
 
 	mux := http.NewServeMux()
 	mux.HandleFunc("/",healthCheckHandler)
+	mux.HandleFunc("/version", apiVersionHandler)
+
 	//mux.Handle("/delivery/", http.StripPrefix("/delivery", delivery.MakeHandler(doService)))
 	//mux.Handle("/customer/", http.StripPrefix("/customer/v1", customerservice.MakeHandler(customerService)))
 	//mux.Handle("/employee/", http.StripPrefix("/employee/v1", employeeservice.MakeHandler(employeeService)))
@@ -216,7 +218,7 @@ func main() {
 
 	//mux.Handle("/p9/",http.StripPrefix("/p9/v1", p9service.MakeHandler(p9Service)))
 	//mux.Handle("/pointofsale/",http.StripPrefix("/pointofsale/v1", pointofsaleservice.MakeHandler(pointofsaleService)))
-	fmt.Println("Waiting for Accept Connection :  9999")
+	fmt.Println("Waiting for Accept Connection : 9999")
 	http.ListenAndServe(":9999", mux)
 }
 
