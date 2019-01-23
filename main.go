@@ -28,8 +28,20 @@ import (
 	//pointofsaleservice "github.com/mrtomyum/nopadol/pointofsale"
 
 	drivethruservice "github.com/mrtomyum/nopadol/drivethru"
-
 	"encoding/json"
+	"flag"
+)
+
+var (
+	dbFile      = "hostdb"
+	sqlFile     = "paybox.db"
+	mode        = "dev"
+	Version     = "undefined"
+	BuildTime   = "undefined"
+	GitHash     = "undefined"
+	logFlag     = flag.String("l", "debug", "กำหนดระดับ log -> info, warn, error, fatal, panic")
+	proFlag     = flag.Bool("p", false, "รันในโหมดโปรดักชั่น ใช้งานจริง ถ้าไม่ใส่โปรแกรมจะไม่เปิดอุปกรณ์รับเงิน")
+	versionFlag = flag.Bool("v", false, "show version info")
 )
 
 var mysql_np *sqlx.DB
@@ -129,6 +141,21 @@ func init() {
 }
 
 func main() {
+	flag.Parse()
+	log.Printf("################## Version: %s", Version)
+	log.Printf("################## Build Time: %s", BuildTime)
+	log.Printf("################## Git Hash: %s", GitHash)
+
+	switch {
+	case *versionFlag:
+		log.Printf("App Version: %s", Version)
+		log.Printf("Build Time: %s", BuildTime)
+		log.Printf("Git Hash: %s", GitHash)
+		return
+	case *proFlag:
+		log.Println("### APP Mode = Production ###")
+		mode = "pro"
+	}
 
 	//// Attemping to establish a connection to the database.
 	//sess, err := mssql.Open(settings)
