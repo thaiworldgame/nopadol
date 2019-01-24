@@ -17,7 +17,7 @@ import (
 	//
 	//customerservice "github.com/mrtomyum/nopadol/customer"
 	//employeeservice "github.com/mrtomyum/nopadol/employee"
-	//productservice "github.com/mrtomyum/nopadol/product"
+	productservice "github.com/mrtomyum/nopadol/product"
 	//posservice "github.com/mrtomyum/nopadol/pos"
 	//posconfigservice "github.com/mrtomyum/nopadol/posconfig"
 	//printservice "github.com/mrtomyum/nopadol/print"
@@ -188,8 +188,8 @@ func main() {
 	//employeeService := employeeservice.New(employeeRepo)
 
 	//init product
-	//productRepo := mysqldb.NewProductRepository(mysql_np)
-	//productService := productservice.New(productRepo)
+	productRepo := mysqldb.NewProductRepository(mysql_np)
+	productService := productservice.New(productRepo)
 
 	//init posconfig
 	//posconfigRepo := mysqldb.NewPosConfigRepository(mysql_dbc)
@@ -233,7 +233,7 @@ func main() {
 	//mux.Handle("/delivery/", http.StripPrefix("/delivery", delivery.MakeHandler(doService)))
 	//mux.Handle("/customer/", http.StripPrefix("/customer/v1", customerservice.MakeHandler(customerService)))
 	//mux.Handle("/employee/", http.StripPrefix("/employee/v1", employeeservice.MakeHandler(employeeService)))
-	//mux.Handle("/product/", http.StripPrefix("/product/v1", productservice.MakeHandler(productService)))
+	mux.Handle("/product/", http.StripPrefix("/product/v1", productservice.MakeHandler(productService)))
 	//mux.Handle("/posconfig/", http.StripPrefix("/posconfig/v1", posconfigservice.MakeHandler(posconfigService)))
 	//mux.Handle("/pos/", http.StripPrefix("/pos/v1", posservice.MakeHandler(posService)))
 	//mux.Handle("/print/", http.StripPrefix("/print/v1", printservice.MakeHandler(printService)))
