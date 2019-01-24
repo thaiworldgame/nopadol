@@ -22,7 +22,7 @@ type Service interface {
 	ManagePickup(req *ManagePickupRequest) (interface{}, error)
 	ListQueue(req *ListQueueRequest) (interface{}, error)
 
-	pickupNew(req *NewPickupRequest) (interface{}, error)
+	//pickupNew(req *NewPickupRequest) (interface{}, error)
 	ShiftOpen(*ShiftOpenRequest) (interface{},error)
 	ShiftClose(*ShiftCloseRequest) (interface{},error)
 
