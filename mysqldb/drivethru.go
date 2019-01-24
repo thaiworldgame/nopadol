@@ -4,7 +4,9 @@ import (
 	"fmt"
 	"github.com/jmoiron/sqlx"
 	"github.com/mrtomyum/nopadol/drivethru"
-	//"github.com/satori/go.uuid"
+
+	"time"
+	//"github.com/google/uuid"
 )
 
 type drivethruRepository struct{ db *sqlx.DB }
@@ -192,4 +194,51 @@ func getBranch(db *sqlx.DB, branch_id int) string {
 
 	fmt.Println("Branch Code =", branch_code)
 	return branch_code
+}
+
+func (d *drivethruRepository) ShiftOpen(req *drivethru.ShiftOpenRequest) (resp interface{}, err error) {
+	// todo:get token user info
+	// todo:get machine info ex:posno
+	// todo : open shift by machinecode & stamp user create shift
+	// todo : return shift_UUID
+
+	uac := UserAccess{}
+	uac.GetProfileByToken(d.db, req.Token)
+
+	// init shift objects
+	sh := ShiftModel{}
+	sh.docDate.Time = time.Now()
+	sh.companyID = uac.CompanyID
+	sh.branchID = uac.BranchID
+	sh.cashierID = req.CashierID
+	sh.changeAmount.Float64 = req.ChangeAmount
+	sh.openBy = uac.UserCode
+	sh.openTime.Time = time.Now()
+	sh.machineID = req.MachineID
+	sh.shiftUUid = GetAccessToken()
+	newShiftUID, err := sh.Open(d.db)
+	if err != nil {
+		return "", err
+	}
+	return newShiftUID, err
+}
+
+func (d *drivethruRepository) ShiftClose(req *drivethru.ShiftCloseRequest) (resp interface{}, err error) {
+	uac := UserAccess{}
+	uac.GetProfileByToken(d.db, req.Token)
+
+	sh := ShiftModel{}
+	sh.shiftUUid = req.ShiftUUID
+	sh.sumOfCashAmount = req.SumCashAmount
+	sh.sumOfCreditAmount = req.SumCreditAmount
+	sh.sumOfBankAmount = req.SumBankAmount
+	sh.sumOfCouponAmount = req.SumCouponAmount
+	sh.closeTime.Time = time.Now()
+	sh.closeBy = uac.UserCode
+
+	err = sh.Close(d.db)
+	if err != nil {
+		return "", err
+	}
+	return "success", nil
 }

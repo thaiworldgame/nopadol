@@ -17,9 +17,15 @@ type Service interface {
 	SearchCarBrand(string) (interface{}, error)
 	SearchCustomer(string) (interface{}, error)
 	SearchItem(string) (interface{}, error)
+
 	PickupNew(req *NewPickupRequest) (interface{}, error)
 	ManagePickup(req *ManagePickupRequest) (interface{}, error)
 	ListQueue(req *ListQueueRequest) (interface{}, error)
+
+	pickupNew(req *NewPickupRequest) (interface{}, error)
+	ShiftOpen(*ShiftOpenRequest) (interface{},error)
+	ShiftClose(*ShiftCloseRequest) (interface{},error)
+
 }
 
 func (s *service) SearchListCompany() (interface{}, error) {
@@ -85,6 +91,9 @@ func (s *service) UserLogIn(req *UserLogInRequest) (interface{}, error) {
 }
 
 func (s *service) PickupNew(req *NewPickupRequest) (interface{}, error) {
+
+
+
 	resp, err := s.repo.PickupNew(req)
 	if err != nil {
 		fmt.Println("error service level ", err.Error())
@@ -93,6 +102,7 @@ func (s *service) PickupNew(req *NewPickupRequest) (interface{}, error) {
 	fmt.Println("service Pickup New data -> ", resp)
 	return resp, nil
 }
+
 
 func (s *service) ManagePickup(req *ManagePickupRequest) (interface{}, error) {
 	resp, err := s.repo.ManagePickup(req)
@@ -112,4 +122,12 @@ func (s *service) ListQueue(req *ListQueueRequest) (interface{}, error) {
 	}
 	fmt.Println("service List Queue data -> ", resp)
 	return resp, nil
+}
+
+func (s *service)ShiftOpen(req *ShiftOpenRequest)(interface{},error){
+	return s.repo.ShiftOpen(req)
+}
+
+func (s *service)ShiftClose(req *ShiftCloseRequest)(interface{},error){
+	return s.repo.ShiftClose(req)
 }
