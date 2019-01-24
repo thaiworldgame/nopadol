@@ -71,7 +71,7 @@ func (pd *productRepository) SearchByBarcode(req *product.SearchByBarcodeTemplat
 		"pic_path_1":   pdt_resp.PicPath1,
 		"stk_qty":      pdt_resp.StkQty,
 		"stock_type":   pdt_resp.StockType,
-		"average_cost":pdt_resp.AverageCost,
+		"average_cost": pdt_resp.AverageCost,
 	}, nil
 	//return pdt_resp, nil
 }
@@ -200,4 +200,11 @@ func map_product_template(x ProductModel) product.ProductTemplate {
 		AverageCost: x.AverageCost,
 		StkLocation: stock,
 	}
+}
+
+func (p *ProductModel) SearchByBarcode(db *sqlx.DB, bar_code string) {
+	lccommand := `select distinct a.id,a.code as item_code,a.item_name,ifnull(a.pic_path1,'') as pic_path_1,b.bar_code,b.unit_code,c.sale_price_1,c.sale_price_2, ifnull(d.rate1,1) as rate_1,ifnull(a.stock_type,0) as stock_type,ifnull((select sum(qty)  as qty from StockLocation where item_code = a.code),0) as stk_qty,ifnull(d.rate1,1)*ifnull(a.average_cost,0) as average_cost from Item a inner join Barcode b on a.code = b.item_code inner join Price c on a.code = c.item_code and b.unit_code = c.unit_code left join ItemRate d on a.code = d.item_code and c.unit_code = d.unit_code where b.bar_code = ? `
+	rs := db.QueryRow(lccommand, bar_code)
+	rs.Scan(&p.Id, &p.ItemCode, &p.ItemName, &p.PicPath1, &p.BarCode, &p.UnitCode, &p.SalePrice1, &p.SalePrice2, &p.Rate1, p.StockType, &p.StkQty, &p.AverageCost)
+	return
 }

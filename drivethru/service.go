@@ -18,11 +18,13 @@ type Service interface {
 	SearchCustomer(string) (interface{}, error)
 	SearchItem(string) (interface{}, error)
 
-	pickupNew(req *NewPickupRequest) (interface{}, error)
+	PickupNew(req *NewPickupRequest) (interface{}, error)
+	ManagePickup(req *ManagePickupRequest) (interface{}, error)
+	ListQueue(req *ListQueueRequest) (interface{}, error)
 
+	pickupNew(req *NewPickupRequest) (interface{}, error)
 	ShiftOpen(*ShiftOpenRequest) (interface{},error)
 	ShiftClose(*ShiftCloseRequest) (interface{},error)
-
 
 }
 
@@ -53,7 +55,7 @@ func (s *service) SearchCarBrand(keyword string) (interface{}, error) {
 		fmt.Println("error service level ", err.Error())
 		return nil, err
 	}
-	fmt.Println("service SearchListMachine data -> ", resp)
+	fmt.Println("service SearchCarBrand data -> ", resp)
 
 	return resp, nil
 }
@@ -74,7 +76,7 @@ func (s *service) SearchItem(keyword string) (interface{}, error) {
 		fmt.Println("error service level ", err.Error())
 		return nil, err
 	}
-	fmt.Println("service SearchListCustommer data -> ", resp)
+	fmt.Println("service SearchItem data -> ", resp)
 	return resp, nil
 }
 
@@ -88,14 +90,37 @@ func (s *service) UserLogIn(req *UserLogInRequest) (interface{}, error) {
 	return resp, nil
 }
 
+func (s *service) PickupNew(req *NewPickupRequest) (interface{}, error) {
 
-func (s *service) pickupNew(req *NewPickupRequest) (interface{}, error) {
+
+
 	resp, err := s.repo.PickupNew(req)
 	if err != nil {
 		fmt.Println("error service level ", err.Error())
 		return nil, err
 	}
 	fmt.Println("service Pickup New data -> ", resp)
+	return resp, nil
+}
+
+
+func (s *service) ManagePickup(req *ManagePickupRequest) (interface{}, error) {
+	resp, err := s.repo.ManagePickup(req)
+	if err != nil {
+		fmt.Println("error service level ", err.Error())
+		return nil, err
+	}
+	fmt.Println("service Pickup Manage Data -> ", resp)
+	return resp, nil
+}
+
+func (s *service) ListQueue(req *ListQueueRequest) (interface{}, error) {
+	resp, err := s.repo.ListQueue(req)
+	if err != nil {
+		fmt.Println("error service level ", err.Error())
+		return nil, err
+	}
+	fmt.Println("service List Queue data -> ", resp)
 	return resp, nil
 }
 
@@ -106,4 +131,3 @@ func (s *service)ShiftOpen(req *ShiftOpenRequest)(interface{},error){
 func (s *service)ShiftClose(req *ShiftCloseRequest)(interface{},error){
 	return s.repo.ShiftClose(req)
 }
-
