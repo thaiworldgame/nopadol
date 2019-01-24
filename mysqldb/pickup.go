@@ -55,7 +55,7 @@ type ListQueueModel struct {
 }
 
 type OwnerPhoneModel struct {
-	phone_no string `json:"phone_no"`
+	Phone_no string `json:"phone_no" db:"phone_no"`
 }
 
 type QueueStatusHistoryModel struct {
@@ -92,14 +92,15 @@ type QueueItem struct {
 
 func (q *ListQueueModel) SearchQueueList(db *sqlx.DB, req *drivethru.ListQueueRequest) (interface{}, error) {
 	que := []ListQueueModel{}
+	que_data := []ListQueueModel{}
 
-	lccommand := `select id, que_id as queue_id, car_brand, ref_number as plate_number,uuid, doc_date, number_of_item, create_time as time_created, status, is_cancel, '' as ar_code, '' as ar_name, '' as sale_name, '' as sale_code, doc_no, doc_type as source, '' as receiver_name, pickup_time as pickup_date_time, total_amount, 0 as is_loaded, 0 as status_for_saleorder_current, ifnull(sum_item_amount,0) as total_before_amount, ifnull(total_amount,0) as total_after_amount, '' as otp_password, 0 as bill_type, '' as cancel_remark, '' as who_cancel, '' as sale_order from basket where doc_date = CURRENT_DATE `
+	lccommand := `select id, que_id as queue_id, car_brand, ref_number as plate_number,uuid, doc_date, number_of_item, create_time as time_created, status, is_cancel, '' as ar_code, '' as ar_name, '' as sale_name, '' as sale_code, doc_no, doc_type as source, '' as receiver_name, pickup_time as pickup_date_time, total_amount, 0 as is_loaded, 0 as status_for_saleorder_current, ifnull(sum_item_amount,0) as total_before_amount, ifnull(total_amount,0) as total_after_amount, '' as otp_password, 0 as bill_type, '' as cancel_remark, '' as who_cancel, '' as sale_order from basket where doc_date = CURRENT_DATE order by id`
 	err := db.Select(&que, lccommand)
 	if err != nil {
 		return map[string]interface{}{
 			"response": map[string]interface{}{
 				"process":     "queue list",
-				"processDesc": "Queue List Error = " + err.Error(),
+				"processDesc": "Queue List Doc Error = " + err.Error(),
 				"isSuccess":   false,
 			},
 		}, nil
@@ -107,7 +108,7 @@ func (q *ListQueueModel) SearchQueueList(db *sqlx.DB, req *drivethru.ListQueueRe
 
 	for _, qid := range que {
 
-		fmt.Println("que item = ", q.Id,qid.QueueId,qid.UUID,)
+		fmt.Println("que item = ", qid.Id, qid.QueueId, qid.UUID, )
 
 		lccommand := `select id, item_id, item_code, item_name ,bar_code as item_bar_code, request_qty, pick_qty as qty_before, checkout_qty as qty_after, price as item_price, unit_code as item_unit_code, pick_amount as total_price_before, checkout_amount as total_price_after, rate1, '' as sale_code, average_cost, line_number, '' as pick_zone_id from basket_sub where basket_id = ? and que_id = ? and uuid = ? and doc_date = CURDATE() order by line_number`
 		err := db.Select(&qid.Item, lccommand, qid.Id, qid.QueueId, qid.UUID)
@@ -115,14 +116,41 @@ func (q *ListQueueModel) SearchQueueList(db *sqlx.DB, req *drivethru.ListQueueRe
 			return map[string]interface{}{
 				"response": map[string]interface{}{
 					"process":     "queue list item",
-					"processDesc": "Queue List Error = " + err.Error(),
+					"processDesc": "Queue List item Error = " + err.Error(),
 					"isSuccess":   false,
 				},
 			}, nil
 		}
+
+		lccommand1 := `select phone_no from owner_phone where basket_id = ? and que_id = ? and uuid = ? and doc_no = ?  order by id`
+		err = db.Select(&qid.OwnerPhone, lccommand1, qid.Id, qid.QueueId, qid.UUID, qid.DocNo)
+		if err != nil {
+			return map[string]interface{}{
+				"response": map[string]interface{}{
+					"process":     "queue list phone",
+					"processDesc": "Queue List phone Error = " + err.Error(),
+					"isSuccess":   false,
+				},
+			}, nil
+		}
+
+		lccommand2 := `select phone_no from order_trust_phone where basket_id = ? and que_id = ? and uuid = ? and doc_no = ?  order by id`
+		err = db.Select(&qid.ReceiverPhone, lccommand2, qid.Id, qid.QueueId, qid.UUID, qid.DocNo)
+		if err != nil {
+			return map[string]interface{}{
+				"response": map[string]interface{}{
+					"process":     "queue list phone",
+					"processDesc": "Queue List phone Error = " + err.Error(),
+					"isSuccess":   false,
+				},
+			}, nil
+		}
+
+		que_data = append(que_data, qid)
+
 	}
 
-	return que, nil
+	return que_data, nil
 }
 
 func (p *pickupModel) PickupNew(db *sqlx.DB, req *drivethru.NewPickupRequest) (interface{}, error) { //ขอโดมแก้หน้ากาก ตอนทำ Pickup
@@ -182,6 +210,183 @@ func (p *pickupModel) PickupNew(db *sqlx.DB, req *drivethru.NewPickupRequest) (i
 }
 
 func (item *QueueItem) ManagePickup(db *sqlx.DB, req *drivethru.ManagePickupRequest) (interface{}, error) {
+	now := time.Now()
+	fmt.Println("yyyy-mm-dd date format : ", now.AddDate(0, 0, 0).Format("2006-01-02"))
+
+	if req.AccessToken == "" {
+		return map[string]interface{}{
+			"response": map[string]interface{}{
+				"success": false,
+				"error":   true,
+				"message": "Queue Not Have Access Token",
+			},
+			"queid": ""}, nil
+	}
+
+	if req.QueueId == 0 {
+		return map[string]interface{}{
+			"response": map[string]interface{}{
+				"success": false,
+				"error":   true,
+				"message": "Queue Id Not Assign",
+			},
+			"queid": ""}, nil
+	}
+
+	if req.ItemBarcode == "" {
+		return map[string]interface{}{
+			"response": map[string]interface{}{
+				"success": false,
+				"error":   true,
+				"message": "Queue Not Have Barcode",
+			},
+			"queid": ""}, nil
+	}
+
+	if req.QtyBefore == 0 {
+		return map[string]interface{}{
+			"response": map[string]interface{}{
+				"success": false,
+				"error":   true,
+				"message": "Queue Not Have Qty Pickup",
+			},
+			"queid": ""}, nil
+	}
+
+	q := ListQueueModel{}
+	q.Search(db, req.QueueId)
+
+	p := ProductModel{}
+	p.SearchByBarcode(db, req.ItemBarcode)
+
+	if p.ItemCode == "" {
+		return map[string]interface{}{
+			"response": map[string]interface{}{
+				"success": false,
+				"error":   true,
+				"message": "BarCode Not Have Data",
+			},
+			"queid": ""}, nil
+	}
+
+	u := UserAccess{}
+	u.GetProfileByToken(db, req.AccessToken)
+
+	s := EmployeeModel{}
+	s.SearchBySaleCode(db, u.UserCode)
+
+	fmt.Println("Car Number", q.PlateNumber)
+
+	item_exist := QueCheckItemExist(db, q.UUID, req.QueueId, p.ItemCode, p.UnitCode)
+
+	fmt.Println(item_exist)
+	if q.IsCancel == 0 {
+		if q.Status < 2 {
+			if item_exist == 0 {
+				fmt.Println("Insert")
+				lccommand := `insert basket_sub(basket_id, uuid, que_id, doc_date, item_id, item_code, item_name ,bar_code, request_qty, pick_qty, checkout_qty, price, unit_id, unit_code, pick_amount, checkout_amount, qty, remain_qty, rate1, ref_no, sale_id, average_cost, delivery_order_id , line_number, request_by, request_time, pick_by, pick_time) values(?, ?, ?, ?, ?, ?, ? ,?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ? , ?, ?, ?, ?, ?)`
+				resp, err := db.Exec(lccommand, q.Id, q.UUID, req.QueueId, q.DocDate, p.Id, p.ItemCode, p.ItemName, req.ItemBarcode, req.QtyBefore, req.QtyBefore, 0, p.SalePrice1, 0, p.UnitCode, req.QtyBefore*p.SalePrice1, 0, req.QtyBefore, req.QtyBefore, p.Rate1, q.PlateNumber, s.Id, p.AverageCost, 0, req.LineNumber, u.UserCode, now.String(), u.UserCode, now.String())
+				if err != nil {
+					return map[string]interface{}{
+						"response": map[string]interface{}{
+							"success": false,
+							"error":   true,
+							"message": err.Error(),
+						},
+						"queid": ""}, nil
+				}
+
+				fmt.Println(resp.LastInsertId())
+			} else {
+				fmt.Println("Update")
+				fmt.Println("UUID =", q.UUID, q.Id, req.QueueId, p.ItemCode, p.UnitCode, req.QtyBefore)
+				if req.IsCancel == 0 {
+					lccommand := `update basket_sub set request_qty=?, pick_qty=?, pick_amount=?, qty=?, remain_qty=? where basket_id = ? and uuid = ? and que_id = ? and item_code = ? and unit_code = ? and doc_date = CURDATE() `
+					resp, err := db.Exec(lccommand, req.QtyBefore, req.QtyBefore, req.QtyBefore*p.SalePrice1, req.QtyBefore, req.QtyBefore, q.Id, q.UUID, req.QueueId, p.ItemCode, p.UnitCode)
+					if err != nil {
+						return map[string]interface{}{
+							"response": map[string]interface{}{
+								"success": false,
+								"error":   true,
+								"message": err.Error(),
+							},
+							"queid": ""}, nil
+					}
+					fmt.Println(resp.LastInsertId())
+				} else {
+					lccommand := `update basket_sub set pick_qty=0, pick_amount=0, qty=0, remain_qty=0, is_cancel = 1, cancel_by = ?, cancel_time = ? where basket_id = ? and uuid = ? and que_id = ? and item_code = ? and unit_code = ? and doc_date = CURDATE() `
+					resp, err := db.Exec(lccommand, u.UserCode, now.String(), q.Id, q.UUID, req.QueueId, p.ItemCode, p.UnitCode)
+					if err != nil {
+						return map[string]interface{}{
+							"response": map[string]interface{}{
+								"success": false,
+								"error":   true,
+								"message": err.Error(),
+							},
+							"queid": ""}, nil
+					}
+					fmt.Println(resp.LastInsertId())
+				}
+
+			}
+
+			lccommand := `update basket set number_of_item = (select count(*) as vcount from basket_sub where basket_id = ? and uuid = ? and que_id = ? and doc_date = CURDATE()),sum_item_amount = (select sum(pick_amount) as sumamount from basket_sub where basket_id = ? and uuid = ? and que_id = ? and doc_date = CURDATE() and is_cancel = 0) where id = ? and uuid = ? and que_id = ? and doc_date = CURDATE()`
+			_, err := db.Exec(lccommand, q.Id, q.UUID, req.QueueId, q.Id, q.UUID, req.QueueId, q.Id, q.UUID, req.QueueId)
+			if err != nil {
+				fmt.Println(err.Error())
+			}
+
+			return map[string]interface{}{
+				"response": map[string]interface{}{
+					"success": true,
+					"error":   true,
+					"message": "",
+				},
+				"queid": map[string]interface{}{
+					"item_barcode":       p.BarCode,
+					"file_path":          p.PicPath1,
+					"is_cancel":          0,
+					"is_check":           0,
+					"item_code":          p.ItemCode,
+					"item_name":          p.ItemName,
+					"pickup_staff_name":  s.SaleName,
+					"sale_code":          s.SaleCode + "/" + s.SaleName,
+					"item_price":         p.SalePrice1,
+					"qty_after":          0,
+					"qty_before":         req.QtyBefore,
+					"qty_load":           0,
+					"total_price_after":  0,
+					"total_price_before": p.SalePrice1 * req.QtyBefore,
+					"item_unit_code":     p.UnitCode,
+					"request_qty":        0,
+					"item_qty":           req.QtyBefore,
+					"pick_zone_id":       "B",
+					"line_number":        req.LineNumber,
+				},
+			}, nil
+		} else {
+			return map[string]interface{}{
+				"response": map[string]interface{}{
+					"success": false,
+					"error":   true,
+					"message": "Queue is ref used",
+				},
+				"queid": ""}, nil
+		}
+
+	} else {
+		return map[string]interface{}{
+			"response": map[string]interface{}{
+				"success": false,
+				"error":   true,
+				"message": "Queue is cancel",
+			},
+			"queid": ""}, nil
+	}
+
+}
+
+func (item *QueueItem) ManageCheckOut(db *sqlx.DB, req *drivethru.ManagePickupRequest) (interface{}, error) {
 	now := time.Now()
 	fmt.Println("yyyy-mm-dd date format : ", now.AddDate(0, 0, 0).Format("2006-01-02"))
 
