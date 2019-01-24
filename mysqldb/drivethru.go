@@ -177,7 +177,8 @@ func (d *drivethruRepository) ManagePickup(req *drivethru.ManagePickupRequest) (
 }
 
 func (d *drivethruRepository) ListQueue(req *drivethru.ListQueueRequest) (interface{}, error) {
-	return nil, nil
+	pickup := ListQueueModel{}
+	return pickup.SearchQueueList(d.db, req)
 }
 
 func getBranch(db *sqlx.DB, branch_id int) string {

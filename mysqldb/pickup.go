@@ -20,38 +20,38 @@ type pickupModel struct {
 }
 
 type ListQueueModel struct {
-	Id                        int                     `json:"id"`
-	UUID                      string                  `json:"uuid"`
-	QueueId                   int                     `json:"queue_id"`
-	NumberOfItem              int                     `json:"number_of_item"`
-	TimeCreated               string                  `json:"time_created"`
-	Status                    int                     `json:"status"`
-	IsCancel                  int                     `json:"is_cancel"`
-	ArCode                    string                  `json:"ar_code"`
-	ArName                    string                  `json:"ar_name"`
-	SaleName                  string                  `json:"sale_name"`
-	SaleCode                  string                  `json:"sale_code"`
-	DocNo                     string                  `json:"doc_no"`
-	Source                    int                     `json:"source"`
-	ReceiverName              string                  `json:"receiver_name"`
-	DocDate                   string                  `json:"doc_date"`
-	PickupDateTime            string                  `json:"pickup_date_time"`
-	TotalAmount               float64                 `json:"total_amount"`
-	IsLoaded                  int                     `json:"is_loaded"`
-	CarBrand                  string                  `json:"car_brand"`
-	PlateNumber               string                  `json:"plate_number"`
-	StatusForSaleOrderCurrent int                     `json:"status_for_saleorder_current"`
-	TotalBeforeAmount         float64                 `json:"total_before_amount"`
-	TotalAfterAmount          float64                 `json:"total_after_amount"`
-	OTPPassword               string                  `json:"otp_password"`
-	BillType                  int                     `json:"bill_type"`
-	CancelRemark              string                  `json:"cancel_remark"`
-	WhoCancel                 string                  `json:"who_cancel"`
-	SaleOrder                 string                  `json:"sale_order"`
-	OwnerPhone                OwnerPhoneModel         `json:"owner_phone"`
-	ReceiverPhone             OwnerPhoneModel         `json:"receiver_phone"`
-	StatusForSaleorderHistory QueueStatusHistoryModel `json:"status_for_saleorder_history"`
-	Item                      QueueItem               `json:"item"`
+	Id                        int                       `json:"id" db:"id"`
+	UUID                      string                    `json:"uuid" db:"uuid"`
+	QueueId                   int                       `json:"queue_id" db:"queue_id"`
+	NumberOfItem              int                       `json:"number_of_item" db:"number_of_item"`
+	TimeCreated               string                    `json:"time_created" db:"time_created"`
+	Status                    int                       `json:"status" db:"status"`
+	IsCancel                  int                       `json:"is_cancel" db:"is_cancel"`
+	ArCode                    string                    `json:"ar_code" db:"ar_code"`
+	ArName                    string                    `json:"ar_name" db:"ar_name"`
+	SaleName                  string                    `json:"sale_name" db:"sale_name"`
+	SaleCode                  string                    `json:"sale_code" db:"sale_code"`
+	DocNo                     string                    `json:"doc_no" db:"doc_no"`
+	Source                    int                       `json:"source" db:"source"`
+	ReceiverName              string                    `json:"receiver_name" db:"receiver_name"`
+	DocDate                   string                    `json:"doc_date" db:"doc_date"`
+	PickupDateTime            string                    `json:"pickup_date_time" db:"pickup_date_time"`
+	TotalAmount               float64                   `json:"total_amount" db:"total_amount"`
+	IsLoaded                  int                       `json:"is_loaded" db:"is_loaded"`
+	CarBrand                  string                    `json:"car_brand" db:"car_brand"`
+	PlateNumber               string                    `json:"plate_number" db:"plate_number"`
+	StatusForSaleOrderCurrent int                       `json:"status_for_saleorder_current" db:"status_for_saleorder_current"`
+	TotalBeforeAmount         float64                   `json:"total_before_amount" db:"total_before_amount"`
+	TotalAfterAmount          float64                   `json:"total_after_amount" db:"total_after_amount"`
+	OTPPassword               string                    `json:"otp_password" db:"otp_password"`
+	BillType                  int                       `json:"bill_type" db:"bill_type"`
+	CancelRemark              string                    `json:"cancel_remark" db:"cancel_remark"`
+	WhoCancel                 string                    `json:"who_cancel" db:"who_cancel"`
+	SaleOrder                 string                    `json:"sale_order" db:"sale_order"`
+	OwnerPhone                []OwnerPhoneModel         `json:"owner_phone" db:"owner_phone"`
+	ReceiverPhone             []OwnerPhoneModel         `json:"receiver_phone" db:"receiver_phone"`
+	StatusForSaleorderHistory []QueueStatusHistoryModel `json:"status_for_saleorder_history" db:"status_for_saleorder_history"`
+	Item                      []QueueItem               `json:"item" db:"item"`
 }
 
 type OwnerPhoneModel struct {
@@ -65,43 +65,63 @@ type QueueStatusHistoryModel struct {
 }
 
 type QueueItem struct {
-	ItemBarCode      string  `json:"item_bar_code"`
-	FilePath         string  `json:"file_path"`
-	IsCancel         int     `json:"is_cancel"`
-	ISCheck          int     `json:"is_check"`
-	ItemCode         string  `json:"item_code"`
-	ItemName         string  `json:"item_name"`
-	PickupStaffName  string  `json:"pickup_staff_name"`
-	SaleCode         string  `json:"sale_code"`
-	ItemPrice        float64 `json:"item_price"`
-	QtyAfter         float64 `json:"qty_after"`
-	QtyBefore        float64 `json:"qty_before"`
-	QtyLoad          float64 `json:"qty_load"`
-	TotalPriceAfter  float64 `json:"total_price_after"`
-	TotalPriceBefore float64 `json:"total_price_before"`
-	ItemUnitCode     string  `json:"item_unit_code"`
-	RequestQty       float64 `json:"request_qty"`
-	ItemQty          float64 `json:"item_qty"`
-	PickZoneId       string  `json:"pick_zone_id"`
-	LineNumber       int     `json:"line_number"`
+	Id               int     `json:"id" db:"id"`
+	ItemBarCode      string  `json:"item_bar_code" db:"item_bar_code"`
+	FilePath         string  `json:"file_path" db:"file_path"`
+	IsCancel         int     `json:"is_cancel" db:"is_cancel"`
+	ISCheck          int     `json:"is_check" db:"is_check"`
+	ItemId           int     `json:"item_id" db:"item_id"`
+	ItemCode         string  `json:"item_code" db:"item_code"`
+	ItemName         string  `json:"item_name" db:"item_name"`
+	PickupStaffName  string  `json:"pickup_staff_name" db:"pickup_staff_name"`
+	SaleCode         string  `json:"sale_code" db:"sale_code"`
+	ItemPrice        float64 `json:"item_price" db:"item_price"`
+	QtyAfter         float64 `json:"qty_after" db:"qty_after"`
+	QtyBefore        float64 `json:"qty_before" db:"qty_before"`
+	QtyLoad          float64 `json:"qty_load" db:"qty_load"`
+	AverageCost      float64 `json:"average_cost" db:"average_cost"`
+	Rate1            int     `json:"rate_1" db:"rate1"`
+	TotalPriceAfter  float64 `json:"total_price_after" db:"total_price_after"`
+	TotalPriceBefore float64 `json:"total_price_before" db:"total_price_before"`
+	ItemUnitCode     string  `json:"item_unit_code" db:"item_unit_code"`
+	RequestQty       float64 `json:"request_qty" db:"request_qty"`
+	ItemQty          float64 `json:"item_qty" db:"item_qty"`
+	PickZoneId       string  `json:"pick_zone_id" db:"pick_zone_id"`
+	LineNumber       int     `json:"line_number" db:"line_number"`
 }
 
 func (q *ListQueueModel) SearchQueueList(db *sqlx.DB, req *drivethru.ListQueueRequest) (interface{}, error) {
 	que := []ListQueueModel{}
 
-	lccommand := `select id, que_id as queue_id, car_brand, ref_number as plate_number,uuid, doc_date, number_of_item, create_time as time_created, status, is_cancel, '' as ar_code, '' as ar_name, '' as sale_name, '' as sale_code, doc_no, doc_type as source, '' as receiver_name, pickup_time as pickup_date_time, total_amount, 0 as is_loaded, 0 as status_for_saleorder_current, 0 as total_before_amount, 0 as total_after_amount, '' as otp_password, 0 as bill_type, '' as cancel_remark, '' as who_cancel, '' as sale_order from basket where doc_date = CURRENT_DATE `
+	lccommand := `select id, que_id as queue_id, car_brand, ref_number as plate_number,uuid, doc_date, number_of_item, create_time as time_created, status, is_cancel, '' as ar_code, '' as ar_name, '' as sale_name, '' as sale_code, doc_no, doc_type as source, '' as receiver_name, pickup_time as pickup_date_time, total_amount, 0 as is_loaded, 0 as status_for_saleorder_current, ifnull(sum_item_amount,0) as total_before_amount, ifnull(total_amount,0) as total_after_amount, '' as otp_password, 0 as bill_type, '' as cancel_remark, '' as who_cancel, '' as sale_order from basket where doc_date = CURRENT_DATE `
 	err := db.Select(&que, lccommand)
 	if err != nil {
 		return map[string]interface{}{
 			"response": map[string]interface{}{
-				"process":     "pickup new",
-				"processDesc": err.Error(),
+				"process":     "queue list",
+				"processDesc": "Queue List Error = " + err.Error(),
 				"isSuccess":   false,
 			},
 		}, nil
 	}
 
-	fmt.Println("q CarBrand = ", q.Id, q.QueueId, q.CarBrand, q.PlateNumber)
+	for _, qid := range que {
+
+		fmt.Println("que item = ", q.Id,qid.QueueId,qid.UUID,)
+
+		lccommand := `select id, item_id, item_code, item_name ,bar_code as item_bar_code, request_qty, pick_qty as qty_before, checkout_qty as qty_after, price as item_price, unit_code as item_unit_code, pick_amount as total_price_before, checkout_amount as total_price_after, rate1, '' as sale_code, average_cost, line_number, '' as pick_zone_id from basket_sub where basket_id = ? and que_id = ? and uuid = ? and doc_date = CURDATE() order by line_number`
+		err := db.Select(&qid.Item, lccommand, qid.Id, qid.QueueId, qid.UUID)
+		if err != nil {
+			return map[string]interface{}{
+				"response": map[string]interface{}{
+					"process":     "queue list item",
+					"processDesc": "Queue List Error = " + err.Error(),
+					"isSuccess":   false,
+				},
+			}, nil
+		}
+	}
+
 	return que, nil
 }
 
