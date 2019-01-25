@@ -106,3 +106,21 @@ func SearchByKeyword(s Service) interface{} {
 		}, nil
 	}
 }
+
+func MakeNewProduct(s Service) interface{} {
+	type request struct {
+		Code     string `json:"code"`
+		Name     string `json:"name"`
+		UnitCode string `json:"unit_code"`
+	}
+	return func(ctx context.Context, req *request) (interface{}, error) {
+		//resp, err := s.StoreItem(&SearchByKeywordTemplate{Keyword: req.Keyword})
+		//if err != nil {
+		//	fmt.Println("endpoint error =", err.Error())
+		//	return nil, fmt.Errorf(err.Error())
+		//}
+		return map[string]interface{}{
+			"result": "success",
+		}, nil
+	}
+}
