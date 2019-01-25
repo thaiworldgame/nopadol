@@ -1,10 +1,10 @@
 package drivethru
 
 import (
-	"net/http"
-	"github.com/acoshift/hrpc"
 	"encoding/json"
 	"fmt"
+	"github.com/acoshift/hrpc"
+	"net/http"
 )
 
 type errorResponse struct {
@@ -37,11 +37,9 @@ func MakeHandler(s Service) http.Handler {
 	mux.Handle("/pickup/manage", m.Handler(managePickup(s)))
 	mux.Handle("/queue/list", m.Handler(makeSearchListQueue(s)))
 
-
 	//mux.Handle("/pickup/new",m.Handler(pickupNew(s)))
 
 	//mux.Handle("/shift/open", m.Handler(makeShiftOpen(s)))
-
 
 	mux.Handle("/shift/open", m.Handler(makeShiftOpen(s)))
 	mux.Handle("/shift/close", m.Handler(makeShiftClose(s)))
