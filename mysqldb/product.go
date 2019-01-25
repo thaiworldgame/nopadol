@@ -208,3 +208,44 @@ func (p *ProductModel) SearchByBarcode(db *sqlx.DB, bar_code string) {
 	rs.Scan(&p.Id, &p.ItemCode, &p.ItemName, &p.PicPath1, &p.BarCode, &p.UnitCode, &p.SalePrice1, &p.SalePrice2, &p.Rate1, p.StockType, &p.StkQty, &p.AverageCost)
 	return
 }
+
+
+func (p *productRepository) StoreItem(req *product.ProductNewRequest)(resp interface{},err error){
+
+	item := itemModel{}
+	err = item.map2itemModel(p.db,req)
+	if err != nil {
+		return nil,err
+	}
+
+	newItemID,err := item.save(p.db)
+	if err != nil {
+		return nil,err
+	}
+
+	// todo : insert to PackingRate Table
+	pk := packingRate{}
+	for _, value := range req.PackingRate {
+
+		u := itemUnitModel{}
+		u.getByID(p.db)
+
+		pk.RatePerBaseUnit = value.RatePerBaseUnit
+		pk.ItemID = newItemID
+		pk.ItemCode = req.ItemCode
+		pk.UnitCode  = u.unitCode
+
+		_,err = pk.save(p.db)
+		if err != nil {
+			return nil,err
+		}
+	}
+
+
+
+
+	return newItemID,nil
+	// todo : insert to Price table
+	// todo : insert to Barcode table
+}
+

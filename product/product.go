@@ -28,6 +28,22 @@ type ProductTemplate struct {
 	StkLocation []StockTemplate `json:"stk_location"`
 }
 
+type ProductNewRequest struct {
+	ItemCode    string            `json:"item_code"`
+	ItemName    string            `json:"item_name"`
+	UnitID      int64             `json:"unit_id"`
+	Picture     string            `json:"picture"`
+	StockType   int               `json:"stock_type"`
+	Barcode     []BarcodeTemplate `json:"barcode"`
+	Price       []PriceTemplate   `json:"price"`
+	PackingRate []PackingRate     `json:"packing_rate"`
+}
+
+type PackingRate struct {
+	UnitID          int64 `json:"unit_id"`
+	RatePerBaseUnit int `json:"rate_per_base_unit"`
+}
+
 type StockTemplate struct {
 	WHCode      string  `json:"wh_code"`
 	ShelfCode   string  `json:"shelf_code"`
@@ -42,6 +58,22 @@ type SearchProductStockTemplate struct {
 	ShelfCode string  `json:"shelf_code"`
 	Qty       float64 `json:"qty"`
 	UnitCode  string  `json:"unit_code"`
+}
+
+type BarcodeTemplate struct {
+	Id      int64  `json:"id"`
+	ItemID  int64  `json:"item_id"`
+	Barcode string `json:"barcode"`
+	UnitID  int64  `json:"unit_id"`
+}
+
+type PriceTemplate struct {
+	Id         int64   `json:"id"`
+	ItemID     int64   `json:"item_id"`
+	UnitID     int64   `json:"unit_id"`
+	SalePrice1 float64 `json:"sale_price_1"`
+	SalePrice2 float64 `json:"sale_price_2"`
+	SaleType   int     `json:"sale_type"`
 }
 
 //type Item struct {

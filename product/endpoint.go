@@ -108,19 +108,76 @@ func SearchByKeyword(s Service) interface{} {
 }
 
 func MakeNewProduct(s Service) interface{} {
+	type request_price struct {
+		UnitID     int64   `json:"unit_id"`
+		SalePrice1 float64 `json:"sale_price_1"`
+		SalePrice2 float64 `json:"sale_price_2"`
+		SaleType   int     `json:"sale_type"`
+	}
+	type request_barcode struct {
+		Barcode string `json:"barcode"`
+		UnitID  int64  `json:"unit_id"`
+	}
+
+	type request_packingrate struct {
+		UnitID          int64 `json:"unit_id"`
+		RatePerBaseUnit int `json:"rate_per_base_unit"`
+	}
 	type request struct {
-		Code     string `json:"code"`
-		Name     string `json:"name"`
-		UnitCode string `json:"unit_code"`
+		Code        string                `json:"code"`
+		Name        string                `json:"name"`
+		UnitID      int64                 `json:"unit_code"`
+		Picture     string                `json:"picture"`
+		StockType   int                   `json:"stock_type"`
+		Price       []request_price       `json:"price"`
+		Barcode     []request_barcode     `json:"barcode"`
+		PackingRate []request_packingrate `json:"packing_rate"`
 	}
 	return func(ctx context.Context, req *request) (interface{}, error) {
-		//resp, err := s.StoreItem(&SearchByKeywordTemplate{Keyword: req.Keyword})
-		//if err != nil {
-		//	fmt.Println("endpoint error =", err.Error())
-		//	return nil, fmt.Errorf(err.Error())
-		//}
+
+		var barcodes []BarcodeTemplate
+		// bind barcode template
+		for _, value := range req.Barcode {
+			bct := BarcodeTemplate{}
+			bct.Barcode = value.Barcode
+			bct.UnitID = value.UnitID
+			barcodes = append(barcodes, bct)
+		}
+
+		// bind price template
+		var prices []PriceTemplate
+		for _, value := range req.Price {
+			pr := PriceTemplate{}
+			pr.SalePrice1 = value.SalePrice1
+			pr.SalePrice2 = value.SalePrice2
+			pr.UnitID = value.UnitID
+			pr.SaleType = value.SaleType
+			prices = append(prices, pr)
+		}
+
+		var Rates []PackingRate
+		for _, value := range req.PackingRate {
+			rt := PackingRate{}
+			rt.RatePerBaseUnit = value.RatePerBaseUnit
+			rt.UnitID = value.UnitID
+		}
+
+		resp, err := s.StoreItem(&ProductNewRequest{
+			ItemCode:    req.Code,
+			ItemName:    req.Name,
+			UnitID:      req.UnitID,
+			StockType:   req.StockType,
+			Picture:     req.Picture,
+			Barcode:     barcodes,
+			Price:       prices,
+			PackingRate: Rates,
+		})
+		if err != nil {
+			fmt.Println("endpoint error =", err.Error())
+			return nil, fmt.Errorf(err.Error())
+		}
 		return map[string]interface{}{
-			"result": "success",
+			"result": resp,
 		}, nil
 	}
 }
