@@ -108,24 +108,31 @@ func SearchByKeyword(s Service) interface{} {
 }
 
 func MakeNewProduct(s Service) interface{} {
+	// unitID กรณี รับจากระบบ erp บน Web รับเป็น ID ก็ได้
+	// unitID กรณี รับจากการโอนจาก BC ให้รับเป็น UnitCode แทน
+	// unitID กรณี ส่งมาเป็น UnitID หรือ UnitCode อย่างใดอย่างนึง ต้อง Bind ค่า ให้ครบก่อนน่าจะดี
 	type request_price struct {
 		UnitID     int64   `json:"unit_id"`
+		UnitCode   string  `json:"unit_code"`
 		SalePrice1 float64 `json:"sale_price_1"`
 		SalePrice2 float64 `json:"sale_price_2"`
 		SaleType   int     `json:"sale_type"`
 	}
 	type request_barcode struct {
-		Barcode string `json:"barcode"`
-		UnitID  int64  `json:"unit_id"`
+		Barcode  string `json:"barcode"`
+		UnitCode string `json:"unit_code"`
+		UnitID   int64  `json:"unit_id"`
 	}
 
 	type request_packingrate struct {
-		UnitID          int64 `json:"unit_id"`
-		RatePerBaseUnit int `json:"rate_per_base_unit"`
+		UnitID          int64  `json:"unit_id"`
+		UnitCode        string `json:"unit_code"`
+		RatePerBaseUnit int    `json:"rate_per_base_unit"`
 	}
 	type request struct {
 		Code        string                `json:"code"`
 		Name        string                `json:"name"`
+		UnitCode    string                `json:"unit_code"`
 		UnitID      int64                 `json:"unit_code"`
 		Picture     string                `json:"picture"`
 		StockType   int                   `json:"stock_type"`
