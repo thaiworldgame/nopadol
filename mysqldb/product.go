@@ -228,6 +228,7 @@ func (p *productRepository) StoreItem(req *product.ProductNewRequest)(resp inter
 	for _, value := range req.PackingRate {
 
 		u := itemUnitModel{}
+		u.id = req.UnitID
 		u.getByID(p.db)
 
 		pk.RatePerBaseUnit = value.RatePerBaseUnit
@@ -241,11 +242,29 @@ func (p *productRepository) StoreItem(req *product.ProductNewRequest)(resp inter
 		}
 	}
 
+	// price insert
+	// todo : insert to Price table , split to priceInsert(req.Price)
+	pr := priceModel{}
+	for _, value := range req.Price {
+
+		u := itemUnitModel{}
+		u.id = value.UnitID
+		u.getByID(p.db) // bind จาก id
+
+		pr.UnitID = req.UnitID
+		pr.ItemId = value.ItemID
+		pr.SalePrice1 = value.SalePrice1
+		pr.SalePrice2 = value.SalePrice2
+		_,err := pr.save(p.db)
+		if err != nil {
+			return nil,err
+		}
+
+	}
 
 
 
 	return newItemID,nil
-	// todo : insert to Price table
 	// todo : insert to Barcode table
 }
 
