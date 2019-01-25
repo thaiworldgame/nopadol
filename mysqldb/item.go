@@ -3,6 +3,7 @@ package mysqldb
 import (
 	"github.com/jmoiron/sqlx"
 	"github.com/mrtomyum/nopadol/product"
+	"fmt"
 )
 
 type itemModel struct {
@@ -31,13 +32,14 @@ type priceModel struct {
 
 func (it *itemModel)map2itemModel(db *sqlx.DB,req *product.ProductNewRequest)(err error){
 	u := itemUnitModel{id : req.UnitID}
-
-	err = u.getByCode(db)
+	fmt.Println("map2itemModel  unitid -->",req.UnitID)
+	err = u.getByID(db)
 		it.Code = req.ItemCode
 		it.Name =  req.ItemName
 		it.UnitCode = u.unitCode
 		it.PicPath1 =  req.Picture
 		it.StockType =  req.StockType
+	fmt.Println("map2itemModel return ",it.UnitCode)
 	return
 }
 

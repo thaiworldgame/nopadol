@@ -111,36 +111,36 @@ func MakeNewProduct(s Service) interface{} {
 	// unitID กรณี รับจากระบบ erp บน Web รับเป็น ID ก็ได้
 	// unitID กรณี รับจากการโอนจาก BC ให้รับเป็น UnitCode แทน
 	// unitID กรณี ส่งมาเป็น UnitID หรือ UnitCode อย่างใดอย่างนึง ต้อง Bind ค่า ให้ครบก่อนน่าจะดี
-	type request_price struct {
+	type requestPrice struct {
 		UnitID     int64   `json:"unit_id"`
 		UnitCode   string  `json:"unit_code"`
 		SalePrice1 float64 `json:"sale_price_1"`
 		SalePrice2 float64 `json:"sale_price_2"`
 		SaleType   int     `json:"sale_type"`
 	}
-	type request_barcode struct {
+	type requestBarcode struct {
 		Barcode  string `json:"barcode"`
 		UnitCode string `json:"unit_code"`
 		UnitID   int64  `json:"unit_id"`
 	}
 
-	type request_packingrate struct {
+	type RequestPacking struct {
 		UnitID          int64  `json:"unit_id"`
 		UnitCode        string `json:"unit_code"`
 		RatePerBaseUnit int    `json:"rate_per_base_unit"`
 	}
-	type request struct {
+	type requestNewItem struct {
 		Code        string                `json:"code"`
 		Name        string                `json:"name"`
 		UnitCode    string                `json:"unit_code"`
-		UnitID      int64                 `json:"unit_code"`
+		UnitID      int64                 `json:"unit_id"`
 		Picture     string                `json:"picture"`
 		StockType   int                   `json:"stock_type"`
-		Price       []request_price       `json:"price"`
-		Barcode     []request_barcode     `json:"barcode"`
-		PackingRate []request_packingrate `json:"packing_rate"`
+		Price       []requestPrice       `json:"price"`
+		Barcode     []requestBarcode     `json:"barcode"`
+		PackingRate []RequestPacking `json:"packing_rate"`
 	}
-	return func(ctx context.Context, req *request) (interface{}, error) {
+	return func(ctx context.Context, req *requestNewItem) (interface{}, error) {
 
 		var barcodes []BarcodeTemplate
 		// bind barcode template
@@ -169,6 +169,8 @@ func MakeNewProduct(s Service) interface{} {
 			rt.UnitID = value.UnitID
 		}
 
+
+		fmt.Println("request data ->",req)
 		resp, err := s.StoreItem(&ProductNewRequest{
 			ItemCode:    req.Code,
 			ItemName:    req.Name,

@@ -229,6 +229,7 @@ func (p *productRepository) StoreItem(req *product.ProductNewRequest)(resp inter
 
 		u := itemUnitModel{}
 		u.id = req.UnitID
+
 		u.getByID(p.db)
 
 		pk.RatePerBaseUnit = value.RatePerBaseUnit
