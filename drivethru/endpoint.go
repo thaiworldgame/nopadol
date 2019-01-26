@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"context"
 	"time"
-
 )
 
 type (
@@ -58,6 +57,37 @@ type (
 		QtyBefore   float64 `json:"qty_before"`
 		IsCancel    int     `json:"is_cancel"`
 		LineNumber  int     `json:"line_number"`
+	}
+
+	ManageCheckoutRequest struct {
+		AccessToken string  `json:"access_token"`
+		QueueId     int     `json:"queue_id"`
+		ItemBarcode string  `json:"item_barcode"`
+		QtyAfter    float64 `json:"qty_after"`
+		IsCancel    int     `json:"is_cancel"`
+		LineNumber  int     `json:"line_number"`
+	}
+
+	QueueEditRequest struct {
+		AccessToken string `json:"access_token"`
+		CarBrand    string `json:"car_brand"`
+		QueueId     int    `json:"queue_id"`
+		Status      int    `json:"status"`
+		SaleCode    string `json:"sale_code"`
+		PlateNumber string `json:"plate_number"`
+	}
+
+	QueueStatusRequest struct {
+		AccessToken               string `json:"access_token"`
+		QueueId                   int    `json:"queue_id"`
+		StatusForSaleorderCurrent int    `json:"status_for_saleorder_current"`
+		IsLoad                    int    `json:"is_load"`
+		CancelRemark              string `json:"cancel_remark"`
+	}
+
+	QueueProductRequest struct {
+		AccessToken string `json:"access_token"`
+		QueueId     int    `json:"queue_id"`
 	}
 )
 
@@ -160,7 +190,6 @@ func makeItemSearch(s Service) interface{} {
 	}
 }
 
-
 func userLogIn(s Service) interface{} {
 	return func(ctx context.Context, req *UserLogInRequest) (interface{}, error) {
 		fmt.Println("start endpoint userlogin usercode is => ", req.UserCode)
@@ -186,8 +215,8 @@ func makeShiftOpen(s Service) interface{} {
 		fmt.Println("start endpoint shift open ....")
 
 		//validate request data
-		if req.Token==""  {
-			return nil,fmt.Errorf("access token is require..")
+		if req.Token == "" {
+			return nil, fmt.Errorf("access token is require..")
 		}
 
 		resp, err := s.ShiftOpen(&ShiftOpenRequest{
@@ -239,10 +268,59 @@ func managePickup(s Service) interface{} {
 	}
 }
 
+func manageCheckout(s Service) interface{} {
+	return func(ctx context.Context, req *ManageCheckoutRequest) (interface{}, error) {
+		fmt.Println("start endpoint mange checkout que id is => ", req.QueueId)
+		resp, err := s.ManageCheckout(&ManageCheckoutRequest{AccessToken: req.AccessToken, QueueId: req.QueueId, ItemBarcode: req.ItemBarcode, QtyAfter: req.QtyAfter, IsCancel: req.IsCancel})
+		if err != nil {
+			return nil, err
+		}
+
+		return resp, nil
+	}
+}
+
 func makeSearchListQueue(s Service) interface{} {
 	return func(ctx context.Context, req *ListQueueRequest) (interface{}, error) {
 		fmt.Println("start endpoint list queue createdate is => ", req.CreateDate)
 		resp, err := s.ListQueue(&ListQueueRequest{CreateDate: req.CreateDate, PickDate: req.PickDate, Status: req.Status, Page: req.Page, Keyword: req.Keyword, QueId: req.QueId, AccessToken: req.AccessToken})
+		if err != nil {
+			return nil, err
+		}
+
+		return resp, nil
+	}
+}
+
+func queueProduct(s Service) interface{} {
+	return func(ctx context.Context, req *QueueProductRequest) (interface{}, error) {
+		fmt.Println("start endpoint queue product queue is => ", req.QueueId)
+		resp, err := s.QueueProduct(&QueueProductRequest{AccessToken: req.AccessToken, QueueId:req.QueueId})
+		if err != nil {
+			return nil, err
+		}
+
+		return resp, nil
+	}
+}
+
+func queueEdit(s Service) interface{} {
+	return func(ctx context.Context, req *QueueEditRequest) (interface{}, error) {
+		fmt.Println("start endpoint list queue edit is => ", req.QueueId)
+		resp, err := s.QueueEdit(&QueueEditRequest{QueueId: req.QueueId, CarBrand: req.CarBrand, PlateNumber: req.PlateNumber, SaleCode: req.SaleCode, Status: req.Status, AccessToken: req.AccessToken})
+		if err != nil {
+			return nil, err
+		}
+
+		return resp, nil
+	}
+}
+
+func queueStatus(s Service) interface{} {
+	return func(ctx context.Context, req *QueueStatusRequest) (interface{}, error) {
+		fmt.Println("start endpoint list queue status is => ", req.QueueId)
+		fmt.Println("start endpoint list queue edit is => ", req.QueueId)
+		resp, err := s.QueueStatus(&QueueStatusRequest{AccessToken: req.AccessToken, QueueId: req.QueueId, StatusForSaleorderCurrent: req.StatusForSaleorderCurrent, IsLoad: req.IsLoad})
 		if err != nil {
 			return nil, err
 		}
@@ -262,10 +340,10 @@ func makeShiftClose(s Service) interface{} {
 		SumDepositAmount float64 `json:"sum_deposit_amount"`
 	}
 	return func(ctx context.Context, req *request) (interface{}, error) {
-		fmt.Println("start endpoint shift close ..request -> ",req)
+		fmt.Println("start endpoint shift close ..request -> ", req)
 		//validate request data
-		if req.ShiftUUID=="" || req.Token=="" {
-			return nil,fmt.Errorf("shift id is empty value")
+		if req.ShiftUUID == "" || req.Token == "" {
+			return nil, fmt.Errorf("shift id is empty value")
 		}
 
 		resp, err := s.ShiftClose(&ShiftCloseRequest{

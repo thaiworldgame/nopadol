@@ -33,6 +33,7 @@ type RequestConfigModel struct {
 	SaleBillType    int64  `db:"sale_bill_type"`
 	BuyBillType     int64  `db:"buy_bill_type"`
 	LogoPath        string `db:"logo_path"`
+	DefCustCode     string `json:"def_cust_code"`
 	ActiveStatus    int    `db:"active_status"`
 	CreateBy        string `db:"create_by"`
 	CreateTime      string `db:"create_time"`
@@ -127,7 +128,6 @@ func map_config_template(x RequestConfigModel) companyconfig.RequestConfigTempla
 	}
 }
 
-
 func GenUUID() string {
 	//u1 := uuid.Must(uuid.NewV4())
 	//fmt.Printf("UUIDv4: %s\n", u1)
@@ -149,4 +149,13 @@ func GenUUID() string {
 	//fmt.Printf("Successfully parsed: %s", u2)
 
 	return uuid.String()
+}
+
+func (config *RequestConfigModel) Search(db *sqlx.DB, company_id int, branch_id int) {
+	sql := `select a.id,com_sys_id,a.company_name,ifnull(a.name_eng,'') as name_eng,ifnull(a.address,'') as address,ifnull(b.telephone,'') as telephone,ifnull(b.fax,'') as fax,ifnull(a.tax_number,'') as tax_number,ifnull(email,'') as email,ifnull(a.web_site,'') as web_site,c.tax_rate,ifnull(b.branch_name,'') as branch_name,ifnull(b.address,'') as branch_address,ifnull(b.telephone,'') as branch_telephone,c.stock_status,c.sale_tax_type,c.buy_tax_type,ifnull(d.wh_code,'') as def_sale_wh,'-' as def_sale_shelf,ifnull(e.wh_code,'') as def_buy_wh,'-' as def_buy_shelf,ifnull(c.sale_bill_type,0) as sale_bill_type,ifnull(buy_bill_type,0) as buy_bill_type,ifnull(c.logo_path,'') as logo_path, ifnull(f.code,'') as  def_cust_code from company a inner join branch b on a.id = b.company_id left join configuration c on a.id = c.company_id and b.id = c.branch_id left join warehouse d on c.def_sale_wh_id = d.id and a.id = d.company_id and b.id = d.branch_id left join warehouse e on c.def_buy_wh_id = e.id  and a.id = e.company_id and b.id = e.branch_id left join Customer f on c.def_cust_id = f.id where a.company = ? and b.id = ? and a.active_status = 1 `
+	err := db.Get(&config, sql, company_id, branch_id)
+	if err != nil {
+		fmt.Println("err = ", err.Error())
+	}
+	return
 }

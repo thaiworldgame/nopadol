@@ -35,13 +35,15 @@ func MakeHandler(s Service) http.Handler {
 
 	mux.Handle("/pickup/new", m.Handler(pickupNew(s)))
 	mux.Handle("/pickup/manage", m.Handler(managePickup(s)))
+	mux.Handle("/checkout/manage", m.Handler(manageCheckout(s)))
 	mux.Handle("/queue/list", m.Handler(makeSearchListQueue(s)))
-
+	mux.Handle("/queue/edit", m.Handler(queueEdit(s)))
+	mux.Handle("/queue/status", m.Handler(queueStatus(s)))
+	mux.Handle("/queue/product", m.Handler(queueProduct(s)))
 
 	//mux.Handle("/pickup/new",m.Handler(pickupNew(s)))
 
 	//mux.Handle("/shift/open", m.Handler(makeShiftOpen(s)))
-
 
 	mux.Handle("/shift/open", m.Handler(makeShiftOpen(s)))
 	mux.Handle("/shift/close", m.Handler(makeShiftClose(s)))
