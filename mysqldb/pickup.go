@@ -35,7 +35,7 @@ type ListQueueModel struct {
 	Source                    int                       `json:"source" db:"source"`
 	ReceiverName              string                    `json:"receiver_name" db:"receiver_name"`
 	DocDate                   string                    `json:"doc_date" db:"doc_date"`
-	PickupDateTime            string                    `json:"pickup_date_time" db:"pickup_date_time"`
+	PickupDateTime            string                    `json:"pickup_datetime" db:"pickup_datetime"`
 	TotalAmount               float64                   `json:"total_amount" db:"total_amount"`
 	IsLoaded                  int                       `json:"is_loaded" db:"is_loaded"`
 	CarBrand                  string                    `json:"car_brand" db:"car_brand"`
@@ -94,8 +94,10 @@ func (q *ListQueueModel) SearchQueueList(db *sqlx.DB, req *drivethru.ListQueueRe
 	que := []ListQueueModel{}
 	que_data := []ListQueueModel{}
 
-	lccommand := `select id, que_id as queue_id, car_brand, ref_number as plate_number,uuid, doc_date, number_of_item, create_time as time_created, status, is_cancel, '' as ar_code, '' as ar_name, '' as sale_name, '' as sale_code, doc_no, doc_type as source, '' as receiver_name, pickup_time as pickup_date_time, total_amount, 0 as is_loaded, 0 as status_for_saleorder_current, ifnull(sum_item_amount,0) as total_before_amount, ifnull(total_amount,0) as total_after_amount, '' as otp_password, 0 as bill_type, '' as cancel_remark, '' as who_cancel, '' as sale_order from basket where doc_date = CURRENT_DATE order by id`
-	err := db.Select(&que, lccommand)
+	//lccommand := `select id, que_id as queue_id, car_brand, ref_number as plate_number,uuid, doc_date, number_of_item, create_time as time_created, status, is_cancel, '' as ar_code, '' as ar_name, '' as sale_name, '' as sale_code, doc_no, doc_type as source, '' as receiver_name, pickup_time as pickup_datetime, total_amount, 0 as is_loaded, 0 as status_for_saleorder_current, ifnull(sum_item_amount,0) as total_before_amount, ifnull(total_amount,0) as total_after_amount, '' as otp_password, 0 as bill_type, '' as cancel_remark, '' as who_cancel, '' as sale_order from basket where doc_date = CURRENT_DATE order by id`
+	lccommand := `call USP_DT_SearchListQue(?, ?, ?, ?, ?, ?)`
+	err := db.Select(&que, lccommand, req.PickDate, req.CreateDate, req.Status, req.Page, req.Keyword, req.QueId)
+	//err := db.Select(&que, lccommand)
 	if err != nil {
 		return map[string]interface{}{
 			"response": map[string]interface{}{
@@ -108,7 +110,7 @@ func (q *ListQueueModel) SearchQueueList(db *sqlx.DB, req *drivethru.ListQueueRe
 
 	for _, qid := range que {
 
-		fmt.Println("que item = ", qid.Id, qid.QueueId, qid.UUID, )
+		fmt.Println("que item = ", qid.Id, qid.QueueId, qid.UUID )
 
 		lccommand := `select id, item_id, item_code, item_name ,bar_code as item_bar_code, request_qty, pick_qty as qty_before, checkout_qty as qty_after, price as item_price, unit_code as item_unit_code, pick_amount as total_price_before, checkout_amount as total_price_after, rate1, '' as sale_code, average_cost, line_number, '' as pick_zone_id from basket_sub where basket_id = ? and que_id = ? and uuid = ? and doc_date = CURDATE() order by line_number`
 		err := db.Select(&qid.Item, lccommand, qid.Id, qid.QueueId, qid.UUID)
@@ -121,6 +123,8 @@ func (q *ListQueueModel) SearchQueueList(db *sqlx.DB, req *drivethru.ListQueueRe
 				},
 			}, nil
 		}
+
+		//fmt.Println("ItemCode = ", qid.Item[0].ItemCode)
 
 		lccommand1 := `select phone_no from owner_phone where basket_id = ? and que_id = ? and uuid = ? and doc_no = ?  order by id`
 		err = db.Select(&qid.OwnerPhone, lccommand1, qid.Id, qid.QueueId, qid.UUID, qid.DocNo)
@@ -263,6 +267,8 @@ func (q *ListQueueModel) QueueDetails(db *sqlx.DB, que_id int, access_token stri
 func (p *pickupModel) PickupNew(db *sqlx.DB, req *drivethru.NewPickupRequest) (interface{}, error) { //ขอโดมแก้หน้ากาก ตอนทำ Pickup
 	user := UserAccess{}
 	user.GetProfileByToken(db, req.AccessToken)
+
+	fmt.Println("Company Branch = ",user.CompanyID, user.BranchID)
 
 	now := time.Now()
 	fmt.Println("yyyy-mm-dd date format : ", now.AddDate(0, 0, 0).Format("2006-01-02"))
@@ -871,6 +877,106 @@ func (q *ListQueueModel) QueueStatus(db *sqlx.DB, req *drivethru.QueueStatusRequ
 			"message": "Queue is cancel",
 		},
 		"queid": q}, nil
+}
+
+func (q *ListQueueModel) BillingDone(db *sqlx.DB, req *drivethru.BillingDoneRequest) (interface{}, error) {
+	now := time.Now()
+	fmt.Println("yyyy-mm-dd date format : ", now.AddDate(0, 0, 0).Format("2006-01-02"))
+
+	u := UserAccess{}
+	u.GetProfileByToken(db, "")
+
+	q.Search(db, req.QueueId)
+
+	if q.Status <= 2 {
+		return map[string]interface{}{
+			"response": map[string]interface{}{
+				"success": false,
+				"error":   true,
+				"message": "Queue status not billing done",
+			},
+			"queid": ""}, nil
+	}
+
+	if q.Status == 3 {
+		return map[string]interface{}{
+			"response": map[string]interface{}{
+				"success": false,
+				"error":   true,
+				"message": "Queue is invoice",
+			},
+			"queid": ""}, nil
+	}
+
+	if q.IsCancel == 1 {
+		return map[string]interface{}{
+			"response": map[string]interface{}{
+				"success": false,
+				"error":   true,
+				"message": "Queue is cancel",
+			},
+			"queid": ""}, nil
+	}
+	if q.Status == 2 {
+		if req.IsConfirm == 0 {
+			if len(req.CreditCard) != 0 {
+				for _, c := range req.CreditCard {
+					cd := CreditCard{}
+					chkUsed := cd.CheckCreditCardUsed(db, c.CardNo, c.ConfirmNo, c.CreditType, c.BankCode, c.Amount)
+					if chkUsed == true {
+						return map[string]interface{}{
+							"response": map[string]interface{}{
+								"success": false,
+								"error":   true,
+								"message": "CreditCard is used",
+							},
+							"queid": ""}, nil
+					}
+				}
+			}
+			if len(req.Coupon) != 0 {
+				for _, p := range req.Coupon {
+					cp := Coupon{}
+					chkUsed := cp.CheckCouponUsed(db, p.CouponCode, p.Amount)
+					if chkUsed == true {
+						return map[string]interface{}{
+							"response": map[string]interface{}{
+								"success": false,
+								"error":   true,
+								"message": "CreditCard is used",
+							},
+							"queid": ""}, nil
+					}
+				}
+			}
+		}else{
+			if len(req.CreditCard) != 0 {
+				for _, c := range req.CreditCard {
+					cd := CreditCard{}
+					chkUsed := cd.CheckCreditCardUsed(db, c.CardNo, c.ConfirmNo, c.CreditType, c.BankCode, c.Amount)
+					if chkUsed == true {
+						return map[string]interface{}{
+							"response": map[string]interface{}{
+								"success": false,
+								"error":   true,
+								"message": "CreditCard is used",
+							},
+							"queid": ""}, nil
+					}
+				}
+			}
+		}
+
+	}
+
+
+	return map[string]interface{}{
+		"response": map[string]interface{}{
+			"success": true,
+			"error":   false,
+			"message": "",
+		},
+		"queid": ""}, nil
 }
 
 func getQueId(db *sqlx.DB, company_id int, branch_id int) (int, error) {

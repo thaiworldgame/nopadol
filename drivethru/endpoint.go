@@ -89,6 +89,37 @@ type (
 		AccessToken string `json:"access_token"`
 		QueueId     int    `json:"queue_id"`
 	}
+
+	BillingDoneRequest struct {
+		AccessToken   string       `json:"access_token"`
+		ArCode        string       `json:"ar_code"`
+		IsConfirm     int          `json:"is_confirm"`
+		QueueId       int          `json:"queue_id"`
+		Cash          float64      `json:"cash"`
+		ScgId         string       `json:"scg_id"`
+		CreditCard    []CreditCard `json:"credit_card"`
+		Coupon        []Coupon     `json:"coupon"`
+		DepositAmount []Deposit    `json:"deposit_amount"`
+	}
+
+	CreditCard struct {
+		CardNo       string  `json:"card_no"`
+		ConfirmNo    string  `json:"confirm_no"`
+		CreditType   string  `json:"credit_type"`
+		BankCode     string  `json:"bank_code"`
+		Amount       float64 `json:"amount"`
+		ChargeAmount float64 `json:"charge_amount"`
+	}
+
+	Coupon struct {
+		CouponCode string  `json:"coupon_code"`
+		Amount     float64 `json:"amount"`
+	}
+
+	Deposit struct {
+		DepositId string  `json:"deposit_id"`
+		Amount    float64 `json:"amount"`
+	}
 )
 
 func makeListCompany(s Service) interface{} {
@@ -295,7 +326,7 @@ func makeSearchListQueue(s Service) interface{} {
 func queueProduct(s Service) interface{} {
 	return func(ctx context.Context, req *QueueProductRequest) (interface{}, error) {
 		fmt.Println("start endpoint queue product queue is => ", req.QueueId)
-		resp, err := s.QueueProduct(&QueueProductRequest{AccessToken: req.AccessToken, QueueId:req.QueueId})
+		resp, err := s.QueueProduct(&QueueProductRequest{AccessToken: req.AccessToken, QueueId: req.QueueId})
 		if err != nil {
 			return nil, err
 		}
@@ -321,6 +352,17 @@ func queueStatus(s Service) interface{} {
 		fmt.Println("start endpoint list queue status is => ", req.QueueId)
 		fmt.Println("start endpoint list queue edit is => ", req.QueueId)
 		resp, err := s.QueueStatus(&QueueStatusRequest{AccessToken: req.AccessToken, QueueId: req.QueueId, StatusForSaleorderCurrent: req.StatusForSaleorderCurrent, IsLoad: req.IsLoad})
+		if err != nil {
+			return nil, err
+		}
+
+		return resp, nil
+	}
+}
+
+func billingDone(s Service) interface{} {
+	return func(ctx context.Context, req *BillingDoneRequest) (interface{}, error) {
+		resp, err := s.BillingDone(&BillingDoneRequest{QueueId: req.QueueId})
 		if err != nil {
 			return nil, err
 		}

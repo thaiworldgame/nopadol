@@ -25,6 +25,7 @@ type Service interface {
 	QueueEdit(req *QueueEditRequest) (interface{}, error)
 	QueueStatus(req *QueueStatusRequest) (interface{}, error)
 	QueueProduct(req *QueueProductRequest) (interface{}, error)
+	BillingDone(req *BillingDoneRequest) (interface{}, error)
 
 	ShiftOpen(*ShiftOpenRequest) (interface{}, error)
 	ShiftClose(*ShiftCloseRequest) (interface{}, error)
@@ -162,6 +163,15 @@ func (s *service) QueueStatus(req *QueueStatusRequest) (interface{}, error) {
 	return resp, nil
 }
 
+func (s *service) BillingDone(req *BillingDoneRequest) (interface{}, error) {
+	resp, err := s.repo.BillingDone(req)
+	if err != nil {
+		fmt.Println("error service level ", err.Error())
+		return nil, err
+	}
+	fmt.Println("service List Billing data -> ", resp)
+	return resp, nil
+}
 func (s *service) ShiftOpen(req *ShiftOpenRequest) (interface{}, error) {
 	return s.repo.ShiftOpen(req)
 }

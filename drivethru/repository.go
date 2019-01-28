@@ -15,6 +15,7 @@ type Repository interface {
 	QueueEdit(req *QueueEditRequest) (interface{}, error)
 	QueueStatus(req *QueueStatusRequest) (interface{}, error)
 	QueueProduct(req *QueueProductRequest) (interface{}, error)
+	BillingDone(req *BillingDoneRequest) (interface{}, error)
 	//ShiftOpen(string,float64,string)(interface{},error)
 
 	ShiftOpen(*ShiftOpenRequest) (interface{}, error)
