@@ -1,6 +1,9 @@
 package mysqldb
 
-import "github.com/jmoiron/sqlx"
+import (
+	"github.com/jmoiron/sqlx"
+	"fmt"
+)
 
 type CreditCard struct {
 	CardNo       string  `json:"card_no"`
@@ -11,6 +14,19 @@ type CreditCard struct {
 	ChargeAmount float64 `json:"charge_amount"`
 }
 
-func (c *CreditCard)CheckCreditCardUsed(db *sqlx.DB, card_no string, confirm_no string, credit_type string, bank_code string ,amount float64) bool {
-	return true
+func (c *CreditCard) CheckCreditCardUsed(db *sqlx.DB, card_no string, confirm_no string) (bool,string) {
+	var exist int
+
+	lccommand := `select count(*) as vCount from credit_card where credit_card_no = ? and confirm_no = ?`
+	err := db.Get(&exist, lccommand, card_no, confirm_no)
+	if err != nil {
+		fmt.Println("error check credit card used = ", err.Error())
+		return false, err.Error()
+	}
+	if exist == 0 {
+		return true, ""
+	} else {
+		return false, "creditcard is used"
+	}
+
 }

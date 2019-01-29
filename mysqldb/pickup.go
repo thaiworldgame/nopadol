@@ -160,7 +160,7 @@ func (q *ListQueueModel) QueueProduct(db *sqlx.DB, req *drivethru.QueueProductRe
 	que := ListQueueModel{}
 
 	fmt.Println("Q", req.QueueId)
-	lccommand := `select a.id, que_id as queue_id, car_brand, ref_number as plate_number,uuid, doc_date, number_of_item, a.create_time as time_created, status, a.is_cancel, ifnull(b.code,'') as ar_code, ifnull(b.name,'') as ar_name, ifnull(c.SaleName,'') as sale_name, ifnull(c.SaleCode,'') as sale_code, doc_no, doc_type as source, '' as receiver_name, pickup_time as pickup_date_time, total_amount, 0 as is_loaded, 0 as status_for_saleorder_current, ifnull(sum_item_amount,0) as total_before_amount, ifnull(total_amount,0) as total_after_amount, '' as otp_password, 0 as bill_type, '' as cancel_remark, '' as who_cancel, '' as sale_order from basket a left join Customer b on a.ar_id = b.id left join Sale c on a.sale_id = c.id where que_id = ? and doc_date = CURDATE() order by id`
+	lccommand := `select a.id, que_id as queue_id, car_brand, ref_number as plate_number,uuid, doc_date, number_of_item, a.create_time as time_created, status, a.is_cancel, ifnull(b.code,'') as ar_code, ifnull(b.name,'') as ar_name, ifnull(c.SaleName,'') as sale_name, ifnull(c.SaleCode,'') as sale_code, doc_no, doc_type as source, '' as receiver_name, pickup_time as pickup_datetime, total_amount, 0 as is_loaded, 0 as status_for_saleorder_current, ifnull(sum_item_amount,0) as total_before_amount, ifnull(total_amount,0) as total_after_amount, '' as otp_password, 0 as bill_type, '' as cancel_remark, '' as who_cancel, '' as sale_order from basket a left join Customer b on a.ar_id = b.id left join Sale c on a.sale_id = c.id where que_id = ? and doc_date = CURDATE() order by id`
 	err := db.Get(&que, lccommand, req.QueueId)
 	if err != nil {
 		return map[string]interface{}{
@@ -213,7 +213,7 @@ func (q *ListQueueModel) QueueProduct(db *sqlx.DB, req *drivethru.QueueProductRe
 
 func (q *ListQueueModel) QueueDetails(db *sqlx.DB, que_id int, access_token string) (interface{}, error) {
 
-	lccommand := `select id, que_id as queue_id, car_brand, ref_number as plate_number,uuid, doc_date, number_of_item, create_time as time_created, status, is_cancel, '' as ar_code, '' as ar_name, '' as sale_name, '' as sale_code, doc_no, doc_type as source, '' as receiver_name, pickup_time as pickup_date_time, total_amount, 0 as is_loaded, 0 as status_for_saleorder_current, ifnull(sum_item_amount,0) as total_before_amount, ifnull(total_amount,0) as total_after_amount, '' as otp_password, 0 as bill_type, '' as cancel_remark, '' as who_cancel, '' as sale_order from basket where que_id = ? and doc_date = CURRENT_DATE order by id`
+	lccommand := `select id, que_id as queue_id, car_brand, ref_number as plate_number,uuid, doc_date, number_of_item, create_time as time_created, status, is_cancel, '' as ar_code, '' as ar_name, '' as sale_name, '' as sale_code, doc_no, doc_type as source, '' as receiver_name, pickup_time as pickup_datetime, total_amount, 0 as is_loaded, 0 as status_for_saleorder_current, ifnull(sum_item_amount,0) as total_before_amount, ifnull(total_amount,0) as total_after_amount, '' as otp_password, 0 as bill_type, '' as cancel_remark, '' as who_cancel, '' as sale_order from basket where que_id = ? and doc_date = CURRENT_DATE order by id`
 	err := db.Get(&q, lccommand, que_id)
 	if err != nil {
 		return map[string]interface{}{
@@ -880,6 +880,11 @@ func (q *ListQueueModel) QueueStatus(db *sqlx.DB, req *drivethru.QueueStatusRequ
 }
 
 func (q *ListQueueModel) BillingDone(db *sqlx.DB, req *drivethru.BillingDoneRequest) (interface{}, error) {
+	var total_amount float64
+	var crd_amount float64
+	var cou_amount float64
+	var dep_amount float64
+
 	now := time.Now()
 	fmt.Println("yyyy-mm-dd date format : ", now.AddDate(0, 0, 0).Format("2006-01-02"))
 
@@ -918,48 +923,118 @@ func (q *ListQueueModel) BillingDone(db *sqlx.DB, req *drivethru.BillingDoneRequ
 			"queid": ""}, nil
 	}
 	if q.Status == 2 {
-		if req.IsConfirm == 0 {
+		if req.Confirm == 0 {
 			if len(req.CreditCard) != 0 {
 				for _, c := range req.CreditCard {
+					if c.Amount == 0 {
+						return map[string]interface{}{
+							"response": map[string]interface{}{
+								"success": false,
+								"error":   true,
+								"message": "coupon not have amount",
+							},
+							"queid": ""}, nil
+					}
+
+					if c.CardNo == "" || c.ConfirmNo == "" || c.CreditType == "" {
+						return map[string]interface{}{
+							"response": map[string]interface{}{
+								"success": false,
+								"error":   true,
+								"message": "credit card not have cardno or confirm no or credit type",
+							},
+							"queid": ""}, nil
+					}
+
 					cd := CreditCard{}
-					chkUsed := cd.CheckCreditCardUsed(db, c.CardNo, c.ConfirmNo, c.CreditType, c.BankCode, c.Amount)
-					if chkUsed == true {
+					chkCrdUsed, msg := cd.CheckCreditCardUsed(db, c.CardNo, c.ConfirmNo)
+					if chkCrdUsed == false {
 						return map[string]interface{}{
 							"response": map[string]interface{}{
 								"success": false,
 								"error":   true,
-								"message": "CreditCard is used",
+								"message": msg,
 							},
 							"queid": ""}, nil
 					}
+
+					crd_amount = crd_amount+cd.Amount
 				}
 			}
-			if len(req.Coupon) != 0 {
-				for _, p := range req.Coupon {
+			if len(req.CouponCode) != 0 {
+				for _, p := range req.CouponCode {
+
+					if p.CouponCode == "" {
+						return map[string]interface{}{
+							"response": map[string]interface{}{
+								"success": false,
+								"error":   true,
+								"message": "coupon not have code",
+							},
+							"queid": ""}, nil
+					}
+
+					if p.Amount == 0 {
+						return map[string]interface{}{
+							"response": map[string]interface{}{
+								"success": false,
+								"error":   true,
+								"message": "coupon not have amount",
+							},
+							"queid": ""}, nil
+					}
+
 					cp := Coupon{}
-					chkUsed := cp.CheckCouponUsed(db, p.CouponCode, p.Amount)
-					if chkUsed == true {
+					chkCouUsed, msg := cp.CheckCouponUsed(db, p.CouponCode, p.Amount)
+					if chkCouUsed == false {
 						return map[string]interface{}{
 							"response": map[string]interface{}{
 								"success": false,
 								"error":   true,
-								"message": "CreditCard is used",
+								"message": msg,
 							},
 							"queid": ""}, nil
 					}
+
+					cou_amount = cou_amount+p.Amount
 				}
 			}
+
+			if len(req.DepositAmount) != 0 {
+				for _, d := range req.DepositAmount {
+					dp := Deposit{}
+					chkDepUsed, msg := dp.CheckArDepositUsed(db, req.ArCode, d.DepositId, d.Amount)
+					if chkDepUsed == false {
+						return map[string]interface{}{
+							"response": map[string]interface{}{
+								"success": false,
+								"error":   true,
+								"message": msg,
+							},
+							"queid": ""}, nil
+					}
+					dep_amount = dep_amount+d.Amount
+				}
+			}
+
+
+
+			total_amount = req.Cash + crd_amount+cou_amount+dep_amount
+
+			fmt.Println(total_amount)
+
+
 		}else{
 			if len(req.CreditCard) != 0 {
 				for _, c := range req.CreditCard {
 					cd := CreditCard{}
-					chkUsed := cd.CheckCreditCardUsed(db, c.CardNo, c.ConfirmNo, c.CreditType, c.BankCode, c.Amount)
+					chkUsed, msg := cd.CheckCreditCardUsed(db, c.CardNo, c.ConfirmNo)
 					if chkUsed == true {
 						return map[string]interface{}{
 							"response": map[string]interface{}{
 								"success": false,
 								"error":   true,
-								"message": "CreditCard is used",
+								"message": msg,
 							},
 							"queid": ""}, nil
 					}

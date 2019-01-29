@@ -93,12 +93,12 @@ type (
 	BillingDoneRequest struct {
 		AccessToken   string       `json:"access_token"`
 		ArCode        string       `json:"ar_code"`
-		IsConfirm     int          `json:"is_confirm"`
+		Confirm       int          `json:"confirm"`
 		QueueId       int          `json:"queue_id"`
 		Cash          float64      `json:"cash"`
 		ScgId         string       `json:"scg_id"`
 		CreditCard    []CreditCard `json:"credit_card"`
-		Coupon        []Coupon     `json:"coupon"`
+		CouponCode    []Coupon     `json:"coupon_code"`
 		DepositAmount []Deposit    `json:"deposit_amount"`
 	}
 
