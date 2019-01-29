@@ -243,7 +243,7 @@ func main() {
 	//mux.Handle("/p9/",http.StripPrefix("/p9/v1", p9service.MakeHandler(p9Service)))
 	//mux.Handle("/pointofsale/",http.StripPrefix("/pointofsale/v1", pointofsaleservice.MakeHandler(pointofsaleService)))
 	fmt.Println("Waiting for Accept Connection : 9999")
-	http.ListenAndServe(":9999", mux)
+	http.ListenAndServe(":9998", mux)
 }
 
 func must(err error) {

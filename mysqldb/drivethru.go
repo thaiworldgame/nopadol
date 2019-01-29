@@ -6,7 +6,6 @@ import (
 	"github.com/mrtomyum/nopadol/drivethru"
 
 	"time"
-	//"github.com/google/uuid"
 )
 
 type drivethruRepository struct{ db *sqlx.DB }
@@ -178,9 +177,33 @@ func (d *drivethruRepository) ManagePickup(req *drivethru.ManagePickupRequest) (
 	return pickup.ManagePickup(d.db, req)
 }
 
+func (d *drivethruRepository) ManageCheckout(req *drivethru.ManageCheckoutRequest) (interface{}, error) {
+	pickup := QueueItem{}
+	return pickup.ManageCheckOut(d.db, req)
+}
+
 func (d *drivethruRepository) ListQueue(req *drivethru.ListQueueRequest) (interface{}, error) {
 	pickup := ListQueueModel{}
 	return pickup.SearchQueueList(d.db, req)
+}
+
+func (d *drivethruRepository) QueueEdit(req *drivethru.QueueEditRequest) (interface{}, error) {
+	return QueueEdit(d.db, req)
+}
+
+func (d *drivethruRepository) QueueStatus(req *drivethru.QueueStatusRequest) (interface{}, error) {
+	pickup := ListQueueModel{}
+	return pickup.QueueStatus(d.db, req)
+}
+
+func (d *drivethruRepository) QueueProduct(req *drivethru.QueueProductRequest) (interface{}, error) {
+	pickup := ListQueueModel{}
+	return pickup.QueueProduct(d.db, req)
+}
+
+func (d *drivethruRepository) BillingDone (req *drivethru.BillingDoneRequest) (interface{}, error) {
+	pickup := ListQueueModel{}
+	return pickup.BillingDone(d.db, req)
 }
 
 func getBranch(db *sqlx.DB, branch_id int) string {

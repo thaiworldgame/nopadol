@@ -20,12 +20,15 @@ type Service interface {
 
 	PickupNew(req *NewPickupRequest) (interface{}, error)
 	ManagePickup(req *ManagePickupRequest) (interface{}, error)
+	ManageCheckout(req *ManageCheckoutRequest) (interface{}, error)
 	ListQueue(req *ListQueueRequest) (interface{}, error)
+	QueueEdit(req *QueueEditRequest) (interface{}, error)
+	QueueStatus(req *QueueStatusRequest) (interface{}, error)
+	QueueProduct(req *QueueProductRequest) (interface{}, error)
+	BillingDone(req *BillingDoneRequest) (interface{}, error)
 
-	//pickupNew(req *NewPickupRequest) (interface{}, error)
-	ShiftOpen(*ShiftOpenRequest) (interface{},error)
-	ShiftClose(*ShiftCloseRequest) (interface{},error)
-
+	ShiftOpen(*ShiftOpenRequest) (interface{}, error)
+	ShiftClose(*ShiftCloseRequest) (interface{}, error)
 }
 
 func (s *service) SearchListCompany() (interface{}, error) {
@@ -91,9 +94,6 @@ func (s *service) UserLogIn(req *UserLogInRequest) (interface{}, error) {
 }
 
 func (s *service) PickupNew(req *NewPickupRequest) (interface{}, error) {
-
-
-
 	resp, err := s.repo.PickupNew(req)
 	if err != nil {
 		fmt.Println("error service level ", err.Error())
@@ -103,9 +103,18 @@ func (s *service) PickupNew(req *NewPickupRequest) (interface{}, error) {
 	return resp, nil
 }
 
-
 func (s *service) ManagePickup(req *ManagePickupRequest) (interface{}, error) {
 	resp, err := s.repo.ManagePickup(req)
+	if err != nil {
+		fmt.Println("error service level ", err.Error())
+		return nil, err
+	}
+	fmt.Println("service Pickup Manage Data -> ", resp)
+	return resp, nil
+}
+
+func (s *service) ManageCheckout(req *ManageCheckoutRequest) (interface{}, error) {
+	resp, err := s.repo.ManageCheckout(req)
 	if err != nil {
 		fmt.Println("error service level ", err.Error())
 		return nil, err
@@ -124,10 +133,49 @@ func (s *service) ListQueue(req *ListQueueRequest) (interface{}, error) {
 	return resp, nil
 }
 
-func (s *service)ShiftOpen(req *ShiftOpenRequest)(interface{},error){
+func (s *service) QueueEdit(req *QueueEditRequest) (interface{}, error) {
+	resp, err := s.repo.QueueEdit(req)
+	if err != nil {
+		fmt.Println("error service level ", err.Error())
+		return nil, err
+	}
+	fmt.Println("service List Queue data -> ", resp)
+	return resp, nil
+}
+
+func (s *service) QueueProduct(req *QueueProductRequest) (interface{}, error) {
+	resp, err := s.repo.QueueProduct(req)
+	if err != nil {
+		fmt.Println("error service level ", err.Error())
+		return nil, err
+	}
+	fmt.Println("service List Queue data -> ", resp)
+	return resp, nil
+}
+
+func (s *service) QueueStatus(req *QueueStatusRequest) (interface{}, error) {
+	resp, err := s.repo.QueueStatus(req)
+	if err != nil {
+		fmt.Println("error service level ", err.Error())
+		return nil, err
+	}
+	fmt.Println("service List Queue data -> ", resp)
+	return resp, nil
+}
+
+func (s *service) BillingDone(req *BillingDoneRequest) (interface{}, error) {
+	resp, err := s.repo.BillingDone(req)
+	if err != nil {
+		fmt.Println("error service level ", err.Error())
+		return nil, err
+	}
+	fmt.Println("service List Billing data -> ", resp)
+	return resp, nil
+}
+func (s *service) ShiftOpen(req *ShiftOpenRequest) (interface{}, error) {
 	return s.repo.ShiftOpen(req)
 }
 
-func (s *service)ShiftClose(req *ShiftCloseRequest)(interface{},error){
+func (s *service) ShiftClose(req *ShiftCloseRequest) (interface{}, error) {
 	return s.repo.ShiftClose(req)
 }

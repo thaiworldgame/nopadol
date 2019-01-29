@@ -84,9 +84,14 @@ func (u *userLogInModel) Userlogin(db *sqlx.DB, req *drivethru.UserLogInRequest)
 
 	expire_date = expire
 	if check_exist == 0 {
+		lccommand = `START TRANSACTION`
+		_, err := db.Exec(lccommand)
+
 		lccommand = "insert user_access(user_id,user_code,access_token,company_id,branch_id,branch_code,zone_id,create_time,expire_time) values(?,?,?,?,?,?,?,?,?)"
-		ins, err := db.Exec(lccommand, user.Id, user.Code, uuid, user.CompanyId, user.BranchId, branch_code, user.LoginZone, now.String(), expire_date)
+		_, err = db.Exec(lccommand, user.Id, user.Code, uuid, user.CompanyId, user.BranchId, branch_code, user.LoginZone, now.String(), expire_date)
 		if err != nil {
+			lccommand = `ROLLBACK`
+			_, err = db.Exec(lccommand)
 			fmt.Println("error = ", err.Error())
 			return map[string]interface{}{
 				"response": map[string]interface{}{
@@ -96,7 +101,10 @@ func (u *userLogInModel) Userlogin(db *sqlx.DB, req *drivethru.UserLogInRequest)
 				},
 			}, nil
 		}
-		fmt.Println(ins.LastInsertId())
+		lccommand = `COMMIT`
+		_, err = db.Exec(lccommand)
+
+
 	} else {
 		lccommand = "update user_access set last_login_time = ? where user_id = ? and user_code = ?"
 		ins, err := db.Exec(lccommand, now.String(), user.Id, user.Code)
