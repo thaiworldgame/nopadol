@@ -41,7 +41,7 @@ type ProductNewRequest struct {
 
 type PackingRate struct {
 	UnitID          int64 `json:"unit_id"`
-	RatePerBaseUnit int `json:"rate_per_base_unit"`
+	RatePerBaseUnit int   `json:"rate_per_base_unit"`
 }
 
 type StockTemplate struct {
@@ -74,6 +74,7 @@ type PriceTemplate struct {
 	SalePrice1 float64 `json:"sale_price_1"`
 	SalePrice2 float64 `json:"sale_price_2"`
 	SaleType   int     `json:"sale_type"`
+	CompanyID  int     `json:"company_id"`
 }
 
 //type Item struct {
