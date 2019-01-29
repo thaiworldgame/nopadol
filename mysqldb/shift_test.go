@@ -49,7 +49,7 @@ func Test_shiftOpen(t *testing.T) {
 	shiftUUID, err := sh.Open(testDB)
 	fmt.Println(shiftUUID)
 	assert.Nil(t, err)
-	return shiftUUID
+	return
 }
 
 func Test_shiftClose(t *testing.T) {

@@ -15,15 +15,15 @@ import (
 	//
 	//"github.com/mrtomyum/nopadol/delivery"
 	//
-	//customerservice "github.com/mrtomyum/nopadol/customer"
-	//employeeservice "github.com/mrtomyum/nopadol/employee"
+	customerservice "github.com/mrtomyum/nopadol/customer"
+	employeeservice "github.com/mrtomyum/nopadol/employee"
 	productservice "github.com/mrtomyum/nopadol/product"
 	//posservice "github.com/mrtomyum/nopadol/pos"
 	//posconfigservice "github.com/mrtomyum/nopadol/posconfig"
 	//printservice "github.com/mrtomyum/nopadol/print"
-	//salesservice "github.com/mrtomyum/nopadol/sales"
-	//gendocnoservice "github.com/mrtomyum/nopadol/gendocno"
-	//envservice "github.com/mrtomyum/nopadol/environment"
+	salesservice "github.com/mrtomyum/nopadol/sales"
+	gendocnoservice "github.com/mrtomyum/nopadol/gendocno"
+	envservice "github.com/mrtomyum/nopadol/environment"
 	//configservice "github.com/mrtomyum/nopadol/companyconfig"
 	//pointofsaleservice "github.com/mrtomyum/nopadol/pointofsale"
 
@@ -142,9 +142,9 @@ func init() {
 
 func main() {
 	flag.Parse()
-	log.Printf("################## Version: %s", Version)
-	log.Printf("################## Build Time: %s", BuildTime)
-	log.Printf("################## Git Hash: %s", GitHash)
+	log.Printf("#### Version: %s", Version)
+	log.Printf("#### Build Time: %s", BuildTime)
+	log.Printf("#### Git Hash: %s", GitHash)
 
 	switch {
 	case *versionFlag:
@@ -180,12 +180,12 @@ func main() {
 	//doService := delivery.NewService(doRepo)
 
 	// init customer
-	//customerRepo := mysqldb.NewCustomerRepository(mysql_np)
-	//customerService := customerservice.New(customerRepo)
+	customerRepo := mysqldb.NewCustomerRepository(mysql_np)
+	customerService := customerservice.New(customerRepo)
 
 	// init employee
-	//employeeRepo := mysqldb.NewEmployeeRepository(mysql_np)
-	//employeeService := employeeservice.New(employeeRepo)
+	employeeRepo := mysqldb.NewEmployeeRepository(mysql_np)
+	employeeService := employeeservice.New(employeeRepo)
 
 	//init product
 	productRepo := mysqldb.NewProductRepository(mysql_np)
@@ -199,20 +199,17 @@ func main() {
 	//posRepo := sqldb.NewPosRepository(sql_dbc)
 	//posService := posservice.New(posRepo)
 
-	//saleRepo := mysqldb.NewSaleRepository(mysql_dbc)
-	//saleService := saleservice.New(saleRepo)
-
 	//printRepo := sqldb.NewPrintRepository(sql_dbc)
 	//printService := printservice.New(printRepo)
 	//
-	//salesRepo := mysqldb.NewSalesRepository(mysql_np)
-	//salesService := salesservice.New(salesRepo)
+	salesRepo := mysqldb.NewSalesRepository(mysql_np)
+	salesService := salesservice.New(salesRepo)
 	//
-	//gendocnoRepo := mysqldb.NewGenDocNoRepository(mysql_np)
-	//gendocnoService := gendocnoservice.New(gendocnoRepo)
+	gendocnoRepo := mysqldb.NewGenDocNoRepository(mysql_np)
+	gendocnoService := gendocnoservice.New(gendocnoRepo)
 	//
-	//envRepo := mysqldb.NewEnvironmentRepository(mysql_np)
-	//envService := envservice.New(envRepo)
+	envRepo := mysqldb.NewEnvironmentRepository(mysql_np)
+	envService := envservice.New(envRepo)
 	//
 	//configRepo := mysqldb.NewConfigRepository(mysql_np)
 	//configService := configservice.New(configRepo)
@@ -231,15 +228,15 @@ func main() {
 	mux.HandleFunc("/version", apiVersionHandler)
 
 	//mux.Handle("/delivery/", http.StripPrefix("/delivery", delivery.MakeHandler(doService)))
-	//mux.Handle("/customer/", http.StripPrefix("/customer/v1", customerservice.MakeHandler(customerService)))
-	//mux.Handle("/employee/", http.StripPrefix("/employee/v1", employeeservice.MakeHandler(employeeService)))
+	mux.Handle("/customer/", http.StripPrefix("/customer/v1", customerservice.MakeHandler(customerService)))
+	mux.Handle("/employee/", http.StripPrefix("/employee/v1", employeeservice.MakeHandler(employeeService)))
 	mux.Handle("/product/", http.StripPrefix("/product/v1", productservice.MakeHandler(productService)))
 	//mux.Handle("/posconfig/", http.StripPrefix("/posconfig/v1", posconfigservice.MakeHandler(posconfigService)))
 	//mux.Handle("/pos/", http.StripPrefix("/pos/v1", posservice.MakeHandler(posService)))
 	//mux.Handle("/print/", http.StripPrefix("/print/v1", printservice.MakeHandler(printService)))
-	//mux.Handle("/sales/", http.StripPrefix("/sales/v1", salesservice.MakeHandler(salesService)))
-	//mux.Handle("/gendocno/", http.StripPrefix("/gendocno/v1", gendocnoservice.MakeHandler(gendocnoService)))
-	//mux.Handle("/env/",http.StripPrefix("/env/v1",envservice.MakeHandler(envService)))
+	mux.Handle("/sales/", http.StripPrefix("/sales/v1", salesservice.MakeHandler(salesService)))
+	mux.Handle("/gendocno/", http.StripPrefix("/gendocno/v1", gendocnoservice.MakeHandler(gendocnoService)))
+	mux.Handle("/env/",http.StripPrefix("/env/v1",envservice.MakeHandler(envService)))
 	//mux.Handle("/config/",http.StripPrefix("/config/v1", configservice.MakeHandler(configService)))
 	mux.Handle("/drivethru/",http.StripPrefix("/drivethru/v3",drivethruservice.MakeHandler(drivethruService)))
 
