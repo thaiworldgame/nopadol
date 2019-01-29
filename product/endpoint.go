@@ -130,47 +130,60 @@ func MakeNewProduct(s Service) interface{} {
 		RatePerBaseUnit int    `json:"rate_per_base_unit"`
 	}
 	type requestNewItem struct {
-		Code        string                `json:"code"`
-		Name        string                `json:"name"`
-		UnitCode    string                `json:"unit_code"`
-		UnitID      int64                 `json:"unit_id"`
-		Picture     string                `json:"picture"`
-		StockType   int                   `json:"stock_type"`
-		Price       []requestPrice       `json:"price"`
-		Barcode     []requestBarcode     `json:"barcode"`
+		Code        string           `json:"code"`
+		Name        string           `json:"name"`
+		UnitCode    string           `json:"unit_code"`
+		UnitID      int64            `json:"unit_id"`
+		Picture     string           `json:"picture"`
+		StockType   int              `json:"stock_type"`
+		Price       []requestPrice   `json:"price"`
+		Barcode     []requestBarcode `json:"barcode"`
 		PackingRate []RequestPacking `json:"packing_rate"`
+		CompanyID   int              `json:"company_id"`
 	}
 	return func(ctx context.Context, req *requestNewItem) (interface{}, error) {
 
 		var barcodes []BarcodeTemplate
-		// bind barcode template
-		for _, value := range req.Barcode {
-			bct := BarcodeTemplate{}
-			bct.Barcode = value.Barcode
-			bct.UnitID = value.UnitID
-			barcodes = append(barcodes, bct)
-		}
-
-		// bind price template
 		var prices []PriceTemplate
-		for _, value := range req.Price {
-			pr := PriceTemplate{}
-			pr.SalePrice1 = value.SalePrice1
-			pr.SalePrice2 = value.SalePrice2
-			pr.UnitID = value.UnitID
-			pr.SaleType = value.SaleType
-			prices = append(prices, pr)
-		}
-
 		var Rates []PackingRate
-		for _, value := range req.PackingRate {
-			rt := PackingRate{}
-			rt.RatePerBaseUnit = value.RatePerBaseUnit
-			rt.UnitID = value.UnitID
+
+		// bind barcode template
+		if len(req.Barcode) > 0 {
+			fmt.Println("bind req barcocde")
+			for _, value := range req.Barcode {
+				bct := BarcodeTemplate{}
+				bct.Barcode = value.Barcode
+				bct.UnitID = value.UnitID
+				barcodes = append(barcodes, bct)
+			}
 		}
 
+		if len(req.Price) > 0 {
+			fmt.Println("bind req price value : ", req.Price)
 
-		fmt.Println("request data ->",req)
+			// bind price template
+			for _, value := range req.Price {
+				pr := PriceTemplate{}
+				pr.SalePrice1 = value.SalePrice1
+				pr.SalePrice2 = value.SalePrice2
+				pr.UnitID = value.UnitID
+				pr.SaleType = value.SaleType
+				pr.CompanyID = req.CompanyID
+				prices = append(prices, pr)
+			}
+		}
+
+		if len(req.PackingRate) > 0 {
+
+			fmt.Println("bind req Rate")
+			for _, value := range req.PackingRate {
+				rt := PackingRate{}
+				rt.RatePerBaseUnit = value.RatePerBaseUnit
+				rt.UnitID = value.UnitID
+			}
+		}
+
+		fmt.Println("request data ->", req)
 		resp, err := s.StoreItem(&ProductNewRequest{
 			ItemCode:    req.Code,
 			ItemName:    req.Name,
@@ -180,6 +193,7 @@ func MakeNewProduct(s Service) interface{} {
 			Barcode:     barcodes,
 			Price:       prices,
 			PackingRate: Rates,
+			CompanyID:   req.CompanyID,
 		})
 		if err != nil {
 			fmt.Println("endpoint error =", err.Error())

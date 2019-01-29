@@ -87,6 +87,7 @@ func(it *itemModel)checkExistsByCode(db *sqlx.DB,code string)(int64,bool){
 
 func (it *itemModel) save(db *sqlx.DB) (newID int64, err error) {
 	//check new data item
+	fmt.Println("start item.save() req ",it)
 	_,err = it.verifyRequestData(db)
 
 	if err != nil {
@@ -97,10 +98,11 @@ func (it *itemModel) save(db *sqlx.DB) (newID int64, err error) {
 	if ok  {
 
 		// update
-		fmt.Println("update case ")
+		fmt.Println("update case to item.id -> ",id)
 		db.Exec(`update Item set item_name=?,short_name=?,pic_path1 = ? , pic_path2=?
 			where id = ?`,
 			it.Name,it.ShortName,it.PicPath1,it.PicPath2,id)
+		newID = id
 	}else {
 
 		fmt.Println("insert case ")
@@ -160,7 +162,7 @@ func (it *itemModel) save(db *sqlx.DB) (newID int64, err error) {
 	// todo : insert ItemRate (default baseUnit rate=1)
 	// todo : update complete save New
 
-	return -1, nil
+	return newID, nil
 }
 
 func (it *itemModel) getItemIDbyCode(db *sqlx.DB, code string) (int64, error) {
