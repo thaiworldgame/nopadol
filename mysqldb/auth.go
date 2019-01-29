@@ -18,7 +18,8 @@ type UserAccess struct {
 	//BranchName string `db:"branch_name"`
 
 }
-var dbname string = "demo"
+//var dbname string = "demo"
+var dbname string = "npdl"
 
 func (u *UserAccess) GetProfileByToken(db *sqlx.DB, token string) {
 
