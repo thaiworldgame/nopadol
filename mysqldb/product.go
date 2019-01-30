@@ -225,7 +225,7 @@ func (p *productRepository) StoreItem(req *product.ProductNewRequest)(resp inter
 		return nil,err
 	}
 
-	// todo : insert to PackingRate Table
+	// insert to PackingRate Table
 	pk := packingRate{}
 	for _, value := range req.PackingRate {
 
@@ -247,7 +247,6 @@ func (p *productRepository) StoreItem(req *product.ProductNewRequest)(resp inter
 	}
 
 	// price insert
-	// todo : insert to Price table , split to priceInsert(req.Price)
 	pr := priceModel{}
 	for _, value := range req.Price {
 
@@ -268,6 +267,7 @@ func (p *productRepository) StoreItem(req *product.ProductNewRequest)(resp inter
 
 	}
 
+	// insert barcode
 	bar := barcodeModel{}
 	for _, value := range req.Barcode {
 
@@ -283,9 +283,10 @@ func (p *productRepository) StoreItem(req *product.ProductNewRequest)(resp inter
 		if err != nil {
 			return nil,err
 		}
-
 	}
 	return newItemID,nil
 	// todo : insert to Barcode table
 }
+
+
 

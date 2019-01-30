@@ -204,3 +204,6 @@ func MakeNewProduct(s Service) interface{} {
 		}, nil
 	}
 }
+
+
+func MakeNewBarcode(s Service) interface{}
