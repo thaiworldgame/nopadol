@@ -1,5 +1,7 @@
 package product
 
+import "github.com/mrtomyum/nopadol/auth"
+
 func New(repo Repository) (Service) {
 	return &service{repo}
 }
@@ -14,6 +16,7 @@ type Service interface {
 	SearchByItemStockLocation(req *SearchByItemCodeTemplate) (interface{}, error)
 	SearchByKeyword(req *SearchByKeywordTemplate) (interface{}, error)
 	StoreItem(req *ProductNewRequest)(interface{},error)
+	StoreBarcode(req []BarcodeNewRequest,tk *auth.Token) (interface{},error)
 }
 
 func (s *service) SearchByBarcode(req *SearchByBarcodeTemplate) (interface{}, error) {
@@ -50,4 +53,9 @@ func (s *service) SearchByKeyword(req *SearchByKeywordTemplate) (interface{}, er
 
 func (s *service) StoreItem(req *ProductNewRequest)(interface{},error){
 	return s.repo.StoreItem(req)
+}
+
+func (s *service) StoreBarcode(req []BarcodeNewRequest,tk *auth.Token)(interface{},error){
+	//return s.repo.StoreBarcode(req,tk)
+	return nil,nil
 }

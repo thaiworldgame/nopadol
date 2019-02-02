@@ -172,8 +172,8 @@ func (it *itemModel) getItemIDbyCode(db *sqlx.DB, code string) (int64, error) {
 	return it.Id, nil
 }
 
-func (it *itemModel) getItemCodeById(db *sqlx.DB) error {
+func (it *itemModel) getItemCodeById(db *sqlx.DB) (string ,error) {
 	db.QueryRow(`select code from Item where id=?`, it.Id).Scan(&it.Code)
 	fmt.Printf("UnitCode from UnitID %s is %v \n", it.Id, it.Code)
-	return nil
+	return it.Code,nil
 }
