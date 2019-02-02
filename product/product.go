@@ -1,5 +1,7 @@
 package product
 
+import "time"
+
 type SearchByBarcodeTemplate struct {
 	BarCode string `json:"bar_code"`
 }
@@ -39,6 +41,10 @@ type ProductNewRequest struct {
 	Price       []PriceTemplate   `json:"price"`
 	PackingRate []PackingRate     `json:"packing_rate"`
 	CompanyID   int               `json:"company_id"`
+	CreateBy    string            `json:"create_by"`
+	CreateTime  time.Time         `json:"create_time"`
+	EditBy      string            `json:"edit_by"`
+	EditTime    time.Time         `json:"edit_time"`
 }
 
 type BarcodeNewRequest struct {
