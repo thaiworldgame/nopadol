@@ -1738,11 +1738,15 @@ func getBasketNo(db *sqlx.DB, company_id int, branch_id int, doc_type int) (stri
 		vmonth1 = vmonth
 	}
 
+	fmt.Println("len day =",lenday)
+
 	if lenday == 1 {
 		vday1 = "0" + vday
 	} else {
 		vday1 = vday
 	}
+
+	fmt.Println("vDay = ",vday1)
 
 	if len(string(last_number)) == 1 {
 		snumber = "000" + last_number
