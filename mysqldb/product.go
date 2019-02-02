@@ -71,7 +71,7 @@ func (pd *productRepository) SearchByBarcode(req *product.SearchByBarcodeTemplat
 		"pic_path_1":   pdt_resp.PicPath1,
 		"stk_qty":      pdt_resp.StkQty,
 		"stock_type":   pdt_resp.StockType,
-		"average_cost":pdt_resp.AverageCost,
+		"average_cost": pdt_resp.AverageCost,
 	}, nil
 	//return pdt_resp, nil
 }
@@ -201,3 +201,92 @@ func map_product_template(x ProductModel) product.ProductTemplate {
 		StkLocation: stock,
 	}
 }
+
+func (p *ProductModel) SearchByBarcode(db *sqlx.DB, bar_code string) {
+	lccommand := `select distinct a.id,a.code as item_code,a.item_name,ifnull(a.pic_path1,'') as pic_path_1,b.bar_code,b.unit_code,c.sale_price_1,c.sale_price_2, ifnull(d.rate1,1) as rate_1,ifnull(a.stock_type,0) as stock_type,ifnull((select sum(qty)  as qty from StockLocation where item_code = a.code),0) as stk_qty,ifnull(d.rate1,1)*ifnull(a.average_cost,0) as average_cost from Item a inner join Barcode b on a.code = b.item_code inner join Price c on a.code = c.item_code and b.unit_code = c.unit_code left join ItemRate d on a.code = d.item_code and c.unit_code = d.unit_code where b.bar_code = ? `
+	rs := db.QueryRow(lccommand, bar_code)
+	rs.Scan(&p.Id, &p.ItemCode, &p.ItemName, &p.PicPath1, &p.BarCode, &p.UnitCode, &p.SalePrice1, &p.SalePrice2, &p.Rate1, p.StockType, &p.StkQty, &p.AverageCost)
+	return
+}
+
+
+func (p *productRepository) StoreItem(req *product.ProductNewRequest)(resp interface{},err error){
+
+	item := itemModel{}
+	err = item.map2itemModel(p.db,req)
+	if err != nil {
+		fmt.Println("error p.StoreItem map2itemModel ->",err.Error())
+		return nil,err
+	}
+
+	newItemID,err := item.save(p.db)
+	if err != nil {
+		fmt.Println("error item.save ",err.Error())
+		return nil,err
+	}
+
+	// insert to PackingRate Table
+	pk := packingRate{}
+	for _, value := range req.PackingRate {
+
+		u := itemUnitModel{}
+		u.id = req.UnitID
+
+		u.getByID(p.db)
+
+		pk.RatePerBaseUnit = value.RatePerBaseUnit
+		pk.ItemID = newItemID
+		pk.ItemCode = req.ItemCode
+		pk.UnitCode  = u.unitCode
+
+
+		_,err = pk.save(p.db)
+		if err != nil {
+			return nil,err
+		}
+	}
+
+	// price insert
+	pr := priceModel{}
+	for _, value := range req.Price {
+
+		u := itemUnitModel{}
+		u.id = value.UnitID
+		u.getByID(p.db) // bind จาก id
+
+		pr.UnitID = req.UnitID
+		pr.ItemId = newItemID
+		pr.ItemCode = req.ItemCode
+		pr.SalePrice1 = value.SalePrice1
+		pr.SalePrice2 = value.SalePrice2
+		pr.CompanyID = value.CompanyID
+		_,err := pr.save(p.db)
+		if err != nil {
+			return nil,err
+		}
+
+	}
+
+	// insert barcode
+	bar := barcodeModel{}
+	for _, value := range req.Barcode {
+
+		u := itemUnitModel{}
+		u.id = value.UnitID
+		u.getByID(p.db) // bind จาก id
+
+		bar.UnitID = req.UnitID
+		bar.ItemCode = req.ItemCode
+		bar.CompanyID  = req.CompanyID
+		bar.BarCode = value.Barcode
+		_,err := bar.save(p.db)
+		if err != nil {
+			return nil,err
+		}
+	}
+	return newItemID,nil
+	// todo : insert to Barcode table
+}
+
+
+

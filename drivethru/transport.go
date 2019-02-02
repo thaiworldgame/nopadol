@@ -1,15 +1,24 @@
 package drivethru
 
 import (
-	"net/http"
-	"github.com/acoshift/hrpc"
 	"encoding/json"
 	"fmt"
+	"github.com/acoshift/hrpc"
+	"net/http"
+	"github.com/mrtomyum/nopadol/auth"
+	"errors"
 )
 
 type errorResponse struct {
 	Error string `json:"error"`
 }
+var (
+	errMethodNotAllowed = errors.New("auth: method not allowed")
+	errForbidden        = errors.New("auth: forbidden")
+	errBadRequest       = errors.New("auth: bad request body")
+	errUnauthorized     = errors.New("auth: Unauthorized")
+)
+
 
 func enableCors(w *http.ResponseWriter) {
 	(*w).Header().Set("Access-Control-Allow-Origin", "*")
@@ -26,16 +35,27 @@ func MakeHandler(s Service) http.Handler {
 		ErrorEncoder:    errorEncoder,
 	})
 	mux := http.NewServeMux()
-	mux.Handle("/userlogin",m.Handler(userLogIn(s)))
+	mux.Handle("/userlogin", m.Handler(userLogIn(s)))
 	mux.Handle("/zone", m.Handler(makeListCompany(s)))
 	mux.Handle("/machine", m.Handler(makeListMachine(s)))
 	mux.Handle("/carbrand", m.Handler(makeSearchCarBranch(s)))
 	mux.Handle("/customer", m.Handler(makeSearchCustomer(s)))
 	mux.Handle("/item/search", m.Handler(makeItemSearch(s)))
 
-	mux.Handle("/pickup/new",m.Handler(pickupNew(s)))
-	//mux.Handle("/shift/open", m.Handler(makeShiftOpen(s)))
+	mux.Handle("/pickup/new", m.Handler(pickupNew(s)))
+	mux.Handle("/pickup/manage", m.Handler(managePickup(s)))
+	mux.Handle("/checkout/manage", m.Handler(manageCheckout(s)))
+	mux.Handle("/queue/list", m.Handler(makeSearchListQueue(s)))
 
+	mux.Handle("/queue/edit", m.Handler(queueEdit(s)))
+	mux.Handle("/queue/status", m.Handler(queueStatus(s)))
+	mux.Handle("/queue/product", m.Handler(queueProduct(s)))
+	mux.Handle("/billing/done", m.Handler(billingDone(s)))
+
+
+	//mux.Handle("/pickup/new",m.Handler(pickupNew(s)))
+
+	//mux.Handle("/shift/open", m.Handler(makeShiftOpen(s)))
 
 	mux.Handle("/shift/open", m.Handler(makeShiftOpen(s)))
 	mux.Handle("/shift/close", m.Handler(makeShiftClose(s)))
@@ -45,6 +65,12 @@ func MakeHandler(s Service) http.Handler {
 func mustLogin() func(http.Handler) http.Handler {
 	return func(h http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			companyID := auth.GetCompanyID(r.Context())
+			if companyID <=  0 {
+				errorEncoder(w, r, errForbidden)
+				fmt.Println("error mustLogin auth.transport.go")
+				return
+			}
 			enableCors(&w)
 			h.ServeHTTP(w, r)
 		})

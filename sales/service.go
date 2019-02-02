@@ -26,6 +26,8 @@ type Service interface {
 	SearchReserveToDeposit(req *SearchByKeywordTemplate) (interface{}, error)
 	CreateInvoice(req *NewInvoiceTemplate) (interface{}, error)
 	SearchInvoiceById(req *SearchByIdTemplate) (interface{}, error)
+
+
 }
 
 func (s *service) CreateQuotation(req *NewQuoTemplate) (interface{}, error) {
@@ -51,6 +53,9 @@ func (s *service) CreateQuotation(req *NewQuoTemplate) (interface{}, error) {
 	}
 
 	fmt.Println("Count Item", count_item)
+
+	fmt.Println(req.SumOfItemAmount)
+	fmt.Println(sum_item_amount)
 
 	switch {
 	case req.ArCode == "":
