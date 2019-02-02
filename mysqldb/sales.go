@@ -58,6 +58,8 @@ type NewQuoModel struct {
 	CreateTime          string            `db:"CreateTime"`
 	EditBy              string            `db:"EditBy"`
 	EditTime            string            `db:"EditTime"`
+	ConfirmBy           string            `db:ConfirmBy`
+	ConfirmTime         string            `db:"ConfirmTime"`
 	CancelBy            string            `db:"CancelBy"`
 	CancelTime          string            `db:"CancelTime"`
 	Subs                []NewQuoItemModel `db:"subs"`
@@ -93,8 +95,8 @@ type NewSaleModel struct {
 	ArId                int64              `db:"ArId"`
 	ArCode              string             `db:"ArCode"`
 	ArName              string             `db:"ArName"`
-	ArBillAddress       string             `db:"ar_bill_address"`
-	ArTelephone         string             `db:"ar_telephone"`
+	ArBillAddress       string             `db:"ArBillAddress"`
+	ArTelephone         string             `db:"ArTelephone"`
 	SaleId              int64              `db:"SaleId"`
 	SaleCode            string             `db:"SaleCode"`
 	SaleName            string             `db:"SaleName"`
@@ -751,8 +753,8 @@ func (repo *salesRepository) CancelQuotation(req *sales.NewQuoTemplate) (resp in
 	req.CancelTime = now.String()
 
 	switch {
-	case req.DocNo == "":
-		return nil, errors.New("Docno is null")
+	case req.CancelBy == "":
+		return nil, errors.New("ไม่ได้ระบุผู้ยกเลิก")
 	case req.IsConfirm == 1:
 		return nil, errors.New("เอกสารถูกอ้างอิงไปแล้ว ไม่สามารถยกเลิกได้")
 	case req.IsCancel == 1:
@@ -774,7 +776,7 @@ func (repo *salesRepository) CancelQuotation(req *sales.NewQuoTemplate) (resp in
 
 		sql := `Update Quotation set IsCancel=1,CancelBy=?,CancelTime=? where Id=?`
 		fmt.Println("sql update = ", sql)
-		id, err := repo.db.Exec(sql, req.EditBy, req.EditTime, req.Id)
+		id, err := repo.db.Exec(sql, req.CancelBy, req.CancelTime, req.Id)
 		if err != nil {
 			fmt.Println("Error = ", err.Error())
 			return nil, err
@@ -785,12 +787,65 @@ func (repo *salesRepository) CancelQuotation(req *sales.NewQuoTemplate) (resp in
 
 		fmt.Println("ReqID=", req.Id)
 
-		sql_del_sub := `update from QuotationSub set IsCancel = 1 where QuoId = ?`
+		sql_del_sub := `update QuotationSub set IsCancel = 1 where QuoId = ?`
 		_, err = repo.db.Exec(sql_del_sub, req.Id)
 		if err != nil {
 			fmt.Println("Error = ", err.Error())
 			return nil, err
 		}
+	}
+
+	return map[string]interface{}{
+		"id":       req.Id,
+		"doc_no":   req.DocNo,
+		"doc_date": req.DocDate,
+		"ar_code":  req.ArCode,
+	}, nil
+}
+
+func (repo *salesRepository) ConfirmQuotation(req *sales.NewQuoTemplate) (resp interface{}, err error) {
+	var check_doc_exist int64
+
+	now := time.Now()
+
+	req.ConfirmTime = now.String()
+
+	switch {
+	case req.ConfirmBy == "":
+		return nil, errors.New("ไม่ได้ระบุผู้อนุมัติ")
+	case req.IsConfirm == 1:
+		return nil, errors.New("เอกสารถูกอ้างอิงไปแล้ว ไม่สามารถอนุมัติได้")
+	case req.IsCancel == 1:
+		return nil, errors.New("เอกสารถูกยกเลิกไปแล้ว ไม่สามารถยกเลิกได้")
+	case req.AssertStatus == 0:
+		return nil, errors.New("เอกสารยังไม่ได้ตอบกลับ ไม่สามารถยกเลิกได้")
+	}
+
+	sqlexist := `select count(DocNo) as check_exist from Quotation where id = ?`
+	fmt.Println("DocNo Id", req.Id)
+	err = repo.db.Get(&check_doc_exist, sqlexist, req.Id)
+	if err != nil {
+		fmt.Println("Error = ", err.Error())
+		return nil, err
+	}
+
+	fmt.Println("check_doc_exist", check_doc_exist)
+
+	if (check_doc_exist != 0) {
+		fmt.Println("Confirm")
+
+		sql := `Update Quotation set IsConfirm=1,ConfirmBy=?,ConfirmTime=? where Id=?`
+		fmt.Println("sql confirm = ", sql)
+		id, err := repo.db.Exec(sql, req.ConfirmBy, req.ConfirmTime, req.Id)
+		if err != nil {
+			fmt.Println("Error = ", err.Error())
+			return nil, err
+		}
+
+		rowAffect, err := id.RowsAffected()
+		fmt.Println("Row Affect = ", rowAffect)
+
+		fmt.Println("ReqID=", req.Id)
 	}
 
 	return map[string]interface{}{

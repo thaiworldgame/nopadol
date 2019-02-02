@@ -17,6 +17,8 @@ type service struct {
 type Service interface {
 	CreateQuotation(req *NewQuoTemplate) (interface{}, error)
 	SearchQueById(req *SearchByIdTemplate) (interface{}, error)
+	ConfirmQuotation(req *NewQuoTemplate) (interface{}, error)
+	CancelQuotation(req *NewQuoTemplate) (interface{}, error)
 	CreateSaleOrder(req *NewSaleTemplate) (interface{}, error)
 	SearchSaleOrderById(req *SearchByIdTemplate) (interface{}, error)
 	SearchDocByKeyword(req *SearchByKeywordTemplate) (interface{}, error)
@@ -82,6 +84,22 @@ func (s *service) CreateQuotation(req *NewQuoTemplate) (interface{}, error) {
 
 func (s *service) SearchQueById(req *SearchByIdTemplate) (interface{}, error) {
 	resp, err := s.repo.SearchQuoById(req)
+	if err != nil {
+		return nil, err
+	}
+	return resp, nil
+}
+
+func (s *service) ConfirmQuotation(req *NewQuoTemplate) (interface{}, error) {
+	resp, err := s.repo.ConfirmQuotation(req)
+	if err != nil {
+		return nil, err
+	}
+	return resp, nil
+}
+
+func (s *service) CancelQuotation(req *NewQuoTemplate) (interface{}, error) {
+	resp, err := s.repo.CancelQuotation(req)
 	if err != nil {
 		return nil, err
 	}
@@ -171,12 +189,11 @@ func (s *service) CreateDeposit(req *NewDepositTemplate) (interface{}, error) {
 		return nil, errors.New("มูลค่าเอกสาร = 0")
 	case req.SaleId == 0:
 		return nil, errors.New("เอกสารไม่ได้ระบุ พนักงานขาย")
-	case req.CashAmount == 0 && req.CreditcardAmount ==0 && req.ChqAmount == 0 && req.BankAmount == 0:
+	case req.CashAmount == 0 && req.CreditcardAmount == 0 && req.ChqAmount == 0 && req.BankAmount == 0:
 		return nil, errors.New("เอกสารไม่ได้ระบุยอดชำระ")
 	case sum_pay_all != req.TotalAmount:
-		return nil,errors.New("ยอดชำระไม่เท่ากับมูลค่าเอกสาร")
+		return nil, errors.New("ยอดชำระไม่เท่ากับมูลค่าเอกสาร")
 	}
-
 
 	resp, err := s.repo.CreateDeposit(req)
 	if err != nil {
@@ -212,7 +229,7 @@ func (s *service) SearchReserveToDeposit(req *SearchByKeywordTemplate) (interfac
 func (s *service) CreateInvoice(req *NewInvoiceTemplate) (interface{}, error) {
 	var sum_pay_all float64
 
-	sum_pay_all = req.SumCashAmount + req.SumCreditAmount + req.SumChqAmount + req.SumBankAmount+req.SumOfDeposit+req.CouponAmount
+	sum_pay_all = req.SumCashAmount + req.SumCreditAmount + req.SumChqAmount + req.SumBankAmount + req.SumOfDeposit + req.CouponAmount
 	switch {
 	case req.ArId == 0:
 		return nil, errors.New("เอกสารไม่ได้ระบุ ลูกค้า")
@@ -220,12 +237,11 @@ func (s *service) CreateInvoice(req *NewInvoiceTemplate) (interface{}, error) {
 		return nil, errors.New("มูลค่าเอกสาร = 0")
 	case req.SaleId == 0:
 		return nil, errors.New("เอกสารไม่ได้ระบุ พนักงานขาย")
-	case req.BillType == 0 && req.SumCashAmount == 0 && req.SumCreditAmount ==0 && req.SumChqAmount == 0 && req.SumBankAmount == 0 && req.SumOfDeposit == 0 && req.CouponAmount==0:
+	case req.BillType == 0 && req.SumCashAmount == 0 && req.SumCreditAmount == 0 && req.SumChqAmount == 0 && req.SumBankAmount == 0 && req.SumOfDeposit == 0 && req.CouponAmount == 0:
 		return nil, errors.New("เอกสารไม่ได้ระบุยอดชำระ")
 	case req.BillType == 0 && sum_pay_all != req.TotalAmount:
-		return nil,errors.New("ยอดชำระไม่เท่ากับมูลค่าเอกสาร")
+		return nil, errors.New("ยอดชำระไม่เท่ากับมูลค่าเอกสาร")
 	}
-
 
 	resp, err := s.repo.CreateInvoice(req)
 	if err != nil {
@@ -234,7 +250,7 @@ func (s *service) CreateInvoice(req *NewInvoiceTemplate) (interface{}, error) {
 	return resp, nil
 }
 
-func (s *service) SearchInvoiceById(req *SearchByIdTemplate) (interface{}, error){
+func (s *service) SearchInvoiceById(req *SearchByIdTemplate) (interface{}, error) {
 	resp, err := s.repo.SearchInvoiceById(req)
 	if err != nil {
 		return nil, err

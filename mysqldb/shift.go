@@ -37,6 +37,40 @@ type ShiftModel struct {
 	sumOfDepositAmount float64
 }
 
+type Machine struct {
+	MachineId   int    `json:"machine_id" db:"machine_id"`
+	MachineNo   string `json:"machine_no" db:"machine_no"`
+	MachineCode string `json:"machine_code" db:"machine_code"`
+	DefWhId     int    `json:"def_wh_id" db:"def_wh_id"`
+	DefShelfId  int    `json:"def_shelf_id" db:"def_shelf_id"`
+	WHCode      string `json:"wh_code" db:"wh_code"`
+	ShelfCode   string `json:"shelf_code" db:"shelf_code"`
+	CashierID   int    `json:"cashier_id" db:"cashier_id"`
+	ShiftUUID   int    `json:"shift_uuid" db:"shift_uuid"`
+}
+
+func (m *Machine) SearchMachineNo(db *sqlx.DB, company_id int, branch_id int, access_token string) {
+	lccommand := `	select ifnull(c.id,0) as machine_id, ifnull(machine_no, '') as machine_no, ifnull(machine_code, '') as machine_code, def_wh_id, def_shelf_id, ifnull(d.wh_code, '') as wh_code, ifnull(e.shelf_code, '') as shelf_code,
+					ifnull(b.shift_uid,'') as shift_uuid,ifnull(b.cashier_id,0) as cashier_id
+					from        user_access a
+								inner join shift b on a.user_id = b.cashier_id
+								inner join pos_machine c on  b.machine_id = c.id
+								inner join warehouse d on c.def_wh_id = d.id
+								inner join warehouse_shelf e on c.def_shelf_id = e.id
+					where    	a.access_token = ?
+								and year(b.open_time) = year(CURDATE()) and month(b.open_time) = month(CURDATE()) and day(b.open_time) = day(CURDATE())
+								and c.company_id = ? and c.branch_id = ?`
+
+	rs := db.QueryRow(lccommand, company_id, branch_id, access_token)
+	rs.Scan(&m.MachineId, &m.MachineNo, &m.MachineCode, &m.DefWhId, &m.DefShelfId, &m.WHCode, &m.ShelfCode, &m.ShiftUUID, &m.CashierID)
+	//err := db.Get(&m, lccommand, company_id, branch_id, access_token)
+	//if err != nil {
+	//	fmt.Println("machine error = ",err.Error())
+	//}
+
+	return
+}
+
 func (sh *ShiftModel) MachineOpenState(db *sqlx.DB) (state int) {
 	lcCommand := `select is_open from pos_machine where id = ?`
 	rs := db.QueryRow(lcCommand, sh.machineID)
@@ -108,25 +142,25 @@ func (sh *ShiftModel) Close(db *sqlx.DB) error {
 	 			close_by = ?,
 	 			close_time = ?
 	 			where shift_uid = ?`
-	rs ,err := db.Exec(lcCommand,
-			shiftStatusClose,
-			sh.sumOfCashAmount,
-			sh.sumOfCreditAmount,
-			sh.sumOfBankAmount,
-			sh.sumOfCouponAmount,
-			sh.sumOfDepositAmount,
-			sh.closeBy,
-			sh.closeTime.Time,
-			sh.shiftUUid)
+	rs, err := db.Exec(lcCommand,
+		shiftStatusClose,
+		sh.sumOfCashAmount,
+		sh.sumOfCreditAmount,
+		sh.sumOfBankAmount,
+		sh.sumOfCouponAmount,
+		sh.sumOfDepositAmount,
+		sh.closeBy,
+		sh.closeTime.Time,
+		sh.shiftUUid)
 	if err != nil {
 		fmt.Println("error when update table shift to close status ...")
-		return fmt.Errorf("Error When Update Table Shift : ",err.Error())
+		return fmt.Errorf("Error When Update Table Shift : ", err.Error())
 	}
 
 	// check row update must by 1 record ...
-	rowUpdate,err := rs.RowsAffected()
+	rowUpdate, err := rs.RowsAffected()
 	if rowUpdate != 1 {
-		return fmt.Errorf("Update not Equal %v record ...",rowUpdate)
+		return fmt.Errorf("Update not Equal %v record ...", rowUpdate)
 	}
 
 	// todo : add type of cash (further)

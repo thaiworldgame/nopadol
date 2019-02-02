@@ -18,11 +18,11 @@ type (
 		ArName              string              `json:"ar_name"`
 		ArBillAddress       string              `json:"ar_bill_address"`
 		ArTelephone         string              `json:"ar_telephone"`
-		SaleId              int64                 `json:"sale_id"`
+		SaleId              int64               `json:"sale_id"`
 		SaleCode            string              `json:"sale_code"`
 		SaleName            string              `json:"sale_name"`
 		BillType            int64               `json:"bill_type"`
-		TaxType             int64                 `json:"tax_type"`
+		TaxType             int64               `json:"tax_type"`
 		TaxRate             float64             `json:"tax_rate"`
 		DepartId            int64               `json:"depart_id"`
 		RefNo               string              `json:"ref_no"`
@@ -54,6 +54,8 @@ type (
 		CreateTime          string              `json:"create_time"`
 		EditBy              string              `json:"edit_by"`
 		EditTime            string              `json:"edit_time"`
+		ConfirmBy           string              `json:confirm_by`
+		ConfirmTime         string              `json:"confirm_time"`
 		CancelBy            string              `json:"cancel_by"`
 		CancelTime          string              `json:"cancel_time"`
 		Subs                []NewQuoItemRequest `json:"subs"`
@@ -91,11 +93,11 @@ type (
 		ArName              string               `json:"ar_name"`
 		ArBillAddress       string               `json:"ar_bill_address"`
 		ArTelephone         string               `json:"ar_telephone"`
-		SaleId              int64                  `json:"sale_id"`
+		SaleId              int64                `json:"sale_id"`
 		SaleCode            string               `json:"sale_code"`
 		SaleName            string               `json:"sale_name"`
 		BillType            int64                `json:"bill_type"`
-		TaxType             int64                  `json:"tax_type"`
+		TaxType             int64                `json:"tax_type"`
 		TaxRate             float64              `json:"tax_rate"`
 		DepartId            int64                `json:"depart_id"`
 		RefNo               string               `json:"ref_no"`
@@ -568,6 +570,32 @@ func map_quo_sub_request(x NewQuoItemRequest) NewQuoItemTemplate {
 func SearchQuoById(s Service) interface{} {
 	return func(ctx context.Context, req *SearchByIdRequest) (interface{}, error) {
 		resp, err := s.SearchQueById(&SearchByIdTemplate{Id: req.Id})
+		if err != nil {
+			fmt.Println("endpoint error =", err.Error())
+			return nil, fmt.Errorf(err.Error())
+		}
+		return map[string]interface{}{
+			"data": resp,
+		}, nil
+	}
+}
+
+func ConfirmQuotation(s Service) interface{} {
+	return func(ctx context.Context, req *NewQuoRequest) (interface{}, error) {
+		resp, err := s.ConfirmQuotation(&NewQuoTemplate{Id: req.Id, AssertStatus: req.AssertStatus, IsConfirm: req.IsConfirm, IsCancel: req.IsCancel, ConfirmBy: req.ConfirmBy, ConfirmTime: req.ConfirmTime})
+		if err != nil {
+			fmt.Println("endpoint error =", err.Error())
+			return nil, fmt.Errorf(err.Error())
+		}
+		return map[string]interface{}{
+			"data": resp,
+		}, nil
+	}
+}
+
+func CancelQuotation(s Service) interface{} {
+	return func(ctx context.Context, req *NewQuoRequest) (interface{}, error) {
+		resp, err := s.CancelQuotation(&NewQuoTemplate{Id: req.Id, AssertStatus: req.AssertStatus, IsConfirm: req.IsConfirm, IsCancel: req.IsCancel, CancelBy: req.CancelBy, CancelTime: req.CancelTime})
 		if err != nil {
 			fmt.Println("endpoint error =", err.Error())
 			return nil, fmt.Errorf(err.Error())
