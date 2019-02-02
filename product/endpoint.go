@@ -190,3 +190,20 @@ func MakeNewProduct(s Service) interface{} {
 		}, nil
 	}
 }
+<<<<<<< Updated upstream
+=======
+
+func MakeNewBarcode(s Service) interface{} {
+
+	return func(ctx context.Context, req []BarcodeNewRequest) (interface{},error){
+		//resp ,err := s.StoreBarcode(req)
+		//if err != nil {
+		//	return nil,err
+		//}
+		return	map[string]interface{}{
+		"data": "",
+		}, nil
+	}
+}
+
+>>>>>>> Stashed changes

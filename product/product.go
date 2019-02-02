@@ -32,6 +32,7 @@ type ProductNewRequest struct {
 	ItemCode    string            `json:"item_code"`
 	ItemName    string            `json:"item_name"`
 	UnitID      int64             `json:"unit_id"`
+	UnitCode    string            `json:"unit_code"`
 	Picture     string            `json:"picture"`
 	StockType   int               `json:"stock_type"`
 	Barcode     []BarcodeTemplate `json:"barcode"`
@@ -40,6 +41,14 @@ type ProductNewRequest struct {
 	CompanyID   int               `json:"company_id"`
 }
 
+type BarcodeNewRequest struct {
+	temID        int64  `json:"item_id"`
+	ItemCode     string `json:"item_code"`
+	Barcode      string `json:"barcode"`
+	UnitCode     string `json:"unit_code"`
+	UnitID       int64  `json:"unit_id"`
+	ActiveStatus int    `json:"active_status"`
+}
 type PackingRate struct {
 	UnitID          int64 `json:"unit_id"`
 	RatePerBaseUnit int   `json:"rate_per_base_unit"`
@@ -59,6 +68,7 @@ type SearchProductStockTemplate struct {
 	ShelfCode string  `json:"shelf_code"`
 	Qty       float64 `json:"qty"`
 	UnitCode  string  `json:"unit_code"`
+	CompanyID int     `json:"company_id"`
 }
 
 type BarcodeTemplate struct {

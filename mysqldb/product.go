@@ -1,9 +1,15 @@
 package mysqldb
 
 import (
-	"github.com/mrtomyum/nopadol/product"
 	"fmt"
 	"github.com/jmoiron/sqlx"
+	"github.com/mrtomyum/nopadol/auth"
+	"github.com/mrtomyum/nopadol/product"
+)
+
+const (
+	BarcodeActiveStatusActive   int = 1
+	BarcodeActiveStatusInActive int = 0
 )
 
 type ProductModel struct {
@@ -209,18 +215,27 @@ func (p *ProductModel) SearchByBarcode(db *sqlx.DB, bar_code string) {
 	return
 }
 
-
-func (p *productRepository) StoreItem(req *product.ProductNewRequest)(resp interface{},err error){
+func (p *productRepository) StoreItem(req *product.ProductNewRequest) (resp interface{}, err error) {
 
 	item := itemModel{}
-	err = item.map2itemModel(p.db,req)
+	err = item.map2itemModel(p.db, req)
 	if err != nil {
+<<<<<<< Updated upstream
 		return nil,err
+=======
+		fmt.Println("error p.StoreItem map2itemModel ->", err.Error())
+		return nil, err
+>>>>>>> Stashed changes
 	}
 
-	newItemID,err := item.save(p.db)
+	newItemID, err := item.save(p.db)
 	if err != nil {
+<<<<<<< Updated upstream
 		return nil,err
+=======
+		fmt.Println("error item.save ", err.Error())
+		return nil, err
+>>>>>>> Stashed changes
 	}
 
 	// todo : insert to PackingRate Table
@@ -235,11 +250,15 @@ func (p *productRepository) StoreItem(req *product.ProductNewRequest)(resp inter
 		pk.RatePerBaseUnit = value.RatePerBaseUnit
 		pk.ItemID = newItemID
 		pk.ItemCode = req.ItemCode
-		pk.UnitCode  = u.unitCode
+		pk.UnitCode = u.unitCode
 
+<<<<<<< Updated upstream
 		_,err = pk.save(p.db)
+=======
+		_, err = pk.save(p.db)
+>>>>>>> Stashed changes
 		if err != nil {
-			return nil,err
+			return nil, err
 		}
 	}
 
@@ -256,16 +275,64 @@ func (p *productRepository) StoreItem(req *product.ProductNewRequest)(resp inter
 		pr.ItemId = value.ItemID
 		pr.SalePrice1 = value.SalePrice1
 		pr.SalePrice2 = value.SalePrice2
+<<<<<<< Updated upstream
 		_,err := pr.save(p.db)
+=======
+		pr.CompanyID = value.CompanyID
+		_, err := pr.save(p.db)
+>>>>>>> Stashed changes
 		if err != nil {
-			return nil,err
+			return nil, err
 		}
 
 	}
 
 
 
+<<<<<<< Updated upstream
 	return newItemID,nil
 	// todo : insert to Barcode table
 }
 
+=======
+		bar.UnitID = req.UnitID
+		bar.ItemCode = req.ItemCode
+		bar.CompanyID = req.CompanyID
+		bar.BarCode = value.Barcode
+		_, err := bar.save(p.db)
+		if err != nil {
+			return nil, err
+		}
+	}
+	return newItemID, nil
+	// todo : insert to Barcode table
+}
+
+func (p *productRepository) StoreBarcode(req []product.BarcodeNewRequest, tk *auth.Token) (interface{}, error) {
+	bar := barcodeModel{}
+	for _, value := range req {
+
+		u := itemUnitModel{}
+		u.id = value.UnitID
+		if value.ItemCode =="" && value.UnitID!=0 {
+			u.getByID(p.db) // bind จาก id
+		}
+		if value.UnitID==0 && value.UnitCode!=""{
+			u.getByCode(p.db)
+			value.UnitID = u.id
+		}
+
+
+		bar.UnitID = value.UnitID
+		bar.ItemCode = value.ItemCode
+		//bar.CompanyID = tk.CompanyID
+		bar.BarCode = value.Barcode
+		bar.ActiveStatus = 1
+		_, err := bar.save(p.db)
+		if err != nil {
+			return nil, err
+		}
+	}
+	return nil, nil
+}
+>>>>>>> Stashed changes

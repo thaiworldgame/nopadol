@@ -5,11 +5,20 @@ import (
 	"fmt"
 	"github.com/acoshift/hrpc"
 	"net/http"
+	"github.com/mrtomyum/nopadol/auth"
+	"errors"
 )
 
 type errorResponse struct {
 	Error string `json:"error"`
 }
+var (
+	errMethodNotAllowed = errors.New("auth: method not allowed")
+	errForbidden        = errors.New("auth: forbidden")
+	errBadRequest       = errors.New("auth: bad request body")
+	errUnauthorized     = errors.New("auth: Unauthorized")
+)
+
 
 func enableCors(w *http.ResponseWriter) {
 	(*w).Header().Set("Access-Control-Allow-Origin", "*")
@@ -56,6 +65,12 @@ func MakeHandler(s Service) http.Handler {
 func mustLogin() func(http.Handler) http.Handler {
 	return func(h http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			companyID := auth.GetCompanyID(r.Context())
+			if companyID <=  0 {
+				errorEncoder(w, r, errForbidden)
+				fmt.Println("error mustLogin auth.transport.go")
+				return
+			}
 			enableCors(&w)
 			h.ServeHTTP(w, r)
 		})
