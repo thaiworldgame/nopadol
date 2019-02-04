@@ -680,6 +680,20 @@ func (repo *salesRepository) CreateQuotation(req *sales.NewQuoTemplate) (resp in
 
 	} else {
 		fmt.Println("Update")
+
+		switch {
+		case req.DocNo == "":
+			fmt.Println("error =", "Docno is null")
+			return nil, errors.New("Docno is null")
+		case req.BillStatus != 0:
+			return nil, errors.New("เอกสารโดนอ้างนำไปใช้งานแล้ว")
+		case req.IsConfirm == 1:
+			return nil, errors.New("เอกสารโดนอ้างนำไปใช้งานแล้ว")
+		case req.IsCancel == 1:
+			return nil, errors.New("เอกสารถุกยกเลิกไปแล้ว")
+		}
+
+
 		req.EditBy = req.CreateBy
 
 		req.BeforeTaxAmount, req.TaxAmount, req.TotalAmount = config.CalcTaxItem(req.TaxType, req.TaxRate, req.AfterDiscountAmount)
@@ -1179,6 +1193,12 @@ func (repo *salesRepository) CreateSaleOrder(req *sales.NewSaleTemplate) (resp i
 		case req.DocNo == "":
 			fmt.Println("error =", "Docno is null")
 			return nil, errors.New("Docno is null")
+		case req.BillStatus != 0:
+			return nil, errors.New("เอกสารโดนอ้างนำไปใช้งานแล้ว")
+		case req.IsConfirm == 1:
+			return nil, errors.New("เอกสารโดนอ้างนำไปใช้งานแล้ว")
+		case req.IsCancel == 1:
+			return nil, errors.New("เอกสารถุกยกเลิกไปแล้ว")
 		}
 
 		fmt.Println("Update")
@@ -1423,6 +1443,7 @@ func (repo *salesRepository) CreateDeposit(req *sales.NewDepositTemplate) (inter
 	}
 
 	if (check_doc_exist == 0) {
+		req.BillBalance = req.NetAmount
 		sql := `insert into ar_deposit(company_id, branch_id, uuid, doc_no, tax_no, doc_date, bill_type, ar_id, ar_code, ar_name, sale_id, sale_code, sale_name, tax_type, tax_rate, ref_no, credit_day, due_date, depart_id, allocate_id, project_id, my_description, before_tax_amount, tax_amount, total_amount, net_amount ,bill_balance ,cash_amount ,creditcard_amount, chq_amount, bank_amount, is_return_money, is_cancel, is_confirm, scg_id, job_no, create_by, create_time) values(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ? ,? ,? ,?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
 		resp, err := repo.db.Exec(sql, req.CompanyId, req.BranchId, req.Uuid, req.DocNo, req.TaxNo, req.DocDate, req.BillType, req.ArId, req.ArCode, req.ArName, req.SaleId, req.SaleCode, req.SaleName, req.TaxType, req.TaxRate, req.RefNo, req.CreditDay, req.DueDate, req.DepartId, req.AllocateId, req.ProjectId, req.MyDescription, req.BeforeTaxAmount, req.TaxAmount, req.TotalAmount, req.NetAmount, req.BillBalance, req.CashAmount, req.CreditcardAmount, req.ChqAmount, req.BankAmount, req.IsReturnMoney, req.IsCancel, req.IsConfirm, req.ScgId, req.JobNo, req.CreateBy, req.CreateTime)
 		if err != nil {
@@ -1434,6 +1455,14 @@ func (repo *salesRepository) CreateDeposit(req *sales.NewDepositTemplate) (inter
 
 		req.Id = id
 	} else {
+
+		switch {
+		case req.IsConfirm == 1:
+			return nil, errors.New("เอกสารโดนอ้างนำไปใช้งานแล้ว")
+		case req.IsCancel == 1:
+			return nil, errors.New("เอกสารถุกยกเลิกไปแล้ว")
+		}
+
 		sql := `update ar_deposit set company_id=?, branch_id=?, uuid=?, doc_no=?,tax_no=?, doc_date=?, bill_type=?, ar_id=?, ar_code=?, ar_name=?, sale_id=?, sale_code=?, sale_name=?, tax_type=?, tax_rate=?, ref_no=?, credit_day=?, due_date=?, depart_id=?, allocate_id=?, project_id=?, my_description=?, before_tax_amount=?, tax_amount=?, total_amount=?, net_amount=?, bill_balance=?, cash_amount=? ,creditcard_amount=?, chq_amount=?, bank_amount=?, is_return_money=?, is_cancel=?, is_confirm=?, scg_id=?, job_no=?, edit_by=?, edit_time=?  where id = ?`
 		resp, err := repo.db.Exec(sql, req.CompanyId, req.BranchId, req.Uuid, req.DocNo, req.TaxNo, req.DocDate, req.BillType, req.ArId, req.ArCode, req.ArName, req.SaleId, req.SaleCode, req.SaleName, req.TaxType, req.TaxRate, req.RefNo, req.CreditDay, req.DueDate, req.DepartId, req.AllocateId, req.ProjectId, req.MyDescription, req.BeforeTaxAmount, req.TaxAmount, req.TotalAmount, req.NetAmount, req.BillBalance, req.CashAmount, req.CreditcardAmount, req.ChqAmount, req.BankAmount, req.IsReturnMoney, req.IsCancel, req.IsConfirm, req.ScgId, req.JobNo, req.EditBy, req.EditTime, req.Id)
 		if err != nil {
@@ -1445,6 +1474,7 @@ func (repo *salesRepository) CreateDeposit(req *sales.NewDepositTemplate) (inter
 		fmt.Println("Row Affect = ", rowAffect)
 
 		fmt.Println("ReqID=", req.Id)
+
 	}
 
 	var count_crd_err int64

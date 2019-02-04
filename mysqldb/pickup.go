@@ -1546,7 +1546,6 @@ func (q *ListQueueModel) BillingDone(db *sqlx.DB, req *drivethru.BillingDoneRequ
 				var err error
 				var access_token string
 
-
 				access_token = req.AccessToken
 
 				pos_no, err = getPosNo(db, u.CompanyID, u.BranchID, access_token)
@@ -1588,7 +1587,7 @@ func (q *ListQueueModel) BillingDone(db *sqlx.DB, req *drivethru.BillingDoneRequ
 						"response": map[string]interface{}{
 							"success":      false,
 							"error":        true,
-							"message":      "error arinvoice = "+ err.Error(),
+							"message":      "error arinvoice = " + err.Error(),
 							"total_amount": q.TotalAfterAmount,
 							"invoice": map[string]interface{}{
 								"invoice_no":     "Can not save bill",
@@ -1605,26 +1604,6 @@ func (q *ListQueueModel) BillingDone(db *sqlx.DB, req *drivethru.BillingDoneRequ
 						},
 					}, nil
 				}
-				//return map[string]interface{}{
-				//	"response": map[string]interface{}{
-				//		"success":      true,
-				//		"error":        false,
-				//		"message":      "",
-				//		"total_amount": q.TotalAfterAmount,
-				//		"invoice": map[string]interface{}{
-				//			"invoice_no":     "Queue is billed complete",
-				//			"cash_amount":    req.Cash,
-				//			"credit_amount":  crd_amount,
-				//			"coupong_amount": cou_amount,
-				//			"deposit_amount": dep_amount,
-				//			"remain_amount":  sum_remain,
-				//			"change_amount":  change_amount,
-				//		},
-				//		"is_print_short_form":  0,
-				//		"is_print_cash_form":   0,
-				//		"is_print_credit_form": 0,
-				//	},
-				//}, nil
 
 				id, _ := rs.LastInsertId()
 
@@ -1636,20 +1615,20 @@ func (q *ListQueueModel) BillingDone(db *sqlx.DB, req *drivethru.BillingDoneRequ
 
 				for _, item := range q.Item {
 
-					fmt.Println("item",item.ItemBarCode)
+					fmt.Println("item", item.ItemBarCode)
 					discount_word_sub = ""
 					discount_amount_sub = 0
 
-					sum_of_cost = item.QtyAfter*item.AverageCost
+					sum_of_cost = item.QtyAfter * item.AverageCost
 
 					sqlcommand = `insert into ar_invoice_sub(company_id, branch_id, uuid, inv_id, doc_no, doc_date, ar_id, sale_id, item_id, item_code, bar_code, item_name, wh_id, shelf_id, qty, cn_qty, unit_code, price, discount_word_sub, discount_amount_sub, amount, net_amount, average_cost, sum_of_cost, item_decription, packing_rate_1, ref_no, ref_line_number, line_number) values(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
-					rs_sub, err := db.Exec(sqlcommand, u.CompanyID, u.BranchID, uuid, q.Id, pos_no, doc_date, ar_id, u.UserId, item.ItemId, item.ItemCode, item.ItemBarCode, item.ItemName, m.DefWhId, m.DefShelfId, item.QtyAfter, item.QtyAfter, item.ItemUnitCode, item.ItemPrice, discount_word_sub, discount_amount_sub, item.TotalPriceAfter, item.TotalPriceAfter, item.AverageCost,sum_of_cost, q.PlateNumber, item.Rate1, q.DocNo, item.LineNumber, item.LineNumber)
+					rs_sub, err := db.Exec(sqlcommand, u.CompanyID, u.BranchID, uuid, q.Id, pos_no, doc_date, ar_id, u.UserId, item.ItemId, item.ItemCode, item.ItemBarCode, item.ItemName, m.DefWhId, m.DefShelfId, item.QtyAfter, item.QtyAfter, item.ItemUnitCode, item.ItemPrice, discount_word_sub, discount_amount_sub, item.TotalPriceAfter, item.TotalPriceAfter, item.AverageCost, sum_of_cost, q.PlateNumber, item.Rate1, q.DocNo, item.LineNumber, item.LineNumber)
 					if err != nil {
 						return map[string]interface{}{
 							"response": map[string]interface{}{
 								"success":      false,
 								"error":        true,
-								"message":      "error arinvoice_sub = "+ err.Error(),
+								"message":      "error arinvoice_sub = " + err.Error(),
 								"total_amount": q.TotalAfterAmount,
 								"invoice": map[string]interface{}{
 									"invoice_no":     "Can not save bill",
@@ -1670,6 +1649,33 @@ func (q *ListQueueModel) BillingDone(db *sqlx.DB, req *drivethru.BillingDoneRequ
 
 					item.Id = int(item_id)
 				}
+
+				if len(req.CreditCard) != 0 {
+					for _, crd := range req.CreditCard {
+						lccommand_crd := `insert into credit_card(company_id, branch_id,ref_uuid, ref_id,ar_id,doc_no, doc_date, credit_card_no, credit_type, confirm_no, amount, charge_amount, description,receive_date, due_date) values(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+						_, err = db.Exec(lccommand_crd, u.CompanyID, u.BranchID, uuid, q.Id, ar_id, pos_no, doc_date, crd.CardNo, crd.CreditType, crd.ConfirmNo, crd.Amount, crd.ChargeAmount, "Drivethru Pos", doc_date, doc_date)
+						if err != nil {
+							fmt.Println("error insert credit card = ", err.Error())
+						}
+					}
+				}
+
+				var line_number_coupon int
+				if len(req.CouponCode) != 0 {
+					for _, cou := range req.CouponCode {
+						line_number_coupon = 0
+						lccommand_cou := `insert into coupon_receive(company_id, branch_id, coupon_code, coupon_type, ref_doc_no, ref_uuid, coupon_value, line_number) values(?, ?, ?, ?, ?, ?, ?, ?)`
+						_, err = db.Exec(lccommand_cou, u.CompanyID, u.BranchID, cou.CouponCode, 1, q.DocNo, uuid, cou.Amount, line_number_coupon)
+						if err != nil {
+							fmt.Println("error insert credit card = ", err.Error())
+						}
+
+						line_number_coupon = line_number_coupon+1
+					}
+				}
+
+
+
 				//
 				//sqlcommand = `COMMIT`
 				//_, err = db.Exec(sqlcommand)
@@ -1770,7 +1776,7 @@ func getBasketNo(db *sqlx.DB, company_id int, branch_id int, doc_type int) (stri
 
 	lenday = len(vday)
 
-	fmt.Println("len day =",lenday)
+	fmt.Println("len day =", lenday)
 
 	if lenday == 1 {
 		vday1 = "0" + vday
@@ -1778,7 +1784,7 @@ func getBasketNo(db *sqlx.DB, company_id int, branch_id int, doc_type int) (stri
 		vday1 = vday
 	}
 
-	fmt.Println("vDay = ",vday1)
+	fmt.Println("vDay = ", vday1)
 
 	if len(string(last_number)) == 1 {
 		snumber = "000" + last_number
