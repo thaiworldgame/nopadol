@@ -65,12 +65,14 @@ func MakeHandler(s Service) http.Handler {
 func mustLogin() func(http.Handler) http.Handler {
 	return func(h http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			companyID := auth.GetCompanyID(r.Context())
-			if companyID <=  0 {
-				errorEncoder(w, r, errForbidden)
-				fmt.Println("error mustLogin auth.transport.go")
-				return
-			}
+			//companyID := auth.GetCompanyID(r.Context())
+			auth.GetCompanyID(r.Context())
+			// remark ชั่วคราว
+			//if companyID <=  0 {
+			//	errorEncoder(w, r, errForbidden)
+			//	fmt.Println("error mustLogin auth.transport.go")
+			//	return
+			//}
 			enableCors(&w)
 			h.ServeHTTP(w, r)
 		})

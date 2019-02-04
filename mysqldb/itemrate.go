@@ -16,22 +16,8 @@ type packingRate struct {
 	CompanyID       int    `db:"company_id"`
 }
 
-<<<<<<< Updated upstream
-func (r *packingRate) save(db *sqlx.DB) (newID int64, err error) {
-	// check data before ins
-	if r.ItemID == 0 {
-		it := itemModel{}
-		r.ItemID, err = it.getItemIDbyCode(db, r.ItemCode)
-		if err != nil {
-			return -1, fmt.Errorf("no item_id! ")
-		}
-	}
 
-	if r.UnitID == 0 {
-		u := itemUnitModel{}
-		u.getByCode(db)
-		r.UnitID = u.id
-=======
+
 func (r *packingRate) verifyRequestData(db *sqlx.DB) (err error) {
 	it := itemModel{}
 	u := itemUnitModel{}
@@ -72,7 +58,6 @@ func (r *packingRate) save(db *sqlx.DB) (newID int64, err error) {
 	err = r.verifyRequestData(db)
 	if err != nil {
 		return -1, err
->>>>>>> Stashed changes
 	}
 
 	lccommand := `insert into ItemRate (

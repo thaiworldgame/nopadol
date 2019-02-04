@@ -220,22 +220,14 @@ func (p *productRepository) StoreItem(req *product.ProductNewRequest) (resp inte
 	item := itemModel{}
 	err = item.map2itemModel(p.db, req)
 	if err != nil {
-<<<<<<< Updated upstream
-		return nil,err
-=======
 		fmt.Println("error p.StoreItem map2itemModel ->", err.Error())
 		return nil, err
->>>>>>> Stashed changes
 	}
 
 	newItemID, err := item.save(p.db)
 	if err != nil {
-<<<<<<< Updated upstream
-		return nil,err
-=======
 		fmt.Println("error item.save ", err.Error())
 		return nil, err
->>>>>>> Stashed changes
 	}
 
 	// todo : insert to PackingRate Table
@@ -252,11 +244,8 @@ func (p *productRepository) StoreItem(req *product.ProductNewRequest) (resp inte
 		pk.ItemCode = req.ItemCode
 		pk.UnitCode = u.unitCode
 
-<<<<<<< Updated upstream
-		_,err = pk.save(p.db)
-=======
+
 		_, err = pk.save(p.db)
->>>>>>> Stashed changes
 		if err != nil {
 			return nil, err
 		}
@@ -275,12 +264,8 @@ func (p *productRepository) StoreItem(req *product.ProductNewRequest) (resp inte
 		pr.ItemId = value.ItemID
 		pr.SalePrice1 = value.SalePrice1
 		pr.SalePrice2 = value.SalePrice2
-<<<<<<< Updated upstream
-		_,err := pr.save(p.db)
-=======
 		pr.CompanyID = value.CompanyID
 		_, err := pr.save(p.db)
->>>>>>> Stashed changes
 		if err != nil {
 			return nil, err
 		}
@@ -289,24 +274,11 @@ func (p *productRepository) StoreItem(req *product.ProductNewRequest) (resp inte
 
 
 
-<<<<<<< Updated upstream
 	return newItemID,nil
 	// todo : insert to Barcode table
 }
 
-=======
-		bar.UnitID = req.UnitID
-		bar.ItemCode = req.ItemCode
-		bar.CompanyID = req.CompanyID
-		bar.BarCode = value.Barcode
-		_, err := bar.save(p.db)
-		if err != nil {
-			return nil, err
-		}
-	}
-	return newItemID, nil
-	// todo : insert to Barcode table
-}
+
 
 func (p *productRepository) StoreBarcode(req []product.BarcodeNewRequest, tk *auth.Token) (interface{}, error) {
 	bar := barcodeModel{}
@@ -335,4 +307,4 @@ func (p *productRepository) StoreBarcode(req []product.BarcodeNewRequest, tk *au
 	}
 	return nil, nil
 }
->>>>>>> Stashed changes
+

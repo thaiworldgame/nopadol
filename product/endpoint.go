@@ -3,6 +3,8 @@ package product
 import (
 	"context"
 	"fmt"
+	"github.com/mrtomyum/nopadol/auth"
+	"time"
 )
 
 //type Endpoint interface {
@@ -130,43 +132,58 @@ func MakeNewProduct(s Service) interface{} {
 		RatePerBaseUnit int    `json:"rate_per_base_unit"`
 	}
 	type requestNewItem struct {
-		Code        string                `json:"code"`
-		Name        string                `json:"name"`
-		UnitCode    string                `json:"unit_code"`
-		UnitID      int64                 `json:"unit_id"`
-		Picture     string                `json:"picture"`
-		StockType   int                   `json:"stock_type"`
-		Price       []requestPrice       `json:"price"`
-		Barcode     []requestBarcode     `json:"barcode"`
+		Code        string           `json:"code"`
+		Name        string           `json:"name"`
+		UnitCode    string           `json:"unit_code"`
+		UnitID      int64            `json:"unit_id"`
+		Picture     string           `json:"picture"`
+		StockType   int              `json:"stock_type"`
+		Price       []requestPrice   `json:"price"`
+		Barcode     []requestBarcode `json:"barcode"`
 		PackingRate []RequestPacking `json:"packing_rate"`
+		CompanyID   int              `json:"company_id"`
 	}
 	return func(ctx context.Context, req *requestNewItem) (interface{}, error) {
 
 		var barcodes []BarcodeTemplate
-		// bind barcode template
-		for _, value := range req.Barcode {
-			bct := BarcodeTemplate{}
-			bct.Barcode = value.Barcode
-			bct.UnitID = value.UnitID
-			barcodes = append(barcodes, bct)
-		}
-
-		// bind price template
 		var prices []PriceTemplate
-		for _, value := range req.Price {
-			pr := PriceTemplate{}
-			pr.SalePrice1 = value.SalePrice1
-			pr.SalePrice2 = value.SalePrice2
-			pr.UnitID = value.UnitID
-			pr.SaleType = value.SaleType
-			prices = append(prices, pr)
+		var Rates []PackingRate
+		companyID := auth.GetCompanyID(ctx)
+		userID := auth.GetUserCode(ctx)
+		// bind barcode template
+		if len(req.Barcode) > 0 {
+			fmt.Println("bind req barcocde")
+			for _, value := range req.Barcode {
+				bct := BarcodeTemplate{}
+				bct.Barcode = value.Barcode
+				bct.UnitID = value.UnitID
+				barcodes = append(barcodes, bct)
+			}
 		}
 
-		var Rates []PackingRate
-		for _, value := range req.PackingRate {
-			rt := PackingRate{}
-			rt.RatePerBaseUnit = value.RatePerBaseUnit
-			rt.UnitID = value.UnitID
+		if len(req.Price) > 0 {
+			fmt.Println("bind req price value : ", req.Price)
+
+			// bind price template
+			for _, value := range req.Price {
+				pr := PriceTemplate{}
+				pr.SalePrice1 = value.SalePrice1
+				pr.SalePrice2 = value.SalePrice2
+				pr.UnitID = value.UnitID
+				pr.SaleType = value.SaleType
+				pr.CompanyID = companyID
+				prices = append(prices, pr)
+			}
+		}
+
+		if len(req.PackingRate) > 0 {
+
+			fmt.Println("bind req Rate")
+			for _, value := range req.PackingRate {
+				rt := PackingRate{}
+				rt.RatePerBaseUnit = value.RatePerBaseUnit
+				rt.UnitID = value.UnitID
+			}
 		}
 
 
@@ -180,6 +197,9 @@ func MakeNewProduct(s Service) interface{} {
 			Barcode:     barcodes,
 			Price:       prices,
 			PackingRate: Rates,
+			CompanyID:   companyID,
+			CreateBy:    userID,
+			CreateTime:  time.Now(),
 		})
 		if err != nil {
 			fmt.Println("endpoint error =", err.Error())
@@ -190,20 +210,33 @@ func MakeNewProduct(s Service) interface{} {
 		}, nil
 	}
 }
-<<<<<<< Updated upstream
-=======
 
 func MakeNewBarcode(s Service) interface{} {
 
-	return func(ctx context.Context, req []BarcodeNewRequest) (interface{},error){
-		//resp ,err := s.StoreBarcode(req)
-		//if err != nil {
-		//	return nil,err
-		//}
-		return	map[string]interface{}{
-		"data": "",
+	type request struct {
+		itemID       int64  `json:"item_id"`
+		itemCode     string `json:"item_code"`
+		barcode      string `json:"barcode"`
+		unitCode     string `json:"unit_code"`
+		unitID       int64  `json:"unit_id"`
+		activeStatus int    `json:"active_status"`
+	}
+
+	return func(ctx context.Context, req *request) (interface{}, error) {
+		resp, err := s.StoreBarcode(&BarcodeNewRequest{
+			ItemID:       req.itemID,
+			ItemCode:     req.itemCode,
+			Barcode:      req.barcode,
+			UnitCode:     req.unitCode,
+			UnitID:       req.unitID,
+			ActiveStatus: req.activeStatus,
+		}, &auth.Token{})
+		if err != nil {
+			fmt.Println("endpoint error =", err.Error())
+			return nil, fmt.Errorf(err.Error())
+		}
+		return map[string]interface{}{
+			"data": resp,
 		}, nil
 	}
 }
-
->>>>>>> Stashed changes
