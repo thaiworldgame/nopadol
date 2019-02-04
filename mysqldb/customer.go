@@ -34,12 +34,12 @@ func (cr *customerRepository) SearchById(req *customer.SearchByIdTemplate) (resp
 	cust_resp := map_customer_template(cust)
 
 	return map[string]interface{}{
-		"id":        cust_resp.Id,
-		"code":      cust_resp.Code,
-		"name":      cust_resp.Name,
-		"address":   cust_resp.Address,
-		"telephone": cust_resp.Telephone,
-		"bill_credit":cust_resp.BillCredit,
+		"id":          cust_resp.Id,
+		"code":        cust_resp.Code,
+		"name":        cust_resp.Name,
+		"address":     cust_resp.Address,
+		"telephone":   cust_resp.Telephone,
+		"bill_credit": cust_resp.BillCredit,
 	}, nil
 }
 
@@ -69,11 +69,19 @@ func (cr *customerRepository) SearchByKeyword(req *customer.SearchByKeywordTempl
 
 func map_customer_template(x CustomerModel) customer.CustomerTemplate {
 	return customer.CustomerTemplate{
-		Id:        x.Id,
-		Code:      x.Code,
-		Name:      x.Name,
-		Address:   x.Address,
-		Telephone: x.Telephone,
-		BillCredit:x.BillCredit,
+		Id:         x.Id,
+		Code:       x.Code,
+		Name:       x.Name,
+		Address:    x.Address,
+		Telephone:  x.Telephone,
+		BillCredit: x.BillCredit,
 	}
+}
+
+func (cust *CustomerModel) Search(db *sqlx.DB, ar_code string) {
+	sql := `select id,code,name,ifnull(address,'') as address,ifnull(telephone,'') as telephone,bill_credit from Customer where code = ?`
+	rs := db.QueryRow(sql, ar_code)
+	rs.Scan(&cust.Id, &cust.Code, &cust.Name, &cust.Address, &cust.Telephone, &cust.BillCredit)
+
+	return
 }
