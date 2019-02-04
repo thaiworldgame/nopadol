@@ -50,24 +50,29 @@ type Machine struct {
 }
 
 func (m *Machine) SearchMachineNo(db *sqlx.DB, company_id int, branch_id int, access_token string) {
-	lccommand := `	select ifnull(c.id,0) as machine_id, ifnull(machine_no, '') as machine_no, ifnull(machine_code, '') as machine_code, def_wh_id, def_shelf_id, ifnull(d.wh_code, '') as wh_code, ifnull(e.shelf_code, '') as shelf_code,
-					ifnull(b.shift_uid,'') as shift_uuid,ifnull(b.cashier_id,0) as cashier_id
-					from        user_access a
-								inner join shift b on a.user_id = b.cashier_id
-								inner join pos_machine c on  b.machine_id = c.id
-								inner join warehouse d on c.def_wh_id = d.id
-								inner join warehouse_shelf e on c.def_shelf_id = e.id
-					where    	a.access_token = ?
-								and year(b.open_time) = year(CURDATE()) and month(b.open_time) = month(CURDATE()) and day(b.open_time) = day(CURDATE())
-								and c.company_id = ? and c.branch_id = ?`
+	fmt.Println("Search Machine UUID = ", access_token, company_id, branch_id)
+	lccommand := "	select ifnull(c.id,0) as machine_id, ifnull(machine_no, '') as machine_no, ifnull(machine_code, '') as machine_code, def_wh_id, def_shelf_id, ifnull(d.wh_code, '') as wh_code, ifnull(e.shelf_code, '') as shelf_code, ifnull(b.shift_uid,'') as shift_uuid,ifnull(b.cashier_id,0) as cashier_id from        user_access a 	inner join shift b on a.user_id = b.cashier_id inner join pos_machine c on  b.machine_id = c.id inner join warehouse d on c.def_wh_id = d.id inner join warehouse_shelf e on c.def_shelf_id = e.id where   a.access_token = ? and year(b.open_time) = year(CURDATE()) and month(b.open_time) = month(CURDATE()) and day(b.open_time) = day(CURDATE()) and c.company_id = ? and c.branch_id = ?"
 
-	rs := db.QueryRow(lccommand, company_id, branch_id, access_token)
+	rs := db.QueryRow(lccommand, access_token, company_id, branch_id)
 	rs.Scan(&m.MachineId, &m.MachineNo, &m.MachineCode, &m.DefWhId, &m.DefShelfId, &m.WHCode, &m.ShelfCode, &m.ShiftUUID, &m.CashierID)
 	//err := db.Get(&m, lccommand, company_id, branch_id, access_token)
 	//if err != nil {
 	//	fmt.Println("machine error = ",err.Error())
 	//}
 
+	fmt.Println("Machine No =", m.MachineNo)
+
+	return
+}
+
+func (u *UserAccess) GetProfileByToken1(db *sqlx.DB, token string) {
+
+	lcCommand := "select user_id,user_code,b.company_id,b.branch_id,b.branch_code,b.zone_id " +
+		",b.name from " + dbname + ".user_access a inner join npdl.`user` b on a.user_id=b.id " +
+		" where access_token='" + token + "'"
+	//fmt.Println(lcCommand)
+	rs := db.QueryRow(lcCommand)
+	rs.Scan(&u.UserId, &u.UserCode, &u.CompanyID, &u.BranchID, &u.BranchCode, &u.ZoneID, &u.Name)
 	return
 }
 

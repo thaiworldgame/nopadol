@@ -1003,6 +1003,7 @@ func (q *ListQueueModel) BillingDone(db *sqlx.DB, req *drivethru.BillingDoneRequ
 	var item_amount float64
 
 	var sqlcommand string
+	var pos_no string
 
 	now := time.Now()
 	fmt.Println("yyyy-mm-dd date format : ", now.AddDate(0, 0, 0).Format("2006-01-02"))
@@ -1263,11 +1264,24 @@ func (q *ListQueueModel) BillingDone(db *sqlx.DB, req *drivethru.BillingDoneRequ
 			if sum_remain != 0 {
 				return map[string]interface{}{
 					"response": map[string]interface{}{
-						"success": false,
-						"error":   true,
-						"message": "Payment have remain money",
+						"success":      false,
+						"error":        true,
+						"message":      "Payment have remain",
+						"total_amount": q.TotalAfterAmount,
+						"invoice": map[string]interface{}{
+							"invoice_no":     "Can not save bill",
+							"cash_amount":    req.Cash,
+							"credit_amount":  crd_amount,
+							"coupong_amount": cou_amount,
+							"deposit_amount": dep_amount,
+							"remain_amount":  sum_remain,
+							"change_amount":  change_amount,
+						},
+						"is_print_short_form":  0,
+						"is_print_cash_form":   0,
+						"is_print_credit_form": 0,
 					},
-					"queid": ""}, nil
+				}, nil
 			} else {
 				return map[string]interface{}{
 					"response": map[string]interface{}{
@@ -1503,11 +1517,24 @@ func (q *ListQueueModel) BillingDone(db *sqlx.DB, req *drivethru.BillingDoneRequ
 			if sum_remain != 0 {
 				return map[string]interface{}{
 					"response": map[string]interface{}{
-						"success": false,
-						"error":   true,
-						"message": "Payment have remain money",
+						"success":      false,
+						"error":        true,
+						"message":      "Payment have remain",
+						"total_amount": q.TotalAfterAmount,
+						"invoice": map[string]interface{}{
+							"invoice_no":     "Can not save bill",
+							"cash_amount":    req.Cash,
+							"credit_amount":  crd_amount,
+							"coupong_amount": cou_amount,
+							"deposit_amount": dep_amount,
+							"remain_amount":  sum_remain,
+							"change_amount":  change_amount,
+						},
+						"is_print_short_form":  0,
+						"is_print_cash_form":   0,
+						"is_print_credit_form": 0,
 					},
-					"queid": ""}, nil
+				}, nil
 			} else {
 
 				var before_tax_amount float64
@@ -1516,8 +1543,13 @@ func (q *ListQueueModel) BillingDone(db *sqlx.DB, req *drivethru.BillingDoneRequ
 				uuid := GetAccessToken()
 				m := Machine{}
 				m.SearchMachineNo(db, u.CompanyID, u.BranchID, req.AccessToken)
+				var err error
+				var access_token string
 
-				pos_no, err := getPosNo(db, u.CompanyID, u.BranchID, req.AccessToken)
+
+				access_token = req.AccessToken
+
+				pos_no, err = getPosNo(db, u.CompanyID, u.BranchID, access_token)
 				if err != nil {
 					fmt.Println(err.Error())
 				}
@@ -1653,7 +1685,7 @@ func (q *ListQueueModel) BillingDone(db *sqlx.DB, req *drivethru.BillingDoneRequ
 			"message":      "",
 			"total_amount": q.TotalAfterAmount,
 			"invoice": map[string]interface{}{
-				"invoice_no":     "Queue is billed complete",
+				"invoice_no":     pos_no,
 				"cash_amount":    req.Cash,
 				"credit_amount":  crd_amount,
 				"coupong_amount": cou_amount,
@@ -1724,19 +1756,19 @@ func getBasketNo(db *sqlx.DB, company_id int, branch_id int, doc_type int) (stri
 
 	lenmonth = len(vmonth)
 
+	if lenmonth == 1 {
+		vmonth1 = "0" + vmonth
+	} else {
+		vmonth1 = vmonth
+	}
+
 	intday = int(time.Now().Day())
 	intday1 = int(intday)
 	vday = strconv.Itoa(intday1)
 
 	fmt.Println("day =", vday)
 
-	lenmonth = len(vmonth)
-
-	if lenmonth == 1 {
-		vmonth1 = "0" + vmonth
-	} else {
-		vmonth1 = vmonth
-	}
+	lenday = len(vday)
 
 	fmt.Println("len day =",lenday)
 
@@ -1845,19 +1877,19 @@ func getPosNo(db *sqlx.DB, company_id int, branch_id int, access_token string) (
 
 	lenmonth = len(vmonth)
 
+	if lenmonth == 1 {
+		vmonth1 = "0" + vmonth
+	} else {
+		vmonth1 = vmonth
+	}
+
 	intday = int(time.Now().Day())
 	intday1 = int(intday)
 	vday = strconv.Itoa(intday1)
 
 	fmt.Println("day =", vday)
 
-	lenmonth = len(vmonth)
-
-	if lenmonth == 1 {
-		vmonth1 = "0" + vmonth
-	} else {
-		vmonth1 = vmonth
-	}
+	lenday = len(vday)
 
 	if lenday == 1 {
 		vday1 = "0" + vday
@@ -1884,7 +1916,7 @@ func getPosNo(db *sqlx.DB, company_id int, branch_id int, access_token string) (
 	//	branch_header = "S02"
 	//}
 
-	fmt.Println("Machine No = ", m.MachineNo)
+	fmt.Println("POS NO Machine No = ", m.MachineNo)
 
 	header = "D" + m.MachineNo
 
@@ -1900,6 +1932,8 @@ func getPosNo(db *sqlx.DB, company_id int, branch_id int, access_token string) (
 }
 
 func getLastPosNo(db *sqlx.DB, company_id int, branch_id int, machine_id int) (last_no int, err error) {
+
+	fmt.Println("Pos Last MachineId =", machine_id)
 
 	sql := `select cast(right(ifnull(max(doc_no),0),4) as int)+1 maxno from ar_invoice where company_id = ? and branch_id = ? and pos_machine_id = ? and year(doc_date) = year(CURDATE()) and month(doc_date) = month(CURDATE()) and day(doc_date) = day(CURDATE())`
 	fmt.Println("Branch ID =", branch_id)
