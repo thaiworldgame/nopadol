@@ -3,6 +3,8 @@ package product
 import (
 	"context"
 	"fmt"
+
+	"github.com/mrtomyum/nopadol/auth"
 )
 
 //type Endpoint interface {
@@ -206,4 +208,15 @@ func MakeNewProduct(s Service) interface{} {
 }
 
 
-func MakeNewBarcode(s Service) interface{}
+func MakeNewBarcode(s Service) interface{}{
+	return func(ctx context.Context, req *BarcodeNewRequest,tk *auth.Token) (interface{}, error) {
+		resp, err := s.StoreBarcode(req,tk )
+		if err != nil {
+			fmt.Println("endpoint error =", err.Error())
+			return nil, fmt.Errorf(err.Error())
+		}
+		return map[string]interface{}{
+			"data": resp,
+		}, nil
+	}
+}
