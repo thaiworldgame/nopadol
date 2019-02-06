@@ -21,7 +21,7 @@ func NewDrivethruRepository(db *sqlx.DB) drivethru.Repository {
 }
 
 func (d *drivethruRepository) SearchListCompany() (interface{}, error) {
-	rs, err := d.db.Query("select id,code,branch_name from npdl.branch ")
+	rs, err := d.db.Query("select id,code,branch_name from branch ")
 	if err != nil {
 		fmt.Println("error query database ")
 		return nil, err

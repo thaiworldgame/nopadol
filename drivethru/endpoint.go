@@ -97,9 +97,9 @@ type (
 		QueueId       int          `json:"queue_id"`
 		Cash          float64      `json:"cash"`
 		ScgId         string       `json:"scg_id"`
-		CreditCard    []CreditCard `json:"credit_card"`
-		CouponCode    []Coupon     `json:"coupon_code"`
-		DepositAmount []Deposit    `json:"deposit_amount"`
+		CreditCard    []*CreditCard `json:"credit_card"`
+		CouponCode    []*Coupon     `json:"coupon_code"`
+		DepositAmount []*Deposit    `json:"deposit_amount"`
 	}
 
 	CreditCard struct {
@@ -362,7 +362,7 @@ func queueStatus(s Service) interface{} {
 
 func billingDone(s Service) interface{} {
 	return func(ctx context.Context, req *BillingDoneRequest) (interface{}, error) {
-		resp, err := s.BillingDone(&BillingDoneRequest{QueueId: req.QueueId})
+		resp, err := s.BillingDone(&BillingDoneRequest{QueueId: req.QueueId, Confirm: req.Confirm, ArCode: req.ArCode, AccessToken: req.AccessToken, CouponCode: req.CouponCode, Cash: req.Cash, CreditCard: req.CreditCard, DepositAmount: req.DepositAmount})
 		if err != nil {
 			return nil, err
 		}

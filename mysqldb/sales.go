@@ -58,6 +58,8 @@ type NewQuoModel struct {
 	CreateTime          string            `db:"CreateTime"`
 	EditBy              string            `db:"EditBy"`
 	EditTime            string            `db:"EditTime"`
+	ConfirmBy           string            `db:ConfirmBy`
+	ConfirmTime         string            `db:"ConfirmTime"`
 	CancelBy            string            `db:"CancelBy"`
 	CancelTime          string            `db:"CancelTime"`
 	Subs                []NewQuoItemModel `db:"subs"`
@@ -93,8 +95,8 @@ type NewSaleModel struct {
 	ArId                int64              `db:"ArId"`
 	ArCode              string             `db:"ArCode"`
 	ArName              string             `db:"ArName"`
-	ArBillAddress       string             `db:"ar_bill_address"`
-	ArTelephone         string             `db:"ar_telephone"`
+	ArBillAddress       string             `db:"ArBillAddress"`
+	ArTelephone         string             `db:"ArTelephone"`
 	SaleId              int64              `db:"SaleId"`
 	SaleCode            string             `db:"SaleCode"`
 	SaleName            string             `db:"SaleName"`
@@ -678,6 +680,20 @@ func (repo *salesRepository) CreateQuotation(req *sales.NewQuoTemplate) (resp in
 
 	} else {
 		fmt.Println("Update")
+
+		switch {
+		case req.DocNo == "":
+			fmt.Println("error =", "Docno is null")
+			return nil, errors.New("Docno is null")
+		case req.BillStatus != 0:
+			return nil, errors.New("เอกสารโดนอ้างนำไปใช้งานแล้ว")
+		case req.IsConfirm == 1:
+			return nil, errors.New("เอกสารโดนอ้างนำไปใช้งานแล้ว")
+		case req.IsCancel == 1:
+			return nil, errors.New("เอกสารถุกยกเลิกไปแล้ว")
+		}
+
+
 		req.EditBy = req.CreateBy
 
 		req.BeforeTaxAmount, req.TaxAmount, req.TotalAmount = config.CalcTaxItem(req.TaxType, req.TaxRate, req.AfterDiscountAmount)
@@ -751,8 +767,8 @@ func (repo *salesRepository) CancelQuotation(req *sales.NewQuoTemplate) (resp in
 	req.CancelTime = now.String()
 
 	switch {
-	case req.DocNo == "":
-		return nil, errors.New("Docno is null")
+	case req.CancelBy == "":
+		return nil, errors.New("ไม่ได้ระบุผู้ยกเลิก")
 	case req.IsConfirm == 1:
 		return nil, errors.New("เอกสารถูกอ้างอิงไปแล้ว ไม่สามารถยกเลิกได้")
 	case req.IsCancel == 1:
@@ -774,7 +790,7 @@ func (repo *salesRepository) CancelQuotation(req *sales.NewQuoTemplate) (resp in
 
 		sql := `Update Quotation set IsCancel=1,CancelBy=?,CancelTime=? where Id=?`
 		fmt.Println("sql update = ", sql)
-		id, err := repo.db.Exec(sql, req.EditBy, req.EditTime, req.Id)
+		id, err := repo.db.Exec(sql, req.CancelBy, req.CancelTime, req.Id)
 		if err != nil {
 			fmt.Println("Error = ", err.Error())
 			return nil, err
@@ -785,12 +801,65 @@ func (repo *salesRepository) CancelQuotation(req *sales.NewQuoTemplate) (resp in
 
 		fmt.Println("ReqID=", req.Id)
 
-		sql_del_sub := `update from QuotationSub set IsCancel = 1 where QuoId = ?`
+		sql_del_sub := `update QuotationSub set IsCancel = 1 where QuoId = ?`
 		_, err = repo.db.Exec(sql_del_sub, req.Id)
 		if err != nil {
 			fmt.Println("Error = ", err.Error())
 			return nil, err
 		}
+	}
+
+	return map[string]interface{}{
+		"id":       req.Id,
+		"doc_no":   req.DocNo,
+		"doc_date": req.DocDate,
+		"ar_code":  req.ArCode,
+	}, nil
+}
+
+func (repo *salesRepository) ConfirmQuotation(req *sales.NewQuoTemplate) (resp interface{}, err error) {
+	var check_doc_exist int64
+
+	now := time.Now()
+
+	req.ConfirmTime = now.String()
+
+	switch {
+	case req.ConfirmBy == "":
+		return nil, errors.New("ไม่ได้ระบุผู้อนุมัติ")
+	case req.IsConfirm == 1:
+		return nil, errors.New("เอกสารถูกอ้างอิงไปแล้ว ไม่สามารถอนุมัติได้")
+	case req.IsCancel == 1:
+		return nil, errors.New("เอกสารถูกยกเลิกไปแล้ว ไม่สามารถยกเลิกได้")
+	case req.AssertStatus == 0:
+		return nil, errors.New("เอกสารยังไม่ได้ตอบกลับ ไม่สามารถยกเลิกได้")
+	}
+
+	sqlexist := `select count(DocNo) as check_exist from Quotation where id = ?`
+	fmt.Println("DocNo Id", req.Id)
+	err = repo.db.Get(&check_doc_exist, sqlexist, req.Id)
+	if err != nil {
+		fmt.Println("Error = ", err.Error())
+		return nil, err
+	}
+
+	fmt.Println("check_doc_exist", check_doc_exist)
+
+	if (check_doc_exist != 0) {
+		fmt.Println("Confirm")
+
+		sql := `Update Quotation set IsConfirm=1,ConfirmBy=?,ConfirmTime=? where Id=?`
+		fmt.Println("sql confirm = ", sql)
+		id, err := repo.db.Exec(sql, req.ConfirmBy, req.ConfirmTime, req.Id)
+		if err != nil {
+			fmt.Println("Error = ", err.Error())
+			return nil, err
+		}
+
+		rowAffect, err := id.RowsAffected()
+		fmt.Println("Row Affect = ", rowAffect)
+
+		fmt.Println("ReqID=", req.Id)
 	}
 
 	return map[string]interface{}{
@@ -1124,6 +1193,12 @@ func (repo *salesRepository) CreateSaleOrder(req *sales.NewSaleTemplate) (resp i
 		case req.DocNo == "":
 			fmt.Println("error =", "Docno is null")
 			return nil, errors.New("Docno is null")
+		case req.BillStatus != 0:
+			return nil, errors.New("เอกสารโดนอ้างนำไปใช้งานแล้ว")
+		case req.IsConfirm == 1:
+			return nil, errors.New("เอกสารโดนอ้างนำไปใช้งานแล้ว")
+		case req.IsCancel == 1:
+			return nil, errors.New("เอกสารถุกยกเลิกไปแล้ว")
 		}
 
 		fmt.Println("Update")
@@ -1368,6 +1443,7 @@ func (repo *salesRepository) CreateDeposit(req *sales.NewDepositTemplate) (inter
 	}
 
 	if (check_doc_exist == 0) {
+		req.BillBalance = req.NetAmount
 		sql := `insert into ar_deposit(company_id, branch_id, uuid, doc_no, tax_no, doc_date, bill_type, ar_id, ar_code, ar_name, sale_id, sale_code, sale_name, tax_type, tax_rate, ref_no, credit_day, due_date, depart_id, allocate_id, project_id, my_description, before_tax_amount, tax_amount, total_amount, net_amount ,bill_balance ,cash_amount ,creditcard_amount, chq_amount, bank_amount, is_return_money, is_cancel, is_confirm, scg_id, job_no, create_by, create_time) values(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ? ,? ,? ,?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
 		resp, err := repo.db.Exec(sql, req.CompanyId, req.BranchId, req.Uuid, req.DocNo, req.TaxNo, req.DocDate, req.BillType, req.ArId, req.ArCode, req.ArName, req.SaleId, req.SaleCode, req.SaleName, req.TaxType, req.TaxRate, req.RefNo, req.CreditDay, req.DueDate, req.DepartId, req.AllocateId, req.ProjectId, req.MyDescription, req.BeforeTaxAmount, req.TaxAmount, req.TotalAmount, req.NetAmount, req.BillBalance, req.CashAmount, req.CreditcardAmount, req.ChqAmount, req.BankAmount, req.IsReturnMoney, req.IsCancel, req.IsConfirm, req.ScgId, req.JobNo, req.CreateBy, req.CreateTime)
 		if err != nil {
@@ -1379,6 +1455,14 @@ func (repo *salesRepository) CreateDeposit(req *sales.NewDepositTemplate) (inter
 
 		req.Id = id
 	} else {
+
+		switch {
+		case req.IsConfirm == 1:
+			return nil, errors.New("เอกสารโดนอ้างนำไปใช้งานแล้ว")
+		case req.IsCancel == 1:
+			return nil, errors.New("เอกสารถุกยกเลิกไปแล้ว")
+		}
+
 		sql := `update ar_deposit set company_id=?, branch_id=?, uuid=?, doc_no=?,tax_no=?, doc_date=?, bill_type=?, ar_id=?, ar_code=?, ar_name=?, sale_id=?, sale_code=?, sale_name=?, tax_type=?, tax_rate=?, ref_no=?, credit_day=?, due_date=?, depart_id=?, allocate_id=?, project_id=?, my_description=?, before_tax_amount=?, tax_amount=?, total_amount=?, net_amount=?, bill_balance=?, cash_amount=? ,creditcard_amount=?, chq_amount=?, bank_amount=?, is_return_money=?, is_cancel=?, is_confirm=?, scg_id=?, job_no=?, edit_by=?, edit_time=?  where id = ?`
 		resp, err := repo.db.Exec(sql, req.CompanyId, req.BranchId, req.Uuid, req.DocNo, req.TaxNo, req.DocDate, req.BillType, req.ArId, req.ArCode, req.ArName, req.SaleId, req.SaleCode, req.SaleName, req.TaxType, req.TaxRate, req.RefNo, req.CreditDay, req.DueDate, req.DepartId, req.AllocateId, req.ProjectId, req.MyDescription, req.BeforeTaxAmount, req.TaxAmount, req.TotalAmount, req.NetAmount, req.BillBalance, req.CashAmount, req.CreditcardAmount, req.ChqAmount, req.BankAmount, req.IsReturnMoney, req.IsCancel, req.IsConfirm, req.ScgId, req.JobNo, req.EditBy, req.EditTime, req.Id)
 		if err != nil {
@@ -1390,6 +1474,7 @@ func (repo *salesRepository) CreateDeposit(req *sales.NewDepositTemplate) (inter
 		fmt.Println("Row Affect = ", rowAffect)
 
 		fmt.Println("ReqID=", req.Id)
+
 	}
 
 	var count_crd_err int64

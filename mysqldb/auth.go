@@ -60,7 +60,8 @@ func (repo *authRepository) GetToken(tokenID string) (*auth.Token, error) {
 		" where access_token='"+tokenID+"'"
 	fmt.Println(sqlcommand)
 	rows := repo.db.QueryRow(sqlcommand)
-	err := rows.Scan(
+	//err := rows.Scan(
+		rows.Scan(
 		&m.UserID,
 		&m.UserCode,
 		&m.CompanyID,
@@ -69,21 +70,23 @@ func (repo *authRepository) GetToken(tokenID string) (*auth.Token, error) {
 		&m.ZoneID,
 		&m.UserName,
 		&m.Created)
-	if err == sql.ErrNoRows {
-		return nil, auth.ErrTokenNotFound
-	}
-	if err != nil {
-		return nil, err
-	}
-	expireTime := time.Now().Add(-(365 * 24 * time.Hour))
-	if m.Created.Before(expireTime) {
-		return nil, auth.ErrTokenExpired
-	}
+
+	// remark ชั่วคราว
+	//if err == sql.ErrNoRows {
+	//	return nil, auth.ErrTokenNotFound
+	//}
+	//if err != nil {
+	//	return nil, err
+	//}
+	//expireTime := time.Now().Add(-(365 * 24 * time.Hour))
+	//if m.Created.Before(expireTime) {
+	//	return nil, auth.ErrTokenExpired
+	//}
 
 	tk := auth.Token{ID: tokenID}
 	//fmt.Println("postgres.auth.go -> auth.Token.ID = ", tokenID)
 	if m.CompanyID.Valid {
-		tk.CompanyID = m.CompanyID.Int64
+		tk.CompanyID = int(m.CompanyID.Int64)
 	} else {
 		tk.CompanyID = -1
 	}
@@ -105,6 +108,10 @@ func (repo *authRepository) GetToken(tokenID string) (*auth.Token, error) {
 	}
 	if m.UserName.Valid {
 		tk.UserName = m.UserName.String
+	}
+
+	if m.UserCode.Valid {
+		tk.UserCode = m.UserName.String
 	}
 	//fmt.Println("return postgres.auth.GetToken : ", tk)
 	return &tk, nil

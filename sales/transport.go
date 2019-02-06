@@ -28,6 +28,8 @@ func MakeHandler(s Service) http.Handler {
 	mux := http.NewServeMux()
 	mux.Handle("/quo/new", m.Handler(CreateQuotation(s)))
 	mux.Handle("/quo/search/id", m.Handler(SearchQuoById(s)))
+	mux.Handle("/quo/confirm", m.Handler(ConfirmQuotation(s)))
+	mux.Handle("/quo/cancel", m.Handler(CancelQuotation(s)))
 	mux.Handle("/sale/new", m.Handler(CreateSaleOrder(s)))
 	mux.Handle("/sale/search/id", m.Handler(SearchSaleOrderById(s)))
 	mux.Handle("/sale/doc/search", m.Handler(SearchDocByKeyword(s)))
