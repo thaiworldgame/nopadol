@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/mrtomyum/nopadol/auth"
+	//"github.com/mrtomyum/nopadol/auth"
 )
 
 //type Endpoint interface {
@@ -209,8 +209,8 @@ func MakeNewProduct(s Service) interface{} {
 
 
 func MakeNewBarcode(s Service) interface{}{
-	return func(ctx context.Context, req *BarcodeNewRequest,tk *auth.Token) (interface{}, error) {
-		resp, err := s.StoreBarcode(req,tk )
+	return func(ctx context.Context, req *BarcodeNewRequest) (interface{}, error) {
+		resp, err := s.StoreBarcode(req )
 		if err != nil {
 			fmt.Println("endpoint error =", err.Error())
 			return nil, fmt.Errorf(err.Error())

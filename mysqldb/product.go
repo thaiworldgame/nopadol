@@ -4,7 +4,7 @@ import (
 	"github.com/mrtomyum/nopadol/product"
 	"fmt"
 	"github.com/jmoiron/sqlx"
-	"github.com/mrtomyum/nopadol/auth"
+	//"github.com/mrtomyum/nopadol/auth"
 )
 
 type ProductModel struct {
@@ -291,6 +291,6 @@ func (p *productRepository) StoreItem(req *product.ProductNewRequest)(resp inter
 
 
 
-func (p *productRepository) StoreBarcode(req *product.BarcodeNewRequest,tk *auth.Token)(res interface{},err error){
-	return
+func (p *productRepository) StoreBarcode(req *product.BarcodeNewRequest)(res interface{},err error){
+	return res,err
 }
