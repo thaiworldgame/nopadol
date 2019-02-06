@@ -6,7 +6,7 @@ import (
 	"net/http"
 
 	_ "github.com/go-sql-driver/mysql"
-	_ "github.com/denisenkom/go-mssqldb"
+	//_ "github.com/denisenkom/go-mssqldb"
 	"github.com/mrtomyum/nopadol/mysqldb"
 	//"github.com/mrtomyum/nopadol/postgres"
 	//"github.com/mrtomyum/nopadol/sqldb"
@@ -30,7 +30,8 @@ import (
 	drivethruservice "github.com/mrtomyum/nopadol/drivethru"
 	"encoding/json"
 	"flag"
-	auth "github.com/mrtomyum/nopadol/auth"
+	//auth "github.com/mrtomyum/nopadol/auth"
+	"github.com/mrtomyum/nopadol/auth"
 )
 
 var (
@@ -271,7 +272,6 @@ func healthCheckHandler(w http.ResponseWriter, r *http.Request) {
 		Success bool `json:"api success"`
 	}{true})
 }
-
 
 
 func apiVersionHandler(w http.ResponseWriter, r *http.Request) {

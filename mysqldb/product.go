@@ -1,15 +1,10 @@
 package mysqldb
 
 import (
+	"github.com/mrtomyum/nopadol/product"
 	"fmt"
 	"github.com/jmoiron/sqlx"
-	"github.com/mrtomyum/nopadol/auth"
-	"github.com/mrtomyum/nopadol/product"
-)
-
-const (
-	BarcodeActiveStatusActive   int = 1
-	BarcodeActiveStatusInActive int = 0
+	//"github.com/mrtomyum/nopadol/auth"
 )
 
 type ProductModel struct {
@@ -215,22 +210,23 @@ func (p *ProductModel) SearchByBarcode(db *sqlx.DB, bar_code string) {
 	return
 }
 
-func (p *productRepository) StoreItem(req *product.ProductNewRequest) (resp interface{}, err error) {
+
+func (p *productRepository) StoreItem(req *product.ProductNewRequest)(resp interface{},err error){
 
 	item := itemModel{}
-	err = item.map2itemModel(p.db, req)
+	err = item.map2itemModel(p.db,req)
 	if err != nil {
-		fmt.Println("error p.StoreItem map2itemModel ->", err.Error())
-		return nil, err
+		fmt.Println("error p.StoreItem map2itemModel ->",err.Error())
+		return nil,err
 	}
 
-	newItemID, err := item.save(p.db)
+	newItemID,err := item.save(p.db)
 	if err != nil {
-		fmt.Println("error item.save ", err.Error())
-		return nil, err
+		fmt.Println("error item.save ",err.Error())
+		return nil,err
 	}
 
-	// todo : insert to PackingRate Table
+	// insert to PackingRate Table
 	pk := packingRate{}
 	for _, value := range req.PackingRate {
 
@@ -242,17 +238,16 @@ func (p *productRepository) StoreItem(req *product.ProductNewRequest) (resp inte
 		pk.RatePerBaseUnit = value.RatePerBaseUnit
 		pk.ItemID = newItemID
 		pk.ItemCode = req.ItemCode
-		pk.UnitCode = u.unitCode
+		pk.UnitCode  = u.unitCode
 
 
-		_, err = pk.save(p.db)
+		_,err = pk.save(p.db)
 		if err != nil {
-			return nil, err
+			return nil,err
 		}
 	}
 
 	// price insert
-	// todo : insert to Price table , split to priceInsert(req.Price)
 	pr := priceModel{}
 	for _, value := range req.Price {
 
@@ -261,50 +256,41 @@ func (p *productRepository) StoreItem(req *product.ProductNewRequest) (resp inte
 		u.getByID(p.db) // bind จาก id
 
 		pr.UnitID = req.UnitID
-		pr.ItemId = value.ItemID
+		pr.ItemId = newItemID
+		pr.ItemCode = req.ItemCode
 		pr.SalePrice1 = value.SalePrice1
 		pr.SalePrice2 = value.SalePrice2
 		pr.CompanyID = value.CompanyID
-		_, err := pr.save(p.db)
+		_,err := pr.save(p.db)
 		if err != nil {
-			return nil, err
+			return nil,err
 		}
 
 	}
 
+	// insert barcode
+	bar := barcodeModel{}
+	for _, value := range req.Barcode {
 
+		u := itemUnitModel{}
+		u.id = value.UnitID
+		u.getByID(p.db) // bind จาก id
 
+		bar.UnitID = req.UnitID
+		bar.ItemCode = req.ItemCode
+		bar.CompanyID  = req.CompanyID
+		bar.BarCode = value.Barcode
+		_,err := bar.save(p.db)
+		if err != nil {
+			return nil,err
+		}
+	}
 	return newItemID,nil
 	// todo : insert to Barcode table
 }
 
 
 
-func (p *productRepository) StoreBarcode(req []product.BarcodeNewRequest, tk *auth.Token) (interface{}, error) {
-	bar := barcodeModel{}
-	for _, value := range req {
-
-		u := itemUnitModel{}
-		u.id = value.UnitID
-		if value.ItemCode =="" && value.UnitID!=0 {
-			u.getByID(p.db) // bind จาก id
-		}
-		if value.UnitID==0 && value.UnitCode!=""{
-			u.getByCode(p.db)
-			value.UnitID = u.id
-		}
-
-
-		bar.UnitID = value.UnitID
-		bar.ItemCode = value.ItemCode
-		//bar.CompanyID = tk.CompanyID
-		bar.BarCode = value.Barcode
-		bar.ActiveStatus = 1
-		_, err := bar.save(p.db)
-		if err != nil {
-			return nil, err
-		}
-	}
-	return nil, nil
+func (p *productRepository) StoreBarcode(req *product.BarcodeNewRequest)(res interface{},err error){
+	return res,err
 }
-
