@@ -129,7 +129,7 @@ func GetLastDocNo(db *sqlx.DB, branch_id int64, table_code string, formatnum int
 	case "DP":
 		sqlcase = `select cast(right(ifnull(max(doc_no),0),?) as int)+1 maxno from ar_deposit where company_id = ? and branch_id = ? and bill_type = ? and year(doc_date) = year(CURDATE()) and month(doc_date) = month(CURDATE())`
 	case "IV":
-		sqlcase = `select cast(right(ifnull(max(docno),0),?) as int)+1 maxno from ar_invoice where CompanyId = ? and BranchId = ? and DocType = 0 and BillType = ? and year(DocDate) = year(CURDATE()) and month(DocDate) = month(CURDATE())`
+		sqlcase = `select cast(right(ifnull(max(doc_no),0),?) as int)+1 maxno from ar_invoice where company_id = ? and branch_id = ? and doc_type = 0 and bill_type = ? and year(doc_date) = year(CURDATE()) and month(doc_date) = month(CURDATE())`
 		}
 
 	sql = sqlcase

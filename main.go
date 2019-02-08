@@ -255,6 +255,7 @@ func main() {
 	h := auth.MakeMiddleware(authService)(mux)
 	fmt.Println("Waiting for Accept Connection : 9999")
 	http.ListenAndServe(":9999", h)
+
 }
 
 func must(err error) {
@@ -264,7 +265,6 @@ func must(err error) {
 	}
 }
 
-
 func healthCheckHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json; charset=utf-8")
 	w.WriteHeader(http.StatusOK)
@@ -272,7 +272,6 @@ func healthCheckHandler(w http.ResponseWriter, r *http.Request) {
 		Success bool `json:"api success"`
 	}{true})
 }
-
 
 func apiVersionHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json; charset=utf-8")
