@@ -455,7 +455,7 @@ type NewInvoiceModel struct {
 type NewInvoiceItemModel struct {
 	Id              int64   `db:"id"`
 	InvId           int64   `db:"inv_id"`
-	ItemId          int64   `db:"item_id"`
+	Itemid          int64   `db:"item_id"`
 	ItemCode        string  `db:"item_code"`
 	ItemName        string  `db:"item_name"`
 	BarCode         string  `db:"bar_code"`
@@ -912,7 +912,6 @@ func (repo *salesRepository) SearchDocById(req *sales.SearchByIdTemplate) (resp 
 
 	return doc, nil
 }
-
 func (repo *salesRepository) SearchDocByKeyword(req *sales.SearchByKeywordTemplate) (resp interface{}, err error) {
 
 	d := []SearchDocModel{}
@@ -1949,10 +1948,16 @@ func (repo *salesRepository) CreateInvoice(req *sales.NewInvoiceTemplate) (inter
 
 	if check_doc_exist == 0 {
 		//sql := `insert into ar_invoice(company_id,branch_id,uuid,doc_no,tax_no,bill_type,doc_date,ar_id,ar_code,ar_name,sale_id,sale_code,sale_name,pos_machine_id,period_id,cash_id,tax_type,tax_rate,number_of_item,depart_id,allocate_id,project_id,pos_status,credit_day,due_date,delivery_day,delivery_date,is_confirm,is_condition_send,my_description,so_ref_no,change_amount,sum_cash_amount,sum_credit_amount,sum_chq_amount,sum_bank_amount,sum_of_deposit,sum_on_line_amount,coupon_amount,sum_of_item_amount,discount_word,discount_amount,after_discount_amount,before_tax_amount,tax_amount,total_amount,net_debt_amount,bill_balance,pay_bill_status,pay_bill_amount,delivery_status,receive_name,receive_tel,car_license,is_cancel,is_hold,is_posted,is_credit_note,is_debit_note,gl_status,job_id,job_no,coupon_no,redeem_no,scg_number,scg_id,create_by,create_time) values(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`
+		// sql := `insert into ar_invoice(company_id,branch_id,uuid,doc_no,tax_no,bill_type,doc_date,ar_id,ar_code,ar_name,sale_id,sale_code,sale_name,tax_type
+		// 	,tax_rate,my_description,so_ref_no,change_amount,sum_cash_amount,sum_credit_amount,sum_chq_amount,sum_bank_amount,sum_of_deposit,sum_on_line_amount
+		// 	,coupon_amount,sum_of_item_amount,discount_word,discount_amount,after_discount_amount,before_tax_amount
+		// 	,tax_amount,total_amount,create_by,create_time) values(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`
+
 		sql := `insert into ar_invoice(company_id,branch_id,uuid,doc_no,tax_no,bill_type,doc_date,ar_id,ar_code,ar_name,sale_id,sale_code,sale_name,tax_type,tax_rate,my_description,so_ref_no,change_amount,sum_cash_amount,sum_credit_amount,sum_chq_amount,sum_bank_amount,sum_of_deposit,sum_on_line_amount,coupon_amount,sum_of_item_amount,discount_word,discount_amount,after_discount_amount,before_tax_amount,tax_amount,total_amount,create_by,create_time) values(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`
 		fmt.Println(sql)
 		//resp, err := repo.db.Exec(sql, req.CompanyId,req.BranchId,req.Uuid,req.DocNo,req.TaxNo,req.BillType,req.DocDate,req.ArId,req.ArCode,req.ArName,req.SaleId,req.SaleCode,req.SaleName,req.PosMachineId,req.PeriodId,req.CashId,req.TaxType,req.TaxRate,req.NumberOfItem,req.DepartId,req.AllocateId,req.ProjectId,req.PosStatus,req.CreditDay,req.DueDate,req.DeliveryDay,req.DeliveryDate,req.IsConfirm,req.IsConditionSend,req.MyDescription,req.SoRefNo,req.ChangeAmount,req.SumCashAmount,req.SumCreditAmount,req.SumChqAmount,req.SumBankAmount,req.SumOfDeposit,req.SumOnLineAmount,req.CouponAmount,req.SumOfItemAmount,req.DiscountWord,req.DiscountAmount,req.AfterDiscountAmount,req.BeforeTaxAmount,req.TaxAmount,req.TotalAmount,req.BillBalance,req.PayBillStatus,req.PayBillAmount,req.DeliveryStatus,req.ReceiveName,req.ReceiveTel,req.CarLicense,req.IsCancel,req.IsHold,req.IsPosted,req.IsCreditNote,req.IsDebitNote,req.GlStatus,req.JobId,req.JobNo,req.CouponNo,req.RedeemNo,req.ScgNumber,req.ScgId,req.CreateBy,req.CreateTime)
 		resp, err := repo.db.Exec(sql, req.CompanyId, req.BranchId, req.Uuid, req.DocNo, req.TaxNo, req.BillType, req.DocDate, req.ArId, req.ArCode, req.ArName, req.SaleId, req.SaleCode, req.SaleName, req.TaxType, req.TaxRate, req.MyDescription, req.SoRefNo, req.ChangeAmount, req.SumCashAmount, req.SumCreditAmount, req.SumChqAmount, req.SumBankAmount, req.SumOfDeposit, req.SumOnLineAmount, req.CouponAmount, req.SumOfItemAmount, req.DiscountWord, req.DiscountAmount, req.AfterDiscountAmount, req.BeforeTaxAmount, req.TaxAmount, req.TotalAmount, req.CreateBy, req.CreateTime)
+		fmt.Println(resp, "เพิ่มส่วนhead")
 		if err != nil {
 			fmt.Println("error = ", err.Error())
 		}
@@ -1978,7 +1983,7 @@ func (repo *salesRepository) CreateInvoice(req *sales.NewInvoiceTemplate) (inter
 				req.DocDate,
 				req.ArId,
 				req.SaleId,
-				sub.ItemId,
+				sub.Itemid,
 				sub.ItemCode,
 				sub.BarCode,
 				sub.ItemName,

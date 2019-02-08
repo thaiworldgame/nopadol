@@ -242,7 +242,7 @@ func (s *service) CreateInvoice(req *NewInvoiceTemplate) (interface{}, error) {
 	var sum_item_amount float64
 	var err error
 
-	fmt.Println("Service Quo")
+	fmt.Println("Service 1")
 	for _, sub_item := range req.Subs {
 		fmt.Println(sub_item.Price, "บาท")
 		if sub_item.Qty != 0 {

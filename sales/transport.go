@@ -41,6 +41,7 @@ func MakeHandler(s Service) http.Handler {
 	mux.Handle("/inv/search/id", m.Handler(SearchInvoiceById(s)))
 	mux.Handle("/inv/new", m.Handler(CreateInvoice(s)))
 	mux.Handle("/inv/list", m.Handler(Invoicelist(s)))
+	 
 	return mustLogin()(mux)
 
 }
