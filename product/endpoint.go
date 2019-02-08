@@ -3,8 +3,9 @@ package product
 import (
 	"context"
 	"fmt"
-	"github.com/mrtomyum/nopadol/auth"
 	"time"
+
+	"github.com/mrtomyum/nopadol/auth"
 )
 
 //type Endpoint interface {
@@ -186,8 +187,7 @@ func MakeNewProduct(s Service) interface{} {
 			}
 		}
 
-
-		fmt.Println("request data ->",req)
+		fmt.Println("request data ->", req)
 		resp, err := s.StoreItem(&ProductNewRequest{
 			ItemCode:    req.Code,
 			ItemName:    req.Name,

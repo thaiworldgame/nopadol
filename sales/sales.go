@@ -182,7 +182,19 @@ type SearchDocTemplate struct {
 	IsCancel      int     `json:"is_cancel"`
 	IsConfirm     int     `json:"is_confirm"`
 }
-
+type SearchIVDocTemplate struct {
+	Id            int64   `json:"id"`
+	DocNo         string  `json:"doc_no"`
+	DocDate       string  `json:"doc_date"`
+	ArCode        string  `json:"ar_code"`
+	ArName        string  `json:"ar_name"`
+	SaleCode      string  `json:"sale_code"`
+	SaleName      string  `json:"sale_name"`
+	MyDescription string  `json:"my_description"`
+	TotalAmount   float64 `json:"total_amount"`
+	IsCancel      int     `json:"is_cancel"`
+	IsConfirm     int     `json:"is_confirm"`
+}
 type NewDepositTemplate struct {
 	Id               int64                    `json:"id"`
 	CompanyId        int64                    `json:"company_id"`
@@ -400,26 +412,31 @@ type NewInvoiceTemplate struct {
 }
 
 type NewInvoiceItemTemplate struct {
-	Id              int64   `json:"id"`
-	InvId           int64   `json:"inv_id"`
-	ItemId          int64   `json:"item_id"`
-	ItemCode        string  `json:"item_code"`
-	ItemName        string  `json:"item_name"`
-	BarCode         string  `json:"bar_code"`
-	WhId            int64   `json:"wh_id"`
-	ShelfId         int64   `json:"shelf_id"`
-	Price           float64 `json:"price"`
-	UnitICode       int64   `json:"unit_code"`
-	Qty             float64 `json:"qty"`
-	CnQty           float64 `json:"cn_qty"`
-	ItemDescription string  `json:"item_description"`
-	IsCreditNote    int64   `json:"is_credit_note"`
-	IsDebitNote     int64   `json:"is_debit_note"`
-	PackingRate1    int64   `json:"packing_rate_1"`
-	PackingRate2    int64   `json:"packing_rate_2"`
-	SoRefNo         string  `json:"so_ref_no"`
-	AverageCost     float64 `json:"average_cost"`
-	SumOfCost       float64 `json:"sum_of_cost"`
-	RefLineNumber   int64   `json:"ref_line_number"`
-	LineNumber      int64   `json:"line_number"`
+	Id              int64   `db:"id"`
+	InvId           int64   `db:"inv_id"`
+	ItemId          int64   `db:"item_id"`
+	ItemCode        string  `db:"item_code"`
+	ItemName        string  `db:"item_name"`
+	BarCode         string  `db:"bar_code"`
+	WhId            int64   `db:"wh_id"`
+	ShelfId         int64   `db:"shelf_id"`
+	Price           float64 `db:"price"`
+	UnitCode        string  `db:"unit_code"`
+	Qty             float64 `db:"qty"`
+	CnQty           float64 `db:"cn_qty"`
+	DiscountWord    float64 `db:"discount_word_sub"`
+	DiscountAmount  float64 `db:"discount_amount_sub"`
+	ItemAmount      float64 `db:"amount"`
+	NetAmount       float64 `db:"net_amount"`
+	Average_cost    float64 `db:"average_cost"`
+	SumOfCost       float32 `db:"sum_of_cost"`
+	ItemDescription string  `db:"item_description"`
+	IsCancel        int64   `db:"is_cancel"`
+	IsCreditNote    int64   `db:"is_credit_note"`
+	IsDebitNote     int64   `db:"is_debit_note"`
+	PackingRate1    int64   `db:"packing_rate_1"`
+	PackingRate2    int64   `db:"packing_rate_2"`
+	RefNo           string  `db:"ref_no"`
+	RefLineNumber   int64   `db:"ref_line_number"`
+	LineNumber      int64   `db:"line_number"`
 }

@@ -1,8 +1,8 @@
 package sales
 
 import (
-	"fmt"
 	"context"
+	"fmt"
 )
 
 type (
@@ -406,28 +406,33 @@ type (
 	}
 
 	NewInvoiceItemRequest struct {
-		Id              int64   `json:"id"`
-		InvId           int64   `json:"inv_id"`
-		ItemId          int64   `json:"item_id"`
-		ItemCode        string  `json:"item_code"`
-		ItemName        string  `json:"item_name"`
-		BarCode         string  `json:"bar_code"`
-		WhId            int64   `json:"wh_id"`
-		ShelfId         int64   `json:"shelf_id"`
-		Price           float64 `json:"price"`
-		UnitICode       int64   `json:"unit_code"`
-		Qty             float64 `json:"qty"`
-		CnQty           float64 `json:"cn_qty"`
-		ItemDescription string  `json:"item_description"`
-		IsCreditNote    int64   `json:"is_credit_note"`
-		IsDebitNote     int64   `json:"is_debit_note"`
-		PackingRate1    int64   `json:"packing_rate_1"`
-		PackingRate2    int64   `json:"packing_rate_2"`
-		SoRefNo         string  `json:"so_ref_no"`
-		AverageCost     float64 `json:"average_cost"`
-		SumOfCost       float64 `json:"sum_of_cost"`
-		RefLineNumber   int64   `json:"ref_line_number"`
-		LineNumber      int64   `json:"line_number"`
+		Id              int64   `db:"id"`
+		InvId           int64   `db:"inv_id"`
+		ItemId          int64   `db:"item_id"`
+		ItemCode        string  `db:"item_code"`
+		ItemName        string  `db:"item_name"`
+		BarCode         string  `db:"bar_code"`
+		WhId            int64   `db:"wh_id"`
+		ShelfId         int64   `db:"shelf_id"`
+		Price           float64 `db:"price"`
+		UnitCode        string  `db:"unit_code"`
+		Qty             float64 `db:"qty"`
+		CnQty           float64 `db:"cn_qty"`
+		DiscountWord    float64 `db:"discount_word_sub"`
+		DiscountAmount  float64 `db:"discount_amount_sub"`
+		ItemAmount      float64 `db:"amount"`
+		NetAmount       float64 `db:"net_amount"`
+		Average_cost    float64 `db:"average_cost"`
+		SumOfCost       float32 `db:"sum_of_cost"`
+		ItemDescription string  `db:"item_description"`
+		IsCancel        int64   `db:"is_cancel"`
+		IsCreditNote    int64   `db:"is_credit_note"`
+		IsDebitNote     int64   `db:"is_debit_note"`
+		PackingRate1    int64   `db:"packing_rate_1"`
+		PackingRate2    int64   `db:"packing_rate_2"`
+		RefNo           string  `db:"ref_no"`
+		RefLineNumber   int64   `db:"ref_line_number"`
+		LineNumber      int64   `db:"line_number"`
 	}
 )
 
@@ -440,6 +445,7 @@ func CreateQuotation(s Service) interface{} {
 		fmt.Println("p =")
 
 		for _, subs := range req.Subs {
+			fmt.Println(subs, "asdajdlskal;kas;dk;aks")
 			itemline := map_quo_sub_request(subs)
 			q.Subs = append(q.Subs, itemline)
 		}
@@ -728,6 +734,25 @@ func map_sale_sub_request(x NewSaleItemRequest) NewSaleItemTemplate {
 	}
 }
 
+func map_invoice_sub_request(x NewInvoiceItemRequest) NewInvoiceItemTemplate {
+	return NewInvoiceItemTemplate{
+		ItemCode:        x.ItemCode,
+		BarCode:         x.BarCode,
+		ItemName:        x.ItemName,
+		WhId:            x.WhId,
+		ShelfId:         x.ShelfId,
+		Qty:             x.Qty,
+		Price:           x.Price,
+		DiscountWord:    x.DiscountWord,
+		DiscountAmount:  x.DiscountAmount,
+		UnitCode:        x.UnitCode,
+		ItemAmount:      x.ItemAmount,
+		ItemDescription: x.ItemDescription,
+		PackingRate1:    x.PackingRate1,
+		LineNumber:      x.LineNumber,
+		IsCancel:        x.IsCancel,
+	}
+}
 func SearchSaleOrderById(s Service) interface{} {
 	return func(ctx context.Context, req *SearchByIdRequest) (interface{}, error) {
 		resp, err := s.SearchSaleOrderById(&SearchByIdTemplate{Id: req.Id})
@@ -742,8 +767,11 @@ func SearchSaleOrderById(s Service) interface{} {
 }
 
 func SearchDocByKeyword(s Service) interface{} {
+	fmt.Println("Invoicelist 222")
 	return func(ctx context.Context, req *SearchByKeywordRequest) (interface{}, error) {
+
 		resp, err := s.SearchDocByKeyword(&SearchByKeywordTemplate{SaleCode: req.SaleCode, Keyword: req.Keyword})
+		fmt.Println(resp, "99999999999999999999999999999999999999999999999999999999999999999999999999999999")
 		if err != nil {
 			fmt.Println("endpoint error =", err.Error())
 			return nil, fmt.Errorf(err.Error())
@@ -962,6 +990,19 @@ func SearchReserveToDeposit(s Service) interface{} {
 }
 
 ////// Invoice /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+func Invoicelist(s Service) interface{} {
+	return func(ctx context.Context, req *SearchByKeywordRequest) (interface{}, error) {
+		fmt.Println("invoicelist 522")
+		resp, err := s.Invoicelist(&SearchByKeywordTemplate{SaleCode: req.SaleCode, Keyword: req.Keyword})
+		if err != nil {
+			fmt.Println("endpoint error =", err.Error())
+			return nil, fmt.Errorf(err.Error())
+		}
+		return map[string]interface{}{
+			"data": resp,
+		}, nil
+	}
+}
 
 func CreateInvoice(s Service) interface{} {
 	return func(ctx context.Context, req *NewInvoiceRequest) (interface{}, error) {
@@ -976,6 +1017,12 @@ func CreateInvoice(s Service) interface{} {
 		for _, chqs := range req.Chq {
 			chqline := map_chq_request(chqs)
 			iv.Chq = append(iv.Chq, chqline)
+		}
+
+		for _, subs := range req.Subs {
+			fmt.Println(subs, "12312423534958309285083")
+			itemline := map_invoice_sub_request(subs)
+			iv.Subs = append(iv.Subs, itemline)
 		}
 
 		resp, err := s.CreateInvoice(&NewInvoiceTemplate{

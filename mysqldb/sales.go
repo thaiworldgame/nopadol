@@ -1,13 +1,14 @@
 package mysqldb
 
 import (
-	"github.com/jmoiron/sqlx"
-	"github.com/mrtomyum/nopadol/sales"
-	"fmt"
-	"github.com/mrtomyum/nopadol/config"
-	"time"
-	"strconv"
 	"errors"
+	"fmt"
+	"strconv"
+	"time"
+
+	"github.com/jmoiron/sqlx"
+	"github.com/mrtomyum/nopadol/config"
+	"github.com/mrtomyum/nopadol/sales"
 )
 
 type NewQuoModel struct {
@@ -372,6 +373,7 @@ type NewInvoiceModel struct {
 	TaxNo               string                `db:"tax_no"`
 	BillType            int64                 `db:"bill_type"`
 	DocDate             string                `db:"doc_date"`
+	DocType             int64                 `db:"doc_type"`
 	ArId                int64                 `db:"ar_id"`
 	ArCode              string                `db:"ar_code"`
 	ArName              string                `db:"ar_name"`
@@ -381,6 +383,7 @@ type NewInvoiceModel struct {
 	SaleCode            string                `db:"sale_code"`
 	SaleName            string                `db:"sale_name"`
 	PosMachineId        int64                 `db:"pos_machine_id"`
+	shiftuid            string                `db:"shift_uuid"`
 	PeriodId            int64                 `db:"period_id"`
 	CashId              int64                 `db:"cash_id"`
 	TaxType             int64                 `db:"tax_type"`
@@ -459,17 +462,22 @@ type NewInvoiceItemModel struct {
 	WhId            int64   `db:"wh_id"`
 	ShelfId         int64   `db:"shelf_id"`
 	Price           float64 `db:"price"`
-	UnitICode       int64   `db:"unit_code"`
+	UnitCode        string  `db:"unit_code"`
 	Qty             float64 `db:"qty"`
 	CnQty           float64 `db:"cn_qty"`
+	DiscountWord    float64 `db:"discount_word_sub"`
+	DiscountAmount  float64 `db:"discount_amount_sub"`
+	ItemAmount      float64 `db:"amount"`
+	NetAmount       float64 `db:"net_amount"`
+	Average_cost    float64 `db:"average_cost"`
+	SumOfCost       float32 `db:"sum_of_cost"`
 	ItemDescription string  `db:"item_description"`
+	IsCancel        int64   `db:"is_cancel"`
 	IsCreditNote    int64   `db:"is_credit_note"`
 	IsDebitNote     int64   `db:"is_debit_note"`
 	PackingRate1    int64   `db:"packing_rate_1"`
 	PackingRate2    int64   `db:"packing_rate_2"`
-	SoRefNo         string  `db:"so_ref_no"`
-	AverageCost     float64 `db:"average_cost"`
-	SumOfCost       float64 `db:"sum_of_cost"`
+	RefNo           string  `db:"ref_no"`
 	RefLineNumber   int64   `db:"ref_line_number"`
 	LineNumber      int64   `db:"line_number"`
 }
@@ -510,17 +518,17 @@ func (repo *salesRepository) CreateQuotation(req *sales.NewQuoTemplate) (resp in
 	fmt.Println("DocType = ", req.DocType)
 
 	for _, sub_item := range req.Subs {
-		if (sub_item.Qty != 0) {
+		if sub_item.Qty != 0 {
 			count_item = count_item + 1
 
 			fmt.Println("Count Item =", count_item)
 
 			sum_item_amount = sum_item_amount + (sub_item.Qty * (sub_item.Price - sub_item.DiscountAmount))
 		}
-		if (sub_item.ItemCode != "" && sub_item.Qty == 0) {
+		if sub_item.ItemCode != "" && sub_item.Qty == 0 {
 			count_item_qty = count_item_qty + 1
 		}
-		if (sub_item.ItemCode != "" && sub_item.UnitCode == "") {
+		if sub_item.ItemCode != "" && sub_item.UnitCode == "" {
 			count_item_unit = count_item_unit + 1
 		}
 	}
@@ -540,7 +548,7 @@ func (repo *salesRepository) CreateQuotation(req *sales.NewQuoTemplate) (resp in
 
 	fmt.Println("check_doc_exist", check_doc_exist)
 
-	if (check_doc_exist == 0) {
+	if check_doc_exist == 0 {
 		//API Call Get API
 		//url := "http://localhost:8081/gendocno/v1/gen?table_code=QT&bill_type=0"
 		//reqs, err := http.NewRequest("POST", url, nil)
@@ -693,7 +701,6 @@ func (repo *salesRepository) CreateQuotation(req *sales.NewQuoTemplate) (resp in
 			return nil, errors.New("เอกสารถุกยกเลิกไปแล้ว")
 		}
 
-
 		req.EditBy = req.CreateBy
 
 		req.BeforeTaxAmount, req.TaxAmount, req.TotalAmount = config.CalcTaxItem(req.TaxType, req.TaxRate, req.AfterDiscountAmount)
@@ -785,7 +792,7 @@ func (repo *salesRepository) CancelQuotation(req *sales.NewQuoTemplate) (resp in
 
 	fmt.Println("check_doc_exist", check_doc_exist)
 
-	if (check_doc_exist != 0) {
+	if check_doc_exist != 0 {
 		fmt.Println("Cancel")
 
 		sql := `Update Quotation set IsCancel=1,CancelBy=?,CancelTime=? where Id=?`
@@ -845,7 +852,7 @@ func (repo *salesRepository) ConfirmQuotation(req *sales.NewQuoTemplate) (resp i
 
 	fmt.Println("check_doc_exist", check_doc_exist)
 
-	if (check_doc_exist != 0) {
+	if check_doc_exist != 0 {
 		fmt.Println("Confirm")
 
 		sql := `Update Quotation set IsConfirm=1,ConfirmBy=?,ConfirmTime=? where Id=?`
@@ -911,6 +918,7 @@ func (repo *salesRepository) SearchDocByKeyword(req *sales.SearchByKeywordTempla
 	d := []SearchDocModel{}
 
 	sql := `call USP_SO_SearchDoc (?,?)`
+
 	err = repo.db.Select(&d, sql, req.SaleCode, req.Keyword)
 	if err != nil {
 		fmt.Println("err = ", err.Error())
@@ -1045,7 +1053,7 @@ func (repo *salesRepository) CreateSaleOrder(req *sales.NewSaleTemplate) (resp i
 	fmt.Println("DocDate = ", req.DocDate)
 
 	for _, sub_item := range req.Subs {
-		if (sub_item.Qty != 0) {
+		if sub_item.Qty != 0 {
 			count_item = count_item + 1
 
 			if sub_item.DiscountWord != "" {
@@ -1059,10 +1067,10 @@ func (repo *salesRepository) CreateSaleOrder(req *sales.NewSaleTemplate) (resp i
 
 			sum_item_amount = sum_item_amount + (sub_item.Qty * (sub_item.Price - item_discount_amount_sub))
 		}
-		if (sub_item.ItemCode != "" && sub_item.Qty == 0) {
+		if sub_item.ItemCode != "" && sub_item.Qty == 0 {
 			count_item_qty = count_item_qty + 1
 		}
-		if (sub_item.ItemCode != "" && sub_item.UnitCode == "") {
+		if sub_item.ItemCode != "" && sub_item.UnitCode == "" {
 			count_item_unit = count_item_unit + 1
 		}
 	}
@@ -1088,7 +1096,7 @@ func (repo *salesRepository) CreateSaleOrder(req *sales.NewSaleTemplate) (resp i
 	//	return nil, errors.New("Docno is exist")
 	//}
 
-	if (check_doc_exist == 0) {
+	if check_doc_exist == 0 {
 
 		req.BeforeTaxAmount, req.TaxAmount, req.TotalAmount = config.CalcTaxItem(req.TaxType, req.TaxRate, req.AfterDiscountAmount)
 
@@ -1442,7 +1450,7 @@ func (repo *salesRepository) CreateDeposit(req *sales.NewDepositTemplate) (inter
 		return nil, errors.New("มูลค่ารวมทั้งหมดไม่ตรงกับมูลค่ารับชำระ")
 	}
 
-	if (check_doc_exist == 0) {
+	if check_doc_exist == 0 {
 		req.BillBalance = req.NetAmount
 		sql := `insert into ar_deposit(company_id, branch_id, uuid, doc_no, tax_no, doc_date, bill_type, ar_id, ar_code, ar_name, sale_id, sale_code, sale_name, tax_type, tax_rate, ref_no, credit_day, due_date, depart_id, allocate_id, project_id, my_description, before_tax_amount, tax_amount, total_amount, net_amount ,bill_balance ,cash_amount ,creditcard_amount, chq_amount, bank_amount, is_return_money, is_cancel, is_confirm, scg_id, job_no, create_by, create_time) values(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ? ,? ,? ,?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
 		resp, err := repo.db.Exec(sql, req.CompanyId, req.BranchId, req.Uuid, req.DocNo, req.TaxNo, req.DocDate, req.BillType, req.ArId, req.ArCode, req.ArName, req.SaleId, req.SaleCode, req.SaleName, req.TaxType, req.TaxRate, req.RefNo, req.CreditDay, req.DueDate, req.DepartId, req.AllocateId, req.ProjectId, req.MyDescription, req.BeforeTaxAmount, req.TaxAmount, req.TotalAmount, req.NetAmount, req.BillBalance, req.CashAmount, req.CreditcardAmount, req.ChqAmount, req.BankAmount, req.IsReturnMoney, req.IsCancel, req.IsConfirm, req.ScgId, req.JobNo, req.CreateBy, req.CreateTime)
@@ -1610,7 +1618,7 @@ func verify_creditcard(db *sqlx.DB, Uuid string, RefId int64, CompanyId int64, B
 
 	fmt.Println("exist = ", exist)
 
-	if (exist != 0) {
+	if exist != 0 {
 		return false, nil
 	} else {
 		return true, nil
@@ -1631,7 +1639,7 @@ func verify_chq_in(db *sqlx.DB, Uuid string, RefId int64, CompanyId int64, Branc
 
 	fmt.Println("exist = ", exist)
 
-	if (exist != 0) {
+	if exist != 0 {
 		return false, nil
 	} else {
 		return true, nil
@@ -1939,7 +1947,7 @@ func (repo *salesRepository) CreateInvoice(req *sales.NewInvoiceTemplate) (inter
 		return nil, errors.New("มูลค่ารวมทั้งหมดไม่ตรงกับมูลค่ารับชำระ")
 	}
 
-	if (check_doc_exist == 0) {
+	if check_doc_exist == 0 {
 		//sql := `insert into ar_invoice(company_id,branch_id,uuid,doc_no,tax_no,bill_type,doc_date,ar_id,ar_code,ar_name,sale_id,sale_code,sale_name,pos_machine_id,period_id,cash_id,tax_type,tax_rate,number_of_item,depart_id,allocate_id,project_id,pos_status,credit_day,due_date,delivery_day,delivery_date,is_confirm,is_condition_send,my_description,so_ref_no,change_amount,sum_cash_amount,sum_credit_amount,sum_chq_amount,sum_bank_amount,sum_of_deposit,sum_on_line_amount,coupon_amount,sum_of_item_amount,discount_word,discount_amount,after_discount_amount,before_tax_amount,tax_amount,total_amount,net_debt_amount,bill_balance,pay_bill_status,pay_bill_amount,delivery_status,receive_name,receive_tel,car_license,is_cancel,is_hold,is_posted,is_credit_note,is_debit_note,gl_status,job_id,job_no,coupon_no,redeem_no,scg_number,scg_id,create_by,create_time) values(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`
 		sql := `insert into ar_invoice(company_id,branch_id,uuid,doc_no,tax_no,bill_type,doc_date,ar_id,ar_code,ar_name,sale_id,sale_code,sale_name,tax_type,tax_rate,my_description,so_ref_no,change_amount,sum_cash_amount,sum_credit_amount,sum_chq_amount,sum_bank_amount,sum_of_deposit,sum_on_line_amount,coupon_amount,sum_of_item_amount,discount_word,discount_amount,after_discount_amount,before_tax_amount,tax_amount,total_amount,create_by,create_time) values(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`
 		fmt.Println(sql)
@@ -1953,6 +1961,54 @@ func (repo *salesRepository) CreateInvoice(req *sales.NewInvoiceTemplate) (inter
 		id, _ := resp.LastInsertId()
 
 		req.Id = id
+		fmt.Println("เพิ่มสินค้านะ", req.Subs)
+		var vLineNumber int
+		vLineNumber = 0
+		fmt.Println(req.Subs)
+		for _, sub := range req.Subs {
+			fmt.Println("เพิ่มสินค้านะ", sub, sub.ItemCode)
+			sqlsub := `INSERT INTO ar_invoice_sub(company_id,branch_id,uuid,inv_id,doc_no,doc_date,ar_id,sale_id,item_id,item_code,
+				bar_code,item_name,wh_id,shelf_id,qty,cn_qty,unit_code,price,discount_word_sub,discount_amount_sub,amount,net_amount,average_cost,sum_of_cost,item_decription,is_cancel,is_credit_note,is_debit_note,packing_rate_1,packing_rate_2,ref_no,ref_line_number,line_number) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`
+			_, err := repo.db.Exec(sqlsub,
+				req.CompanyId,
+				req.BranchId,
+				req.Uuid,
+				req.Id,
+				req.DocNo,
+				req.DocDate,
+				req.ArId,
+				req.SaleId,
+				sub.ItemId,
+				sub.ItemCode,
+				sub.BarCode,
+				sub.ItemName,
+				sub.WhId,
+				sub.ShelfId,
+				sub.Qty,
+				sub.CnQty,
+				sub.UnitCode,
+				sub.Price,
+				sub.DiscountWord,
+				sub.DiscountAmount,
+				sub.ItemAmount,
+				sub.NetAmount,
+				sub.Average_cost,
+				sub.SumOfCost,
+				sub.ItemDescription,
+				sub.IsCancel,
+				sub.IsCreditNote,
+				sub.IsDebitNote,
+				sub.PackingRate1,
+				sub.PackingRate2,
+				sub.RefNo,
+				sub.RefLineNumber,
+				sub.LineNumber)
+
+			vLineNumber = vLineNumber + 1
+			if err != nil {
+				return "Insert SaleOrder Not Success", err
+			}
+		}
 	} else {
 		//sql := `update ar_deposit set company_id=?, branch_id=?, uuid=?, doc_no=?,tax_no=?, doc_date=?, bill_type=?, ar_id=?, ar_code=?, ar_name=?, sale_id=?, sale_code=?, sale_name=?, tax_type=?, tax_rate=?, ref_no=?, credit_day=?, due_date=?, depart_id=?, allocate_id=?, project_id=?, my_description=?, before_tax_amount=?, tax_amount=?, total_amount=?, net_amount=?, bill_balance=?, cash_amount=? ,creditcard_amount=?, chq_amount=?, bank_amount=?, is_return_money=?, is_cancel=?, is_confirm=?, scg_id=?, job_no=?, edit_by=?, edit_time=?  where id = ?`
 		//resp, err := repo.db.Exec(sql, req.CompanyId, req.BranchId, req.Uuid, req.DocNo, req.TaxNo, req.DocDate, req.BillType, req.ArId, req.ArCode, req.ArName, req.SaleId, req.SaleCode, req.SaleName, req.TaxType, req.TaxRate, req.RefNo, req.CreditDay, req.DueDate, req.DepartId, req.AllocateId, req.ProjectId, req.MyDescription, req.BeforeTaxAmount, req.TaxAmount, req.TotalAmount, req.NetAmount, req.BillBalance, req.CashAmount, req.CreditcardAmount, req.ChqAmount, req.BankAmount, req.IsReturnMoney, req.IsCancel, req.IsConfirm, req.ScgId, req.JobNo, req.EditBy, req.EditTime, req.Id)
@@ -1972,7 +2028,7 @@ func (repo *salesRepository) CreateInvoice(req *sales.NewInvoiceTemplate) (inter
 
 	fmt.Println("UUID1 = ", req.Uuid)
 
-	sql_del_crd := `delete from credit_card where uuid=? and ref_id=? and company_id=? and branch_id=? `
+	sql_del_crd := `delete from credit_card where ref_uuid=? and ref_id=? and company_id=? and branch_id=? `
 	_, err = repo.db.Exec(sql_del_crd, req.Uuid, req.Id, req.CompanyId, req.BranchId)
 	if err != nil {
 		fmt.Println("sql_del = ", err.Error())
@@ -1982,7 +2038,7 @@ func (repo *salesRepository) CreateInvoice(req *sales.NewInvoiceTemplate) (inter
 	if req.SumCreditAmount != 0 {
 		for _, crd := range req.CreditCard {
 
-			sql_del := `delete from credit_card where uuid=? and ref_id=? and company_id=? and branch_id=? and credit_card_no=? and confirm_no=? and bank_id=?`
+			sql_del := `delete from credit_card where ref_uuid=? and ref_id=? and company_id=? and branch_id=? and credit_card_no=? and confirm_no=? and bank_id=?`
 			crd_del, _ := repo.db.Exec(sql_del, req.Uuid, req.Id, req.CompanyId, req.BranchId, crd.CreditCardNo, crd.ConfirmNo, crd.BankId)
 			if err != nil {
 				fmt.Println("sql_del = ", err.Error())
@@ -2227,4 +2283,40 @@ func map_invoice_template(x NewInvoiceModel) sales.NewInvoiceTemplate {
 		//CreditCard:          crds,
 		//Chq:                 chqs,
 	}
+}
+
+// searchinvoice by keyword
+
+func (repo *salesRepository) SearchInvoiceByKeyword(req *sales.SearchByKeywordTemplate) (resp interface{}, err error) {
+
+	var sql string
+
+	d := []NewInvoiceModel{}
+
+	if req.Keyword == "" {
+		fmt.Println("invoicelist 4.5", req.SaleCode)
+		sql = `select a.id,a.company_id,a.branch_id,ifnull(a.uuid,'') as uuid,a.doc_no,ifnull(a.tax_no,'') as tax_no,a.bill_type,a.doc_date,a.ar_id,a.ar_code,ifnull(b.name,'') as ar_name,ifnull(b.address,'') as ar_bill_address,ifnull(b.telephone,'') as ar_telephone,a.sale_id,a.sale_code,ifnull(c.SaleName,'') sale_name,a.pos_machine_id,a.cash_id,a.tax_type,a.tax_rate,a.number_of_item,a.depart_id,a.allocate_id,a.project_id,a.pos_status,a.credit_day,ifnull(a.due_date,'') as due_date,a.delivery_day,ifnull(a.delivery_date,'') as delivery_date,a.is_confirm,a.is_condition_send,ifnull(a.my_description,'') as my_description,ifnull(a.so_ref_no,'') as so_ref_no,a.change_amount,a.sum_cash_amount,a.sum_credit_amount,a.sum_chq_amount,a.sum_bank_amount,a.sum_of_deposit,a.sum_on_line_amount,a.coupon_amount,a.sum_of_item_amount,ifnull(a.discount_word,'') as discount_word,a.discount_amount,a.after_discount_amount,a.before_tax_amount,a.tax_amount,a.total_amount,a.net_debt_amount,a.bill_balance,a.pay_bill_status,a.pay_bill_amount,a.delivery_status,ifnull(a.receive_name,'') as receive_name,ifnull(a.receive_tel,'') as receive_tel,ifnull(a.car_license,'') as car_license,a.is_cancel,a.is_hold,a.is_posted,a.is_credit_note,a.is_debit_note,a.gl_status,ifnull(a.job_id,'') as job_id,ifnull(a.job_no,'') as job_no,ifnull(a.coupon_no,'') as coupon_no,ifnull(a.redeem_no,'') as redeem_no,ifnull(a.scg_number,'') as scg_number,ifnull(a.scg_id,'') as scg_id,a.create_by,a.create_time,ifnull(a.edit_by,'') as edit_by,ifnull(a.edit_time,'') as edit_time,ifnull(a.confirm_by,'') as confirm_by,ifnull(a.confirm_time,'') as confirm_time,ifnull(a.cancel_by,'') as cancel_by,ifnull(a.cancel_time,'') as cancel_time,a.cancel_desc_id,ifnull(a.cancel_desc,'') as cancel_desc     from ar_invoice a left join Customer b on a.ar_id = b.id left join Sale c on a.sale_id = c.id  order by a.id desc limit 30`
+		err = repo.db.Select(&d, sql)
+
+	} else {
+		sql = `select a.id,a.company_id,a.branch_id,ifnull(a.uuid,'') as uuid,a.doc_no,ifnull(a.tax_no,'') as tax_no,a.bill_type,a.doc_date,a.ar_id,a.ar_code,ifnull(b.name,'') as ar_name,ifnull(b.address,'') as ar_bill_address,ifnull(b.telephone,'') as ar_telephone,a.sale_id,a.sale_code,ifnull(c.SaleName,'') sale_name,a.pos_machine_id,a.cash_id,a.tax_type,a.tax_rate,a.number_of_item,a.depart_id,a.allocate_id,a.project_id,a.pos_status,a.credit_day,ifnull(a.due_date,'') as due_date,a.delivery_day,ifnull(a.delivery_date,'') as delivery_date,a.is_confirm,a.is_condition_send,ifnull(a.my_description,'') as my_description,ifnull(a.so_ref_no,'') as so_ref_no,a.change_amount,a.sum_cash_amount,a.sum_credit_amount,a.sum_chq_amount,a.sum_bank_amount,a.sum_of_deposit,a.sum_on_line_amount,a.coupon_amount,a.sum_of_item_amount,ifnull(a.discount_word,'') as discount_word,a.discount_amount,a.after_discount_amount,a.before_tax_amount,a.tax_amount,a.total_amount,a.net_debt_amount,a.bill_balance,a.pay_bill_status,a.pay_bill_amount,a.delivery_status,ifnull(a.receive_name,'') as receive_name,ifnull(a.receive_tel,'') as receive_tel,ifnull(a.car_license,'') as car_license,a.is_cancel,a.is_hold,a.is_posted,a.is_credit_note,a.is_debit_note,a.gl_status,ifnull(a.job_id,'') as job_id,ifnull(a.job_no,'') as job_no,ifnull(a.coupon_no,'') as coupon_no,ifnull(a.redeem_no,'') as redeem_no,ifnull(a.scg_number,'') as scg_number,ifnull(a.scg_id,'') as scg_id,a.create_by,a.create_time,ifnull(a.edit_by,'') as edit_by,ifnull(a.edit_time,'') as edit_time,ifnull(a.confirm_by,'') as confirm_by,ifnull(a.confirm_time,'') as confirm_time,ifnull(a.cancel_by,'') as cancel_by,ifnull(a.cancel_time,'') as cancel_time,a.cancel_desc_id,ifnull(a.cancel_desc,'') as cancel_desc     from ar_invoice a left join Customer b on a.ar_id = b.id left join Sale c on a.sale_id = c.id  order by a.id desc limit 30`
+		fmt.Println("invoicelist 4", req.SaleCode)
+		err = repo.db.Select(&d, sql, req.SaleCode, req.Keyword)
+	}
+
+	fmt.Println("sql = ", sql, req.Keyword)
+	if err != nil {
+		fmt.Println("errsss = ", err.Error())
+		return resp, err
+	}
+
+	dp := []sales.NewInvoiceTemplate{}
+
+	for _, dep := range d {
+		dpline := map_invoice_template(dep)
+		dp = append(dp, dpline)
+	}
+
+	return dp, nil
+
 }
