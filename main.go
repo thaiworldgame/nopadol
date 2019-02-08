@@ -6,7 +6,7 @@ import (
 	"net/http"
 
 	_ "github.com/go-sql-driver/mysql"
-	_ "github.com/denisenkom/go-mssqldb"
+	//_ "github.com/denisenkom/go-mssqldb"
 	"github.com/mrtomyum/nopadol/mysqldb"
 	//"github.com/mrtomyum/nopadol/postgres"
 	//"github.com/mrtomyum/nopadol/sqldb"
@@ -30,6 +30,8 @@ import (
 	drivethruservice "github.com/mrtomyum/nopadol/drivethru"
 	"encoding/json"
 	"flag"
+	//auth "github.com/mrtomyum/nopadol/auth"
+	"github.com/mrtomyum/nopadol/auth"
 )
 
 var (
@@ -223,6 +225,13 @@ func main() {
 	drivethruRepo := mysqldb.NewDrivethruRepository(mysql_np)
 	drivethruService := drivethruservice.New(drivethruRepo)
 
+	// create repositories
+	authRepo := mysqldb.NewAuthRepository(mysql_np)
+	// create services
+	authService, err := auth.NewService(authRepo)
+	must(err)
+
+
 	mux := http.NewServeMux()
 	mux.HandleFunc("/",healthCheckHandler)
 	mux.HandleFunc("/version", apiVersionHandler)
@@ -242,8 +251,11 @@ func main() {
 
 	//mux.Handle("/p9/",http.StripPrefix("/p9/v1", p9service.MakeHandler(p9Service)))
 	//mux.Handle("/pointofsale/",http.StripPrefix("/pointofsale/v1", pointofsaleservice.MakeHandler(pointofsaleService)))
+
+	h := auth.MakeMiddleware(authService)(mux)
 	fmt.Println("Waiting for Accept Connection : 9999")
-	http.ListenAndServe(":9999", mux)
+	http.ListenAndServe(":9999", h)
+
 }
 
 func must(err error) {
@@ -253,7 +265,6 @@ func must(err error) {
 	}
 }
 
-
 func healthCheckHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json; charset=utf-8")
 	w.WriteHeader(http.StatusOK)
@@ -261,8 +272,6 @@ func healthCheckHandler(w http.ResponseWriter, r *http.Request) {
 		Success bool `json:"api success"`
 	}{true})
 }
-
-
 
 func apiVersionHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json; charset=utf-8")

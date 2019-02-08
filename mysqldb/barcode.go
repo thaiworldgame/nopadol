@@ -44,21 +44,41 @@ func (b *barcodeModel) checkExistByBarcode(db *sqlx.DB) (bool, int64) {
 	return true, id
 }
 func (b *barcodeModel) verifyRequestData(db *sqlx.DB) error {
-	// todo : check data before save
+	// check item_id
 	if b.ItemID == 0 {
 		return fmt.Errorf("item_id is error %v ", b.ItemID)
 	}
+
+	// check itemcode and get
 	if b.ItemCode == "" {
-		//todo : get itemcode from item_id
-		return fmt.Errorf(" data missing somting.. itemcode is blank")
+		it := itemModel{}
+		it.Id = b.ItemID
+		it.getItemCodeById(db)
+		if it.Code ==""{
+			return fmt.Errorf(" data missing somting.. itemcode is blank")
+		}else{
+			b.ItemCode=it.Code
+		}
+
 	}
+
+	// check unitcode and get
 	if b.UnitCode == "" {
-		return fmt.Errorf("Unitcode is blank")
+		u := itemUnitModel{}
+		u.id = b.UnitID
+		u.getByID(db)
+
+		if u.unitCode ==""{
+			return fmt.Errorf("Unitcode is blank")
+		} else {
+			b.UnitCode  = u.unitCode
+		}
 	}
 
 	if b.BarCode == "" {
 		return fmt.Errorf("Barcode  is blank")
 	}
+
 	return nil
 }
 

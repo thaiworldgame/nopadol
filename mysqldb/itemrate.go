@@ -14,20 +14,45 @@ type packingRate struct {
 	RatePerBaseUnit int    `db:"rate1"`
 }
 
-func (r *packingRate) save(db *sqlx.DB) (newID int64, err error) {
-	// check data before ins
+func(r *packingRate)verifyRequestData(db *sqlx.DB)(pass bool,err error){
 	if r.ItemID == 0 {
 		it := itemModel{}
 		r.ItemID, err = it.getItemIDbyCode(db, r.ItemCode)
 		if err != nil {
-			return -1, fmt.Errorf("no item_id! ")
+			return false, fmt.Errorf("no item_id! ")
 		}
 	}
 
-	if r.UnitID == 0 {
+	// find unitid if 0 and have code
+	if r.UnitID == 0 && r.UnitCode !="" {
 		u := itemUnitModel{}
-		u.getByCode(db)
+		err = u.getByCode(db)
+		if err != nil {
+			return false,fmt.Errorf(" no unit_id ",r.UnitID)
+		}
 		r.UnitID = u.id
+
+	}
+
+	// find unitcode if blank and have unitid
+	if r.UnitCode =="" && r.UnitID!=0{
+		u := itemUnitModel{}
+		err = u.getByID(db)
+		if err != nil {
+			return false,fmt.Errorf("unit_code not found :",r.UnitCode)
+		}
+		r.UnitCode = u.unitCode
+
+	}
+	return true,nil
+
+}
+func (r *packingRate) save(db *sqlx.DB) (newID int64, err error) {
+	// check data before ins
+
+	ok,err := r.verifyRequestData(db)
+	if !ok || err !=nil {
+		return -1,err
 	}
 
 	lccommand := `insert into ItemRate (

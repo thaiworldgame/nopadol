@@ -4,6 +4,7 @@ import (
 	"github.com/mrtomyum/nopadol/product"
 	"fmt"
 	"github.com/jmoiron/sqlx"
+	//"github.com/mrtomyum/nopadol/auth"
 )
 
 type ProductModel struct {
@@ -215,15 +216,17 @@ func (p *productRepository) StoreItem(req *product.ProductNewRequest)(resp inter
 	item := itemModel{}
 	err = item.map2itemModel(p.db,req)
 	if err != nil {
+		fmt.Println("error p.StoreItem map2itemModel ->",err.Error())
 		return nil,err
 	}
 
 	newItemID,err := item.save(p.db)
 	if err != nil {
+		fmt.Println("error item.save ",err.Error())
 		return nil,err
 	}
 
-	// todo : insert to PackingRate Table
+	// insert to PackingRate Table
 	pk := packingRate{}
 	for _, value := range req.PackingRate {
 
@@ -237,6 +240,7 @@ func (p *productRepository) StoreItem(req *product.ProductNewRequest)(resp inter
 		pk.ItemCode = req.ItemCode
 		pk.UnitCode  = u.unitCode
 
+
 		_,err = pk.save(p.db)
 		if err != nil {
 			return nil,err
@@ -244,7 +248,6 @@ func (p *productRepository) StoreItem(req *product.ProductNewRequest)(resp inter
 	}
 
 	// price insert
-	// todo : insert to Price table , split to priceInsert(req.Price)
 	pr := priceModel{}
 	for _, value := range req.Price {
 
@@ -253,9 +256,11 @@ func (p *productRepository) StoreItem(req *product.ProductNewRequest)(resp inter
 		u.getByID(p.db) // bind จาก id
 
 		pr.UnitID = req.UnitID
-		pr.ItemId = value.ItemID
+		pr.ItemId = newItemID
+		pr.ItemCode = req.ItemCode
 		pr.SalePrice1 = value.SalePrice1
 		pr.SalePrice2 = value.SalePrice2
+		pr.CompanyID = value.CompanyID
 		_,err := pr.save(p.db)
 		if err != nil {
 			return nil,err
@@ -263,9 +268,29 @@ func (p *productRepository) StoreItem(req *product.ProductNewRequest)(resp inter
 
 	}
 
+	// insert barcode
+	bar := barcodeModel{}
+	for _, value := range req.Barcode {
 
+		u := itemUnitModel{}
+		u.id = value.UnitID
+		u.getByID(p.db) // bind จาก id
 
+		bar.UnitID = req.UnitID
+		bar.ItemCode = req.ItemCode
+		bar.CompanyID  = req.CompanyID
+		bar.BarCode = value.Barcode
+		_,err := bar.save(p.db)
+		if err != nil {
+			return nil,err
+		}
+	}
 	return newItemID,nil
 	// todo : insert to Barcode table
 }
 
+
+
+func (p *productRepository) StoreBarcode(req *product.BarcodeNewRequest)(res interface{},err error){
+	return res,err
+}

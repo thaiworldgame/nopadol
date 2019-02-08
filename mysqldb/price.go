@@ -1,9 +1,9 @@
 package mysqldb
 
 import (
+	"fmt"
 	"github.com/jmoiron/sqlx"
 	"log"
-	"fmt"
 )
 
 type priceModel struct {
@@ -34,24 +34,42 @@ func (pr *priceModel) checkExitsByItemcodeUnitcodeSaletype(db *sqlx.DB) (id int6
 	rs.Scan(&id)
 
 	fmt.Printf("check price_id = %v  from item_id %v , unit_code %v, sale_type %v \n",
-		id,pr.ItemId, pr.UnitCode, pr.SaleType)
+		id, pr.ItemId, pr.UnitCode, pr.SaleType)
 
 	if id == -1 {
 		return -1, false
 	}
 
-
-	fmt.Printf(" price is exists with itemcode : %v,unitcode : %v ,saletype : %v \n\n",pr.ItemCode,u.unitCode,pr.SaleType)
+	fmt.Printf(" price is exists with itemcode : %v,unitcode : %v ,saletype : %v \n\n", pr.ItemCode, u.unitCode, pr.SaleType)
 	return id, true
 }
+func (pr *priceModel) verifyRequestData(db *sqlx.DB) (bool, error) {
+	if pr.ItemId == 0 {
+		return false, fmt.Errorf("cannot save price : item id not found ")
 
+	}
+
+	if pr.UnitID == 0 {
+		return false, fmt.Errorf("cannot save price : unit id not found ")
+
+	}
+
+	if pr.CompanyID == 0 {
+		return false, fmt.Errorf("cannot save price : company id not found ")
+
+	}
+	return true,nil
+}
 
 func (pr *priceModel) save(db *sqlx.DB) (newID int64, err error) {
 	//check req data
-	if pr.ItemId == 0 || pr.UnitID == 0 || pr.CompanyID == 0 {
+	fmt.Println("start price save ", pr)
+	ok,err := pr.verifyRequestData(db)
+	if err != nil {
 		log.Printf(" error verify data is not ready: data -> %v", pr)
-		return -1, fmt.Errorf("no item_id !!")
+		return -1, fmt.Errorf(err.Error())
 	}
+
 	// todo : check exists item_code+unit_code+sale_type
 	curID, ok := pr.checkExitsByItemcodeUnitcodeSaletype(db)
 	fmt.Printf("check exists result is : %v \n ", ok)
@@ -105,7 +123,7 @@ func (pr *priceModel) save(db *sqlx.DB) (newID int64, err error) {
 			return -1, err
 		}
 
-		pr.Id=newID
+		pr.Id = newID
 	}
 
 	return newID, nil
