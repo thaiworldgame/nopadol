@@ -56,5 +56,6 @@ func (s *service) StoreItem(req *ProductNewRequest)(interface{},error){
 
 func (s *service) StoreBarcode(req *BarcodeNewRequest)(interface{},error){
 	return s.repo.StoreBarcode(req)
+
 	//return nil,nil
 }
