@@ -12,13 +12,13 @@ import (
 type errorResponse struct {
 	Error string `json:"error"`
 }
+
 var (
 	errMethodNotAllowed = errors.New("auth: method not allowed")
 	errForbidden        = errors.New("auth: forbidden")
 	errBadRequest       = errors.New("auth: bad request body")
 	errUnauthorized     = errors.New("auth: Unauthorized")
 )
-
 
 func enableCors(w *http.ResponseWriter) {
 	(*w).Header().Set("Access-Control-Allow-Origin", "*")
@@ -45,13 +45,13 @@ func MakeHandler(s Service) http.Handler {
 	mux.Handle("/pickup/new", m.Handler(pickupNew(s)))
 	mux.Handle("/pickup/manage", m.Handler(managePickup(s)))
 	mux.Handle("/checkout/manage", m.Handler(manageCheckout(s)))
+	mux.Handle("/pickup/delete", m.Handler(cancelQueue(s)))
 	mux.Handle("/queue/list", m.Handler(makeSearchListQueue(s)))
 
 	mux.Handle("/queue/edit", m.Handler(queueEdit(s)))
 	mux.Handle("/queue/status", m.Handler(queueStatus(s)))
 	mux.Handle("/queue/product", m.Handler(queueProduct(s)))
 	mux.Handle("/billing/done", m.Handler(billingDone(s)))
-
 
 	//mux.Handle("/pickup/new",m.Handler(pickupNew(s)))
 

@@ -9,6 +9,7 @@ type Repository interface {
 	SearchCustomer(string) (interface{}, error)
 	SearchItem(string) (interface{}, error)
 	PickupNew(req *NewPickupRequest) (interface{}, error)
+	CancelQueue(req *QueueStatusRequest) (interface{}, error)
 	ManagePickup(req *ManagePickupRequest) (interface{}, error)
 	ManageCheckout(req *ManageCheckoutRequest) (interface{}, error)
 	ListQueue(req *ListQueueRequest) (interface{}, error)
