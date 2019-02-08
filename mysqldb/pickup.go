@@ -1053,6 +1053,7 @@ func (q *ListQueueModel) BillingDone(db *sqlx.DB, req *drivethru.BillingDoneRequ
 			},
 			"queid": ""}, nil
 	}
+
 	if q.Status == 2 {
 		if req.Confirm == 0 {
 
@@ -1244,6 +1245,29 @@ func (q *ListQueueModel) BillingDone(db *sqlx.DB, req *drivethru.BillingDoneRequ
 
 			remain_amount = (((q.TotalAfterAmount - crd_amount) - cou_amount) - dep_amount);
 			fmt.Println("remain amount =", remain_amount)
+
+			if (remain_amount < 0 && req.Cash != 0) {
+				return map[string]interface{}{
+					"response": map[string]interface{}{
+						"success":      false,
+						"error":        true,
+						"message":      "Payment cash over remain",
+						"total_amount": q.TotalAfterAmount,
+						"invoice": map[string]interface{}{
+							"invoice_no":     "Can not save bill",
+							"cash_amount":    req.Cash,
+							"credit_amount":  crd_amount,
+							"coupong_amount": cou_amount,
+							"deposit_amount": dep_amount,
+							"remain_amount":  sum_remain,
+							"change_amount":  change_amount,
+						},
+						"is_print_short_form":  0,
+						"is_print_cash_form":   0,
+						"is_print_credit_form": 0,
+					},
+				}, nil
+			}
 
 			if ((remain_amount > 0 && req.Cash > 0 && (remain_amount-req.Cash < 0)) || (remain_amount == 0)) {
 				change_amount = -1 * (remain_amount - req.Cash);
@@ -1492,11 +1516,35 @@ func (q *ListQueueModel) BillingDone(db *sqlx.DB, req *drivethru.BillingDoneRequ
 							"queid": ""}, nil
 					}
 					dep_amount = dep_amount + d.Amount
+					fmt.Println("dep_amount =", dep_amount)
 				}
 			}
 
 			remain_amount = (((q.TotalAfterAmount - crd_amount) - cou_amount) - dep_amount);
 			fmt.Println("remain amount =", remain_amount)
+
+			if (remain_amount < 0 && req.Cash != 0) {
+				return map[string]interface{}{
+					"response": map[string]interface{}{
+						"success":      false,
+						"error":        true,
+						"message":      "Payment cash over remain",
+						"total_amount": q.TotalAfterAmount,
+						"invoice": map[string]interface{}{
+							"invoice_no":     "Can not save bill",
+							"cash_amount":    req.Cash,
+							"credit_amount":  crd_amount,
+							"coupong_amount": cou_amount,
+							"deposit_amount": dep_amount,
+							"remain_amount":  sum_remain,
+							"change_amount":  change_amount,
+						},
+						"is_print_short_form":  0,
+						"is_print_cash_form":   0,
+						"is_print_credit_form": 0,
+					},
+				}, nil
+			}
 
 			if ((remain_amount > 0 && req.Cash > 0 && (remain_amount-req.Cash < 0)) || (remain_amount == 0)) {
 				change_amount = -1 * (remain_amount - req.Cash);
@@ -1670,11 +1718,34 @@ func (q *ListQueueModel) BillingDone(db *sqlx.DB, req *drivethru.BillingDoneRequ
 							fmt.Println("error insert credit card = ", err.Error())
 						}
 
-						line_number_coupon = line_number_coupon+1
+						line_number_coupon = line_number_coupon + 1
 					}
 				}
 
+				var line_number_deposit int
+				if len(req.DepositAmount) != 0 {
+					for _, dep := range req.DepositAmount {
+						line_number_coupon = 0
+						lccommand_cou := `insert into deposit_use(company_id, branch_id, deposit_no, ref_doc_no, ref_uuid, balance, amount, net_amount, line_number) values(?, ?, ?, ?, ?, ?, ?, ?, ?)`
+						rs, err = db.Exec(lccommand_cou, u.CompanyID, u.BranchID, dep.DepositId, pos_no, uuid, dep.Amount, dep.Amount, dep.Amount, line_number_coupon)
+						if err != nil {
+							fmt.Println("error insert deposit = ", err.Error())
+						}
 
+						line_number_deposit = line_number_deposit + 1
+
+						dep_id, err := rs.LastInsertId()
+						fmt.Println("error insert dep use = " + err.Error())
+
+						if dep_id != 0 {
+							lccommand := `update ar_deposit set balance = balance-? where doc_no=? and company_id = ? and branch_id = ?`
+							_, err = db.Exec(lccommand, dep.Amount, dep.DepositId, u.CompanyID, u.BranchID)
+							if err != nil {
+								fmt.Println("error update deposit = ", err.Error())
+							}
+						}
+					}
+				}
 
 				//
 				//sqlcommand = `COMMIT`
