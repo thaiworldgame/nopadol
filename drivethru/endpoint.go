@@ -91,12 +91,12 @@ type (
 	}
 
 	BillingDoneRequest struct {
-		AccessToken   string       `json:"access_token"`
-		ArCode        string       `json:"ar_code"`
-		Confirm       int          `json:"confirm"`
-		QueueId       int          `json:"queue_id"`
-		Cash          float64      `json:"cash"`
-		ScgId         string       `json:"scg_id"`
+		AccessToken   string        `json:"access_token"`
+		ArCode        string        `json:"ar_code"`
+		Confirm       int           `json:"confirm"`
+		QueueId       int           `json:"queue_id"`
+		Cash          float64       `json:"cash"`
+		ScgId         string        `json:"scg_id"`
 		CreditCard    []*CreditCard `json:"credit_card"`
 		CouponCode    []*Coupon     `json:"coupon_code"`
 		DepositAmount []*Deposit    `json:"deposit_amount"`
@@ -291,6 +291,18 @@ func managePickup(s Service) interface{} {
 	return func(ctx context.Context, req *ManagePickupRequest) (interface{}, error) {
 		fmt.Println("start endpoint mange pickup que id is => ", req.QueueId)
 		resp, err := s.ManagePickup(&ManagePickupRequest{AccessToken: req.AccessToken, QueueId: req.QueueId, ItemBarcode: req.ItemBarcode, QtyBefore: req.QtyBefore, IsCancel: req.IsCancel})
+		if err != nil {
+			return nil, err
+		}
+
+		return resp, nil
+	}
+}
+
+func cancelQueue(s Service) interface{} {
+	return func(ctx context.Context, req *QueueStatusRequest) (interface{}, error) {
+		fmt.Println("start endpoint mange pickup que id is => ", req.QueueId)
+		resp, err := s.CancelQueue(&QueueStatusRequest{AccessToken: req.AccessToken, QueueId: req.QueueId, CancelRemark: req.CancelRemark, IsLoad: req.IsLoad, StatusForSaleorderCurrent: req.StatusForSaleorderCurrent})
 		if err != nil {
 			return nil, err
 		}

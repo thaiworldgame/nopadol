@@ -201,9 +201,15 @@ func (d *drivethruRepository) QueueProduct(req *drivethru.QueueProductRequest) (
 	return pickup.QueueProduct(d.db, req)
 }
 
-func (d *drivethruRepository) BillingDone (req *drivethru.BillingDoneRequest) (interface{}, error) {
+func (d *drivethruRepository) BillingDone(req *drivethru.BillingDoneRequest) (interface{}, error) {
 	pickup := ListQueueModel{}
 	return pickup.BillingDone(d.db, req)
+}
+
+func (d *drivethruRepository) CancelQueue(req *drivethru.QueueStatusRequest) (interface{}, error) {
+	pickup := ListQueueModel{}
+
+	return pickup.CancelQueue(d.db, req)
 }
 
 func getBranch(db *sqlx.DB, branch_id int) string {

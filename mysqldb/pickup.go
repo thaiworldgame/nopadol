@@ -1276,6 +1276,29 @@ func (q *ListQueueModel) BillingDone(db *sqlx.DB, req *drivethru.BillingDoneRequ
 			}
 			fmt.Println("change amount =", change_amount)
 
+			if remain_amount < 0 {
+				return map[string]interface{}{
+					"response": map[string]interface{}{
+						"success":      false,
+						"error":        true,
+						"message":      "Payment over netamount",
+						"total_amount": q.TotalAfterAmount,
+						"invoice": map[string]interface{}{
+							"invoice_no":     "Can not save bill",
+							"cash_amount":    req.Cash,
+							"credit_amount":  crd_amount,
+							"coupong_amount": cou_amount,
+							"deposit_amount": dep_amount,
+							"remain_amount":  sum_remain,
+							"change_amount":  change_amount,
+						},
+						"is_print_short_form":  0,
+						"is_print_cash_form":   0,
+						"is_print_credit_form": 0,
+					},
+				}, nil
+			}
+
 			remain_all_amount = remain_amount - req.Cash + change_amount;
 			if (remain_all_amount > 0) {
 				sum_remain = remain_all_amount;
@@ -1553,6 +1576,29 @@ func (q *ListQueueModel) BillingDone(db *sqlx.DB, req *drivethru.BillingDoneRequ
 			}
 			fmt.Println("change amount =", change_amount)
 
+			if remain_amount < 0 {
+				return map[string]interface{}{
+					"response": map[string]interface{}{
+						"success":      false,
+						"error":        true,
+						"message":      "Payment over netamount",
+						"total_amount": q.TotalAfterAmount,
+						"invoice": map[string]interface{}{
+							"invoice_no":     "Can not save bill",
+							"cash_amount":    req.Cash,
+							"credit_amount":  crd_amount,
+							"coupong_amount": cou_amount,
+							"deposit_amount": dep_amount,
+							"remain_amount":  sum_remain,
+							"change_amount":  change_amount,
+						},
+						"is_print_short_form":  0,
+						"is_print_cash_form":   0,
+						"is_print_credit_form": 0,
+					},
+				}, nil
+			}
+
 			remain_all_amount = remain_amount - req.Cash + change_amount;
 			if (remain_all_amount > 0) {
 				sum_remain = remain_all_amount;
@@ -1753,7 +1799,6 @@ func (q *ListQueueModel) BillingDone(db *sqlx.DB, req *drivethru.BillingDoneRequ
 			}
 
 		}
-
 	}
 	return map[string]interface{}{
 		"response": map[string]interface{}{
@@ -1773,6 +1818,39 @@ func (q *ListQueueModel) BillingDone(db *sqlx.DB, req *drivethru.BillingDoneRequ
 			"is_print_short_form":  0,
 			"is_print_cash_form":   0,
 			"is_print_credit_form": 0,
+		},
+	}, nil
+}
+
+func (q *ListQueueModel) CancelQueue(db *sqlx.DB, req *drivethru.QueueStatusRequest) (interface{}, error) {
+
+	if (req.QueueId != 0) {
+		q.Search(db, req.QueueId)
+
+		if (q.IsCancel == 0) {
+			u := UserAccess{}
+			u.GetProfileByToken(db, req.AccessToken)
+
+			if (q.Status != 2) {
+				lccommand := "update basket set status = 0,pick_status=4,is_cancel=1,cancel_desc=?,cancel_by = ?,cancel_time= CURRENT_TIMESTAMP() where qid = ? and company_id = ? and branch_id = ? and uuid = ? and docdate = curdate()";
+				_, err := db.Exec(lccommand, req.CancelRemark, req.QueueId, req.CancelRemark, u.UserCode, req.QueueId, u.CompanyID, u.BranchID, q.UUID)
+				if err != nil {
+					return map[string]interface{}{
+						"response": map[string]interface{}{
+							"success": false,
+							"error":   true,
+							"message": err.Error(),
+						},
+					}, nil
+				}
+			}
+		}
+	}
+	return map[string]interface{}{
+		"response": map[string]interface{}{
+			"success": true,
+			"error":   false,
+			"message": "",
 		},
 	}, nil
 }
