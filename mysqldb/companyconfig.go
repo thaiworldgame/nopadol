@@ -19,6 +19,7 @@ type RequestConfigModel struct {
 	Email           string `db:"email"`
 	WebSite         string `db:"web_site"`
 	TaxRate         int    `db:"tax_rate"`
+	BranchCode      string `json:"branch_code"`
 	BranchName      string `db:"branch_name"`
 	BranchAddress   string `db:"branch_address"`
 	BranchTelephone string `db:"branch_telephone"`
@@ -157,7 +158,7 @@ func (cf *RequestConfigModel) Search(db *sqlx.DB, company_id int, branch_id int)
 							ifnull(a.tax_number,'') as tax_number,ifnull(email,'') as email,ifnull(a.web_site,'') as web_site,c.tax_rate,ifnull(b.branch_name,'') as branch_name,
 							ifnull(b.address,'') as branch_address,ifnull(b.telephone,'') as branch_telephone,ifnull(b.fax,'') as branch_fax,c.stock_status,c.sale_tax_type,
 							c.buy_tax_type,ifnull(d.wh_code,'') as def_sale_wh,'-' as def_sale_shelf,ifnull(e.wh_code,'') as def_buy_wh,'-' as def_buy_shelf,ifnull(c.sale_bill_type,0) as sale_bill_type,
-							ifnull(buy_bill_type,0) as buy_bill_type,ifnull(c.logo_path,'') as logo_path, ifnull(c.def_cust_id,0)as def_cust_id, ifnull(f.code,'') as  def_cust_code, a.active_status,a.create_by,a.create_time,a.edit_by,a.edit_time from company a inner join branch b on a.id = b.company_id left join configuration c on a.id = c.company_id and b.id = c.branch_id left join warehouse d on c.def_sale_wh_id = d.id and a.id = d.company_id and b.id = d.branch_id left join warehouse e on c.def_buy_wh_id = e.id  and a.id = e.company_id and b.id = e.branch_id left join Customer f on c.def_cust_id = f.id where a.id = ? and b.id = ? and a.active_status = 1 limit 1`
+							ifnull(buy_bill_type,0) as buy_bill_type,ifnull(c.logo_path,'') as logo_path, ifnull(c.def_cust_id,0)as def_cust_id, ifnull(f.code,'') as  def_cust_code, ifnull(b.code,'') as branch_code,a.active_status,a.create_by,a.create_time,a.edit_by,a.edit_time from company a inner join branch b on a.id = b.company_id left join configuration c on a.id = c.company_id and b.id = c.branch_id left join warehouse d on c.def_sale_wh_id = d.id and a.id = d.company_id and b.id = d.branch_id left join warehouse e on c.def_buy_wh_id = e.id  and a.id = e.company_id and b.id = e.branch_id left join Customer f on c.def_cust_id = f.id where a.id = ? and b.id = ? and a.active_status = 1 limit 1`
 	fmt.Println("config lccommand =", lccommand, company_id, branch_id)
 
 	err := db.Get(cf, lccommand, company_id, branch_id)

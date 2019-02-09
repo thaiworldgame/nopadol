@@ -12,6 +12,7 @@ type service struct {
 
 type Service interface {
 	UserLogIn(req *UserLogInRequest) (interface{}, error)
+	LogIn(req *LoginRequest) (interface{}, error)
 	SearchListCompany() (interface{}, error)
 	SearchListMachine() (interface{}, error)
 	SearchCarBrand(string) (interface{}, error)
@@ -81,6 +82,16 @@ func (s *service) SearchItem(keyword string) (interface{}, error) {
 		return nil, err
 	}
 	fmt.Println("service SearchItem data -> ", resp)
+	return resp, nil
+}
+
+func (s *service) LogIn(req *LoginRequest) (interface{}, error) {
+	resp, err := s.repo.LogIn(req)
+	if err != nil {
+		fmt.Println("error service level ", err.Error())
+		return nil, err
+	}
+	fmt.Println("service UserLogIn data -> ", resp)
 	return resp, nil
 }
 

@@ -34,6 +34,14 @@ type (
 		DataBaseName string `json:"data_base_name"`
 	}
 
+	LoginRequest struct {
+		employeeCode  string `json:"employee_code"`
+		branchId      int    `json:"branch_id"`
+		employeeName  string `json:"employee_name"`
+		server_name   string `json:"server_name"`
+		database_name string `json:"database_name"`
+	}
+
 	NewPickupRequest struct {
 		CarNumber   string `json:"car_number"`
 		CarBrand    string `json:"car_brand"`
@@ -221,6 +229,18 @@ func makeItemSearch(s Service) interface{} {
 	}
 }
 
+func logIn(s Service) interface{} {
+	return func(ctx context.Context, req *LoginRequest) (interface{}, error) {
+		fmt.Println("start endpoint userlogin usercode is => ", req.employeeCode)
+		resp, err := s.LogIn(&LoginRequest{branchId: req.branchId, employeeCode: req.employeeCode, employeeName: req.employeeName})
+		if err != nil {
+			return nil, err
+		}
+
+		return resp, nil
+	}
+}
+
 func userLogIn(s Service) interface{} {
 	return func(ctx context.Context, req *UserLogInRequest) (interface{}, error) {
 		fmt.Println("start endpoint userlogin usercode is => ", req.UserCode)
@@ -232,6 +252,7 @@ func userLogIn(s Service) interface{} {
 		return resp, nil
 	}
 }
+
 func makeShiftOpen(s Service) interface{} {
 	type request struct {
 		Token        string  `json:"token"`

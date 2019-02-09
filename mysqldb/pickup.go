@@ -1674,8 +1674,8 @@ func (q *ListQueueModel) BillingDone(db *sqlx.DB, req *drivethru.BillingDoneRequ
 				//sqlcommand = `START TRANSACTION`
 				//_, err = db.Exec(sqlcommand)
 
-				sqlcommand = `insert into ar_invoice(company_id,branch_id,uuid,doc_no,tax_no,doc_date,bill_type ,tax_type ,tax_rate,pos_machine_id,shift_uuid,cash_id,number_of_item,ar_id,ar_code,ar_name,sale_id,sale_code,sale_name,depart_id,allocate_id,project_id,pos_status,my_description,so_ref_no ,sum_of_item_amount,discount_word,discount_amount,after_discount_amount,before_tax_amount,tax_amount,total_amount,change_amount,coupon_amount,sum_cash_amount,sum_chq_amount,sum_credit_amount ,sum_bank_amount,sum_of_deposit,sum_on_line_amount,net_debt_amount,car_license,create_by ,create_time) values(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`
-				rs, err := db.Exec(sqlcommand, u.CompanyID, u.BranchID, uuid, pos_no, pos_no, doc_date, bill_type, tax_type, config.TaxRate, m.MachineId, m.ShiftUUID, m.CashierID, q.NumberOfItem, ar_id, req.ArCode, cust.Name, s.Id, s.SaleCode, s.SaleName, depart_id, allocate_id, project_id, pos_status, my_description, q.DocNo, q.TotalAfterAmount, discount_word, discount_amount, q.TotalAfterAmount, before_tax_amount, tax_amount, total_amount, change_amount, cou_amount, req.Cash, chq_amount, crd_amount, bnk_amount, dep_amount, onl_amount, total_amount, q.PlateNumber, u.UserCode, now.String())
+				sqlcommand = `insert into ar_invoice(company_id,branch_id,uuid,doc_no,tax_no,doc_date,doc_type,bill_type ,tax_type ,tax_rate,pos_machine_id,shift_uuid,cash_id,number_of_item,ar_id,ar_code,ar_name,sale_id,sale_code,sale_name,depart_id,allocate_id,project_id,pos_status,my_description,so_ref_no ,sum_of_item_amount,discount_word,discount_amount,after_discount_amount,before_tax_amount,tax_amount,total_amount,change_amount,coupon_amount,sum_cash_amount,sum_chq_amount,sum_credit_amount ,sum_bank_amount,sum_of_deposit,sum_on_line_amount,net_debt_amount,car_license,create_by ,create_time) values(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`
+				rs, err := db.Exec(sqlcommand, u.CompanyID, u.BranchID, uuid, pos_no, pos_no, doc_date, 1, bill_type, tax_type, config.TaxRate, m.MachineId, m.ShiftUUID, m.CashierID, q.NumberOfItem, ar_id, req.ArCode, cust.Name, s.Id, s.SaleCode, s.SaleName, depart_id, allocate_id, project_id, pos_status, my_description, q.DocNo, q.TotalAfterAmount, discount_word, discount_amount, q.TotalAfterAmount, before_tax_amount, tax_amount, total_amount, change_amount, cou_amount, req.Cash, chq_amount, crd_amount, bnk_amount, dep_amount, onl_amount, total_amount, q.PlateNumber, u.UserCode, now.String())
 				if err != nil {
 					return map[string]interface{}{
 						"response": map[string]interface{}{
@@ -1744,6 +1744,11 @@ func (q *ListQueueModel) BillingDone(db *sqlx.DB, req *drivethru.BillingDoneRequ
 					item.Id = int(item_id)
 				}
 
+				//if req.Cash != 0 {
+				//	lccommand_rec := `insert into rec_money(company_id, branch_id, uuid, doc_type, ref_id, ar_id , doc_date, payment_type, pay_amount, chq_total_amount, credit_type, charge_amount, confirm_no, ref_no, bank_code, bank_branch_code, ref_date, bank_trans_date, line_number) values(?, ?, ?, ?, ?, ? , ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+				//	db.Exec(lccommand_rec, u.CompanyID, u.BranchID, uuid, 1, q.Id, ar_id, doc_date, 0, req.Cash, 0)
+				//}
+
 				if len(req.CreditCard) != 0 {
 					for _, crd := range req.CreditCard {
 						lccommand_crd := `insert into credit_card(company_id, branch_id,ref_uuid, ref_id,ar_id,doc_no, doc_date, credit_card_no, credit_type, confirm_no, amount, charge_amount, description,receive_date, due_date) values(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
@@ -1752,6 +1757,9 @@ func (q *ListQueueModel) BillingDone(db *sqlx.DB, req *drivethru.BillingDoneRequ
 							fmt.Println("error insert credit card = ", err.Error())
 						}
 					}
+
+					//lccommand_rec := `insert into rec_money(company_id, branch_id, uuid, doc_type, ref_id, ar_id , doc_date, payment_type, pay_amount, chq_total_amount, credit_type, charge_amount, confirm_no, ref_no, bank_code, bank_branch_code, ref_date, bank_trans_date, line_number) values(?, ?, ?, ?, ?, ? , ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+					//db.Exec(lccommand_rec, u.CompanyID, u.BranchID, uuid, 1, q.Id, ar_id, doc_date, 0, req.Cash, 0)
 				}
 
 				var line_number_coupon int
@@ -1832,8 +1840,8 @@ func (q *ListQueueModel) CancelQueue(db *sqlx.DB, req *drivethru.QueueStatusRequ
 			u.GetProfileByToken(db, req.AccessToken)
 
 			if (q.Status != 2) {
-				lccommand := "update basket set status = 0,pick_status=4,is_cancel=1,cancel_desc=?,cancel_by = ?,cancel_time= CURRENT_TIMESTAMP() where qid = ? and company_id = ? and branch_id = ? and uuid = ? and docdate = curdate()";
-				_, err := db.Exec(lccommand, req.CancelRemark, req.QueueId, req.CancelRemark, u.UserCode, req.QueueId, u.CompanyID, u.BranchID, q.UUID)
+				lccommand := "update basket set status = 0,pick_status=4,is_cancel=1,cancel_desc=?,cancel_by = ?,cancel_time= CURRENT_TIMESTAMP() where que_id = ? and company_id = ? and branch_id = ? and uuid = ? and doc_date = curdate()";
+				_, err := db.Exec(lccommand, req.CancelRemark, u.UserCode, req.QueueId, u.CompanyID, u.BranchID, q.UUID)
 				if err != nil {
 					return map[string]interface{}{
 						"response": map[string]interface{}{
