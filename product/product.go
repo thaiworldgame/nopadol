@@ -48,9 +48,9 @@ type ProductNewRequest struct {
 }
 
 type BarcodeNewRequest struct {
-	ItemID        int64  `json:"item_id"`
+	ItemID       int64  `json:"item_id"`
 	ItemCode     string `json:"item_code"`
-	Barcode      string `json:"barcode"`
+	Barcode      string `json:"bar_code"`
 	UnitCode     string `json:"unit_code"`
 	UnitID       int64  `json:"unit_id"`
 	ActiveStatus int    `json:"active_status"`

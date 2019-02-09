@@ -211,6 +211,7 @@ func MakeNewProduct(s Service) interface{} {
 func MakeNewBarcode(s Service) interface{}{
 	return func(ctx context.Context, req *BarcodeNewRequest) (interface{}, error) {
 		resp, err := s.StoreBarcode(req )
+		fmt.Println("start endpoint makeNewBarcode")
 		if err != nil {
 			fmt.Println("endpoint error =", err.Error())
 			return nil, fmt.Errorf(err.Error())
