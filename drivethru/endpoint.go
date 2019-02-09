@@ -35,11 +35,11 @@ type (
 	}
 
 	LoginRequest struct {
-		employeeCode  string `json:"employee_code"`
-		branchId      int    `json:"branch_id"`
-		employeeName  string `json:"employee_name"`
-		server_name   string `json:"server_name"`
-		database_name string `json:"database_name"`
+		EmployeeCode string `json:"employee_code"`
+		BranchId     int    `json:"branch_id"`
+		EmployeeName string `json:"employee_name"`
+		ServerName   string `json:"server_name"`
+		DatabaseName string `json:"database_name"`
 	}
 
 	NewPickupRequest struct {
@@ -231,8 +231,8 @@ func makeItemSearch(s Service) interface{} {
 
 func logIn(s Service) interface{} {
 	return func(ctx context.Context, req *LoginRequest) (interface{}, error) {
-		fmt.Println("start endpoint userlogin usercode is => ", req.employeeCode)
-		resp, err := s.LogIn(&LoginRequest{branchId: req.branchId, employeeCode: req.employeeCode, employeeName: req.employeeName})
+		fmt.Println("start endpoint userlogin usercode is => ", req.EmployeeCode)
+		resp, err := s.LogIn(&LoginRequest{BranchId: req.BranchId, EmployeeCode: req.EmployeeCode, EmployeeName: req.EmployeeName})
 		if err != nil {
 			return nil, err
 		}
