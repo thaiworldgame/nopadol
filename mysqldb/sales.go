@@ -389,7 +389,7 @@ type NewInvoiceModel struct {
 	TaxType             int64                 `db:"tax_type"`
 	TaxRate             float64               `db:"tax_rate"`
 	NumberOfItem        float64               `db:"number_of_item"`
-	DepartId            int64                 `db:"depart_id"`
+	DepartId            string                `db:"depart_id"`
 	AllocateId          int64                 `db:"allocate_id"`
 	ProjectId           int64                 `db:"project_id"`
 	PosStatus           int64                 `db:"pos_status"`
@@ -471,7 +471,7 @@ type NewInvoiceItemModel struct {
 	NetAmount       float64 `db:"net_amount"`
 	Average_cost    float64 `db:"average_cost"`
 	SumOfCost       float32 `db:"sum_of_cost"`
-	ItemDescription string  `db:"item_description"`
+	ItemDescription string  `db:"item_decription"`
 	IsCancel        int64   `db:"is_cancel"`
 	IsCreditNote    int64   `db:"is_credit_note"`
 	IsDebitNote     int64   `db:"is_debit_note"`
@@ -1369,6 +1369,31 @@ func map_saleorder_template(x NewSaleModel) sales.NewSaleTemplate {
 	}
 }
 
+func map_invoice_sub_template(x NewInvoiceItemModel) sales.NewInvoiceItemTemplate {
+	fmt.Println("endpoint x", x)
+	return sales.NewInvoiceItemTemplate{
+		Id:              x.Id,
+		InvId:           x.InvId,
+		ItemCode:        x.ItemCode,
+		Itemid:          x.Itemid,
+		BarCode:         x.BarCode,
+		ItemName:        x.ItemName,
+		WhId:            x.WhId,
+		ShelfId:         x.ShelfId,
+		Qty:             x.Qty,
+		Price:           x.Price,
+		DiscountWord:    x.DiscountWord,
+		DiscountAmount:  x.DiscountAmount,
+		UnitCode:        x.UnitCode,
+		ItemAmount:      x.ItemAmount,
+		ItemDescription: x.ItemDescription,
+		Average_cost:    x.Average_cost,
+		SumOfCost:       x.SumOfCost,
+		PackingRate1:    x.PackingRate1,
+		LineNumber:      x.LineNumber,
+		IsCancel:        x.IsCancel,
+	}
+}
 func map_sale_subs_template(x NewSaleItemModel) sales.NewSaleItemTemplate {
 	return sales.NewSaleItemTemplate{
 		Id:              x.Id,
@@ -2152,7 +2177,7 @@ func (repo *salesRepository) SearchInvoiceById(req *sales.SearchByIdTemplate) (r
 
 	i := NewInvoiceModel{}
 
-	sql := `select a.id,a.company_id,a.branch_id,ifnull(a.uuid,'') as uuid,a.doc_no,ifnull(a.tax_no,'') as tax_no,a.bill_type,a.doc_date,a.ar_id,a.ar_code,ifnull(b.name,'') as ar_name,ifnull(b.address,'') as ar_bill_address,ifnull(b.telephone,'') as ar_telephone,a.sale_id,a.sale_code,ifnull(c.SaleName,'') sale_name,a.pos_machine_id,a.period_id,a.cash_id,a.tax_type,a.tax_rate,a.number_of_item,a.depart_id,a.allocate_id,a.project_id,a.pos_status,a.credit_day,ifnull(a.due_date,'') as due_date,a.delivery_day,ifnull(a.delivery_date,'') as delivery_date,a.is_confirm,a.is_condition_send,ifnull(a.my_description,'') as my_description,ifnull(a.so_ref_no,'') as so_ref_no,a.change_amount,a.sum_cash_amount,a.sum_credit_amount,a.sum_chq_amount,a.sum_bank_amount,a.sum_of_deposit,a.sum_on_line_amount,a.coupon_amount,a.sum_of_item_amount,ifnull(a.discount_word,'') as discount_word,a.discount_amount,a.after_discount_amount,a.before_tax_amount,a.tax_amount,a.total_amount,a.net_debt_amount,a.bill_balance,a.pay_bill_status,a.pay_bill_amount,a.delivery_status,ifnull(a.receive_name,'') as receive_name,ifnull(a.receive_tel,'') as receive_tel,ifnull(a.car_license,'') as car_license,a.is_cancel,a.is_hold,a.is_posted,a.is_credit_note,a.is_debit_note,a.gl_status,ifnull(a.job_id,'') as job_id,ifnull(a.job_no,'') as job_no,ifnull(a.coupon_no,'') as coupon_no,ifnull(a.redeem_no,'') as redeem_no,ifnull(a.scg_number,'') as scg_number,ifnull(a.scg_id,'') as scg_id,a.create_by,a.create_time,ifnull(a.edit_by,'') as edit_by,ifnull(a.edit_time,'') as edit_time,ifnull(a.confirm_by,'') as confirm_by,ifnull(a.confirm_time,'') as confirm_time,ifnull(a.cancel_by,'') as cancel_by,ifnull(a.cancel_time,'') as cancel_time,a.cancel_desc_id,ifnull(a.cancel_desc,'') as cancel_desc     from ar_invoice a left join Customer b on a.ar_id = b.id left join Sale c on a.sale_id = c.id where a.id=?`
+	sql := `select a.id,a.company_id,a.branch_id,ifnull(a.uuid,'') as uuid,a.doc_no,ifnull(a.tax_no,'') as tax_no,a.bill_type,a.doc_date,a.ar_id,a.ar_code,ifnull(b.name,'') as ar_name,ifnull(b.address,'') as ar_bill_address,ifnull(b.telephone,'') as ar_telephone,a.sale_id,a.sale_code,ifnull(c.SaleName,'') sale_name,a.pos_machine_id,a.cash_id,a.tax_type,a.tax_rate,a.number_of_item,ifnull(a.depart_id,'') as depart_id,a.allocate_id,a.project_id,a.pos_status,a.credit_day,ifnull(a.due_date,'') as due_date,a.delivery_day,ifnull(a.delivery_date,'') as delivery_date,a.is_confirm,a.is_condition_send,ifnull(a.my_description,'') as my_description,ifnull(a.so_ref_no,'') as so_ref_no,a.change_amount,a.sum_cash_amount,a.sum_credit_amount,a.sum_chq_amount,a.sum_bank_amount,a.sum_of_deposit,a.sum_on_line_amount,a.coupon_amount,a.sum_of_item_amount,ifnull(a.discount_word,'') as discount_word,a.discount_amount,a.after_discount_amount,a.before_tax_amount,a.tax_amount,a.total_amount,a.net_debt_amount,a.bill_balance,a.pay_bill_status,a.pay_bill_amount,a.delivery_status,ifnull(a.receive_name,'') as receive_name,ifnull(a.receive_tel,'') as receive_tel,ifnull(a.car_license,'') as car_license,a.is_cancel,a.is_hold,a.is_posted,a.is_credit_note,a.is_debit_note,a.gl_status,ifnull(a.job_id,'') as job_id,ifnull(a.job_no,'') as job_no,ifnull(a.coupon_no,'') as coupon_no,ifnull(a.redeem_no,'') as redeem_no,ifnull(a.scg_number,'') as scg_number,ifnull(a.scg_id,'') as scg_id,a.create_by,a.create_time,ifnull(a.edit_by,'') as edit_by,ifnull(a.edit_time,'') as edit_time,ifnull(a.confirm_by,'') as confirm_by,ifnull(a.confirm_time,'') as confirm_time,ifnull(a.cancel_by,'') as cancel_by,ifnull(a.cancel_time,'') as cancel_time,a.cancel_desc_id,ifnull(a.cancel_desc,'') as cancel_desc     from ar_invoice a left join Customer b on a.ar_id = b.id left join Sale c on a.sale_id = c.id where a.id=?`
 	err = repo.db.Get(&i, sql, req.Id)
 	fmt.Println("sql = ", sql)
 	if err != nil {
@@ -2162,7 +2187,24 @@ func (repo *salesRepository) SearchInvoiceById(req *sales.SearchByIdTemplate) (r
 
 	inv_resp := map_invoice_template(i)
 
-	fmt.Println("CompanyId,BranchId,Uuid", i.CompanyId, i.BranchId, i.Uuid)
+	subs := []NewInvoiceItemModel{}
+
+	fmt.Println("s.Id =", i.Id)
+
+	sql_sub := `select a.id,a.inv_id,a.item_id,a.item_code,a.item_name,ifnull(a.wh_id,'') as wh_id,ifnull(a.shelf_id,'') as shelf_id,a.qty,a.cn_qty,a.price,discount_word_sub,discount_amount_sub,ifnull(a.unit_code,'') as unit_code,ifnull(a.bar_code,'') as bar_code,ifnull(a.item_decription,'') as item_decription,a.average_cost,a.sum_of_cost,a.amount,a.packing_rate_1,a.line_number,a.is_cancel from ar_invoice_sub a  where inv_id = ? order by a.line_number`
+	err = repo.db.Select(&subs, sql_sub, i.Id)
+	// fmt.Println("sql_sub = ", sql_sub)
+	if err != nil {
+		// 	fmt.Println("err sub= ", err.Error())
+		return resp, err
+	}
+
+	for _, sub := range subs {
+		subline := map_invoice_sub_template(sub)
+		inv_resp.Subs = append(inv_resp.Subs, subline)
+	}
+
+	// return so_resp, nil
 
 	//subs := []NewInvoiceItemModel{}
 	//

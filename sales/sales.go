@@ -348,7 +348,7 @@ type NewInvoiceTemplate struct {
 	TaxType             int64   `json:"tax_type"`
 	TaxRate             float64 `json:"tax_rate"`
 	NumberOfItem        float64 `json:"number_of_item"`
-	DepartId            int64   `json:"depart_id"`
+	DepartId            string  `json:"depart_id"`
 	AllocateId          int64   `json:"allocate_id"`
 	ProjectId           int64   `json:"project_id"`
 	PosStatus           int64   `json:"pos_status"`
