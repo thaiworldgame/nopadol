@@ -11,12 +11,13 @@ var (
 // Token domain-model
 type Token struct {
 	ID        string
-	CompanyID int64
+	CompanyID int
 	UserID    int64
 	BranchID  int64
 	ZoneID    string
 	TokenID   string
 	UserName  string
+	UserCode  string
 }
 
 // Account domain-model

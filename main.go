@@ -5,9 +5,10 @@ import (
 	"log"
 	"net/http"
 
-	_ "github.com/go-sql-driver/mysql"
 	_ "github.com/denisenkom/go-mssqldb"
+	_ "github.com/go-sql-driver/mysql"
 	"github.com/mrtomyum/nopadol/mysqldb"
+
 	//"github.com/mrtomyum/nopadol/postgres"
 	//"github.com/mrtomyum/nopadol/sqldb"
 	//"database/sql"
@@ -18,19 +19,22 @@ import (
 	customerservice "github.com/mrtomyum/nopadol/customer"
 	employeeservice "github.com/mrtomyum/nopadol/employee"
 	productservice "github.com/mrtomyum/nopadol/product"
+
 	//posservice "github.com/mrtomyum/nopadol/pos"
 	//posconfigservice "github.com/mrtomyum/nopadol/posconfig"
 	//printservice "github.com/mrtomyum/nopadol/print"
-	salesservice "github.com/mrtomyum/nopadol/sales"
-	gendocnoservice "github.com/mrtomyum/nopadol/gendocno"
 	envservice "github.com/mrtomyum/nopadol/environment"
+	gendocnoservice "github.com/mrtomyum/nopadol/gendocno"
+	salesservice "github.com/mrtomyum/nopadol/sales"
+
 	//configservice "github.com/mrtomyum/nopadol/companyconfig"
 	//pointofsaleservice "github.com/mrtomyum/nopadol/pointofsale"
 
-	drivethruservice "github.com/mrtomyum/nopadol/drivethru"
 	"encoding/json"
 	"flag"
+
 	auth "github.com/mrtomyum/nopadol/auth"
+	drivethruservice "github.com/mrtomyum/nopadol/drivethru"
 )
 
 var (
@@ -166,7 +170,6 @@ func main() {
 	//defer sess.Close() // Remember to close the database session.
 	// Postgresql  Connect
 
-
 	//pgConn := fmt.Sprintf("dbname=%s user=%s password=%s host=%s port=%s sslmode=%s",
 	//	pgDbName, pgDbUser, pgDbPass, pgDbHost, pgDbPort, pgSSLMode)
 	//
@@ -230,9 +233,8 @@ func main() {
 	authService, err := auth.NewService(authRepo)
 	must(err)
 
-
 	mux := http.NewServeMux()
-	mux.HandleFunc("/",healthCheckHandler)
+	mux.HandleFunc("/", healthCheckHandler)
 	mux.HandleFunc("/version", apiVersionHandler)
 
 	//mux.Handle("/delivery/", http.StripPrefix("/delivery", delivery.MakeHandler(doService)))
@@ -244,10 +246,9 @@ func main() {
 	//mux.Handle("/print/", http.StripPrefix("/print/v1", printservice.MakeHandler(printService)))
 	mux.Handle("/sales/", http.StripPrefix("/sales/v1", salesservice.MakeHandler(salesService)))
 	mux.Handle("/gendocno/", http.StripPrefix("/gendocno/v1", gendocnoservice.MakeHandler(gendocnoService)))
-	mux.Handle("/env/",http.StripPrefix("/env/v1",envservice.MakeHandler(envService)))
+	mux.Handle("/env/", http.StripPrefix("/env/v1", envservice.MakeHandler(envService)))
 	//mux.Handle("/config/",http.StripPrefix("/config/v1", configservice.MakeHandler(configService)))
-	mux.Handle("/drivethru/",http.StripPrefix("/drivethru/v3",drivethruservice.MakeHandler(drivethruService)))
-
+	mux.Handle("/drivethru/", http.StripPrefix("/drivethru/v3", drivethruservice.MakeHandler(drivethruService)))
 	//mux.Handle("/p9/",http.StripPrefix("/p9/v1", p9service.MakeHandler(p9Service)))
 	//mux.Handle("/pointofsale/",http.StripPrefix("/pointofsale/v1", pointofsaleservice.MakeHandler(pointofsaleService)))
 
@@ -263,7 +264,6 @@ func must(err error) {
 	}
 }
 
-
 func healthCheckHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json; charset=utf-8")
 	w.WriteHeader(http.StatusOK)
@@ -271,8 +271,6 @@ func healthCheckHandler(w http.ResponseWriter, r *http.Request) {
 		Success bool `json:"api success"`
 	}{true})
 }
-
-
 
 func apiVersionHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json; charset=utf-8")

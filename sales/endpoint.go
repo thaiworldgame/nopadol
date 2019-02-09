@@ -1,8 +1,8 @@
 package sales
 
 import (
-	"fmt"
 	"context"
+	"fmt"
 )
 
 type (
@@ -18,11 +18,11 @@ type (
 		ArName              string              `json:"ar_name"`
 		ArBillAddress       string              `json:"ar_bill_address"`
 		ArTelephone         string              `json:"ar_telephone"`
-		SaleId              int64                 `json:"sale_id"`
+		SaleId              int64               `json:"sale_id"`
 		SaleCode            string              `json:"sale_code"`
 		SaleName            string              `json:"sale_name"`
 		BillType            int64               `json:"bill_type"`
-		TaxType             int64                 `json:"tax_type"`
+		TaxType             int64               `json:"tax_type"`
 		TaxRate             float64             `json:"tax_rate"`
 		DepartId            int64               `json:"depart_id"`
 		RefNo               string              `json:"ref_no"`
@@ -91,11 +91,11 @@ type (
 		ArName              string               `json:"ar_name"`
 		ArBillAddress       string               `json:"ar_bill_address"`
 		ArTelephone         string               `json:"ar_telephone"`
-		SaleId              int64                  `json:"sale_id"`
+		SaleId              int64                `json:"sale_id"`
 		SaleCode            string               `json:"sale_code"`
 		SaleName            string               `json:"sale_name"`
 		BillType            int64                `json:"bill_type"`
-		TaxType             int64                  `json:"tax_type"`
+		TaxType             int64                `json:"tax_type"`
 		TaxRate             float64              `json:"tax_rate"`
 		DepartId            int64                `json:"depart_id"`
 		RefNo               string               `json:"ref_no"`
@@ -1140,6 +1140,19 @@ func map_invoice_request(x *NewInvoiceRequest) NewInvoiceTemplate {
 func SearchInvoiceById(s Service) interface{} {
 	return func(ctx context.Context, req *SearchByIdRequest) (interface{}, error) {
 		resp, err := s.SearchInvoiceById(&SearchByIdTemplate{Id: req.Id})
+		if err != nil {
+			fmt.Println("endpoint error =", err.Error())
+			return nil, fmt.Errorf(err.Error())
+		}
+		return map[string]interface{}{
+			"data": resp,
+		}, nil
+	}
+}
+
+func SearchInvoiceByKeyword(s Service) interface{} {
+	return func(ctx context.Context, req *SearchByKeywordRequest) (interface{}, error) {
+		resp, err := s.SearchInvoiceByKeyword(&SearchByKeywordTemplate{SaleCode: req.SaleCode, Keyword: req.Keyword})
 		if err != nil {
 			fmt.Println("endpoint error =", err.Error())
 			return nil, fmt.Errorf(err.Error())

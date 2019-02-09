@@ -3,6 +3,8 @@ package product
 import (
 	"context"
 	"fmt"
+	"github.com/mrtomyum/nopadol/auth"
+	"time"
 )
 
 //type Endpoint interface {
@@ -146,7 +148,8 @@ func MakeNewProduct(s Service) interface{} {
 		var barcodes []BarcodeTemplate
 		var prices []PriceTemplate
 		var Rates []PackingRate
-
+		companyID := auth.GetCompanyID(ctx)
+		userID := auth.GetUserCode(ctx)
 		// bind barcode template
 		if len(req.Barcode) > 0 {
 			fmt.Println("bind req barcocde")
@@ -168,7 +171,7 @@ func MakeNewProduct(s Service) interface{} {
 				pr.SalePrice2 = value.SalePrice2
 				pr.UnitID = value.UnitID
 				pr.SaleType = value.SaleType
-				pr.CompanyID = req.CompanyID
+				pr.CompanyID = companyID
 				prices = append(prices, pr)
 			}
 		}
@@ -183,7 +186,8 @@ func MakeNewProduct(s Service) interface{} {
 			}
 		}
 
-		fmt.Println("request data ->", req)
+
+		fmt.Println("request data ->",req)
 		resp, err := s.StoreItem(&ProductNewRequest{
 			ItemCode:    req.Code,
 			ItemName:    req.Name,
@@ -193,7 +197,9 @@ func MakeNewProduct(s Service) interface{} {
 			Barcode:     barcodes,
 			Price:       prices,
 			PackingRate: Rates,
-			CompanyID:   req.CompanyID,
+			CompanyID:   companyID,
+			CreateBy:    userID,
+			CreateTime:  time.Now(),
 		})
 		if err != nil {
 			fmt.Println("endpoint error =", err.Error())
@@ -205,5 +211,32 @@ func MakeNewProduct(s Service) interface{} {
 	}
 }
 
+func MakeNewBarcode(s Service) interface{} {
 
-func MakeNewBarcode(s Service) interface{}
+	type request struct {
+		itemID       int64  `json:"item_id"`
+		itemCode     string `json:"item_code"`
+		barcode      string `json:"barcode"`
+		unitCode     string `json:"unit_code"`
+		unitID       int64  `json:"unit_id"`
+		activeStatus int    `json:"active_status"`
+	}
+
+	return func(ctx context.Context, req *request) (interface{}, error) {
+		resp, err := s.StoreBarcode(&BarcodeNewRequest{
+			ItemID:       req.itemID,
+			ItemCode:     req.itemCode,
+			Barcode:      req.barcode,
+			UnitCode:     req.unitCode,
+			UnitID:       req.unitID,
+			ActiveStatus: req.activeStatus,
+		}, &auth.Token{})
+		if err != nil {
+			fmt.Println("endpoint error =", err.Error())
+			return nil, fmt.Errorf(err.Error())
+		}
+		return map[string]interface{}{
+			"data": resp,
+		}, nil
+	}
+}

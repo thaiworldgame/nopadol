@@ -28,7 +28,7 @@ func NewService(auths Repository) (Service, error) {
 }
 
 // GetClientID returns client id from context
-func GetCompanyID(ctx context.Context) int64 {
+func GetCompanyID(ctx context.Context) int {
 	x, ok := ctx.Value(keyToken{}).(*Token)
 	if !ok {
 		return -1
@@ -43,6 +43,15 @@ func GetUserID(ctx context.Context) int64 {
 		return -1
 	}
 	return x.UserID
+}
+
+// GetAccountID returns account id from context
+func GetUserCode(ctx context.Context) string {
+	x, ok := ctx.Value(keyToken{}).(*Token)
+	if !ok {
+		return ""
+	}
+	return x.UserCode
 }
 
 // GetVendingID returns vending id from context
