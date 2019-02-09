@@ -162,6 +162,11 @@ func (d *drivethruRepository) SearchItem(keyword string) (interface{}, error) {
 	return it, nil
 }
 
+func (d *drivethruRepository) LogIn(req *drivethru.LoginRequest) (interface{}, error) {
+	user := userLogInModel{}
+	return user.login(d.db, req)
+}
+
 func (d *drivethruRepository) UserLogIn(req *drivethru.UserLogInRequest) (interface{}, error) {
 	user := userLogInModel{}
 	return user.Userlogin(d.db, req)
