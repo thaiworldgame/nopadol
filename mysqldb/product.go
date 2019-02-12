@@ -312,7 +312,7 @@ func (p *productRepository) StorePrice(req *product.PriceTemplate)(interface{},e
 	item := itemModel{Id: req.ItemID}
 	itemcode,err := item.getItemCodeById(p.db)
 
-	unit := itemUnitModel{}
+	unit := itemUnitModel{id:req.UnitID}
 	unit.getByID(p.db)
 
 	if err != nil {
@@ -329,4 +329,20 @@ func (p *productRepository) StorePrice(req *product.PriceTemplate)(interface{},e
 		CompanyID: req.CompanyID,
 	}
 	return pr.save(p.db)
+}
+
+
+func (p *productRepository) StorePackingRate(req *product.PackingRate)(interface{},error){
+	unit := itemUnitModel{id:req.UnitID}
+	unit.getByID(p.db)
+
+	rate := packingRate{
+		ItemID: req.ItemID,
+		ItemCode: req.ItemCode,
+		UnitID: req.UnitID,
+		RatePerBaseUnit: req.RatePerBaseUnit,
+	}
+
+	return rate.save(p.db)
+	//return nil,nil
 }

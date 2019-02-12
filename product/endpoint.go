@@ -234,3 +234,16 @@ func makeNewPrice(s Service) interface{}{
 		}, nil
 	}
 }
+
+func makeNewItemRate(s Service) interface{}{
+	return func(ctx context.Context,req *PackingRate)(interface{},error){
+		resp,err := s.StorePackingRate(req)
+		if err != nil {
+			fmt.Println("endpoint error =", err.Error())
+			return nil, fmt.Errorf(err.Error())
+		}
+		return map[string]interface{}{
+			"data": resp,
+		}, nil
+	}
+}

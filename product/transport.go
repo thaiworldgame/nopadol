@@ -1,10 +1,10 @@
 package product
 
 import (
-	"net/http"
-	"github.com/acoshift/hrpc"
 	"encoding/json"
 	"fmt"
+	"github.com/acoshift/hrpc"
+	"net/http"
 )
 
 type errorResponse struct {
@@ -36,6 +36,7 @@ func MakeHandler(s Service) http.Handler {
 
 	mux.Handle("/barcode/new", m.Handler(MakeNewBarcode(s)))
 	mux.Handle("/price/new", m.Handler(makeNewPrice(s)))
+	mux.Handle("/itemRate/new", m.Handler(makeNewItemRate(s)))
 
 	return mustLogin()(mux)
 }

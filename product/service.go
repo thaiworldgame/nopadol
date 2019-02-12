@@ -18,6 +18,7 @@ type Service interface {
 	StoreItem(req *ProductNewRequest)(interface{},error)
 	StoreBarcode(req *BarcodeNewRequest) (interface{},error)
 	StorePrice(req *PriceTemplate)(interface{},error)
+	StorePackingRate(req *PackingRate)(interface{},error)
 }
 
 func (s *service) SearchByBarcode(req *SearchByBarcodeTemplate) (interface{}, error) {
@@ -67,3 +68,6 @@ func (s *service) StorePrice(req *PriceTemplate) (interface{},error){
 	//return nil,nil
 }
 
+func (s *service) StorePackingRate(req *PackingRate)(interface{},error){
+	return s.repo.StorePackingRate(req)
+}

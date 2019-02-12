@@ -10,4 +10,6 @@ type Repository interface {
 	StoreItem(req *ProductNewRequest) (interface{},error)
 	StoreBarcode(req *BarcodeNewRequest) (interface{},error)
 	StorePrice(req *PriceTemplate) (interface{},error)
+	StorePackingRate(req *PackingRate)(interface{},error)
 }
+
