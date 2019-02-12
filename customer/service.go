@@ -30,3 +30,4 @@ func (s *service) SearchByKeyword(req *SearchByKeywordTemplate) (interface{}, er
 	}
 	return resp, nil
 }
+

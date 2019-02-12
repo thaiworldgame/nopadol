@@ -94,3 +94,5 @@ type PriceTemplate struct {
 	SaleType   int     `json:"sale_type"`
 	CompanyID  int     `json:"company_id"`
 }
+
+

@@ -306,3 +306,24 @@ func (p *productRepository) StoreBarcode(req *product.BarcodeNewRequest)(res int
 	}
 	return newID,err
 }
+
+func (p *productRepository) StorePrice(req *product.PriceTemplate)(interface{},error){
+	fmt.Println("start store price in mysql package ")
+	item := itemModel{Id: req.ItemID}
+	itemcode,err := item.getItemCodeById(p.db)
+
+	unit := itemUnitModel{}
+	unit.getByID(p.db)
+
+	if err != nil {
+		return nil,err
+	}
+	pr := priceModel{
+		ItemCode: itemcode,
+		UnitCode: unit.unitCode,
+		SalePrice1: req.SalePrice1,
+		SalePrice2: req.SalePrice2,
+		SaleType: req.SaleType,
+	}
+	return pr.save(p.db)
+}

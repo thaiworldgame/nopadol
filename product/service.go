@@ -1,6 +1,7 @@
 package product
 
 
+
 func New(repo Repository) (Service) {
 	return &service{repo}
 }
@@ -16,6 +17,7 @@ type Service interface {
 	SearchByKeyword(req *SearchByKeywordTemplate) (interface{}, error)
 	StoreItem(req *ProductNewRequest)(interface{},error)
 	StoreBarcode(req *BarcodeNewRequest) (interface{},error)
+	StorePrice(req *PriceTemplate)(interface{},error)
 }
 
 func (s *service) SearchByBarcode(req *SearchByBarcodeTemplate) (interface{}, error) {
@@ -59,3 +61,9 @@ func (s *service) StoreBarcode(req *BarcodeNewRequest)(interface{},error){
 
 	//return nil,nil
 }
+
+func (s *service) StorePrice(req *PriceTemplate) (interface{},error){
+	return s.repo.StorePrice(req)
+	//return nil,nil
+}
+
