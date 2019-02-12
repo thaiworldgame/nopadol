@@ -319,11 +319,14 @@ func (p *productRepository) StorePrice(req *product.PriceTemplate)(interface{},e
 		return nil,err
 	}
 	pr := priceModel{
+		ItemId: req.ItemID,
 		ItemCode: itemcode,
+		UnitID: req.UnitID,
 		UnitCode: unit.unitCode,
 		SalePrice1: req.SalePrice1,
 		SalePrice2: req.SalePrice2,
 		SaleType: req.SaleType,
+		CompanyID: req.CompanyID,
 	}
 	return pr.save(p.db)
 }
