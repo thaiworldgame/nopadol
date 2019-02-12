@@ -36,7 +36,7 @@ func MakeHandler(s Service) http.Handler {
 
 	mux.Handle("/barcode/new", m.Handler(MakeNewBarcode(s)))
 	mux.Handle("/price/new", m.Handler(makeNewPrice(s)))
-	mux.Handle("/itemRate/new", m.Handler(makeNewItemRate(s)))
+	mux.Handle("/packingrate/new", m.Handler(makeNewItemRate(s)))
 
 	return mustLogin()(mux)
 }
