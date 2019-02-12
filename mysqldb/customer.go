@@ -1,9 +1,9 @@
 package mysqldb
 
 import (
+	"fmt"
 	"github.com/jmoiron/sqlx"
 	"github.com/mrtomyum/nopadol/customer"
-	"fmt"
 )
 
 type CustomerModel struct {
@@ -13,6 +13,10 @@ type CustomerModel struct {
 	Address    string `db:"address"`
 	Telephone  string `db:"telephone"`
 	BillCredit int64  `db:"bill_credit"`
+	Email      string `json:"email"`
+	CompanyID  int    `json:"company_id"`
+	CreateBy string `json:"create_by"`
+
 }
 
 type customerRepository struct{ db *sqlx.DB }
@@ -84,4 +88,38 @@ func (cust *CustomerModel) Search(db *sqlx.DB, ar_code string) {
 	rs.Scan(&cust.Id, &cust.Code, &cust.Name, &cust.Address, &cust.Telephone, &cust.BillCredit)
 
 	return
+}
+
+func (cr *customerRepository) StoreCustomer(req *customer.CustomerTemplate) (interface{}, error) {
+	cus := CustomerModel{
+		Id:         req.Id,
+		Code:       req.Code,
+		Name:       req.Name,
+		Address:    req.Address,
+		Telephone:  req.Telephone,
+		BillCredit: req.BillCredit,
+		Email:      req.Email,
+		CompanyID:  req.CompanyID,
+	}
+
+	return cus.save(cr.db)
+	//return nil,nil
+}
+
+func (c CustomerModel) save(db *sqlx.DB) (interface{}, error) {
+	// check id = 0 to new customer
+	// check code , name , telephone exists
+	// update
+	// insert
+	sql := `insert into customer (code,name,address,telephone,bill_credit,active_status,create_by)
+		valuse (?,?,?,?,?,?,?)`
+	rs,err := db.Exec(sql,c.Code,c.Name,c.Address,c.Telephone,c.BillCredit,0,c.CreateBy)
+	if err != nil {
+		return nil,err
+	}
+	newID ,err := rs.LastInsertId()
+	if err != nil {
+		return nil,err
+	}
+	return newID, nil
 }
