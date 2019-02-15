@@ -46,7 +46,7 @@ type Machine struct {
 	WHCode      string `json:"wh_code" db:"wh_code"`
 	ShelfCode   string `json:"shelf_code" db:"shelf_code"`
 	CashierID   int    `json:"cashier_id" db:"cashier_id"`
-	ShiftUUID   int    `json:"shift_uuid" db:"shift_uuid"`
+	ShiftUUID   string `json:"shift_uuid" db:"shift_uuid"`
 }
 
 func (m *Machine) SearchMachineNo(db *sqlx.DB, company_id int, branch_id int, access_token string) {
