@@ -1,10 +1,11 @@
 package gendocno
 
 import (
-	"net/http"
-	"github.com/acoshift/hrpc"
 	"encoding/json"
 	"fmt"
+	"net/http"
+
+	"github.com/acoshift/hrpc"
 )
 
 type errorResponse struct {
@@ -18,12 +19,12 @@ func enableCors(w *http.ResponseWriter) {
 	(*w).Header().Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
 }
 
-func MakeHandler(s Service) http.Handler{
+func MakeHandler(s Service) http.Handler {
 	m := hrpc.New(hrpc.Config{
-		Validate: true,
-		RequestDecoder: requestDecoder,
+		Validate:        true,
+		RequestDecoder:  requestDecoder,
 		ResponseEncoder: responseEncoder,
-		ErrorEncoder: errorEncoder,
+		ErrorEncoder:    errorEncoder,
 	})
 	mux := http.NewServeMux()
 	mux.Handle("/gen", m.Handler(Gen(s)))
@@ -50,7 +51,7 @@ func jsonEncoder(w http.ResponseWriter, status int, v interface{}) error {
 }
 
 func requestDecoder(r *http.Request, v interface{}) error {
-	if r.Method != http.MethodPost{
+	if r.Method != http.MethodPost {
 		return ErrMethodNotAllowed
 	}
 

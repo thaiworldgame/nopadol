@@ -3,8 +3,9 @@ package sales
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/acoshift/hrpc"
 	"net/http"
+
+	"github.com/acoshift/hrpc"
 )
 
 type errorResponse struct {
@@ -39,6 +40,8 @@ func MakeHandler(s Service) http.Handler {
 	mux.Handle("/dep/reserve/search", m.Handler(SearchReserveToDeposit(s)))
 	mux.Handle("/inv/search/id", m.Handler(SearchInvoiceById(s)))
 	mux.Handle("/inv/new", m.Handler(CreateInvoice(s)))
+	mux.Handle("/inv/list", m.Handler(Invoicelist(s)))
+	 
 	return mustLogin()(mux)
 
 }

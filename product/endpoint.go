@@ -3,7 +3,6 @@ package product
 import (
 	"context"
 	"fmt"
-
 	//"github.com/mrtomyum/nopadol/auth"
 )
 
@@ -207,10 +206,9 @@ func MakeNewProduct(s Service) interface{} {
 	}
 }
 
-
-func MakeNewBarcode(s Service) interface{}{
+func MakeNewBarcode(s Service) interface{} {
 	return func(ctx context.Context, req *BarcodeNewRequest) (interface{}, error) {
-		resp, err := s.StoreBarcode(req )
+		resp, err := s.StoreBarcode(req)
 		fmt.Println("start endpoint makeNewBarcode")
 		if err != nil {
 			fmt.Println("endpoint error =", err.Error())
@@ -222,9 +220,9 @@ func MakeNewBarcode(s Service) interface{}{
 	}
 }
 
-func makeNewPrice(s Service) interface{}{
-	return func(ctx context.Context,req *PriceTemplate)(interface{},error){
-		resp,err := s.StorePrice(req)
+func makeNewPrice(s Service) interface{} {
+	return func(ctx context.Context, req *PriceTemplate) (interface{}, error) {
+		resp, err := s.StorePrice(req)
 		if err != nil {
 			fmt.Println("endpoint error =", err.Error())
 			return nil, fmt.Errorf(err.Error())
@@ -235,9 +233,9 @@ func makeNewPrice(s Service) interface{}{
 	}
 }
 
-func makeNewItemRate(s Service) interface{}{
-	return func(ctx context.Context,req *PackingRate)(interface{},error){
-		resp,err := s.StorePackingRate(req)
+func makeNewItemRate(s Service) interface{} {
+	return func(ctx context.Context, req *PackingRate) (interface{}, error) {
+		resp, err := s.StorePackingRate(req)
 		if err != nil {
 			fmt.Println("endpoint error =", err.Error())
 			return nil, fmt.Errorf(err.Error())

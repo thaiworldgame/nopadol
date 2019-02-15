@@ -1,8 +1,8 @@
 package sales
 
 import (
-	"fmt"
 	"context"
+	"fmt"
 )
 
 type (
@@ -299,6 +299,16 @@ type (
 		ChqBalance   float64 `json:"chq_balance"`
 		Description  string  `json:"description"`
 	}
+	Bankpay struct {
+		Id           int64   `json:"id"`
+		RefId        int64   `json:"ref_id"`
+		BankAccont   string  `json:"bank_account"`
+		BankName     string  `json:"bank_name"`
+		BankAmount   float64 `json:"bank_amount"`
+		Activestatus int64   `json:"active_status"`
+		CreateBy     string  `json:"create_by"`
+		EditBy       string  `json:"edit_by"`
+	}
 
 	RecMoney struct {
 		Id             int64   `json:"id"`
@@ -342,7 +352,7 @@ type (
 		TaxType             int64                   `json:"tax_type"`
 		TaxRate             float64                 `json:"tax_rate"`
 		NumberOfItem        float64                 `json:"number_of_item"`
-		DepartId            int64                   `json:"depart_id"`
+		DepartId            string                  `json:"depart_id"`
 		AllocateId          int64                   `json:"allocate_id"`
 		ProjectId           int64                   `json:"project_id"`
 		PosStatus           int64                   `json:"pos_status"`
@@ -400,32 +410,39 @@ type (
 		CancelDescId        int64                   `json:"cancel_desc_id"`
 		CancelDesc          string                  `json:"cancel_desc"`
 		Subs                []NewInvoiceItemRequest `json:"subs"`
-		RecMoney            []RecMoney              `json:"rec_money"`
-		CreditCard          []CreditCard            `json:"credit_card"`
-		Chq                 []ChqIn                 `json:"chq"`
+		//RecMoney            []RecMoney              `json:"rec_money"`
+		CreditCard []CreditCard `json:"credit_card"`
+		Chq        []ChqIn      `json:"chq"`
+		BankPay    []Bankpay    `json:"bank"`
 	}
 
 	NewInvoiceItemRequest struct {
-		Id              int64   `json:"id"`
-		InvId           int64   `json:"inv_id"`
-		ItemId          int64   `json:"item_id"`
+		Id    int64 `json:"id"`
+		InvId int64 `json:"inv_id"`
+
 		ItemCode        string  `json:"item_code"`
+		Itemid          int64   `json:"item_id"`
 		ItemName        string  `json:"item_name"`
 		BarCode         string  `json:"bar_code"`
 		WhId            int64   `json:"wh_id"`
 		ShelfId         int64   `json:"shelf_id"`
 		Price           float64 `json:"price"`
-		UnitICode       int64   `json:"unit_code"`
+		UnitCode        string  `json:"unit_code"`
 		Qty             float64 `json:"qty"`
 		CnQty           float64 `json:"cn_qty"`
+		DiscountWord    float64 `json:"discount_word_sub"`
+		DiscountAmount  float64 `json:"discount_amount_sub"`
+		ItemAmount      float64 `json:"amount"`
+		NetAmount       float64 `json:"net_amount"`
+		Average_cost    float64 `json:"average_cost"`
+		SumOfCost       float32 `json:"sum_of_cost"`
 		ItemDescription string  `json:"item_description"`
+		IsCancel        int64   `json:"is_cancel"`
 		IsCreditNote    int64   `json:"is_credit_note"`
 		IsDebitNote     int64   `json:"is_debit_note"`
 		PackingRate1    int64   `json:"packing_rate_1"`
 		PackingRate2    int64   `json:"packing_rate_2"`
-		SoRefNo         string  `json:"so_ref_no"`
-		AverageCost     float64 `json:"average_cost"`
-		SumOfCost       float64 `json:"sum_of_cost"`
+		RefNo           string  `json:"ref_no"`
 		RefLineNumber   int64   `json:"ref_line_number"`
 		LineNumber      int64   `json:"line_number"`
 	}
@@ -440,6 +457,7 @@ func CreateQuotation(s Service) interface{} {
 		fmt.Println("p =")
 
 		for _, subs := range req.Subs {
+			fmt.Println(subs, "asdajdlskal;kas;dk;aks")
 			itemline := map_quo_sub_request(subs)
 			q.Subs = append(q.Subs, itemline)
 		}
@@ -728,6 +746,28 @@ func map_sale_sub_request(x NewSaleItemRequest) NewSaleItemTemplate {
 	}
 }
 
+func map_invoice_sub_request(x NewInvoiceItemRequest) NewInvoiceItemTemplate {
+	fmt.Println("endpoint x", x)
+	return NewInvoiceItemTemplate{
+
+		ItemCode:        x.ItemCode,
+		Itemid:          x.Itemid,
+		BarCode:         x.BarCode,
+		ItemName:        x.ItemName,
+		WhId:            x.WhId,
+		ShelfId:         x.ShelfId,
+		Qty:             x.Qty,
+		Price:           x.Price,
+		DiscountWord:    x.DiscountWord,
+		DiscountAmount:  x.DiscountAmount,
+		UnitCode:        x.UnitCode,
+		ItemAmount:      x.ItemAmount,
+		ItemDescription: x.ItemDescription,
+		PackingRate1:    x.PackingRate1,
+		LineNumber:      x.LineNumber,
+		IsCancel:        x.IsCancel,
+	}
+}
 func SearchSaleOrderById(s Service) interface{} {
 	return func(ctx context.Context, req *SearchByIdRequest) (interface{}, error) {
 		resp, err := s.SearchSaleOrderById(&SearchByIdTemplate{Id: req.Id})
@@ -742,8 +782,11 @@ func SearchSaleOrderById(s Service) interface{} {
 }
 
 func SearchDocByKeyword(s Service) interface{} {
+	fmt.Println("Invoicelist 222")
 	return func(ctx context.Context, req *SearchByKeywordRequest) (interface{}, error) {
+
 		resp, err := s.SearchDocByKeyword(&SearchByKeywordTemplate{SaleCode: req.SaleCode, Keyword: req.Keyword})
+		fmt.Println(resp, "99999999999999999999999999999999999999999999999999999999999999999999999999999999")
 		if err != nil {
 			fmt.Println("endpoint error =", err.Error())
 			return nil, fmt.Errorf(err.Error())
@@ -922,6 +965,19 @@ func map_chq_request(x ChqIn) ChqInTemplate {
 	}
 }
 
+func map_bank_request(x Bankpay) BankpayTemplate {
+	return BankpayTemplate{
+		Id:           x.Id,
+		RefId:        x.RefId,
+		BankAccount:  x.BankAccont,
+		BankName:     x.BankName,
+		BankAmount:   x.BankAmount,
+		Activestatus: x.Activestatus,
+		CreateBy:     x.CreateBy,
+		EditBy:       x.EditBy,
+	}
+}
+
 func SearchDepositById(s Service) interface{} {
 	return func(ctx context.Context, req *SearchByIdRequest) (interface{}, error) {
 		resp, err := s.SearchDepositById(&SearchByIdTemplate{Id: req.Id})
@@ -962,22 +1018,48 @@ func SearchReserveToDeposit(s Service) interface{} {
 }
 
 ////// Invoice /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+func Invoicelist(s Service) interface{} {
+	return func(ctx context.Context, req *SearchByKeywordRequest) (interface{}, error) {
+		fmt.Println("invoicelist 522")
+		resp, err := s.Invoicelist(&SearchByKeywordTemplate{SaleCode: req.SaleCode, Keyword: req.Keyword})
+		if err != nil {
+			fmt.Println("endpoint error =", err.Error())
+			return nil, fmt.Errorf(err.Error())
+		}
+		return map[string]interface{}{
+			"data": resp,
+		}, nil
+	}
+}
 
 func CreateInvoice(s Service) interface{} {
+	fmt.Println("endpoint 1")
 	return func(ctx context.Context, req *NewInvoiceRequest) (interface{}, error) {
 
 		iv := map_invoice_request(req)
 
 		for _, crds := range req.CreditCard {
+			fmt.Println(crds, "caditcard2")
 			crdline := map_creditcard_request(crds)
 			iv.CreditCard = append(iv.CreditCard, crdline)
 		}
 
 		for _, chqs := range req.Chq {
+			fmt.Println(chqs, "caditcard")
 			chqline := map_chq_request(chqs)
 			iv.Chq = append(iv.Chq, chqline)
 		}
+		for _, bnk := range req.BankPay {
+			fmt.Println(bnk, "bank")
+			bnkline := map_bank_request(bnk)
+			iv.BankPay = append(iv.BankPay, bnkline)
+		}
+		for _, subs := range req.Subs {
 
+			itemline := map_invoice_sub_request(subs)
+			iv.Subs = append(iv.Subs, itemline)
+		}
+		fmt.Println(iv.Subs, "12312423534958309285083")
 		resp, err := s.CreateInvoice(&NewInvoiceTemplate{
 			Id:                  req.Id,
 			CompanyId:           req.CompanyId,
@@ -1059,9 +1141,10 @@ func CreateInvoice(s Service) interface{} {
 			SumOnLineAmount:     req.SumOnLineAmount,
 			SumOfItemAmount:     req.SumOfItemAmount,
 			Subs:                iv.Subs,
-			RecMoney:            iv.RecMoney,
-			CreditCard:          iv.CreditCard,
-			Chq:                 iv.Chq,
+			//		RecMoney:            iv.RecMoney,
+			CreditCard: iv.CreditCard,
+			Chq:        iv.Chq,
+			BankPay:    iv.BankPay,
 		})
 		if err != nil {
 			fmt.Println("endpoint error =", err.Error())
@@ -1074,10 +1157,12 @@ func CreateInvoice(s Service) interface{} {
 }
 
 func map_invoice_request(x *NewInvoiceRequest) NewInvoiceTemplate {
+	fmt.Println("endpoint3")
 	var subs []NewInvoiceItemTemplate
 	var credit_cards []CreditCardTemplate
 	var chqs []ChqInTemplate
-	var rec_moneys []RecMoneyTemplate
+	var banks []BankpayTemplate
+	//	var rec_moneys []RecMoneyTemplate
 
 	return NewInvoiceTemplate{
 		Id:                  x.Id,
@@ -1159,9 +1244,10 @@ func map_invoice_request(x *NewInvoiceRequest) NewInvoiceTemplate {
 		SumBankAmount:       x.SumBankAmount,
 		SumChqAmount:        x.SumChqAmount,
 		Subs:                subs,
-		RecMoney:            rec_moneys,
-		CreditCard:          credit_cards,
-		Chq:                 chqs,
+		//	RecMoney:            rec_moneys,
+		CreditCard: credit_cards,
+		Chq:        chqs,
+		BankPay:    banks,
 	}
 }
 
