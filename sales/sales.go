@@ -182,6 +182,20 @@ type SearchDocTemplate struct {
 	IsCancel      int     `json:"is_cancel"`
 	IsConfirm     int     `json:"is_confirm"`
 }
+type SearchInvTemplate struct {
+	Id            int64   `json:"id"`
+	DocNo         string  `json:"doc_no"`
+	DocDate       string  `json:"doc_date"`
+	Doctype       string  `json:"doc_type"`
+	ArCode        string  `json:"ar_code"`
+	ArName        string  `json:"ar_name"`
+	SaleCode      string  `json:"sale_code"`
+	SaleName      string  `json:"sale_name"`
+	MyDescription string  `json:"my_description"`
+	TotalAmount   float64 `json:"total_amount"`
+	IsCancel      int     `json:"is_cancel"`
+	IsConfirm     int     `json:"is_confirm"`
+}
 type SearchIVDocTemplate struct {
 	Id            int64   `json:"id"`
 	DocNo         string  `json:"doc_no"`
@@ -305,6 +319,16 @@ type ChqInTemplate struct {
 	ChqBalance   float64 `json:"chq_balance"`
 	Description  string  `json:"description"`
 }
+type BankpayTemplate struct {
+	Id           int64   `json:"id"`
+	RefId        int64   `json:"ref_id"`
+	BankAccount  string  `json:"bank_account"`
+	BankName     string  `json:"bank_name"`
+	BankAmount   float64 `json:"bank_amount"`
+	Activestatus int64   `json:"active_status"`
+	CreateBy     string  `json:"create_by"`
+	EditBy       string  `json:"edit_by"`
+}
 
 type RecMoneyTemplate struct {
 	Id             int64   `json:"id"`
@@ -410,6 +434,7 @@ type NewInvoiceTemplate struct {
 	//RecMoney            []RecMoneyTemplate       `json:"rec_money"`
 	CreditCard []CreditCardTemplate `json:"credit_card"`
 	Chq        []ChqInTemplate      `json:"chq"`
+	BankPay    []BankpayTemplate    `json:"bank"`
 }
 
 type NewInvoiceItemTemplate struct {

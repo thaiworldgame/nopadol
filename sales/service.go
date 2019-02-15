@@ -241,7 +241,7 @@ func (s *service) CreateInvoice(req *NewInvoiceTemplate) (interface{}, error) {
 	var count_item_unit int
 	var sum_item_amount float64
 	var err error
-
+//  verify ยอด สินค้ารายการย่อย
 	fmt.Println("Service 1")
 	for _, sub_item := range req.Subs {
 		fmt.Println(sub_item.Price, "บาท")
@@ -258,6 +258,7 @@ func (s *service) CreateInvoice(req *NewInvoiceTemplate) (interface{}, error) {
 		}
 	}
 
+	// เช็คความถูกต้องของข้อมูล
 	var sum_pay_all float64
 
 	sum_pay_all = req.SumCashAmount + req.SumCreditAmount + req.SumChqAmount + req.SumBankAmount + req.SumOfDeposit + req.CouponAmount

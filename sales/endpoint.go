@@ -299,6 +299,16 @@ type (
 		ChqBalance   float64 `json:"chq_balance"`
 		Description  string  `json:"description"`
 	}
+	Bankpay struct {
+		Id           int64   `json:"id"`
+		RefId        int64   `json:"ref_id"`
+		BankAccont   string  `json:"bank_account"`
+		BankName     string  `json:"bank_name"`
+		BankAmount   float64 `json:"bank_amount"`
+		Activestatus int64   `json:"active_status"`
+		CreateBy     string  `json:"create_by"`
+		EditBy       string  `json:"edit_by"`
+	}
 
 	RecMoney struct {
 		Id             int64   `json:"id"`
@@ -342,7 +352,7 @@ type (
 		TaxType             int64                   `json:"tax_type"`
 		TaxRate             float64                 `json:"tax_rate"`
 		NumberOfItem        float64                 `json:"number_of_item"`
-		DepartId            string                   `json:"depart_id"`
+		DepartId            string                  `json:"depart_id"`
 		AllocateId          int64                   `json:"allocate_id"`
 		ProjectId           int64                   `json:"project_id"`
 		PosStatus           int64                   `json:"pos_status"`
@@ -400,9 +410,10 @@ type (
 		CancelDescId        int64                   `json:"cancel_desc_id"`
 		CancelDesc          string                  `json:"cancel_desc"`
 		Subs                []NewInvoiceItemRequest `json:"subs"`
-		RecMoney            []RecMoney              `json:"rec_money"`
-		CreditCard          []CreditCard            `json:"credit_card"`
-		Chq                 []ChqIn                 `json:"chq"`
+		//RecMoney            []RecMoney              `json:"rec_money"`
+		CreditCard []CreditCard `json:"credit_card"`
+		Chq        []ChqIn      `json:"chq"`
+		BankPay    []Bankpay    `json:"bank"`
 	}
 
 	NewInvoiceItemRequest struct {
@@ -954,6 +965,19 @@ func map_chq_request(x ChqIn) ChqInTemplate {
 	}
 }
 
+func map_bank_request(x Bankpay) BankpayTemplate {
+	return BankpayTemplate{
+		Id:           x.Id,
+		RefId:        x.RefId,
+		BankAccount:  x.BankAccont,
+		BankName:     x.BankName,
+		BankAmount:   x.BankAmount,
+		Activestatus: x.Activestatus,
+		CreateBy:     x.CreateBy,
+		EditBy:       x.EditBy,
+	}
+}
+
 func SearchDepositById(s Service) interface{} {
 	return func(ctx context.Context, req *SearchByIdRequest) (interface{}, error) {
 		resp, err := s.SearchDepositById(&SearchByIdTemplate{Id: req.Id})
@@ -1011,7 +1035,7 @@ func Invoicelist(s Service) interface{} {
 func CreateInvoice(s Service) interface{} {
 	fmt.Println("endpoint 1")
 	return func(ctx context.Context, req *NewInvoiceRequest) (interface{}, error) {
-		fmt.Println(req, "endpoint 2")
+
 		iv := map_invoice_request(req)
 
 		for _, crds := range req.CreditCard {
@@ -1025,7 +1049,11 @@ func CreateInvoice(s Service) interface{} {
 			chqline := map_chq_request(chqs)
 			iv.Chq = append(iv.Chq, chqline)
 		}
-
+		for _, bnk := range req.BankPay {
+			fmt.Println(bnk, "bank")
+			bnkline := map_bank_request(bnk)
+			iv.BankPay = append(iv.BankPay, bnkline)
+		}
 		for _, subs := range req.Subs {
 
 			itemline := map_invoice_sub_request(subs)
@@ -1116,6 +1144,7 @@ func CreateInvoice(s Service) interface{} {
 			//		RecMoney:            iv.RecMoney,
 			CreditCard: iv.CreditCard,
 			Chq:        iv.Chq,
+			BankPay:    iv.BankPay,
 		})
 		if err != nil {
 			fmt.Println("endpoint error =", err.Error())
@@ -1132,6 +1161,7 @@ func map_invoice_request(x *NewInvoiceRequest) NewInvoiceTemplate {
 	var subs []NewInvoiceItemTemplate
 	var credit_cards []CreditCardTemplate
 	var chqs []ChqInTemplate
+	var banks []BankpayTemplate
 	//	var rec_moneys []RecMoneyTemplate
 
 	return NewInvoiceTemplate{
@@ -1217,6 +1247,7 @@ func map_invoice_request(x *NewInvoiceRequest) NewInvoiceTemplate {
 		//	RecMoney:            rec_moneys,
 		CreditCard: credit_cards,
 		Chq:        chqs,
+		BankPay:    banks,
 	}
 }
 

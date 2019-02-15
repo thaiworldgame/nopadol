@@ -363,6 +363,17 @@ type RecMoneyModel struct {
 	BankTransDate  string  `db:"bank_trans_date"`
 	LineNumber     int64   `db:"line_number"`
 }
+type BankpayModel struct {
+	Id           int64   `db:"id"`
+	RefId        int64   `db:"ref_id"`
+	BankAccount  string  `db:"bank_account"`
+	BankName     string  `db:"bank_name"`
+	BankAmount   float64 `db:"bank_amount"`
+	Activestatus int64   `db:"active_status"`
+	CreateBy     string  `db:"create_by"`
+	CreateTime   string  `db:"create_time"`
+	EditBy       string  `db:"edit_by"`
+}
 
 type NewInvoiceModel struct {
 	Id                  int64                 `db:"id"`
@@ -450,6 +461,7 @@ type NewInvoiceModel struct {
 	RecMoney            []RecMoneyModel       `db:"rec_money"`
 	CreditCard          []CreditCardModel     `db:"credit_card"`
 	Chq                 []ChqInModel          `db:"chq"`
+	Bank                []BankpayModel        `db:"bank"`
 }
 
 type NewInvoiceItemModel struct {
@@ -1541,7 +1553,7 @@ func (repo *salesRepository) CreateDeposit(req *sales.NewDepositTemplate) (inter
 		}
 
 		fmt.Println("count_crd_err", count_crd_err)
-
+		fmt.Println("เช็คดิต")
 		switch {
 		case count_crd_err != 0:
 			return nil, errors.New("ข้อมูลบัตรเครดิต มีการใช้ไปแล้ว")
@@ -1882,6 +1894,18 @@ func map_deposit_subs_template(x NewDepositItemModel) sales.NewDepositItemTempla
 		WHCode:          x.WHCode,
 	}
 }
+func map_bank_template(x BankpayModel) sales.BankpayTemplate {
+	return sales.BankpayTemplate{
+		Id:           x.Id,
+		RefId:        x.RefId,
+		BankAccount:  x.BankAccount,
+		BankName:     x.BankName,
+		BankAmount:   x.BankAmount,
+		Activestatus: x.Activestatus,
+		CreateBy:     x.CreateBy,
+		EditBy:       x.EditBy,
+	}
+}
 
 func map_deposit_crd_template(x CreditCardModel) sales.CreditCardTemplate {
 	return sales.CreditCardTemplate{
@@ -1920,6 +1944,8 @@ func map_deposit_chq_template(x ChqInModel) sales.ChqInTemplate {
 
 func (repo *salesRepository) CreateInvoice(req *sales.NewInvoiceTemplate) (interface{}, error) {
 	var check_doc_exist int64
+	var check_item_strock int64
+	var inv_id int64
 
 	def := config.Default{}
 	def = config.LoadDefaultData("config/config.json")
@@ -1935,7 +1961,6 @@ func (repo *salesRepository) CreateInvoice(req *sales.NewInvoiceTemplate) (inter
 		fmt.Println("Error = ", err.Error())
 		return nil, err
 	}
-
 	uuid := GenUUID()
 
 	if req.DocDate == "" {
@@ -1992,84 +2017,202 @@ func (repo *salesRepository) CreateInvoice(req *sales.NewInvoiceTemplate) (inter
 
 		req.Id = id
 		fmt.Println("เพิ่มสินค้านะ", req.Subs)
-		var vLineNumber int
-		vLineNumber = 0
-		fmt.Println(req.Subs)
-		for _, sub := range req.Subs {
-			fmt.Println("เพิ่มสินค้านะ", sub, sub.ItemCode)
-			sqlsub := `INSERT INTO ar_invoice_sub(company_id,branch_id,uuid,inv_id,doc_no,doc_date,ar_id,sale_id,item_id,item_code,
-				bar_code,item_name,wh_id,shelf_id,qty,cn_qty,unit_code,price,discount_word_sub,discount_amount_sub,amount,net_amount,average_cost,sum_of_cost,item_decription,is_cancel,is_credit_note,is_debit_note,packing_rate_1,packing_rate_2,ref_no,ref_line_number,line_number) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`
-			_, err := repo.db.Exec(sqlsub,
-				req.CompanyId,
-				req.BranchId,
-				req.Uuid,
-				req.Id,
-				req.DocNo,
-				req.DocDate,
-				req.ArId,
-				req.SaleId,
-				sub.Itemid,
-				sub.ItemCode,
-				sub.BarCode,
-				sub.ItemName,
-				sub.WhId,
-				sub.ShelfId,
-				sub.Qty,
-				sub.CnQty,
-				sub.UnitCode,
-				sub.Price,
-				sub.DiscountWord,
-				sub.DiscountAmount,
-				sub.ItemAmount,
-				sub.NetAmount,
-				sub.Average_cost,
-				sub.SumOfCost,
-				sub.ItemDescription,
-				sub.IsCancel,
-				sub.IsCreditNote,
-				sub.IsDebitNote,
-				sub.PackingRate1,
-				sub.PackingRate2,
-				sub.RefNo,
-				sub.RefLineNumber,
-				sub.LineNumber)
-
-			vLineNumber = vLineNumber + 1
-			if err != nil {
-				return "Insert SaleOrder Not Success", err
-			}
-		}
+		fmt.Println("insert credit_card")
+		// if len(req.CreditCard) != 0 {
+		// 	for _, crd := range req.CreditCard {
+		// 		sqlsub_card := `insert into credit_card(company_id, branch_id,ref_uuid, ref_id,ar_id,doc_no, doc_date, credit_card_no, credit_type, confirm_no, amount, charge_amount, description,receive_date, due_date) values(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+		// 		_, err = repo.db.Exec(sqlsub_card, req.CompanyId, req.BranchId, req.Uuid, req.Id, req.ArId, req.DocNo, req.DocDate, crd.CreditCardNo, crd.CreditType, crd.ConfirmNo, crd.Amount, crd.ChargeAmount, "invoice pos", req.DocDate, req.DocDate)
+		// 		if err != nil {
+		// 			fmt.Println("error insert credit card = ", err.Error())
+		// 		}
+		// 	}
+		// }
+		// if len(req.Chq) != 0 {
+		// 	for _, chq := range req.Chq {
+		// 		sql_chq := `insert into chq_in (company_id,branch_id,uuid,ref_id,ar_id,doc_no,doc_date,chq_number,bank_id,bank_branch_id,receive_date,due_date,book_id,chq_status,chq_amount,chq_balance,description,create_by,create_time) values(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`
+		// 		_, err := repo.db.Exec(sql_chq, req.CompanyId, req.BranchId, req.Uuid, req.Id, req.ArId, req.DocNo, req.DocDate, chq.ChqNumber, chq.BankId, chq.BankBranchId, chq.ReceiveDate, chq.DueDate, chq.BookId, chq.ChqStatus, chq.ChqAmount, chq.ChqAmount, chq.Description, req.CreateBy, req.CreateTime)
+		// 		if err != nil {
+		// 			fmt.Println("error insert check = ", err.Error())
+		// 		}
+		// 	}
+		// }
 	} else {
-		//sql := `update ar_deposit set company_id=?, branch_id=?, uuid=?, doc_no=?,tax_no=?, doc_date=?, bill_type=?, ar_id=?, ar_code=?, ar_name=?, sale_id=?, sale_code=?, sale_name=?, tax_type=?, tax_rate=?, ref_no=?, credit_day=?, due_date=?, depart_id=?, allocate_id=?, project_id=?, my_description=?, before_tax_amount=?, tax_amount=?, total_amount=?, net_amount=?, bill_balance=?, cash_amount=? ,creditcard_amount=?, chq_amount=?, bank_amount=?, is_return_money=?, is_cancel=?, is_confirm=?, scg_id=?, job_no=?, edit_by=?, edit_time=?  where id = ?`
-		//resp, err := repo.db.Exec(sql, req.CompanyId, req.BranchId, req.Uuid, req.DocNo, req.TaxNo, req.DocDate, req.BillType, req.ArId, req.ArCode, req.ArName, req.SaleId, req.SaleCode, req.SaleName, req.TaxType, req.TaxRate, req.RefNo, req.CreditDay, req.DueDate, req.DepartId, req.AllocateId, req.ProjectId, req.MyDescription, req.BeforeTaxAmount, req.TaxAmount, req.TotalAmount, req.NetAmount, req.BillBalance, req.CashAmount, req.CreditcardAmount, req.ChqAmount, req.BankAmount, req.IsReturnMoney, req.IsCancel, req.IsConfirm, req.ScgId, req.JobNo, req.EditBy, req.EditTime, req.Id)
-		//if err != nil {
-		//	fmt.Println("error = ", err.Error())
-		//}
-		//fmt.Println("sql = ", sql)
+		sqlgetid := `select id from ar_invoice where doc_no = ?`
+		err := repo.db.Get(&inv_id, sqlgetid, req.DocNo)
+		if err != nil {
+			fmt.Println("Error = ", err.Error())
+			return nil, err
+		}
+		req.Id = inv_id
+
+		//	sql :=	`update ar_invoice company_id=?,branch_id=?,uuid=?,doc_no=?,tax_no=?,bill_type=?,doc_date=?,ar_id=?,ar_code=?,ar_name=?,sale_id=?,sale_code=?,sale_name=?,tax_type=?,tax_rate=?,my_description=?,so_ref_no=?,change_amount=?,sum_cash_amount=?,sum_credit_amount=?,sum_chq_amount=?,sum_bank_amount=?,sum_of_deposit=?,sum_on_line_amount=?,coupon_amount=?,sum_of_item_amount=?,discount_word=?,discount_amount=?,after_discount_amount=?,before_tax_amount=?,tax_amount=?,total_amount=?,create_by=?,create_time=?
+		sql := `update ar_invoice set company_id=?,branch_id=?,
+		uuid=?,doc_no=?,tax_no=?,bill_type=?,doc_date=?,ar_id=?,
+		ar_code=?,ar_name=?,sale_id=?,sale_code=?,sale_name=?,
+		tax_type=?,tax_rate=?,my_description=?,so_ref_no=?,change_amount=?,
+		sum_cash_amount=?,sum_credit_amount=?,sum_chq_amount=?,sum_bank_amount=?,
+		sum_of_deposit=?,sum_on_line_amount=?,coupon_amount=?,sum_of_item_amount=?,
+		discount_word=?,discount_amount=?,after_discount_amount=?,before_tax_amount=?,
+		tax_amount=?,total_amount=?,edit_by=?,edit_time=? where id = ?`
+		resp, err := repo.db.Exec(sql, req.CompanyId,
+			req.BranchId, req.Uuid, req.DocNo,
+			req.TaxNo, req.BillType, req.DocDate, req.ArId, req.ArCode,
+			req.ArName, req.SaleId, req.SaleCode, req.SaleName, req.TaxType,
+			req.TaxRate, req.MyDescription, req.SoRefNo, req.ChangeAmount,
+			req.SumCashAmount, req.SumCreditAmount, req.SumChqAmount,
+			req.SumBankAmount, req.SumOfDeposit, req.SumOnLineAmount,
+			req.CouponAmount, req.SumOfItemAmount, req.DiscountWord,
+			req.DiscountAmount, req.AfterDiscountAmount, req.BeforeTaxAmount,
+			req.TaxAmount, req.TotalAmount, req.CreateBy, req.EditTime, req.Id)
+
+		if err != nil {
+			fmt.Println("error = ", err.Error())
+		}
+		fmt.Println("sql = ", sql)
 		//
+		rowAffect, err := resp.RowsAffected()
+		fmt.Println("Row Affect = ", rowAffect)
+
 		//rowAffect, err := resp.RowsAffected()
 		//fmt.Println("Row Affect = ", rowAffect)
 
-		fmt.Println("ReqID=", req.Id)
+	}
+	fmt.Println("ค้นหาสิค้า")
+	sqlitems := `select count(doc_no) as check_exist from ar_invoice_sub where inv_id = ? or doc_no =?`
+	errs := repo.db.Get(&check_item_strock, sqlitems, req.Id, req.DocNo)
+	if errs != nil {
+		fmt.Println("Error = ", errs.Error())
+		return nil, errs
+	}
+	if check_item_strock == 0 {
+		for _, sub := range req.Subs {
+
+			var qty float64
+			fmt.Println("ค้นหาสิค้า", req.DocNo)
+			qelstrock := `select stock_qty form item_copy1 where code = ?`
+			errs := repo.db.Get(&qty, qelstrock, sub.ItemCode)
+			if errs != nil {
+				fmt.Println("Error = ", errs.Error())
+				return nil, errs
+			}
+			fmt.Println("ค้นหาสิค้า")
+			fmt.Println(qty, "asd")
+			qty -= sub.Qty
+			// ตัด stock ไหม่
+			fmt.Println(" ตัด stock ไหม่", qty)
+			Updatenew := `update item_copy1 set stock_qty = ? where code = ? `
+			_, errss := repo.db.Exec(Updatenew, &qty, sub.ItemCode)
+			if errss != nil {
+				fmt.Println("Error = ", err.Error())
+				return nil, errss
+			}
+			fmt.Println(" ตัด stock ไหม่นะ")
+		}
+	} else {
+		// select tock
+		var itemcode_ string
+		var itemid string
+		var qty int64
+		for _, sub := range req.Subs {
+			// ค้นหา สินค้า ที่ invoice_sub
+			qelstrock, errs := repo.db.Query("select stock_qty form item_copy1 where code = ?")
+
+			for qelstrock.Next() {
+				err := qelstrock.Scan(&itemid, &itemcode_, &qty)
+				if err != nil {
+					fmt.Println("Error = ", errs.Error())
+					return nil, errs
+				}
+			}
+			if errs != nil {
+				fmt.Println("Error = ", errs.Error())
+				return nil, errs
+			}
+			// คืน stock
+			updatestock := `update item_copy1 set stock_qty += ? where code = ? `
+			_, err := repo.db.Exec(updatestock, &qty, &itemcode_)
+			if err != nil {
+				fmt.Println("Error = ", err.Error())
+				return nil, err
+			}
+			// ตัด stock ไหม่
+			Updatenew := `update item_copy1 set stock_qty -= where code = ? `
+			_, errss := repo.db.Exec(Updatenew, sub.Qty, sub.ItemCode)
+			if errss != nil {
+				fmt.Println("Error = ", err.Error())
+				return nil, errss
+			}
+		}
+
+	}
+	sql_del_sub := `delete from ar_invoice_sub where inv_id = ?`
+	_, err = repo.db.Exec(sql_del_sub, req.Id)
+	if err != nil {
+		fmt.Println("Error = ", err.Error())
+		return nil, err
+	}
+	fmt.Println("ReqID=", req.Id)
+	var vLineNumber = 0
+
+	fmt.Println(req.Subs)
+	for _, sub := range req.Subs {
+		fmt.Println("เพิ่มสินค้านะ", sub, sub.ItemCode)
+		sqlsub := `INSERT INTO ar_invoice_sub(company_id,branch_id,uuid,inv_id,doc_no,doc_date,ar_id,sale_id,item_id,item_code,
+			bar_code,item_name,wh_id,shelf_id,qty,cn_qty,unit_code,price,discount_word_sub,discount_amount_sub,amount,net_amount,average_cost,sum_of_cost,item_decription,is_cancel,is_credit_note,is_debit_note,packing_rate_1,packing_rate_2,ref_no,ref_line_number,line_number) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`
+		_, err := repo.db.Exec(sqlsub,
+			req.CompanyId,
+			req.BranchId,
+			req.Uuid,
+			req.Id,
+			req.DocNo,
+			req.DocDate,
+			req.ArId,
+			req.SaleId,
+			sub.Itemid,
+			sub.ItemCode,
+			sub.BarCode,
+			sub.ItemName,
+			sub.WhId,
+			sub.ShelfId,
+			sub.Qty,
+			sub.CnQty,
+			sub.UnitCode,
+			sub.Price,
+			sub.DiscountWord,
+			sub.DiscountAmount,
+			sub.ItemAmount,
+			sub.NetAmount,
+			sub.Average_cost,
+			sub.SumOfCost,
+			sub.ItemDescription,
+			sub.IsCancel,
+			sub.IsCreditNote,
+			sub.IsDebitNote,
+			sub.PackingRate1,
+			sub.PackingRate2,
+			sub.RefNo,
+			sub.RefLineNumber,
+			sub.LineNumber)
+
+		vLineNumber = vLineNumber + 1
+		if err != nil {
+			return "Insert SaleOrder Not Success", err
+		}
 	}
 
-	var count_crd_err int64
-	var sum_crd_amount float64
-
-	fmt.Println("UUID1 = ", req.Uuid)
-
-	sql_del_crd := `delete from credit_card where ref_uuid=? and ref_id=? and company_id=? and branch_id=? `
-	_, err = repo.db.Exec(sql_del_crd, req.Uuid, req.Id, req.CompanyId, req.BranchId)
+	sql_del_crd := `delete from credit_card where ref_id=? and doc_no=? and company_id=? and branch_id=? `
+	_, err = repo.db.Exec(sql_del_crd, req.Id, req.DocNo, req.CompanyId, req.BranchId)
 	if err != nil {
 		fmt.Println("sql_del = ", err.Error())
 	}
 
-	count_crd_err = 0
-	if req.SumCreditAmount != 0 {
+	var count_crd_err int64
+	var sum_crd_amount float64
+	if len(req.CreditCard) != 0 {
 		for _, crd := range req.CreditCard {
 
-			sql_del := `delete from credit_card where ref_uuid=? and ref_id=? and company_id=? and branch_id=? and credit_card_no=? and confirm_no=? and bank_id=?`
-			crd_del, _ := repo.db.Exec(sql_del, req.Uuid, req.Id, req.CompanyId, req.BranchId, crd.CreditCardNo, crd.ConfirmNo, crd.BankId)
+			sql_del := `delete from credit_card where doc_no=? and ref_id=? and company_id=? and branch_id=? and credit_card_no=? and confirm_no=? and bank_id=?`
+			crd_del, _ := repo.db.Exec(sql_del, req.DocNo, req.Id, req.CompanyId, req.BranchId, crd.CreditCardNo, crd.ConfirmNo, crd.BankId)
 			if err != nil {
 				fmt.Println("sql_del = ", err.Error())
 			}
@@ -2083,49 +2226,28 @@ func (repo *salesRepository) CreateInvoice(req *sales.NewInvoiceTemplate) (inter
 
 			sum_crd_amount = sum_crd_amount + crd.Amount
 		}
-
-		fmt.Println("count_crd_err", count_crd_err)
-
-		switch {
-		case count_crd_err != 0:
-			return nil, errors.New("ข้อมูลบัตรเครดิต มีการใช้ไปแล้ว")
-		case sum_crd_amount != req.SumCreditAmount:
-			return nil, errors.New("มูลค่าบัตรเครดิต ไม่เท่ากับ มูลค่ารายการบัตรเครดิต")
-		}
-
-		for _, i_crd := range req.CreditCard {
-			i_crd.Description = "ขายสินค้า"
-			sql_crd := `insert into credit_card (company_id, branch_id, uuid, ref_id, ar_id, doc_no, doc_date, credit_card_no, credit_type, confirm_no, amount, charge_amount, description, bank_id, bank_branch_id,receive_date,due_date,book_id) values(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
-			crd, _ := repo.db.Exec(sql_crd, req.CompanyId, req.BranchId, req.Uuid, req.Id, req.ArId, req.DocNo, req.DocDate, i_crd.CreditCardNo, i_crd.CreditType, i_crd.ConfirmNo, i_crd.Amount, i_crd.ChargeAmount, i_crd.Description, i_crd.BankId, i_crd.BankBranchId, i_crd.ReceiveDate, i_crd.DueDate, i_crd.BookId)
+		for _, crd := range req.CreditCard {
+			sqlsub_card := `insert into credit_card(company_id, branch_id,ref_uuid, ref_id,ar_id,doc_no, doc_date, credit_card_no, credit_type, confirm_no, amount, charge_amount, description,receive_date, due_date) values(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+			_, err = repo.db.Exec(sqlsub_card, req.CompanyId, req.BranchId, req.Uuid, req.Id, req.ArId, req.DocNo, req.DocDate, crd.CreditCardNo, crd.CreditType, crd.ConfirmNo, crd.Amount, crd.ChargeAmount, "invoice pos", req.DocDate, req.DocDate)
 			if err != nil {
-				return nil, err
+				fmt.Println("error insert credit card = ", err.Error())
 			}
-			crdRowAffect, err := crd.RowsAffected()
-			if err != nil {
-				return nil, err
-			}
-			fmt.Println("Row Affect = ", crdRowAffect)
-
-			i_crd.Id = crdRowAffect
 		}
 	}
-
 	var count_chq_err int64
 	var sum_chq_amount float64
-
-	sql_del_chq := `delete from chq_in where uuid = ? and ref_id=? and company_id=? and branch_id=?`
-	_, err = repo.db.Exec(sql_del_chq, req.Uuid, req.Id, req.CompanyId, req.BranchId)
+	sql_del_chq := `delete from chq_in where doc_no = ? and ref_id=? and company_id=? and branch_id=?`
+	_, err = repo.db.Exec(sql_del_chq, req.DocNo, req.Id, req.CompanyId, req.BranchId)
 	if err != nil {
 		fmt.Println("sql_del = ", err.Error())
 	}
-
-	count_chq_err = 0
-	if req.SumChqAmount != 0 {
+	fmt.Println("req ID:", req.Id)
+	if len(req.Chq) != 0 {
 		for _, chq := range req.Chq {
 			fmt.Println("UUID Chq= ", req.Uuid, req.Id, req.CompanyId, req.BranchId, chq.ChqNumber)
 
-			sql_del := `delete from chq_in where uuid = ? and ref_id=? and company_id=? and branch_id=? and bank_id=? and chq_number=?`
-			chq_del, _ := repo.db.Exec(sql_del, req.Uuid, req.Id, req.CompanyId, req.BranchId, chq.BankId, chq.ChqNumber)
+			sql_del := `delete from chq_in where doc_no = ? and ref_id=? and company_id=? and branch_id=? and bank_id=? and chq_number=?`
+			chq_del, _ := repo.db.Exec(sql_del, req.DocNo, req.Id, req.CompanyId, req.BranchId, chq.BankId, chq.ChqNumber)
 			fmt.Println(sql_del)
 			if err != nil {
 				fmt.Println("sql_del = ", err.Error())
@@ -2141,15 +2263,8 @@ func (repo *salesRepository) CreateInvoice(req *sales.NewInvoiceTemplate) (inter
 			sum_chq_amount = sum_chq_amount + chq.ChqAmount
 		}
 
-		switch {
-		case count_chq_err != 0:
-			return nil, errors.New("ข้อมูลเลขที่เช็ค มีอยู่แล้ว")
-		case sum_chq_amount != req.SumChqAmount:
-			return nil, errors.New("มูลค่าเช็ค ไม่เท่ากับ มูลค่ารายการเช็ค")
-		}
-
 		for _, i_chq := range req.Chq {
-			i_chq.Description = "ขายสินค้า"
+			i_chq.Description = "ออกบิลขาย"
 			sql_chq := `insert into chq_in (company_id,branch_id,uuid,ref_id,ar_id,doc_no,doc_date,chq_number,bank_id,bank_branch_id,receive_date,due_date,book_id,chq_status,chq_amount,chq_balance,description,create_by,create_time) values(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`
 			chq, _ := repo.db.Exec(sql_chq, req.CompanyId, req.BranchId, req.Uuid, req.Id, req.ArId, req.DocNo, req.DocDate, i_chq.ChqNumber, i_chq.BankId, i_chq.BankBranchId, i_chq.ReceiveDate, i_chq.DueDate, i_chq.BookId, i_chq.ChqStatus, i_chq.ChqAmount, i_chq.ChqAmount, i_chq.Description, req.CreateBy, req.CreateTime)
 			if err != nil {
@@ -2164,6 +2279,154 @@ func (repo *salesRepository) CreateInvoice(req *sales.NewInvoiceTemplate) (inter
 			i_chq.Id = chqRowAffect
 		}
 	}
+
+	sql_del_bnk := `delete from bank where doc_no = ? and ref_id=? and company_id=? and branch_id=?`
+	_, err = repo.db.Exec(sql_del_bnk, req.DocNo, req.Id, req.CompanyId, req.BranchId)
+	if err != nil {
+		fmt.Println("sql_del = ", err.Error())
+	}
+	fmt.Println("req ID:", req.Id)
+	if len(req.BankPay) != 0 {
+		for _, bnk := range req.BankPay {
+			//fmt.Println("UUID Chq= ", req.Uuid, req.Id, req.CompanyId, req.BranchId, chq.ChqNumber)
+
+			sql_del := `delete from bank where doc_no = ? and ref_id=? and company_id=? and branch_id=? and bank_account =? `
+			chq_del, _ := repo.db.Exec(sql_del, req.DocNo, req.Id, req.CompanyId, req.BranchId, bnk.BankAccount)
+			fmt.Println(chq_del)
+			if err != nil {
+				fmt.Println("sql_del = ", err.Error())
+			}
+			fmt.Println(chq_del, "deleted")
+
+		}
+
+		for _, bnk := range req.BankPay {
+			fmt.Println(bnk, "insert")
+			sql_chq := `insert into bank (company_id,branch_id,uuid,ref_id,doc_no,doc_date,bank_account,bank_name,bank_amount,create_by,create_time) values(?,?,?,?,?,?,?,?,?,?,?)`
+			bnks, err := repo.db.Exec(sql_chq, req.CompanyId, req.BranchId, req.Uuid, req.Id, req.DocNo, req.DocDate, bnk.BankAccount, bnk.BankName, bnk.BankAmount, req.CreateBy, req.CreateTime)
+			if err != nil {
+				return nil, err
+			}
+			chqRowAffect, err := bnks.RowsAffected()
+			if err != nil {
+				return nil, err
+			}
+			fmt.Println("Row Affect = ", chqRowAffect)
+
+			bnk.Id = chqRowAffect
+		}
+	}
+	// var count_crd_err int64
+	// var sum_crd_amount float64
+
+	// fmt.Println("UUID1 = ", req.Uuid)
+
+	// sql_del_crd := `delete from credit_card where ref_uuid=? and ref_id=? and company_id=? and branch_id=? `
+	// _, err = repo.db.Exec(sql_del_crd, req.Uuid, req.Id, req.CompanyId, req.BranchId)
+	// if err != nil {
+	// 	fmt.Println("sql_del = ", err.Error())
+	// }
+
+	// count_crd_err = 0
+	// if req.SumCreditAmount != 0 {
+	// 	for _, crd := range req.CreditCard {
+
+	// 		sql_del := `delete from credit_card where ref_uuid=? and ref_id=? and company_id=? and branch_id=? and credit_card_no=? and confirm_no=? and bank_id=?`
+	// 		crd_del, _ := repo.db.Exec(sql_del, req.Uuid, req.Id, req.CompanyId, req.BranchId, crd.CreditCardNo, crd.ConfirmNo, crd.BankId)
+	// 		if err != nil {
+	// 			fmt.Println("sql_del = ", err.Error())
+	// 		}
+	// 		fmt.Println(crd_del.RowsAffected())
+
+	// 		verify_crd, _ := verify_creditcard(repo.db, req.Uuid, req.Id, req.CompanyId, req.BranchId, crd.CreditCardNo, crd.ConfirmNo, crd.BankId)
+	// 		fmt.Println("verify_crd = ", verify_crd)
+	// 		if verify_crd == false {
+	// 			count_crd_err = count_crd_err + 1
+	// 		}
+
+	// 		sum_crd_amount = sum_crd_amount + crd.Amount
+	// 	}
+
+	// 	fmt.Println("count_crd_err", count_crd_err)
+
+	// 	switch {
+	// 	case count_crd_err != 0:
+	// 		return nil, errors.New("ข้อมูลบัตรเครดิต มีการใช้ไปแล้ว")
+	// 	case sum_crd_amount != req.SumCreditAmount:
+	// 		return nil, errors.New("มูลค่าบัตรเครดิต ไม่เท่ากับ มูลค่ารายการบัตรเครดิต")
+	// 	}
+
+	// 	for _, i_crd := range req.CreditCard {
+	// 		i_crd.Description = "ขายสินค้า"
+	// 		sql_crd := `insert into credit_card (company_id, branch_id, uuid, ref_id, ar_id, doc_no, doc_date, credit_card_no, credit_type, confirm_no, amount, charge_amount, description, bank_id, bank_branch_id,receive_date,due_date,book_id) values(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+	// 		crd, _ := repo.db.Exec(sql_crd, req.CompanyId, req.BranchId, req.Uuid, req.Id, req.ArId, req.DocNo, req.DocDate, i_crd.CreditCardNo, i_crd.CreditType, i_crd.ConfirmNo, i_crd.Amount, i_crd.ChargeAmount, i_crd.Description, i_crd.BankId, i_crd.BankBranchId, i_crd.ReceiveDate, i_crd.DueDate, i_crd.BookId)
+	// 		if err != nil {
+	// 			return nil, err
+	// 		}
+	// 		crdRowAffect, err := crd.RowsAffected()
+	// 		if err != nil {
+	// 			return nil, err
+	// 		}
+	// 		fmt.Println("Row Affect = ", crdRowAffect)
+
+	// 		i_crd.Id = crdRowAffect
+	// 	}
+	// }
+
+	// var count_chq_err int64
+	// var sum_chq_amount float64
+
+	// sql_del_chq := `delete from chq_in where uuid = ? and ref_id=? and company_id=? and branch_id=?`
+	// _, err = repo.db.Exec(sql_del_chq, req.Uuid, req.Id, req.CompanyId, req.BranchId)
+	// if err != nil {
+	// 	fmt.Println("sql_del = ", err.Error())
+	// }
+
+	// count_chq_err = 0
+	// if req.SumChqAmount != 0 {
+	// 	for _, chq := range req.Chq {
+	// 		fmt.Println("UUID Chq= ", req.Uuid, req.Id, req.CompanyId, req.BranchId, chq.ChqNumber)
+
+	// 		sql_del := `delete from chq_in where uuid = ? and ref_id=? and company_id=? and branch_id=? and bank_id=? and chq_number=?`
+	// 		chq_del, _ := repo.db.Exec(sql_del, req.Uuid, req.Id, req.CompanyId, req.BranchId, chq.BankId, chq.ChqNumber)
+	// 		fmt.Println(sql_del)
+	// 		if err != nil {
+	// 			fmt.Println("sql_del = ", err.Error())
+	// 		}
+	// 		fmt.Println(chq_del)
+
+	// 		verify_chq, _ := verify_chq_in(repo.db, req.Uuid, req.Id, req.CompanyId, req.BranchId, chq.ChqNumber, chq.BankId)
+	// 		fmt.Println("verify_chq = ", verify_chq)
+	// 		if verify_chq == false {
+	// 			count_chq_err = count_chq_err + 1
+	// 		}
+
+	// 		sum_chq_amount = sum_chq_amount + chq.ChqAmount
+	// 	}
+
+	// 	switch {
+	// 	case count_chq_err != 0:
+	// 		return nil, errors.New("ข้อมูลเลขที่เช็ค มีอยู่แล้ว")
+	// 	case sum_chq_amount != req.SumChqAmount:
+	// 		return nil, errors.New("มูลค่าเช็ค ไม่เท่ากับ มูลค่ารายการเช็ค")
+	// 	}
+
+	// 	for _, i_chq := range req.Chq {
+	// 		i_chq.Description = "ขายสินค้า"
+	// 		sql_chq := `insert into chq_in (company_id,branch_id,uuid,ref_id,ar_id,doc_no,doc_date,chq_number,bank_id,bank_branch_id,receive_date,due_date,book_id,chq_status,chq_amount,chq_balance,description,create_by,create_time) values(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`
+	// 		chq, _ := repo.db.Exec(sql_chq, req.CompanyId, req.BranchId, req.Uuid, req.Id, req.ArId, req.DocNo, req.DocDate, i_chq.ChqNumber, i_chq.BankId, i_chq.BankBranchId, i_chq.ReceiveDate, i_chq.DueDate, i_chq.BookId, i_chq.ChqStatus, i_chq.ChqAmount, i_chq.ChqAmount, i_chq.Description, req.CreateBy, req.CreateTime)
+	// 		if err != nil {
+	// 			return nil, err
+	// 		}
+	// 		chqRowAffect, err := chq.RowsAffected()
+	// 		if err != nil {
+	// 			return nil, err
+	// 		}
+	// 		fmt.Println("Row Affect = ", chqRowAffect)
+
+	// 		i_chq.Id = chqRowAffect
+	// 	}
+	// }
 
 	return map[string]interface{}{
 		"id":       req.Id,
@@ -2215,32 +2478,42 @@ func (repo *salesRepository) SearchInvoiceById(req *sales.SearchByIdTemplate) (r
 	//	return resp, err
 	//}
 
-	//crds := []CreditCardModel{}
-	//sql_crd := `select id, ref_id, credit_card_no, credit_type, confirm_no, amount, charge_amount, ifnull(description,'') as description, bank_id, bank_branch_id,receive_date,due_date,book_id from credit_card where company_id = ? and branch_id = ? and ref_id=?`
-	//err = repo.db.Select(&crds, sql_crd, i.CompanyId, i.BranchId, req.Id)
-	//if err != nil {
-	//	fmt.Println("err sub= ", err.Error())
-	//	return resp, err
-	//}
+	crds := []CreditCardModel{}
+	sql_crd := `select id, ref_id, credit_card_no, credit_type, confirm_no, amount, charge_amount, ifnull(description,'') as description, bank_id, bank_branch_id,receive_date,due_date,book_id from credit_card where company_id = ? and branch_id = ? and ref_id=?`
+	err = repo.db.Select(&crds, sql_crd, i.CompanyId, i.BranchId, req.Id)
+	if err != nil {
+		fmt.Println("err sub= ", err.Error())
+		return resp, err
+	}
 
-	//for _, crd := range crds {
-	//	crd_line := map_deposit_crd_template(crd)
-	//	dp_resp.CreditCard = append(dp_resp.CreditCard, crd_line)
-	//}
+	for _, crd := range crds {
+		crd_line := map_deposit_crd_template(crd)
+		inv_resp.CreditCard = append(inv_resp.CreditCard, crd_line)
+	}
 
-	//chqs := []ChqInModel{}
-	//sql_chq := `select id,ref_id,chq_number,bank_id,bank_branch_id,receive_date,due_date,book_id,chq_status,chq_amount,chq_balance,description from chq_in where company_id = ? and branch_id = ? and ref_id = ? `
-	//err = repo.db.Select(&chqs, sql_chq, i.CompanyId, i.BranchId, i.Id)
-	//if err != nil {
-	//	fmt.Println("err sub= ", err.Error())
-	//	return resp, err
-	//}
+	chqs := []ChqInModel{}
+	sql_chq := `select id,ref_id,chq_number,bank_id,bank_branch_id,receive_date,due_date,book_id,chq_status,chq_amount,chq_balance,description from chq_in where company_id = ? and branch_id = ? and ref_id = ? `
+	err = repo.db.Select(&chqs, sql_chq, i.CompanyId, i.BranchId, i.Id)
+	if err != nil {
+		fmt.Println("err sub= ", err.Error())
+		return resp, err
+	}
 
-	//for _, chq := range chqs {
-	//	chq_line := map_deposit_chq_template(chq)
-	//	dp_resp.Chq = append(dp_resp.Chq, chq_line)
-	//}
-
+	for _, chq := range chqs {
+		chq_line := map_deposit_chq_template(chq)
+		inv_resp.Chq = append(inv_resp.Chq, chq_line)
+	}
+	bnks := []BankpayModel{}
+	sql_bnk := `select id,ref_id,bank_account,bank_name,bank_amount,create_by,create_time from bank where company_id = ? and branch_id = ? and ref_id = ?`
+	err = repo.db.Select(&bnks, sql_bnk, i.CompanyId, i.BranchId, i.Id)
+	if err != nil {
+		fmt.Println("err sub= ", err.Error())
+		return resp, err
+	}
+	for _, bnk := range bnks {
+		bnk_line := map_bank_template(bnk)
+		inv_resp.BankPay = append(inv_resp.BankPay, bnk_line)
+	}
 	return inv_resp, nil
 }
 
@@ -2334,22 +2607,49 @@ func map_invoice_template(x NewInvoiceModel) sales.NewInvoiceTemplate {
 
 // searchinvoice by keyword
 
+type SearchInvModel struct {
+	Id            int64   `db:"id"`
+	DocNo         string  `db:"doc_no"`
+	DocDate       string  `db:"doc_date"`
+	Doctype       string  `db:"doc_type"`
+	ArCode        string  `db:"ar_code"`
+	ArName        string  `db:"ar_name"`
+	SaleCode      string  `db:"sale_code"`
+	SaleName      string  `db:"sale_name"`
+	MyDescription string  `db:"my_description"`
+	TotalAmount   float64 `db:"total_amount"`
+	IsCancel      int     `db:"is_cancel"`
+	IsConfirm     int     `db:"is_confirm"`
+}
+
+func map_doc_invoic_template(x SearchInvModel) sales.SearchInvTemplate {
+	return sales.SearchInvTemplate{
+		Id:            x.Id,
+		DocNo:         x.DocNo,
+		DocDate:       x.DocDate,
+		ArCode:        x.ArCode,
+		ArName:        x.ArName,
+		SaleCode:      x.SaleCode,
+		SaleName:      x.SaleName,
+		TotalAmount:   x.TotalAmount,
+		MyDescription: x.MyDescription,
+		Doctype:       x.Doctype,
+		IsCancel:      x.IsCancel,
+		IsConfirm:     x.IsConfirm,
+	}
+}
+
 func (repo *salesRepository) SearchInvoiceByKeyword(req *sales.SearchByKeywordTemplate) (resp interface{}, err error) {
 
 	var sql string
 
-	d := []NewInvoiceModel{}
+	d := []SearchInvModel{}
 
-	if req.Keyword == "" {
-		fmt.Println("invoicelist 4.5", req.SaleCode)
-		sql = `select a.id,a.company_id,a.branch_id,ifnull(a.uuid,'') as uuid,a.doc_no,ifnull(a.tax_no,'') as tax_no,a.bill_type,a.doc_date,a.ar_id,a.ar_code,ifnull(b.name,'') as ar_name,ifnull(b.address,'') as ar_bill_address,ifnull(b.telephone,'') as ar_telephone,a.sale_id,a.sale_code,ifnull(c.SaleName,'') sale_name,a.pos_machine_id,a.cash_id,a.tax_type,a.tax_rate,a.number_of_item,a.depart_id,a.allocate_id,a.project_id,a.pos_status,a.credit_day,ifnull(a.due_date,'') as due_date,a.delivery_day,ifnull(a.delivery_date,'') as delivery_date,a.is_confirm,a.is_condition_send,ifnull(a.my_description,'') as my_description,ifnull(a.so_ref_no,'') as so_ref_no,a.change_amount,a.sum_cash_amount,a.sum_credit_amount,a.sum_chq_amount,a.sum_bank_amount,a.sum_of_deposit,a.sum_on_line_amount,a.coupon_amount,a.sum_of_item_amount,ifnull(a.discount_word,'') as discount_word,a.discount_amount,a.after_discount_amount,a.before_tax_amount,a.tax_amount,a.total_amount,a.net_debt_amount,a.bill_balance,a.pay_bill_status,a.pay_bill_amount,a.delivery_status,ifnull(a.receive_name,'') as receive_name,ifnull(a.receive_tel,'') as receive_tel,ifnull(a.car_license,'') as car_license,a.is_cancel,a.is_hold,a.is_posted,a.is_credit_note,a.is_debit_note,a.gl_status,ifnull(a.job_id,'') as job_id,ifnull(a.job_no,'') as job_no,ifnull(a.coupon_no,'') as coupon_no,ifnull(a.redeem_no,'') as redeem_no,ifnull(a.scg_number,'') as scg_number,ifnull(a.scg_id,'') as scg_id,a.create_by,a.create_time,ifnull(a.edit_by,'') as edit_by,ifnull(a.edit_time,'') as edit_time,ifnull(a.confirm_by,'') as confirm_by,ifnull(a.confirm_time,'') as confirm_time,ifnull(a.cancel_by,'') as cancel_by,ifnull(a.cancel_time,'') as cancel_time,a.cancel_desc_id,ifnull(a.cancel_desc,'') as cancel_desc     from ar_invoice a left join Customer b on a.ar_id = b.id left join Sale c on a.sale_id = c.id  order by a.id desc limit 30`
-		err = repo.db.Select(&d, sql)
-
-	} else {
-		sql = `select a.id,a.company_id,a.branch_id,ifnull(a.uuid,'') as uuid,a.doc_no,ifnull(a.tax_no,'') as tax_no,a.bill_type,a.doc_date,a.ar_id,a.ar_code,ifnull(b.name,'') as ar_name,ifnull(b.address,'') as ar_bill_address,ifnull(b.telephone,'') as ar_telephone,a.sale_id,a.sale_code,ifnull(c.SaleName,'') sale_name,a.pos_machine_id,a.cash_id,a.tax_type,a.tax_rate,a.number_of_item,a.depart_id,a.allocate_id,a.project_id,a.pos_status,a.credit_day,ifnull(a.due_date,'') as due_date,a.delivery_day,ifnull(a.delivery_date,'') as delivery_date,a.is_confirm,a.is_condition_send,ifnull(a.my_description,'') as my_description,ifnull(a.so_ref_no,'') as so_ref_no,a.change_amount,a.sum_cash_amount,a.sum_credit_amount,a.sum_chq_amount,a.sum_bank_amount,a.sum_of_deposit,a.sum_on_line_amount,a.coupon_amount,a.sum_of_item_amount,ifnull(a.discount_word,'') as discount_word,a.discount_amount,a.after_discount_amount,a.before_tax_amount,a.tax_amount,a.total_amount,a.net_debt_amount,a.bill_balance,a.pay_bill_status,a.pay_bill_amount,a.delivery_status,ifnull(a.receive_name,'') as receive_name,ifnull(a.receive_tel,'') as receive_tel,ifnull(a.car_license,'') as car_license,a.is_cancel,a.is_hold,a.is_posted,a.is_credit_note,a.is_debit_note,a.gl_status,ifnull(a.job_id,'') as job_id,ifnull(a.job_no,'') as job_no,ifnull(a.coupon_no,'') as coupon_no,ifnull(a.redeem_no,'') as redeem_no,ifnull(a.scg_number,'') as scg_number,ifnull(a.scg_id,'') as scg_id,a.create_by,a.create_time,ifnull(a.edit_by,'') as edit_by,ifnull(a.edit_time,'') as edit_time,ifnull(a.confirm_by,'') as confirm_by,ifnull(a.confirm_time,'') as confirm_time,ifnull(a.cancel_by,'') as cancel_by,ifnull(a.cancel_time,'') as cancel_time,a.cancel_desc_id,ifnull(a.cancel_desc,'') as cancel_desc     from ar_invoice a left join Customer b on a.ar_id = b.id left join Sale c on a.sale_id = c.id  order by a.id desc limit 30`
-		fmt.Println("invoicelist 4", req.SaleCode)
-		err = repo.db.Select(&d, sql, req.SaleCode, req.Keyword)
-	}
+	sql = `select a.id,a.doc_no,a.doc_date,a.doc_type
+		,a.ar_code,a.ar_name,a.sale_code,
+		a.sale_name,ifnull(a.my_description,'') as my_description,
+		a.total_amount,a.is_cancel,a.is_confirm from ar_invoice a where a.is_cancel = 0 and doc_type = 0`
+	err = repo.db.Select(&d, sql)
 
 	fmt.Println("sql = ", sql, req.Keyword)
 	if err != nil {
@@ -2357,10 +2657,10 @@ func (repo *salesRepository) SearchInvoiceByKeyword(req *sales.SearchByKeywordTe
 		return resp, err
 	}
 
-	dp := []sales.NewInvoiceTemplate{}
+	dp := []sales.SearchInvTemplate{}
 
 	for _, dep := range d {
-		dpline := map_invoice_template(dep)
+		dpline := map_doc_invoic_template(dep)
 		dp = append(dp, dpline)
 	}
 
