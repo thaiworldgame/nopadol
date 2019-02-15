@@ -9,12 +9,16 @@ type SearchByIdTemplate struct {
 }
 
 type CustomerTemplate struct {
-	Id         int64  `json:"id"`
-	Code       string `json:"code"`
-	Name       string `json:"name"`
-	Address    string `json:"address"`
-	Telephone  string `json:"telephone"`
-	BillCredit int64  `json:"bill_credit"`
+	Id           int64   `json:"id"`
+	Code         string  `json:"code"`
+	Name         string  `json:"name"`
+	Address      string  `json:"address"`
+	Telephone    string  `json:"telephone"`
+	BillCredit   int64   `json:"bill_credit"`
+	Email        string  `json:"email"`
+	CreditAmount float64 `json:"credit_amount"`
+	CompanyID    int     `json:"company_id"`
+	CreateBy     string  `json:"create_by"`
 }
 
 //type CusType int

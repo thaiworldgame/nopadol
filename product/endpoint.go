@@ -3,8 +3,10 @@ package product
 import (
 	"context"
 	"fmt"
-	"github.com/mrtomyum/nopadol/auth"
 	"time"
+
+	"github.com/mrtomyum/nopadol/auth"
+	//"github.com/mrtomyum/nopadol/auth"
 )
 
 //type Endpoint interface {
@@ -186,8 +188,7 @@ func MakeNewProduct(s Service) interface{} {
 			}
 		}
 
-
-		fmt.Println("request data ->",req)
+		fmt.Println("request data ->", req)
 		resp, err := s.StoreItem(&ProductNewRequest{
 			ItemCode:    req.Code,
 			ItemName:    req.Name,
@@ -212,25 +213,35 @@ func MakeNewProduct(s Service) interface{} {
 }
 
 func MakeNewBarcode(s Service) interface{} {
-
-	type request struct {
-		itemID       int64  `json:"item_id"`
-		itemCode     string `json:"item_code"`
-		barcode      string `json:"barcode"`
-		unitCode     string `json:"unit_code"`
-		unitID       int64  `json:"unit_id"`
-		activeStatus int    `json:"active_status"`
+	return func(ctx context.Context, req *BarcodeNewRequest) (interface{}, error) {
+		resp, err := s.StoreBarcode(req)
+		fmt.Println("start endpoint makeNewBarcode")
+		if err != nil {
+			fmt.Println("endpoint error =", err.Error())
+			return nil, fmt.Errorf(err.Error())
+		}
+		return map[string]interface{}{
+			"data": resp,
+		}, nil
 	}
+}
 
-	return func(ctx context.Context, req *request) (interface{}, error) {
-		resp, err := s.StoreBarcode(&BarcodeNewRequest{
-			ItemID:       req.itemID,
-			ItemCode:     req.itemCode,
-			Barcode:      req.barcode,
-			UnitCode:     req.unitCode,
-			UnitID:       req.unitID,
-			ActiveStatus: req.activeStatus,
-		}, &auth.Token{})
+func makeNewPrice(s Service) interface{} {
+	return func(ctx context.Context, req *PriceTemplate) (interface{}, error) {
+		resp, err := s.StorePrice(req)
+		if err != nil {
+			fmt.Println("endpoint error =", err.Error())
+			return nil, fmt.Errorf(err.Error())
+		}
+		return map[string]interface{}{
+			"data": resp,
+		}, nil
+	}
+}
+
+func makeNewItemRate(s Service) interface{} {
+	return func(ctx context.Context, req *PackingRate) (interface{}, error) {
+		resp, err := s.StorePackingRate(req)
 		if err != nil {
 			fmt.Println("endpoint error =", err.Error())
 			return nil, fmt.Errorf(err.Error())

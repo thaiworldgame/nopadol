@@ -4,13 +4,8 @@ import (
 	"fmt"
 
 	"github.com/jmoiron/sqlx"
-	"github.com/mrtomyum/nopadol/auth"
 	"github.com/mrtomyum/nopadol/product"
-)
-
-const (
-	BarcodeActiveStatusActive   int = 1
-	BarcodeActiveStatusInActive int = 0
+	//"github.com/mrtomyum/nopadol/auth"
 )
 
 type ProductModel struct {
@@ -276,29 +271,57 @@ func (p *productRepository) StoreItem(req *product.ProductNewRequest) (resp inte
 	// todo : insert to Barcode table
 }
 
-func (p *productRepository) StoreBarcode(req []product.BarcodeNewRequest, tk *auth.Token) (interface{}, error) {
-	bar := barcodeModel{}
-	for _, value := range req {
+func (p *productRepository) StoreBarcode(req *product.BarcodeNewRequest) (res interface{}, err error) {
 
-		u := itemUnitModel{}
-		u.id = value.UnitID
-		if value.ItemCode == "" && value.UnitID != 0 {
-			u.getByID(p.db) // bind จาก id
-		}
-		if value.UnitID == 0 && value.UnitCode != "" {
-			u.getByCode(p.db)
-			value.UnitID = u.id
-		}
-
-		bar.UnitID = value.UnitID
-		bar.ItemCode = value.ItemCode
-		//bar.CompanyID = tk.CompanyID
-		bar.BarCode = value.Barcode
-		bar.ActiveStatus = 1
-		_, err := bar.save(p.db)
-		if err != nil {
-			return nil, err
-		}
+	b := barcodeModel{BarCode: req.Barcode,
+		ItemID:   req.ItemID,
+		ItemCode: req.ItemCode,
+		UnitCode: req.UnitCode,
+		UnitID:   req.UnitID,
 	}
-	return nil, nil
+
+	newID, err := b.save(p.db)
+	if err != nil {
+		return nil, err
+	}
+	return newID, err
+}
+
+func (p *productRepository) StorePrice(req *product.PriceTemplate) (interface{}, error) {
+	fmt.Println("start store price in mysql package ")
+	item := itemModel{Id: req.ItemID}
+	itemcode, err := item.getItemCodeById(p.db)
+
+	unit := itemUnitModel{id: req.UnitID}
+	unit.getByID(p.db)
+
+	if err != nil {
+		return nil, err
+	}
+	pr := priceModel{
+		ItemId:     req.ItemID,
+		ItemCode:   itemcode,
+		UnitID:     req.UnitID,
+		UnitCode:   unit.unitCode,
+		SalePrice1: req.SalePrice1,
+		SalePrice2: req.SalePrice2,
+		SaleType:   req.SaleType,
+		CompanyID:  req.CompanyID,
+	}
+	return pr.save(p.db)
+}
+
+func (p *productRepository) StorePackingRate(req *product.PackingRate) (interface{}, error) {
+	unit := itemUnitModel{id: req.UnitID}
+	unit.getByID(p.db)
+
+	rate := packingRate{
+		ItemID:          req.ItemID,
+		ItemCode:        req.ItemCode,
+		UnitID:          req.UnitID,
+		RatePerBaseUnit: req.RatePerBaseUnit,
+	}
+
+	return rate.save(p.db)
+	//return nil,nil
 }

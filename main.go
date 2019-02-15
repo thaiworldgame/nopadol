@@ -5,8 +5,8 @@ import (
 	"log"
 	"net/http"
 
-	_ "github.com/denisenkom/go-mssqldb"
 	_ "github.com/go-sql-driver/mysql"
+	//_ "github.com/denisenkom/go-mssqldb"
 	"github.com/mrtomyum/nopadol/mysqldb"
 
 	//"github.com/mrtomyum/nopadol/postgres"
@@ -29,12 +29,13 @@ import (
 
 	//configservice "github.com/mrtomyum/nopadol/companyconfig"
 	//pointofsaleservice "github.com/mrtomyum/nopadol/pointofsale"
-
 	"encoding/json"
 	"flag"
 
-	auth "github.com/mrtomyum/nopadol/auth"
 	drivethruservice "github.com/mrtomyum/nopadol/drivethru"
+
+	//auth "github.com/mrtomyum/nopadol/auth"
+	"github.com/mrtomyum/nopadol/auth"
 )
 
 var (
@@ -249,12 +250,14 @@ func main() {
 	mux.Handle("/env/", http.StripPrefix("/env/v1", envservice.MakeHandler(envService)))
 	//mux.Handle("/config/",http.StripPrefix("/config/v1", configservice.MakeHandler(configService)))
 	mux.Handle("/drivethru/", http.StripPrefix("/drivethru/v3", drivethruservice.MakeHandler(drivethruService)))
+
 	//mux.Handle("/p9/",http.StripPrefix("/p9/v1", p9service.MakeHandler(p9Service)))
 	//mux.Handle("/pointofsale/",http.StripPrefix("/pointofsale/v1", pointofsaleservice.MakeHandler(pointofsaleService)))
 
 	h := auth.MakeMiddleware(authService)(mux)
 	fmt.Println("Waiting for Accept Connection : 9999")
 	http.ListenAndServe(":9999", h)
+
 }
 
 func must(err error) {
