@@ -5,8 +5,8 @@ import (
 	"log"
 	"net/http"
 
-	_ "github.com/denisenkom/go-mssqldb"
 	_ "github.com/go-sql-driver/mysql"
+	//_ "github.com/denisenkom/go-mssqldb"
 	"github.com/mrtomyum/nopadol/mysqldb"
 
 	//"github.com/mrtomyum/nopadol/postgres"
@@ -32,9 +32,8 @@ import (
 
 	"encoding/json"
 	"flag"
-
-	auth "github.com/mrtomyum/nopadol/auth"
-	drivethruservice "github.com/mrtomyum/nopadol/drivethru"
+	//auth "github.com/mrtomyum/nopadol/auth"
+	"github.com/mrtomyum/nopadol/auth"
 )
 
 var (
@@ -256,6 +255,7 @@ func main() {
 	h := auth.MakeMiddleware(authService)(mux)
 	fmt.Println("Waiting for Accept Connection : 9999")
 	http.ListenAndServe(":9999", h)
+
 }
 
 func must(err error) {

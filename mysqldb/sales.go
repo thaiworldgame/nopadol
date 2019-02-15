@@ -12,6 +12,59 @@ import (
 )
 
 type NewQuoModel struct {
+	//Id                  int64             `db:"id"`
+	//DocNo               string            `db:"doc_no"`
+	//DocDate             string            `db:"doc_date"`
+	//CompanyId           int64             `db:"company_id"`
+	//BranchId            int64             `db:"branch_id"`
+	//DocType             int64             `db:"doc_type"`
+	//ArId                int64             `db:"ar_id"`
+	//ArCode              string            `db:"ar_code"`
+	//ArName              string            `db:"ar_name"`
+	//ArBillAddress       string            `db:"ar_bill_address"`
+	//ArTelephone         string            `db:"ar_telephone"`
+	//SaleId              int64             `db:"sale_id"`
+	//SaleCode            string            `db:"sale_code"`
+	//SaleName            string            `db:"sale_name"`
+	//BillType            int64             `db:"bill_type"`
+	//TaxType             int64             `db:"tax_type"`
+	//TaxRate             float64           `db:"tax_rate"`
+	//DepartId            int64             `db:"depart_id"`
+	//RefNo               string            `db:"ref_no"`
+	//JobId               string            `db:"job_id"`
+	//IsConfirm           int64             `db:"is_confirm"`
+	//BillStatus          int64             `db:"bill_status"`
+	//Validity            int64             `db:"validity"`
+	//CreditDay           int64             `db:"credit_day"`
+	//DueDate             string            `db:"due_date"`
+	//ExpireCredit        int64             `db:"expire_credit"`
+	//ExpireDate          string            `db:"expire_date"`
+	//DeliveryDay         int64             `db:"delivery_day"`
+	//DeliveryDate        string            `db:"delivery_date"`
+	//AssertStatus        int64             `db:"assert_status"`
+	//IsConditionSend     int64             `db:"is_condition_send"`
+	//MyDescription       string            `db:"my_description"`
+	//SumOfItemAmount     float64           `db:"sum_of_item_amount"`
+	//DiscountWord        string            `db:"discount_word"`
+	//DiscountAmount      float64           `db:"discount_amount"`
+	//AfterDiscountAmount float64           `db:"after_discount_amount"`
+	//BeforeTaxAmount     float64           `db:"before_tax_amount"`
+	//TaxAmount           float64           `db:"tax_amount"`
+	//TotalAmount         float64           `db:"total_amount"`
+	//NetDebtAmount       float64           `db:"net_debt_amount"`
+	//ProjectId           int64             `db:"project_id"`
+	//AllocateId          int64             `db:"allocate_id"`
+	//IsCancel            int64             `db:"is_cancel"`
+	//CreateBy            string            `db:"create_by"`
+	//CreateTime          string            `db:"create_time"`
+	//EditBy              string            `db:"edit_by"`
+	//EditTime            string            `db:"edit_time"`
+	//ConfirmBy           string            `db:"confirm_by"`
+	//ConfirmTime         string            `db:"confirm_time"`
+	//CancelBy            string            `db:"cancel_by"`
+	//CancelTime          string            `db:"cancel_time"`
+	//Subs                []NewQuoItemModel `db:"subs"`
+
 	Id                  int64             `db:"Id"`
 	DocNo               string            `db:"DocNo"`
 	DocDate             string            `db:"DocDate"`
@@ -59,7 +112,7 @@ type NewQuoModel struct {
 	CreateTime          string            `db:"CreateTime"`
 	EditBy              string            `db:"EditBy"`
 	EditTime            string            `db:"EditTime"`
-	ConfirmBy           string            `db:ConfirmBy`
+	ConfirmBy           string            `db:"ConfirmBy"`
 	ConfirmTime         string            `db:"ConfirmTime"`
 	CancelBy            string            `db:"CancelBy"`
 	CancelTime          string            `db:"CancelTime"`
@@ -67,6 +120,23 @@ type NewQuoModel struct {
 }
 
 type NewQuoItemModel struct {
+	//Id              int64   `db:"id"`
+	//QuoId           int64   `db:"quo_id"`
+	//ItemId          int64   `db:"item_id"`
+	//ItemCode        string  `db:"item_code"`
+	//BarCode         string  `db:"bar_code"`
+	//ItemName        string  `db:"item_name"`
+	//Qty             float64 `db:"qty"`
+	//RemainQty       float64 `db:"remain_qty"`
+	//Price           float64 `db:"price"`
+	//DiscountWord    string  `db:"discount_word"`
+	//DiscountAmount  float64 `db:"discount_amount"`
+	//UnitCode        string  `db:"unit_code"`
+	//ItemAmount      float64 `db:"item_amount"`
+	//ItemDescription string  `db:"item_description"`
+	//PackingRate1    float64 `db:"packing_rate1"`
+	//IsCancel        int64   `db:"is_cancel"`
+	//LineNumber      int     `db:"line_number"`
 	Id              int64   `db:"Id"`
 	QuoId           int64   `db:"QuoId"`
 	ItemId          int64   `db:"ItemId"`
@@ -1101,13 +1171,7 @@ func (repo *salesRepository) CreateSaleOrder(req *sales.NewSaleTemplate) (resp i
 		return nil, err
 	}
 
-	//switch {
-	//case check_doc_exist != 0:
-	//	fmt.Println("error =", "Docno is exist")
-	//	return nil, errors.New("Docno is exist")
-	//}
-
-	if check_doc_exist == 0 {
+	if (check_doc_exist == 0) {
 
 		req.BeforeTaxAmount, req.TaxAmount, req.TotalAmount = config.CalcTaxItem(req.TaxType, req.TaxRate, req.AfterDiscountAmount)
 
@@ -1162,50 +1226,6 @@ func (repo *salesRepository) CreateSaleOrder(req *sales.NewSaleTemplate) (resp i
 
 		id, _ := res.LastInsertId()
 		req.Id = id
-
-		//var vLineNumber int
-		//vLineNumber = 0
-		//
-		//for _, sub := range req.Subs {
-		//	fmt.Println("ArId Sub = ", req.ArId)
-		//	fmt.Println("SaleId Sub = ", req.SaleId)
-		//	sub.LineNumber = vLineNumber
-		//	sub.SumOfCost = sub.AverageCost * sub.Qty
-		//
-		//	sqlsub := `INSERT INTO SaleOrderSub(SOId,ArId,SaleId,ItemId,ItemCode,BarCode,ItemName,WhCode,ShelfCode,Qty,RemainQty,UnitCode,Price,DiscountWord,DiscountAmount,ItemAmount,ItemDescription,StockType,AverageCost,SumOfCost,RefNo,QuoId,IsCancel,PackingRate1,RefLineNumber,LineNumber) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`
-		//	_, err := repo.db.Exec(sqlsub,
-		//		req.Id,
-		//		req.ArId,
-		//		req.SaleId,
-		//		sub.ItemId,
-		//		sub.ItemCode,
-		//		sub.BarCode,
-		//		sub.ItemName,
-		//		sub.WHCode,
-		//		sub.ShelfCode,
-		//		sub.Qty,
-		//		sub.RemainQty,
-		//		sub.UnitCode,
-		//		sub.Price,
-		//		sub.DiscountWord,
-		//		sub.DiscountAmount,
-		//		sub.ItemAmount,
-		//		sub.ItemDescription,
-		//		sub.StockType,
-		//		sub.AverageCost,
-		//		sub.SumOfCost,
-		//		sub.RefNo,
-		//		sub.QuoId,
-		//		sub.IsCancel,
-		//		sub.PackingRate1,
-		//		sub.RefLineNumber,
-		//		sub.LineNumber)
-		//
-		//	vLineNumber = vLineNumber + 1
-		//	if err != nil {
-		//		return "Insert SaleOrder Not Success", err
-		//	}
-		//}
 
 	} else {
 		switch {
@@ -1659,7 +1679,6 @@ func verify_creditcard(db *sqlx.DB, Uuid string, RefId int64, CompanyId int64, B
 	} else {
 		return true, nil
 	}
-
 }
 
 func verify_chq_in(db *sqlx.DB, Uuid string, RefId int64, CompanyId int64, BranchId int64, ChqNumber string, BankId int64) (bool, error) {
@@ -1680,7 +1699,6 @@ func verify_chq_in(db *sqlx.DB, Uuid string, RefId int64, CompanyId int64, Branc
 	} else {
 		return true, nil
 	}
-
 }
 
 func (repo *salesRepository) SearchDepositById(req *sales.SearchByIdTemplate) (resp interface{}, err error) {
@@ -1697,21 +1715,6 @@ func (repo *salesRepository) SearchDepositById(req *sales.SearchByIdTemplate) (r
 	dp_resp := map_deposit_template(d)
 
 	fmt.Println("CompanyId,BranchId,Uuid", d.CompanyId, d.BranchId, d.Uuid)
-
-	//subs := []NewDepositItemModel{}
-	//
-	//sql_sub := `select a.Id,a.SOId,a.ItemId,a.ItemCode,a.ItemName,ifnull(a.WHCode,'') as WHCode,ifnull(a.ShelfCode,'') as ShelfCode,a.Qty,a.RemainQty,a.Price,ifnull(a.DiscountWord,'') as DiscountWord,DiscountAmount,ifnull(a.UnitCode,'') as UnitCode,ifnull(a.BarCode,'') as BarCode,ifnull(a.ItemDescription,'') as ItemDescription,a.StockType,a.AverageCost,a.SumOfCost,a.ItemAmount,a.PackingRate1,a.LineNumber,a.IsCancel from SaleOrderSub a  where SOId = ? order by a.linenumber`
-	//err = repo.db.Select(&subs, sql_sub, d.RefNo)
-	//fmt.Println("sql_sub = ", sql_sub)
-	//if err != nil {
-	//	fmt.Println("err sub= ", err.Error())
-	//	return resp, err
-	//}
-	//
-	//for _, sub := range subs {
-	//	subline := map_deposit_subs_template(sub)
-	//	dp_resp.Subs = append(dp_resp.Subs, subline)
-	//}
 
 	crds := []CreditCardModel{}
 	sql_crd := `select id, ref_id, credit_card_no, credit_type, confirm_no, amount, charge_amount, ifnull(description,'') as description, bank_id, bank_branch_id,receive_date,due_date,book_id from credit_card where company_id = ? and branch_id = ? and ref_id=?`

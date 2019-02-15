@@ -12,13 +12,13 @@ import (
 type errorResponse struct {
 	Error string `json:"error"`
 }
+
 var (
 	errMethodNotAllowed = errors.New("auth: method not allowed")
 	errForbidden        = errors.New("auth: forbidden")
 	errBadRequest       = errors.New("auth: bad request body")
 	errUnauthorized     = errors.New("auth: Unauthorized")
 )
-
 
 func enableCors(w *http.ResponseWriter) {
 	(*w).Header().Set("Access-Control-Allow-Origin", "*")
@@ -35,23 +35,24 @@ func MakeHandler(s Service) http.Handler {
 		ErrorEncoder:    errorEncoder,
 	})
 	mux := http.NewServeMux()
+	mux.Handle("/login", m.Handler(logIn(s)))
 	mux.Handle("/userlogin", m.Handler(userLogIn(s)))
-	mux.Handle("/zone", m.Handler(makeListCompany(s)))
+	mux.Handle("/pick_zone", m.Handler(makeListCompany(s)))
 	mux.Handle("/machine", m.Handler(makeListMachine(s)))
-	mux.Handle("/carbrand", m.Handler(makeSearchCarBranch(s)))
-	mux.Handle("/customer", m.Handler(makeSearchCustomer(s)))
+	mux.Handle("/pickup/carbrand", m.Handler(makeSearchCarBranch(s)))
+	mux.Handle("/customer/search", m.Handler(makeSearchCustomer(s)))
 	mux.Handle("/item/search", m.Handler(makeItemSearch(s)))
 
 	mux.Handle("/pickup/new", m.Handler(pickupNew(s)))
-	mux.Handle("/pickup/manage", m.Handler(managePickup(s)))
-	mux.Handle("/checkout/manage", m.Handler(manageCheckout(s)))
-	mux.Handle("/queue/list", m.Handler(makeSearchListQueue(s)))
+	mux.Handle("/pickup/manage_product", m.Handler(managePickup(s)))
+	mux.Handle("/checkout/manage_product", m.Handler(manageCheckout(s)))
+	mux.Handle("/pickup/delete", m.Handler(cancelQueue(s)))
+	mux.Handle("/list_queue", m.Handler(makeSearchListQueue(s)))
 
 	mux.Handle("/queue/edit", m.Handler(queueEdit(s)))
 	mux.Handle("/queue/status", m.Handler(queueStatus(s)))
 	mux.Handle("/queue/product", m.Handler(queueProduct(s)))
 	mux.Handle("/billing/done", m.Handler(billingDone(s)))
-
 
 	//mux.Handle("/pickup/new",m.Handler(pickupNew(s)))
 

@@ -3,9 +3,7 @@ package product
 import (
 	"context"
 	"fmt"
-	"time"
-
-	"github.com/mrtomyum/nopadol/auth"
+	//"github.com/mrtomyum/nopadol/auth"
 )
 
 //type Endpoint interface {
@@ -149,8 +147,7 @@ func MakeNewProduct(s Service) interface{} {
 		var barcodes []BarcodeTemplate
 		var prices []PriceTemplate
 		var Rates []PackingRate
-		companyID := auth.GetCompanyID(ctx)
-		userID := auth.GetUserCode(ctx)
+
 		// bind barcode template
 		if len(req.Barcode) > 0 {
 			fmt.Println("bind req barcocde")
@@ -172,7 +169,7 @@ func MakeNewProduct(s Service) interface{} {
 				pr.SalePrice2 = value.SalePrice2
 				pr.UnitID = value.UnitID
 				pr.SaleType = value.SaleType
-				pr.CompanyID = companyID
+				pr.CompanyID = req.CompanyID
 				prices = append(prices, pr)
 			}
 		}
@@ -197,9 +194,7 @@ func MakeNewProduct(s Service) interface{} {
 			Barcode:     barcodes,
 			Price:       prices,
 			PackingRate: Rates,
-			CompanyID:   companyID,
-			CreateBy:    userID,
-			CreateTime:  time.Now(),
+			CompanyID:   req.CompanyID,
 		})
 		if err != nil {
 			fmt.Println("endpoint error =", err.Error())
@@ -212,25 +207,35 @@ func MakeNewProduct(s Service) interface{} {
 }
 
 func MakeNewBarcode(s Service) interface{} {
-
-	type request struct {
-		itemID       int64  `json:"item_id"`
-		itemCode     string `json:"item_code"`
-		barcode      string `json:"barcode"`
-		unitCode     string `json:"unit_code"`
-		unitID       int64  `json:"unit_id"`
-		activeStatus int    `json:"active_status"`
+	return func(ctx context.Context, req *BarcodeNewRequest) (interface{}, error) {
+		resp, err := s.StoreBarcode(req)
+		fmt.Println("start endpoint makeNewBarcode")
+		if err != nil {
+			fmt.Println("endpoint error =", err.Error())
+			return nil, fmt.Errorf(err.Error())
+		}
+		return map[string]interface{}{
+			"data": resp,
+		}, nil
 	}
+}
 
-	return func(ctx context.Context, req *request) (interface{}, error) {
-		resp, err := s.StoreBarcode(&BarcodeNewRequest{
-			ItemID:       req.itemID,
-			ItemCode:     req.itemCode,
-			Barcode:      req.barcode,
-			UnitCode:     req.unitCode,
-			UnitID:       req.unitID,
-			ActiveStatus: req.activeStatus,
-		}, &auth.Token{})
+func makeNewPrice(s Service) interface{} {
+	return func(ctx context.Context, req *PriceTemplate) (interface{}, error) {
+		resp, err := s.StorePrice(req)
+		if err != nil {
+			fmt.Println("endpoint error =", err.Error())
+			return nil, fmt.Errorf(err.Error())
+		}
+		return map[string]interface{}{
+			"data": resp,
+		}, nil
+	}
+}
+
+func makeNewItemRate(s Service) interface{} {
+	return func(ctx context.Context, req *PackingRate) (interface{}, error) {
+		resp, err := s.StorePackingRate(req)
 		if err != nil {
 			fmt.Println("endpoint error =", err.Error())
 			return nil, fmt.Errorf(err.Error())

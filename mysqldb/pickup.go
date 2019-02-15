@@ -1053,6 +1053,7 @@ func (q *ListQueueModel) BillingDone(db *sqlx.DB, req *drivethru.BillingDoneRequ
 			},
 			"queid": ""}, nil
 	}
+
 	if q.Status == 2 {
 		if req.Confirm == 0 {
 
@@ -1245,12 +1246,58 @@ func (q *ListQueueModel) BillingDone(db *sqlx.DB, req *drivethru.BillingDoneRequ
 			remain_amount = (((q.TotalAfterAmount - crd_amount) - cou_amount) - dep_amount);
 			fmt.Println("remain amount =", remain_amount)
 
+			if (remain_amount < 0 && req.Cash != 0) {
+				return map[string]interface{}{
+					"response": map[string]interface{}{
+						"success":      false,
+						"error":        true,
+						"message":      "Payment cash over remain",
+						"total_amount": q.TotalAfterAmount,
+						"invoice": map[string]interface{}{
+							"invoice_no":     "Can not save bill",
+							"cash_amount":    req.Cash,
+							"credit_amount":  crd_amount,
+							"coupong_amount": cou_amount,
+							"deposit_amount": dep_amount,
+							"remain_amount":  sum_remain,
+							"change_amount":  change_amount,
+						},
+						"is_print_short_form":  0,
+						"is_print_cash_form":   0,
+						"is_print_credit_form": 0,
+					},
+				}, nil
+			}
+
 			if ((remain_amount > 0 && req.Cash > 0 && (remain_amount-req.Cash < 0)) || (remain_amount == 0)) {
 				change_amount = -1 * (remain_amount - req.Cash);
 			} else {
 				change_amount = 0;
 			}
 			fmt.Println("change amount =", change_amount)
+
+			if remain_amount < 0 {
+				return map[string]interface{}{
+					"response": map[string]interface{}{
+						"success":      false,
+						"error":        true,
+						"message":      "Payment over netamount",
+						"total_amount": q.TotalAfterAmount,
+						"invoice": map[string]interface{}{
+							"invoice_no":     "Can not save bill",
+							"cash_amount":    req.Cash,
+							"credit_amount":  crd_amount,
+							"coupong_amount": cou_amount,
+							"deposit_amount": dep_amount,
+							"remain_amount":  sum_remain,
+							"change_amount":  change_amount,
+						},
+						"is_print_short_form":  0,
+						"is_print_cash_form":   0,
+						"is_print_credit_form": 0,
+					},
+				}, nil
+			}
 
 			remain_all_amount = remain_amount - req.Cash + change_amount;
 			if (remain_all_amount > 0) {
@@ -1492,11 +1539,35 @@ func (q *ListQueueModel) BillingDone(db *sqlx.DB, req *drivethru.BillingDoneRequ
 							"queid": ""}, nil
 					}
 					dep_amount = dep_amount + d.Amount
+					fmt.Println("dep_amount =", dep_amount)
 				}
 			}
 
 			remain_amount = (((q.TotalAfterAmount - crd_amount) - cou_amount) - dep_amount);
 			fmt.Println("remain amount =", remain_amount)
+
+			if (remain_amount < 0 && req.Cash != 0) {
+				return map[string]interface{}{
+					"response": map[string]interface{}{
+						"success":      false,
+						"error":        true,
+						"message":      "Payment cash over remain",
+						"total_amount": q.TotalAfterAmount,
+						"invoice": map[string]interface{}{
+							"invoice_no":     "Can not save bill",
+							"cash_amount":    req.Cash,
+							"credit_amount":  crd_amount,
+							"coupong_amount": cou_amount,
+							"deposit_amount": dep_amount,
+							"remain_amount":  sum_remain,
+							"change_amount":  change_amount,
+						},
+						"is_print_short_form":  0,
+						"is_print_cash_form":   0,
+						"is_print_credit_form": 0,
+					},
+				}, nil
+			}
 
 			if ((remain_amount > 0 && req.Cash > 0 && (remain_amount-req.Cash < 0)) || (remain_amount == 0)) {
 				change_amount = -1 * (remain_amount - req.Cash);
@@ -1504,6 +1575,29 @@ func (q *ListQueueModel) BillingDone(db *sqlx.DB, req *drivethru.BillingDoneRequ
 				change_amount = 0;
 			}
 			fmt.Println("change amount =", change_amount)
+
+			if remain_amount < 0 {
+				return map[string]interface{}{
+					"response": map[string]interface{}{
+						"success":      false,
+						"error":        true,
+						"message":      "Payment over netamount",
+						"total_amount": q.TotalAfterAmount,
+						"invoice": map[string]interface{}{
+							"invoice_no":     "Can not save bill",
+							"cash_amount":    req.Cash,
+							"credit_amount":  crd_amount,
+							"coupong_amount": cou_amount,
+							"deposit_amount": dep_amount,
+							"remain_amount":  sum_remain,
+							"change_amount":  change_amount,
+						},
+						"is_print_short_form":  0,
+						"is_print_cash_form":   0,
+						"is_print_credit_form": 0,
+					},
+				}, nil
+			}
 
 			remain_all_amount = remain_amount - req.Cash + change_amount;
 			if (remain_all_amount > 0) {
@@ -1543,6 +1637,8 @@ func (q *ListQueueModel) BillingDone(db *sqlx.DB, req *drivethru.BillingDoneRequ
 				uuid := GetAccessToken()
 				m := Machine{}
 				m.SearchMachineNo(db, u.CompanyID, u.BranchID, req.AccessToken)
+				fmt.Println("machine = ", m.ShiftUUID, m.MachineId)
+
 				var err error
 				var access_token string
 
@@ -1580,8 +1676,8 @@ func (q *ListQueueModel) BillingDone(db *sqlx.DB, req *drivethru.BillingDoneRequ
 				//sqlcommand = `START TRANSACTION`
 				//_, err = db.Exec(sqlcommand)
 
-				sqlcommand = `insert into ar_invoice(company_id,branch_id,uuid,doc_no,tax_no,doc_date,bill_type ,tax_type ,tax_rate,pos_machine_id,shift_uuid,cash_id,number_of_item,ar_id,ar_code,ar_name,sale_id,sale_code,sale_name,depart_id,allocate_id,project_id,pos_status,my_description,so_ref_no ,sum_of_item_amount,discount_word,discount_amount,after_discount_amount,before_tax_amount,tax_amount,total_amount,change_amount,coupon_amount,sum_cash_amount,sum_chq_amount,sum_credit_amount ,sum_bank_amount,sum_of_deposit,sum_on_line_amount,net_debt_amount,car_license,create_by ,create_time) values(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`
-				rs, err := db.Exec(sqlcommand, u.CompanyID, u.BranchID, uuid, pos_no, pos_no, doc_date, bill_type, tax_type, config.TaxRate, m.MachineId, m.ShiftUUID, m.CashierID, q.NumberOfItem, ar_id, req.ArCode, cust.Name, s.Id, s.SaleCode, s.SaleName, depart_id, allocate_id, project_id, pos_status, my_description, q.DocNo, q.TotalAfterAmount, discount_word, discount_amount, q.TotalAfterAmount, before_tax_amount, tax_amount, total_amount, change_amount, cou_amount, req.Cash, chq_amount, crd_amount, bnk_amount, dep_amount, onl_amount, total_amount, q.PlateNumber, u.UserCode, now.String())
+				sqlcommand = `insert into ar_invoice(company_id,branch_id,uuid,doc_no,tax_no,doc_date,doc_type,bill_type ,tax_type ,tax_rate,pos_machine_id,shift_uuid,cash_id,number_of_item,ar_id,ar_code,ar_name,sale_id,sale_code,sale_name,depart_id,allocate_id,project_id,pos_status,my_description,so_ref_no ,sum_of_item_amount,discount_word,discount_amount,after_discount_amount,before_tax_amount,tax_amount,total_amount,change_amount,coupon_amount,sum_cash_amount,sum_chq_amount,sum_credit_amount ,sum_bank_amount,sum_of_deposit,sum_on_line_amount,net_debt_amount,car_license,create_by ,create_time) values(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`
+				rs, err := db.Exec(sqlcommand, u.CompanyID, u.BranchID, uuid, pos_no, pos_no, doc_date, 1, bill_type, tax_type, config.TaxRate, m.MachineId, m.ShiftUUID, m.CashierID, q.NumberOfItem, ar_id, req.ArCode, cust.Name, s.Id, s.SaleCode, s.SaleName, depart_id, allocate_id, project_id, pos_status, my_description, q.DocNo, q.TotalAfterAmount, discount_word, discount_amount, q.TotalAfterAmount, before_tax_amount, tax_amount, total_amount, change_amount, cou_amount, req.Cash, chq_amount, crd_amount, bnk_amount, dep_amount, onl_amount, total_amount, q.PlateNumber, u.UserCode, now.String())
 				if err != nil {
 					return map[string]interface{}{
 						"response": map[string]interface{}{
@@ -1607,7 +1703,7 @@ func (q *ListQueueModel) BillingDone(db *sqlx.DB, req *drivethru.BillingDoneRequ
 
 				id, _ := rs.LastInsertId()
 
-				q.Id = int(id)
+				fmt.Println("ar_invoice_id = ",int(id))
 
 				var discount_word_sub string
 				var discount_amount_sub float64
@@ -1650,6 +1746,23 @@ func (q *ListQueueModel) BillingDone(db *sqlx.DB, req *drivethru.BillingDoneRequ
 					item.Id = int(item_id)
 				}
 
+				if req.Cash != 0 {
+					lccommand_rec := `insert into rec_money(company_id, branch_id, uuid, doc_type, ref_id, ar_id , doc_date, payment_type, pay_amount, line_number) values(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+					_, err := db.Exec(lccommand_rec, u.CompanyID, u.BranchID, uuid, 1, q.Id, ar_id, doc_date, 0, req.Cash, 0)
+					if err != nil {
+						fmt.Println("error insert recmoney cash = ", err.Error())
+					}
+
+				}
+
+				var crd_line_number int
+
+				if req.Cash != 0 {
+					crd_line_number = 1
+				} else {
+					crd_line_number = 0
+				}
+
 				if len(req.CreditCard) != 0 {
 					for _, crd := range req.CreditCard {
 						lccommand_crd := `insert into credit_card(company_id, branch_id,ref_uuid, ref_id,ar_id,doc_no, doc_date, credit_card_no, credit_type, confirm_no, amount, charge_amount, description,receive_date, due_date) values(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
@@ -1657,7 +1770,14 @@ func (q *ListQueueModel) BillingDone(db *sqlx.DB, req *drivethru.BillingDoneRequ
 						if err != nil {
 							fmt.Println("error insert credit card = ", err.Error())
 						}
+
+						//lccommand_rec := `insert into rec_money(company_id, branch_id, uuid, doc_type, ref_id, ar_id , doc_date, payment_type, pay_amount, chq_total_amount, credit_type, charge_amount, confirm_no, ref_no, bank_code, ref_date, line_number) values(?, ?, ?, ?, ?, ? , ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+						//_, err := db.Exec(lccommand_rec, u.CompanyID, u.BranchID, uuid, 1, q.Id, ar_id, doc_date, 1, crd.Amount, crd.Amount, crd.CreditType, crd.ChargeAmount, crd.ConfirmNo, crd.CardNo, crd.BankCode, doc_date, crd_line_number)
+						//if err != nil {
+						//	fmt.Println("error insert recmoney creditcard = ", err.Error())
+						//}
 					}
+					crd_line_number = crd_line_number + 1
 				}
 
 				var line_number_coupon int
@@ -1670,11 +1790,43 @@ func (q *ListQueueModel) BillingDone(db *sqlx.DB, req *drivethru.BillingDoneRequ
 							fmt.Println("error insert credit card = ", err.Error())
 						}
 
-						line_number_coupon = line_number_coupon+1
+						line_number_coupon = line_number_coupon + 1
 					}
 				}
 
+				var line_number_deposit int
+				if len(req.DepositAmount) != 0 {
+					for _, dep := range req.DepositAmount {
+						line_number_coupon = 0
+						lccommand_cou := `insert into deposit_use(company_id, branch_id, deposit_no, ref_doc_no, ref_uuid, balance, amount, net_amount, line_number) values(?, ?, ?, ?, ?, ?, ?, ?, ?)`
+						rs, err = db.Exec(lccommand_cou, u.CompanyID, u.BranchID, dep.DepositId, pos_no, uuid, dep.Amount, dep.Amount, dep.Amount, line_number_coupon)
+						if err != nil {
+							fmt.Println("error insert deposit = ", err.Error())
+						}
 
+						dep_id, err := rs.LastInsertId()
+						if err != nil {
+							fmt.Println("error insert dep use = " + err.Error())
+						}
+
+						line_number_deposit = line_number_deposit + 1
+
+						if dep_id != 0 {
+							lccommand := `update ar_deposit set balance = balance-? where doc_no=? and company_id = ? and branch_id = ?`
+							_, err = db.Exec(lccommand, dep.Amount, dep.DepositId, u.CompanyID, u.BranchID)
+							if err != nil {
+								fmt.Println("error update deposit = ", err.Error())
+							}
+						}
+					}
+				}
+
+				fmt.Println("update basket = ", pos_no, u.UserId, q.Id, req.QueueId)
+				lccommand := `update basket set invoice_no = ?,status = 3,confirm_by=?, confirm_time=? where id = ? and que_id = ? `
+				_, err = db.Exec(lccommand, pos_no, u.UserId, now.String(), q.Id, req.QueueId)
+				if err != nil {
+					fmt.Println("error update basket = ", err.Error())
+				}
 
 				//
 				//sqlcommand = `COMMIT`
@@ -1682,7 +1834,6 @@ func (q *ListQueueModel) BillingDone(db *sqlx.DB, req *drivethru.BillingDoneRequ
 			}
 
 		}
-
 	}
 	return map[string]interface{}{
 		"response": map[string]interface{}{
@@ -1702,6 +1853,39 @@ func (q *ListQueueModel) BillingDone(db *sqlx.DB, req *drivethru.BillingDoneRequ
 			"is_print_short_form":  0,
 			"is_print_cash_form":   0,
 			"is_print_credit_form": 0,
+		},
+	}, nil
+}
+
+func (q *ListQueueModel) CancelQueue(db *sqlx.DB, req *drivethru.QueueStatusRequest) (interface{}, error) {
+
+	if (req.QueueId != 0) {
+		q.Search(db, req.QueueId)
+
+		if (q.IsCancel == 0) {
+			u := UserAccess{}
+			u.GetProfileByToken(db, req.AccessToken)
+
+			if (q.Status != 2) {
+				lccommand := "update basket set status = 0,pick_status=4,is_cancel=1,cancel_desc=?,cancel_by = ?,cancel_time= CURRENT_TIMESTAMP() where que_id = ? and company_id = ? and branch_id = ? and uuid = ? and doc_date = curdate()";
+				_, err := db.Exec(lccommand, req.CancelRemark, u.UserCode, req.QueueId, u.CompanyID, u.BranchID, q.UUID)
+				if err != nil {
+					return map[string]interface{}{
+						"response": map[string]interface{}{
+							"success": false,
+							"error":   true,
+							"message": err.Error(),
+						},
+					}, nil
+				}
+			}
+		}
+	}
+	return map[string]interface{}{
+		"response": map[string]interface{}{
+			"success": true,
+			"error":   false,
+			"message": "",
 		},
 	}, nil
 }

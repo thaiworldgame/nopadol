@@ -1,11 +1,10 @@
 package mysqldb
 
 import (
-	"fmt"
-	"github.com/jmoiron/sqlx"
 	"log"
+	"github.com/jmoiron/sqlx"
+	"fmt"
 )
-
 type packingRate struct {
 	Id              int64  `db:"id"`
 	ItemID          int64  `db:"item_id"`
@@ -13,51 +12,47 @@ type packingRate struct {
 	UnitID          int64  `db:"unit_id"`
 	UnitCode        string `db:"unit_code"`
 	RatePerBaseUnit int    `db:"rate1"`
-	CompanyID       int    `db:"company_id"`
 }
 
-
-
-func (r *packingRate) verifyRequestData(db *sqlx.DB) (err error) {
-	it := itemModel{}
-	u := itemUnitModel{}
-
-	switch {
-	case r.ItemID == 0 && r.ItemCode != "":
+func(r *packingRate)verifyRequestData(db *sqlx.DB)(pass bool,err error){
+	if r.ItemID == 0 {
+		it := itemModel{}
 		r.ItemID, err = it.getItemIDbyCode(db, r.ItemCode)
 		if err != nil {
-			return fmt.Errorf("no item_id! ")
+			return false, fmt.Errorf("no item_id! ")
 		}
-	case r.ItemID != 0 && r.ItemCode == "":
-		r.ItemCode, err = it.getItemCodeById(db)
-		if err != nil {
-			return fmt.Errorf("no item_id! ")
-		}
-	case r.UnitID == 0 && r.UnitCode != "": // have Unitcode
+	}
+
+	// find unitid if 0 and have code
+	if r.UnitID == 0 && r.UnitCode !="" {
+		u := itemUnitModel{}
 		err = u.getByCode(db)
 		if err != nil {
-			return fmt.Errorf("no unit_id ", r.UnitID)
+			return false,fmt.Errorf(" no unit_id ",r.UnitID)
 		}
 		r.UnitID = u.id
-	case r.UnitCode == "" && r.UnitID != 0: // have unitID
+
+	}
+
+	// find unitcode if blank and have unitid
+	if r.UnitCode =="" && r.UnitID!=0{
+		u := itemUnitModel{}
 		err = u.getByID(db)
 		if err != nil {
-			return fmt.Errorf("unit_code not found :", r.UnitCode)
+			return false,fmt.Errorf("unit_code not found :",r.UnitCode)
 		}
 		r.UnitCode = u.unitCode
-	case r.RatePerBaseUnit == 0:
-		return fmt.Errorf("rate zero error ")
-	case r.CompanyID == 0 :
-		return fmt.Errorf("company id zero error")
+
 	}
-	return nil
+	return true,nil
+
 }
 func (r *packingRate) save(db *sqlx.DB) (newID int64, err error) {
 	// check data before ins
 
-	err = r.verifyRequestData(db)
-	if err != nil {
-		return -1, err
+	ok,err := r.verifyRequestData(db)
+	if !ok || err !=nil {
+		return -1,err
 	}
 
 	lccommand := `insert into ItemRate (

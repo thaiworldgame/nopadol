@@ -34,6 +34,14 @@ type (
 		DataBaseName string `json:"data_base_name"`
 	}
 
+	LoginRequest struct {
+		EmployeeCode string `json:"employee_code"`
+		BranchId     int    `json:"branch_id"`
+		EmployeeName string `json:"employee_name"`
+		ServerName   string `json:"server_name"`
+		DatabaseName string `json:"database_name"`
+	}
+
 	NewPickupRequest struct {
 		CarNumber   string `json:"car_number"`
 		CarBrand    string `json:"car_brand"`
@@ -91,12 +99,12 @@ type (
 	}
 
 	BillingDoneRequest struct {
-		AccessToken   string       `json:"access_token"`
-		ArCode        string       `json:"ar_code"`
-		Confirm       int          `json:"confirm"`
-		QueueId       int          `json:"queue_id"`
-		Cash          float64      `json:"cash"`
-		ScgId         string       `json:"scg_id"`
+		AccessToken   string        `json:"access_token"`
+		ArCode        string        `json:"ar_code"`
+		Confirm       int           `json:"confirm"`
+		QueueId       int           `json:"queue_id"`
+		Cash          float64       `json:"cash"`
+		ScgId         string        `json:"scg_id"`
 		CreditCard    []*CreditCard `json:"credit_card"`
 		CouponCode    []*Coupon     `json:"coupon_code"`
 		DepositAmount []*Deposit    `json:"deposit_amount"`
@@ -221,6 +229,18 @@ func makeItemSearch(s Service) interface{} {
 	}
 }
 
+func logIn(s Service) interface{} {
+	return func(ctx context.Context, req *LoginRequest) (interface{}, error) {
+		fmt.Println("start endpoint userlogin usercode is => ", req.EmployeeCode)
+		resp, err := s.LogIn(&LoginRequest{BranchId: req.BranchId, EmployeeCode: req.EmployeeCode, EmployeeName: req.EmployeeName})
+		if err != nil {
+			return nil, err
+		}
+
+		return resp, nil
+	}
+}
+
 func userLogIn(s Service) interface{} {
 	return func(ctx context.Context, req *UserLogInRequest) (interface{}, error) {
 		fmt.Println("start endpoint userlogin usercode is => ", req.UserCode)
@@ -232,6 +252,7 @@ func userLogIn(s Service) interface{} {
 		return resp, nil
 	}
 }
+
 func makeShiftOpen(s Service) interface{} {
 	type request struct {
 		Token        string  `json:"token"`
@@ -291,6 +312,18 @@ func managePickup(s Service) interface{} {
 	return func(ctx context.Context, req *ManagePickupRequest) (interface{}, error) {
 		fmt.Println("start endpoint mange pickup que id is => ", req.QueueId)
 		resp, err := s.ManagePickup(&ManagePickupRequest{AccessToken: req.AccessToken, QueueId: req.QueueId, ItemBarcode: req.ItemBarcode, QtyBefore: req.QtyBefore, IsCancel: req.IsCancel})
+		if err != nil {
+			return nil, err
+		}
+
+		return resp, nil
+	}
+}
+
+func cancelQueue(s Service) interface{} {
+	return func(ctx context.Context, req *QueueStatusRequest) (interface{}, error) {
+		fmt.Println("start endpoint mange pickup que id is => ", req.QueueId)
+		resp, err := s.CancelQueue(&QueueStatusRequest{AccessToken: req.AccessToken, QueueId: req.QueueId, CancelRemark: req.CancelRemark, IsLoad: req.IsLoad, StatusForSaleorderCurrent: req.StatusForSaleorderCurrent})
 		if err != nil {
 			return nil, err
 		}
