@@ -29,7 +29,7 @@ import (
 
 	//configservice "github.com/mrtomyum/nopadol/companyconfig"
 	//pointofsaleservice "github.com/mrtomyum/nopadol/pointofsale"
-
+	drivethruservice "github.com/mrtomyum/nopadol/drivethru"
 	"encoding/json"
 	"flag"
 	//auth "github.com/mrtomyum/nopadol/auth"
