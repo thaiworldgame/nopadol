@@ -2089,7 +2089,7 @@ func (repo *salesRepository) CreateInvoice(req *sales.NewInvoiceTemplate) (inter
 
 			var qty float64
 			fmt.Println("ค้นหาสิค้า", req.DocNo)
-			qelstrock := `select stock_qty form item_copy1 where code = ?`
+			qelstrock := `select stock_qty form Item_copy1 where code = ?`
 			errs := repo.db.Get(&qty, qelstrock, sub.ItemCode)
 			if errs != nil {
 				fmt.Println("Error = ", errs.Error())
@@ -2100,7 +2100,7 @@ func (repo *salesRepository) CreateInvoice(req *sales.NewInvoiceTemplate) (inter
 			qty -= sub.Qty
 			// ตัด stock ไหม่
 			fmt.Println(" ตัด stock ไหม่", qty)
-			Updatenew := `update item_copy1 set stock_qty = ? where code = ? `
+			Updatenew := `update Item_copy1 set stock_qty = ? where code = ? `
 			_, errss := repo.db.Exec(Updatenew, &qty, sub.ItemCode)
 			if errss != nil {
 				fmt.Println("Error = ", err.Error())
@@ -2115,7 +2115,7 @@ func (repo *salesRepository) CreateInvoice(req *sales.NewInvoiceTemplate) (inter
 		var qty int64
 		for _, sub := range req.Subs {
 			// ค้นหา สินค้า ที่ invoice_sub
-			qelstrock, errs := repo.db.Query("select stock_qty form item_copy1 where code = ?")
+			qelstrock, errs := repo.db.Query("select stock_qty form Item_copy1 where code = ?")
 
 			for qelstrock.Next() {
 				err := qelstrock.Scan(&itemid, &itemcode_, &qty)
@@ -2129,14 +2129,14 @@ func (repo *salesRepository) CreateInvoice(req *sales.NewInvoiceTemplate) (inter
 				return nil, errs
 			}
 			// คืน stock
-			updatestock := `update item_copy1 set stock_qty += ? where code = ? `
+			updatestock := `update Item_copy1 set stock_qty += ? where code = ? `
 			_, err := repo.db.Exec(updatestock, &qty, &itemcode_)
 			if err != nil {
 				fmt.Println("Error = ", err.Error())
 				return nil, err
 			}
 			// ตัด stock ไหม่
-			Updatenew := `update item_copy1 set stock_qty -= where code = ? `
+			Updatenew := `update Item_copy1 set stock_qty -= where code = ? `
 			_, errss := repo.db.Exec(Updatenew, sub.Qty, sub.ItemCode)
 			if errss != nil {
 				fmt.Println("Error = ", err.Error())
