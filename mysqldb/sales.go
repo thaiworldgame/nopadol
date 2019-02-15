@@ -2112,40 +2112,40 @@ func (repo *salesRepository) CreateInvoice(req *sales.NewInvoiceTemplate) (inter
 			fmt.Println(" ตัด stock ไหม่นะ")
 		}
 	} else {
-		// select tock
-		var itemcode_ string
-		var itemid string
-		var qty int64
-		for _, sub := range req.Subs {
-			// ค้นหา สินค้า ที่ invoice_sub
-			qelstrock, errs := repo.db.Query("select stock_qty form Item_copy1 where code = ?")
+		// // select tock
+		// var itemcode_ string
+		// var itemid string
+		// var qty int64
+		// for _, sub := range req.Subs {
+		// 	// ค้นหา สินค้า ที่ invoice_sub
+		// 	qelstrock, errs := repo.db.Query("select stock_qty form Item_copy1 where code = ?")
 
-			for qelstrock.Next() {
-				err := qelstrock.Scan(&itemid, &itemcode_, &qty)
-				if err != nil {
-					fmt.Println("Error = ", errs.Error())
-					return nil, errs
-				}
-			}
-			if errs != nil {
-				fmt.Println("Error = ", errs.Error())
-				return nil, errs
-			}
-			// คืน stock
-			updatestock := `update Item_copy1 set stock_qty += ? where code = ? `
-			_, err := repo.db.Exec(updatestock, &qty, &itemcode_)
-			if err != nil {
-				fmt.Println("Error = ", err.Error())
-				return nil, err
-			}
-			// ตัด stock ไหม่
-			Updatenew := `update Item_copy1 set stock_qty -= where code = ? `
-			_, errss := repo.db.Exec(Updatenew, sub.Qty, sub.ItemCode)
-			if errss != nil {
-				fmt.Println("Error = ", err.Error())
-				return nil, errss
-			}
-		}
+		// 	for qelstrock.Next() {
+		// 		err := qelstrock.Scan(&itemid, &itemcode_, &qty)
+		// 		if err != nil {
+		// 			fmt.Println("Error = ", errs.Error())
+		// 			return nil, errs
+		// 		}
+		// 	}
+		// 	if errs != nil {
+		// 		fmt.Println("Error = ", errs.Error())
+		// 		return nil, errs
+		// 	}
+		// 	// คืน stock
+		// 	updatestock := `update Item_copy1 set stock_qty += ? where code = ? `
+		// 	_, err := repo.db.Exec(updatestock, &qty, &itemcode_)
+		// 	if err != nil {
+		// 		fmt.Println("Error = ", err.Error())
+		// 		return nil, err
+		// 	}
+		// 	// ตัด stock ไหม่
+		// 	Updatenew := `update Item_copy1 set stock_qty -= where code = ? `
+		// 	_, errss := repo.db.Exec(Updatenew, sub.Qty, sub.ItemCode)
+		// 	if errss != nil {
+		// 		fmt.Println("Error = ", err.Error())
+		// 		return nil, errss
+		// 	}
+		// }
 
 	}
 	sql_del_sub := `delete from ar_invoice_sub where inv_id = ?`
