@@ -12,11 +12,11 @@ type NewQuoTemplate struct {
 	ArName              string               `json:"ar_name"`
 	ArBillAddress       string               `json:"ar_bill_address"`
 	ArTelephone         string               `json:"ar_telephone"`
-	SaleId              int64                 `json:"sale_id"`
+	SaleId              int64                `json:"sale_id"`
 	SaleCode            string               `json:"sale_code"`
 	SaleName            string               `json:"sale_name"`
 	BillType            int64                `json:"bill_type"`
-	TaxType             int64                  `json:"tax_type"`
+	TaxType             int64                `json:"tax_type"`
 	TaxRate             float64              `json:"tax_rate"`
 	DepartId            int64                `json:"depart_id"`
 	RefNo               string               `json:"ref_no"`
@@ -85,11 +85,11 @@ type NewSaleTemplate struct {
 	ArName              string                `json:"ar_name"`
 	ArBillAddress       string                `json:"ar_bill_address"`
 	ArTelephone         string                `json:"ar_telephone"`
-	SaleId              int64                   `json:"sale_id"`
+	SaleId              int64                 `json:"sale_id"`
 	SaleCode            string                `json:"sale_code"`
 	SaleName            string                `json:"sale_name"`
 	BillType            int64                 `json:"bill_type"`
-	TaxType             int64                   `json:"tax_type"`
+	TaxType             int64                 `json:"tax_type"`
 	TaxRate             float64               `json:"tax_rate"`
 	DepartId            int64                 `json:"depart_id"`
 	RefNo               string                `json:"ref_no"`
@@ -165,7 +165,13 @@ type SearchByKeywordTemplate struct {
 	SaleCode string `json:"sale_code"`
 	Keyword  string `json:"keyword"`
 }
-
+type SearchByItemTemplate struct {
+	ArId     string `json:"ar_id"`
+	ArCode   string `json:"ar_code"`
+	ItemCode string `json:"item_code"`
+	Code     string `json:"code"`
+	Name     string `json:"name"`
+}
 type SearchDocTemplate struct {
 	Id            int64   `json:"id"`
 	DocNo         string  `json:"doc_no"`
@@ -315,13 +321,17 @@ type NewInvoiceTemplate struct {
 	Id                  int64                    `json:"id"`
 	CompanyId           int64                    `json:"company_id"`
 	BranchId            int64                    `json:"branch_id"`
+	ItemName            string                   `json:"item_name"`
+	ItemCode            string                   `json:"item_code"`
 	Uuid                string                   `json:"uuid"`
 	DocNo               string                   `json:"doc_no"`
+	DocType             int64                    `json:"doc_type"`
 	TaxNo               string                   `json:"tax_no"`
 	BillType            int64                    `json:"bill_type"`
 	DocDate             string                   `json:"doc_date"`
 	ArId                int64                    `json:"ar_id"`
 	ArCode              string                   `json:"ar_code"`
+	Code                string                   `json:"code"`
 	ArName              string                   `json:"ar_name"`
 	ArBillAddress       string                   `json:"ArBillAddress"`
 	ArTelephone         string                   `json:"ArTelephone"`
@@ -334,7 +344,7 @@ type NewInvoiceTemplate struct {
 	TaxType             int64                    `json:"tax_type"`
 	TaxRate             float64                  `json:"tax_rate"`
 	NumberOfItem        float64                  `json:"number_of_item"`
-	DepartId            int64                    `json:"depart_id"`
+	DepartId            string                   `json:"depart_id"`
 	AllocateId          int64                    `json:"allocate_id"`
 	ProjectId           int64                    `json:"project_id"`
 	PosStatus           int64                    `json:"pos_status"`
@@ -420,4 +430,34 @@ type NewInvoiceItemTemplate struct {
 	SumOfCost       float64 `json:"sum_of_cost"`
 	RefLineNumber   int64   `json:"ref_line_number"`
 	LineNumber      int64   `json:"line_number"`
+}
+
+type NewSearchItemTemplate struct {
+	Id              int64   `json:"id"`
+	DocDate         string  `json:"doc_date"`
+	DocNo           string  `json:"doc_no"`
+	ItemId          int64   `json:"item_id"`
+	ItemCode        string  `json:"item_code"`
+	ItemName        string  `json:"item_name"`
+	BarCode         string  `json:"bar_code"`
+	UnitICode       string  `json:"unit_code"`
+	WhId            int64   `json:"wh_id"`
+	ShelfId         int64   `json:"shelf_id"`
+	Price           float64 `json:"price"`
+	Qty             float64 `json:"qty"`
+	CnQty           float64 `json:"cn_qty"`
+	ItemDescription string  `json:"item_description"`
+	IsCreditNote    int64   `json:"is_credit_note"`
+	IsDebitNote     int64   `json:"is_debit_note"`
+	PackingRate1    int64   `json:"packing_rate_1"`
+	PackingRate2    int64   `json:"packing_rate_2"`
+	SoRefNo         string  `json:"so_ref_no"`
+	AverageCost     float64 `json:"average_cost"`
+	SumOfCost       float64 `json:"sum_of_cost"`
+	RefLineNumber   int64   `json:"ref_line_number"`
+	LineNumber      int64   `json:"line_number"`
+	ArName          string  `json:"ar_name"`
+	ArCode          string  `json:"ar_code"`
+	ArId            int64   `json:"ar_id"`
+	Name            string  `json:"name"`
 }

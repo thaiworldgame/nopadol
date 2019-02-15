@@ -321,6 +321,8 @@ type (
 		Id                  int64                   `json:"id"`
 		CompanyId           int64                   `json:"company_id"`
 		BranchId            int64                   `json:"branch_id"`
+		ItemId              int64                   `json:"item_id"`
+		ItemCode            string                  `json:"item_code"`
 		Uuid                string                  `json:"uuid"`
 		DocNo               string                  `json:"doc_no"`
 		TaxNo               string                  `json:"tax_no"`
@@ -340,7 +342,7 @@ type (
 		TaxType             int64                   `json:"tax_type"`
 		TaxRate             float64                 `json:"tax_rate"`
 		NumberOfItem        float64                 `json:"number_of_item"`
-		DepartId            int64                   `json:"depart_id"`
+		DepartId            string                  `json:"depart_id"`
 		AllocateId          int64                   `json:"allocate_id"`
 		ProjectId           int64                   `json:"project_id"`
 		PosStatus           int64                   `json:"pos_status"`
@@ -1153,6 +1155,32 @@ func SearchInvoiceById(s Service) interface{} {
 func SearchInvoiceByKeyword(s Service) interface{} {
 	return func(ctx context.Context, req *SearchByKeywordRequest) (interface{}, error) {
 		resp, err := s.SearchInvoiceByKeyword(&SearchByKeywordTemplate{SaleCode: req.SaleCode, Keyword: req.Keyword})
+		if err != nil {
+			fmt.Println("endpoint error =", err.Error())
+			return nil, fmt.Errorf(err.Error())
+		}
+		return map[string]interface{}{
+			"data": resp,
+		}, nil
+	}
+}
+
+func SearchSaleByItem(s Service) interface{} {
+	return func(ctx context.Context, req *SearchByItemTemplate) (interface{}, error) {
+		resp, err := s.SearchSaleByItem(&SearchByItemTemplate{Name: req.Name, ItemCode: req.ItemCode})
+		if err != nil {
+			fmt.Println("endpoint error =", err.Error())
+			return nil, fmt.Errorf(err.Error())
+		}
+		return map[string]interface{}{
+			"data": resp,
+		}, nil
+	}
+}
+
+func SearchCredit(s Service) interface{} {
+	return func(ctx context.Context, req *SearchByIdRequest) (interface{}, error) {
+		resp, err := s.SearchCredit(&SearchByIdTemplate{Id: req.Id})
 		if err != nil {
 			fmt.Println("endpoint error =", err.Error())
 			return nil, fmt.Errorf(err.Error())

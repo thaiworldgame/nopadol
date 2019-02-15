@@ -27,6 +27,8 @@ type Service interface {
 	CreateInvoice(req *NewInvoiceTemplate) (interface{}, error)
 	SearchInvoiceById(req *SearchByIdTemplate) (interface{}, error)
 	SearchInvoiceByKeyword(req *SearchByKeywordTemplate) (interface{}, error)
+	SearchSaleByItem(req *SearchByItemTemplate) (interface{}, error)
+	SearchCredit(req *SearchByIdTemplate) (interface{}, error)
 }
 
 func (s *service) CreateQuotation(req *NewQuoTemplate) (interface{}, error) {
@@ -153,6 +155,13 @@ func (s *service) SearchSaleOrderById(req *SearchByIdTemplate) (interface{}, err
 	return resp, nil
 }
 
+func (s *service) SearchSaleByItem(req *SearchByItemTemplate) (interface{}, error) {
+	resp, err := s.repo.SearchSaleByItem(req)
+	if err != nil {
+		return nil, err
+	}
+	return resp, nil
+}
 func (s *service) SearchDocByKeyword(req *SearchByKeywordTemplate) (interface{}, error) {
 	resp, err := s.repo.SearchDocByKeyword(req)
 	if err != nil {
@@ -247,5 +256,14 @@ func (s *service) SearchInvoiceByKeyword(req *SearchByKeywordTemplate) (interfac
 	if err != nil {
 		return nil, err
 	}
+	return resp, nil
+}
+
+func (s *service) SearchCredit(req *SearchByIdTemplate) (interface{}, error) {
+	resp, err := s.repo.SearchCredit(req)
+	if err != nil {
+		return nil, err
+	}
+
 	return resp, nil
 }
