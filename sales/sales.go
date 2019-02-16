@@ -12,11 +12,11 @@ type NewQuoTemplate struct {
 	ArName              string               `json:"ar_name"`
 	ArBillAddress       string               `json:"ar_bill_address"`
 	ArTelephone         string               `json:"ar_telephone"`
-	SaleId              int64                 `json:"sale_id"`
+	SaleId              int64                `json:"sale_id"`
 	SaleCode            string               `json:"sale_code"`
 	SaleName            string               `json:"sale_name"`
 	BillType            int64                `json:"bill_type"`
-	TaxType             int64                  `json:"tax_type"`
+	TaxType             int64                `json:"tax_type"`
 	TaxRate             float64              `json:"tax_rate"`
 	DepartId            int64                `json:"depart_id"`
 	RefNo               string               `json:"ref_no"`
@@ -48,6 +48,8 @@ type NewQuoTemplate struct {
 	CreateTime          string               `json:"create_time"`
 	EditBy              string               `json:"edit_by"`
 	EditTime            string               `json:"edit_time"`
+	ConfirmBy           string               `json:confirm_by`
+	ConfirmTime         string               `json:"confirm_time"`
 	CancelBy            string               `json:"cancel_by"`
 	CancelTime          string               `json:"cancel_time"`
 	Subs                []NewQuoItemTemplate `json:"subs"`
@@ -85,11 +87,11 @@ type NewSaleTemplate struct {
 	ArName              string                `json:"ar_name"`
 	ArBillAddress       string                `json:"ar_bill_address"`
 	ArTelephone         string                `json:"ar_telephone"`
-	SaleId              int64                   `json:"sale_id"`
+	SaleId              int64                 `json:"sale_id"`
 	SaleCode            string                `json:"sale_code"`
 	SaleName            string                `json:"sale_name"`
 	BillType            int64                 `json:"bill_type"`
-	TaxType             int64                   `json:"tax_type"`
+	TaxType             int64                 `json:"tax_type"`
 	TaxRate             float64               `json:"tax_rate"`
 	DepartId            int64                 `json:"depart_id"`
 	RefNo               string                `json:"ref_no"`
@@ -165,7 +167,13 @@ type SearchByKeywordTemplate struct {
 	SaleCode string `json:"sale_code"`
 	Keyword  string `json:"keyword"`
 }
-
+type SearchByItemTemplate struct {
+	ArId     string `json:"ar_id"`
+	ArCode   string `json:"ar_code"`
+	ItemCode string `json:"item_code"`
+	Code     string `json:"code"`
+	Name     string `json:"name"`
+}
 type SearchDocTemplate struct {
 	Id            int64   `json:"id"`
 	DocNo         string  `json:"doc_no"`
@@ -180,7 +188,33 @@ type SearchDocTemplate struct {
 	IsCancel      int     `json:"is_cancel"`
 	IsConfirm     int     `json:"is_confirm"`
 }
-
+type SearchInvTemplate struct {
+	Id            int64   `json:"id"`
+	DocNo         string  `json:"doc_no"`
+	DocDate       string  `json:"doc_date"`
+	Doctype       string  `json:"doc_type"`
+	ArCode        string  `json:"ar_code"`
+	ArName        string  `json:"ar_name"`
+	SaleCode      string  `json:"sale_code"`
+	SaleName      string  `json:"sale_name"`
+	MyDescription string  `json:"my_description"`
+	TotalAmount   float64 `json:"total_amount"`
+	IsCancel      int     `json:"is_cancel"`
+	IsConfirm     int     `json:"is_confirm"`
+}
+type SearchIVDocTemplate struct {
+	Id            int64   `json:"id"`
+	DocNo         string  `json:"doc_no"`
+	DocDate       string  `json:"doc_date"`
+	ArCode        string  `json:"ar_code"`
+	ArName        string  `json:"ar_name"`
+	SaleCode      string  `json:"sale_code"`
+	SaleName      string  `json:"sale_name"`
+	MyDescription string  `json:"my_description"`
+	TotalAmount   float64 `json:"total_amount"`
+	IsCancel      int     `json:"is_cancel"`
+	IsConfirm     int     `json:"is_confirm"`
+}
 type NewDepositTemplate struct {
 	Id               int64                    `json:"id"`
 	CompanyId        int64                    `json:"company_id"`
@@ -291,6 +325,16 @@ type ChqInTemplate struct {
 	ChqBalance   float64 `json:"chq_balance"`
 	Description  string  `json:"description"`
 }
+type BankpayTemplate struct {
+	Id           int64   `json:"id"`
+	RefId        int64   `json:"ref_id"`
+	BankAccount  string  `json:"bank_account"`
+	BankName     string  `json:"bank_name"`
+	BankAmount   float64 `json:"bank_amount"`
+	Activestatus int64   `json:"active_status"`
+	CreateBy     string  `json:"create_by"`
+	EditBy       string  `json:"edit_by"`
+}
 
 type RecMoneyTemplate struct {
 	Id             int64   `json:"id"`
@@ -312,102 +356,139 @@ type RecMoneyTemplate struct {
 }
 
 type NewInvoiceTemplate struct {
-	Id                  int64                    `json:"id"`
-	CompanyId           int64                    `json:"company_id"`
-	BranchId            int64                    `json:"branch_id"`
-	Uuid                string                   `json:"uuid"`
-	DocNo               string                   `json:"doc_no"`
-	TaxNo               string                   `json:"tax_no"`
-	BillType            int64                    `json:"bill_type"`
-	DocDate             string                   `json:"doc_date"`
-	ArId                int64                    `json:"ar_id"`
-	ArCode              string                   `json:"ar_code"`
-	ArName              string                   `json:"ar_name"`
-	ArBillAddress       string                   `json:"ArBillAddress"`
-	ArTelephone         string                   `json:"ArTelephone"`
-	SaleId              int64                    `json:"sale_id"`
-	SaleCode            string                   `json:"sale_code"`
-	SaleName            string                   `json:"sale_name"`
-	PosMachineId        int64                    `json:"pos_machine_id"`
-	PeriodId            int64                    `json:"period_id"`
-	CashId              int64                    `json:"cash_id"`
-	TaxType             int64                    `json:"tax_type"`
-	TaxRate             float64                  `json:"tax_rate"`
-	NumberOfItem        float64                  `json:"number_of_item"`
-	DepartId            int64                    `json:"depart_id"`
-	AllocateId          int64                    `json:"allocate_id"`
-	ProjectId           int64                    `json:"project_id"`
-	PosStatus           int64                    `json:"pos_status"`
-	CreditDay           int64                    `json:"credit_day"`
-	DueDate             string                   `json:"due_date"`
-	DeliveryDay         int64                    `json:"delivery_day"`
-	DeliveryDate        string                   `json:"delivery_date"`
-	IsConfirm           int64                    `json:"is_confirm"`
-	IsConditionSend     int64                    `json:"is_condition_send"`
-	MyDescription       string                   `json:"my_description"`
-	SoRefNo             string                   `json:"so_ref_no"`
-	ChangeAmount        float64                  `json:"change_amount"`
-	SumCashAmount       float64                  `json:"sum_cash_amount"`
-	SumCreditAmount     float64                  `json:"sum_credit_amount"`
-	SumChqAmount        float64                  `json:"sum_chq_amount"`
-	SumBankAmount       float64                  `json:"sum_bank_amount"`
-	SumOfDeposit        float64                  `json:"sum_of_deposit"`
-	SumOnLineAmount     float64                  `json:"sum_on_line_amount"`
-	CouponAmount        float64                  `json:"coupon_amount"`
-	SumOfItemAmount     float64                  `json:"sum_of_item_amount"`
-	DiscountWord        string                   `json:"discount_word"`
-	DiscountAmount      float64                  `json:"discount_amount"`
-	AfterDiscountAmount float64                  `json:"after_discount_amount"`
-	BeforeTaxAmount     float64                  `json:"before_tax_amount"`
-	TaxAmount           float64                  `json:"tax_amount"`
-	TotalAmount         float64                  `json:"total_amount"`
-	NetDebtAmount       float64                  `json:"net_debt_amount"`
-	BillBalance         float64                  `json:"bill_balance"`
-	PayBillStatus       int64                    `json:"pay_bill_status"`
-	PayBillAmount       float64                  `json:"pay_bill_amount"`
-	DeliveryStatus      int64                    `json:"delivery_status"`
-	ReceiveName         string                   `json:"receive_name"`
-	ReceiveTel          string                   `json:"receive_tel"`
-	CarLicense          string                   `json:"car_license"`
-	IsCancel            int64                    `json:"is_cancel"`
-	IsHold              int64                    `json:"is_hold"`
-	IsPosted            int64                    `json:"is_posted"`
-	IsCreditNote        int64                    `json:"is_credit_note"`
-	IsDebitNote         int64                    `json:"is_debit_note"`
-	GlStatus            int64                    `json:"gl_status"`
-	JobId               string                   `json:"job_id"`
-	JobNo               string                   `json:"job_no"`
-	CouponNo            string                   `json:"coupon_no"`
-	RedeemNo            string                   `json:"redeem_no"`
-	ScgNumber           string                   `json:"scg_number"`
-	ScgId               string                   `json:"scg_id"`
-	CreateBy            string                   `json:"create_by"`
-	CreateTime          string                   `json:"create_time"`
-	EditBy              string                   `json:"edit_by"`
-	EditTime            string                   `json:"edit_time"`
-	ConfirmBy           string                   `json:"confirm_by"`
-	ConfirmTime         string                   `json:"confirm_time"`
-	CancelBy            string                   `json:"cancel_by"`
-	CancelTime          string                   `json:"cancel_time"`
-	CancelDescId        int64                    `json:"cancel_desc_id"`
-	CancelDesc          string                   `json:"cancel_desc"`
-	Subs                []NewInvoiceItemTemplate `json:"subs"`
-	RecMoney            []RecMoneyTemplate       `json:"rec_money"`
-	CreditCard          []CreditCardTemplate     `json:"credit_card"`
-	Chq                 []ChqInTemplate          `json:"chq"`
+	Id                  int64   `json:"id"`
+	CompanyId           int64   `json:"company_id"`
+	BranchId            int64   `json:"branch_id"`
+	ItemName            string  `json:"item_name"`
+	ItemCode            string  `json:"item_code"`
+	Uuid                string  `json:"uuid"`
+	DocNo               string  `json:"doc_no"`
+	TaxNo               string  `json:"tax_no"`
+	BillType            int64   `json:"bill_type"`
+	DocDate             string  `json:"doc_date"`
+	DocType             int64   `json:"doc_type"`
+	ArId                int64   `json:"ar_id"`
+	ArCode              string  `json:"ar_code"`
+	ArName              string  `json:"ar_name"`
+	ArBillAddress       string  `json:"ArBillAddress"`
+	ArTelephone         string  `json:"ArTelephone"`
+	SaleId              int64   `json:"sale_id"`
+	SaleCode            string  `json:"sale_code"`
+	SaleName            string  `json:"sale_name"`
+	PosMachineId        int64   `json:"pos_machine_id"`
+	PeriodId            int64   `json:"period_id"`
+	CashId              int64   `json:"cash_id"`
+	TaxType             int64   `json:"tax_type"`
+	TaxRate             float64 `json:"tax_rate"`
+	NumberOfItem        float64 `json:"number_of_item"`
+	DepartId            string  `json:"depart_id"`
+	AllocateId          int64   `json:"allocate_id"`
+	ProjectId           int64   `json:"project_id"`
+	PosStatus           int64   `json:"pos_status"`
+	CreditDay           int64   `json:"credit_day"`
+	DueDate             string  `json:"due_date"`
+	DeliveryDay         int64   `json:"delivery_day"`
+	DeliveryDate        string  `json:"delivery_date"`
+	IsConfirm           int64   `json:"is_confirm"`
+	IsConditionSend     int64   `json:"is_condition_send"`
+	MyDescription       string  `json:"my_description"`
+	SoRefNo             string  `json:"so_ref_no"`
+	ChangeAmount        float64 `json:"change_amount"`
+	SumCashAmount       float64 `json:"sum_cash_amount"`
+	SumCreditAmount     float64 `json:"sum_credit_amount"`
+	SumChqAmount        float64 `json:"sum_chq_amount"`
+	SumBankAmount       float64 `json:"sum_bank_amount"`
+	SumOfDeposit        float64 `json:"sum_of_deposit"`
+	SumOnLineAmount     float64 `json:"sum_on_line_amount"`
+	CouponAmount        float64 `json:"coupon_amount"`
+	SumOfItemAmount     float64 `json:"sum_of_item_amount"`
+	DiscountWord        string  `json:"discount_word"`
+	DiscountAmount      float64 `json:"discount_amount"`
+	AfterDiscountAmount float64 `json:"after_discount_amount"`
+	BeforeTaxAmount     float64 `json:"before_tax_amount"`
+	TaxAmount           float64 `json:"tax_amount"`
+	TotalAmount         float64 `json:"total_amount"`
+	NetDebtAmount       float64 `json:"net_debt_amount"`
+	BillBalance         float64 `json:"bill_balance"`
+	PayBillStatus       int64   `json:"pay_bill_status"`
+	PayBillAmount       float64 `json:"pay_bill_amount"`
+	DeliveryStatus      int64   `json:"delivery_status"`
+	ReceiveName         string  `json:"receive_name"`
+	ReceiveTel          string  `json:"receive_tel"`
+	CarLicense          string  `json:"car_license"`
+	IsCancel            int64   `json:"is_cancel"`
+	IsHold              int64   `json:"is_hold"`
+	IsPosted            int64   `json:"is_posted"`
+	IsCreditNote        int64   `json:"is_credit_note"`
+	IsDebitNote         int64   `json:"is_debit_note"`
+	GlStatus            int64   `json:"gl_status"`
+	JobId               string  `json:"job_id"`
+	JobNo               string  `json:"job_no"`
+	CouponNo            string  `json:"coupon_no"`
+	RedeemNo            string  `json:"redeem_no"`
+	ScgNumber           string  `json:"scg_number"`
+	ScgId               string  `json:"scg_id"`
+	CancelDescId        int64   `json:"cancel_desc_id"`
+	CancelDesc          string  `json:"cancel_desc"`
+	CreateBy            string  `json:"create_by"`
+	CreateTime          string  `json:"create_time"`
+	EditBy              string  `json:"edit_by"`
+	EditTime            string  `json:"edit_time"`
+	ConfirmBy           string  `json:"confirm_by"`
+	ConfirmTime         string  `json:"confirm_time"`
+	CancelBy            string  `json:"cancel_by"`
+	CancelTime          string  `json:"cancel_time"`
+
+	Subs []NewInvoiceItemTemplate `json:"subs"`
+	//RecMoney            []RecMoneyTemplate       `json:"rec_money"`
+	CreditCard []CreditCardTemplate `json:"credit_card"`
+	Chq        []ChqInTemplate      `json:"chq"`
+	BankPay    []BankpayTemplate    `json:"bank"`
 }
 
 type NewInvoiceItemTemplate struct {
-	Id              int64   `json:"id"`
-	InvId           int64   `json:"inv_id"`
-	ItemId          int64   `json:"item_id"`
+	Id    int64 `json:"id"`
+	InvId int64 `json:"inv_id"`
+
 	ItemCode        string  `json:"item_code"`
+	Itemid          int64   `json:"item_id"`
 	ItemName        string  `json:"item_name"`
 	BarCode         string  `json:"bar_code"`
 	WhId            int64   `json:"wh_id"`
 	ShelfId         int64   `json:"shelf_id"`
 	Price           float64 `json:"price"`
-	UnitICode       int64   `json:"unit_code"`
+	UnitCode        string  `json:"unit_code"`
+	Qty             float64 `json:"qty"`
+	CnQty           float64 `json:"cn_qty"`
+	DiscountWord    float64 `json:"discount_word_sub"`
+	DiscountAmount  float64 `json:"discount_amount_sub"`
+	ItemAmount      float64 `json:"amount"`
+	NetAmount       float64 `json:"net_amount"`
+	Average_cost    float64 `json:"average_cost"`
+	SumOfCost       float32 `json:"sum_of_cost"`
+	ItemDescription string  `json:"item_description"`
+	IsCancel        int64   `json:"is_cancel"`
+	IsCreditNote    int64   `json:"is_credit_note"`
+	IsDebitNote     int64   `json:"is_debit_note"`
+	PackingRate1    int64   `json:"packing_rate_1"`
+	PackingRate2    int64   `json:"packing_rate_2"`
+	RefNo           string  `json:"ref_no"`
+	RefLineNumber   int64   `json:"ref_line_number"`
+	LineNumber      int64   `json:"line_number"`
+}
+
+type NewSearchItemTemplate struct {
+	Id              int64   `json:"id"`
+	DocDate         string  `json:"doc_date"`
+	DocNo           string  `json:"doc_no"`
+	ItemId          int64   `json:"item_id"`
+	ItemCode        string  `json:"item_code"`
+	ItemName        string  `json:"item_name"`
+	BarCode         string  `json:"bar_code"`
+	UnitICode       string  `json:"unit_code"`
+	WhId            int64   `json:"wh_id"`
+	ShelfId         int64   `json:"shelf_id"`
+	Price           float64 `json:"price"`
 	Qty             float64 `json:"qty"`
 	CnQty           float64 `json:"cn_qty"`
 	ItemDescription string  `json:"item_description"`
@@ -420,4 +501,8 @@ type NewInvoiceItemTemplate struct {
 	SumOfCost       float64 `json:"sum_of_cost"`
 	RefLineNumber   int64   `json:"ref_line_number"`
 	LineNumber      int64   `json:"line_number"`
+	ArName          string  `json:"ar_name"`
+	ArCode          string  `json:"ar_code"`
+	ArId            int64   `json:"ar_id"`
+	Name            string  `json:"name"`
 }

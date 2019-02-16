@@ -17,6 +17,8 @@ type service struct {
 type Service interface {
 	CreateQuotation(req *NewQuoTemplate) (interface{}, error)
 	SearchQueById(req *SearchByIdTemplate) (interface{}, error)
+	ConfirmQuotation(req *NewQuoTemplate) (interface{}, error)
+	CancelQuotation(req *NewQuoTemplate) (interface{}, error)
 	CreateSaleOrder(req *NewSaleTemplate) (interface{}, error)
 	SearchSaleOrderById(req *SearchByIdTemplate) (interface{}, error)
 	SearchDocByKeyword(req *SearchByKeywordTemplate) (interface{}, error)
@@ -27,6 +29,10 @@ type Service interface {
 	CreateInvoice(req *NewInvoiceTemplate) (interface{}, error)
 	SearchInvoiceById(req *SearchByIdTemplate) (interface{}, error)
 	SearchInvoiceByKeyword(req *SearchByKeywordTemplate) (interface{}, error)
+	SearchSaleByItem(req *SearchByItemTemplate) (interface{}, error)
+	SearchCredit(req *SearchByIdTemplate) (interface{}, error)
+	Invoicelist(req *SearchByKeywordTemplate) (interface{}, error)
+	SearchHisByKeyword(req *SearchByKeywordTemplate) (interface{}, error)
 }
 
 func (s *service) CreateQuotation(req *NewQuoTemplate) (interface{}, error) {
@@ -89,6 +95,37 @@ func (s *service) SearchQueById(req *SearchByIdTemplate) (interface{}, error) {
 	return resp, nil
 }
 
+func (s *service) ConfirmQuotation(req *NewQuoTemplate) (interface{}, error) {
+	resp, err := s.repo.ConfirmQuotation(req)
+	if err != nil {
+		return nil, err
+	}
+	return resp, nil
+}
+
+func (s *service) CancelQuotation(req *NewQuoTemplate) (interface{}, error) {
+	resp, err := s.repo.CancelQuotation(req)
+	if err != nil {
+		return nil, err
+	}
+	return resp, nil
+}
+func (s *service) Invoicelist(req *SearchByKeywordTemplate) (interface{}, error) {
+	fmt.Println("invoicelist 2")
+	resp, err := s.repo.SearchInvoiceByKeyword(req)
+	if err != nil {
+		return nil, err
+	}
+	return resp, nil
+}
+
+func (s *service) SearchHisByKeyword(req *SearchByKeywordTemplate) (interface{}, error) {
+	resp, err := s.repo.SearchInvoiceByKeyword(req)
+	if err != nil {
+		return nil, err
+	}
+	return resp, nil
+}
 func (s *service) CreateSaleOrder(req *NewSaleTemplate) (interface{}, error) {
 	var count_item int
 	var count_item_qty int
@@ -153,6 +190,13 @@ func (s *service) SearchSaleOrderById(req *SearchByIdTemplate) (interface{}, err
 	return resp, nil
 }
 
+func (s *service) SearchSaleByItem(req *SearchByItemTemplate) (interface{}, error) {
+	resp, err := s.repo.SearchSaleByItem(req)
+	if err != nil {
+		return nil, err
+	}
+	return resp, nil
+}
 func (s *service) SearchDocByKeyword(req *SearchByKeywordTemplate) (interface{}, error) {
 	resp, err := s.repo.SearchDocByKeyword(req)
 	if err != nil {
@@ -194,6 +238,7 @@ func (s *service) SearchDepositById(req *SearchByIdTemplate) (interface{}, error
 }
 
 func (s *service) SearchDepositByKeyword(req *SearchByKeywordTemplate) (interface{}, error) {
+
 	resp, err := s.repo.SearchDepositByKeyword(req)
 	if err != nil {
 		return nil, err
@@ -210,6 +255,29 @@ func (s *service) SearchReserveToDeposit(req *SearchByKeywordTemplate) (interfac
 }
 
 func (s *service) CreateInvoice(req *NewInvoiceTemplate) (interface{}, error) {
+	var count_item int
+	var count_item_qty int
+	var count_item_unit int
+	var sum_item_amount float64
+	var err error
+	//  verify ยอด สินค้ารายการย่อย
+	fmt.Println("Service 1")
+	for _, sub_item := range req.Subs {
+		fmt.Println(sub_item.Price, "บาท")
+		if sub_item.Qty != 0 {
+			count_item = count_item + 1
+
+			sum_item_amount = sum_item_amount + (sub_item.Qty * (sub_item.Price - sub_item.DiscountAmount))
+		}
+		if sub_item.ItemCode != "" && sub_item.Qty == 0 {
+			count_item_qty = count_item_qty + 1
+		}
+		if sub_item.ItemCode != "" && sub_item.UnitCode == "" {
+			count_item_unit = count_item_unit + 1
+		}
+	}
+
+	// เช็คความถูกต้องของข้อมูล
 	var sum_pay_all float64
 
 	sum_pay_all = req.SumCashAmount + req.SumCreditAmount + req.SumChqAmount + req.SumBankAmount + req.SumOfDeposit + req.CouponAmount
@@ -234,6 +302,7 @@ func (s *service) CreateInvoice(req *NewInvoiceTemplate) (interface{}, error) {
 }
 
 func (s *service) SearchInvoiceById(req *SearchByIdTemplate) (interface{}, error) {
+
 	resp, err := s.repo.SearchInvoiceById(req)
 	if err != nil {
 		return nil, err
@@ -247,5 +316,14 @@ func (s *service) SearchInvoiceByKeyword(req *SearchByKeywordTemplate) (interfac
 	if err != nil {
 		return nil, err
 	}
+	return resp, nil
+}
+
+func (s *service) SearchCredit(req *SearchByIdTemplate) (interface{}, error) {
+	resp, err := s.repo.SearchCredit(req)
+	if err != nil {
+		return nil, err
+	}
+
 	return resp, nil
 }
