@@ -594,6 +594,17 @@ type NewSearchItemModel struct {
 	ArCode          string  `db:"ar_code"`
 	ArId            int64   `db:"ar_id"`
 	Name            string  `db:"name"`
+	NId             int64   `db:"Id"`
+	NDocNo          string  `db:"DocNo"`
+	NDocDate        string  `db:"DocDate"`
+	NItemId         int64   `db:"ItemId"`
+	NArId           int64   `db:"ArId"`
+	NBarCode        string  `db:"BarCode"`
+	NItemCode       string  `db:"ItemCode"`
+	NItemName       string  `db:"ItemName"`
+	NUnitCode       string  `db:"UnitCode"`
+	NQty            float64 `db:"Qty"`
+	NPrice          float64 `db:"Price"`
 }
 type salesRepository struct{ db *sqlx.DB }
 
@@ -2698,10 +2709,10 @@ func (repo *salesRepository) SearchInvoiceByKeyword(req *sales.SearchByKeywordTe
 
 	d := []SearchInvModel{}
 
-	sql = `select a.id,a.doc_no,a.doc_date,a.doc_type
-		,a.ar_code,a.ar_name,a.sale_code,
-		a.sale_name,ifnull(a.my_description,'') as my_description,
-		a.total_amount,a.is_cancel,a.is_confirm from ar_invoice a where a.is_cancel = 0 and doc_type = 0`
+	sql = `select a.id,a.doc_no,a.doc_date,a.doc_type,a.ar_code,a.ar_name,a.sale_code,a.sale_name,ifnull(a.my_description,'') as my_description,
+		a.total_amount,a.is_cancel,a.is_confirm 
+		from ar_invoice a 
+		where a.is_cancel = 0 and doc_type = 0`
 	err = repo.db.Select(&d, sql)
 
 	fmt.Println("sql = ", sql, req.Keyword)
@@ -2750,58 +2761,64 @@ func map_searchitem_template(x NewSearchItemModel) sales.NewSearchItemTemplate {
 		ArCode:          x.ArCode,
 		ArId:            x.ArId,
 		Name:            x.Name,
+		NId:             x.NId,
+		NDocNo:          x.NDocNo,
+		NDocDate:        x.NDocDate,
+		NItemId:         x.NItemId,
+		NArId:           x.NArId,
+		NBarCode:        x.NBarCode,
+		NItemCode:       x.NItemCode,
+		NItemName:       x.NItemName,
+		NUnitCode:       x.NUnitCode,
+		NQty:            x.NQty,
+		NPrice:          x.NPrice,
 	}
-}
 
-/*type NewSearchItemModel struct {
-	Id              int64   `db:"id"`
-	DocDate         string  `db:"doc_date"`
-	DocNo           string  `db:"doc_no"`
-	ItemId          int64   `db:"item_id"`
-	ItemCode        string  `db:"item_code"`
-	ItemName        string  `db:"item_name"`
-	BarCode         string  `db:"bar_code"`
-	UnitICode       int64   `db:"unit_code"`
-	WhId            int64   `db:"wh_id"`
-	ShelfId         int64   `db:"shelf_id"`
-	Price           float64 `db:"price"`
-	Qty             float64 `db:"qty"`
-	CnQty           float64 `db:"cn_qty"`
-	ItemDescription string  `db:"item_description"`
-	IsCreditNote    int64   `db:"is_credit_note"`
-	IsDebitNote     int64   `db:"is_debit_note"`
-	PackingRate1    int64   `db:"packing_rate_1"`
-	PackingRate2    int64   `db:"packing_rate_2"`
-	SoRefNo         string  `db:"so_ref_no"`
-	AverageCost     float64 `db:"average_cost"`
-	SumOfCost       float64 `db:"sum_of_cost"`
-	RefLineNumber   int64   `db:"ref_line_number"`
-	LineNumber      int64   `db:"line_number"`
-	ArName          string  `db:"ar_name"`
-	ArCode          string  `db:"ar_code"`
-	ArId            int64   `db:"ar_id"`
-}*/
+}
 
 func (repo *salesRepository) SearchSaleByItem(req *sales.SearchByItemTemplate) (resp interface{}, err error) {
 	var sql string
 	d := []NewSearchItemModel{}
-	if req.ItemCode == "" && req.Name == "" {
-		sql = `select a.id, ifnull(a.doc_no,'') as doc_no, ifnull(a.doc_date,'') as doc_date, a.item_id, a.ar_id,  
-		ifnull(a.bar_code,'') as bar_code, ifnull(a.item_code,'') as item_code, ifnull(a.item_name,'') as item_name, 
-		a.unit_code, a.qty, a.cn_qty, a.price, a.ar_id,
-		b.id, b.name
-		from ar_invoice_sub a left join Customer b on a.ar_id = b.id
-		order by a.id desc limit 20`
-		err = repo.db.Select(&d, sql)
+	if req.Name == "" && req.ItemCode == "" {
+		fmt.Println("No Data")
 	} else {
-		sql = `select a.id, ifnull(a.doc_no,'') as doc_no, ifnull(a.doc_date,'') as doc_date, a.item_id, a.ar_id,  
-		ifnull(a.bar_code,'') as bar_code, ifnull(a.item_code,'') as item_code, ifnull(a.item_name,'') as item_name, 
-		a.unit_code, a.qty, a.cn_qty, a.price, a.ar_id,
-		b.id, b.name
-		from ar_invoice_sub a left join Customer b on a.ar_id = b.id
-		where  a.item_code like concat(?,'%')
-		order by a.id desc limit 20`
-		err = repo.db.Select(&d, sql, req.ItemCode)
+		/*	sql = `select a.id, ifnull(a.doc_no,'') as doc_no, ifnull(a.doc_date,'') as doc_date, a.item_id, a.ar_id,
+			ifnull(a.bar_code,'') as bar_code, ifnull(a.item_code,'') as item_code, ifnull(a.item_name,'') as item_name,
+			a.unit_code, a.qty, a.cn_qty, a.price, a.ar_id,
+			b.id, b.name
+			from ar_invoice_sub a left join Customer b on a.ar_id = b.id
+			where b.name like concat(?) and a.item_code like concat(?)
+			order by a.id desc limit 20`
+			err = repo.db.Select(&d, sql, req.Name, req.ItemCode)*/
+		switch {
+		case req.Page == "invoice":
+			sql = `select a.id, ifnull(a.doc_no,'') as doc_no, ifnull(a.doc_date,'') as doc_date, a.item_id, a.ar_id,  
+			ifnull(a.bar_code,'') as bar_code, ifnull(a.item_code,'') as item_code, ifnull(a.item_name,'') as item_name, 
+			a.unit_code, a.qty, a.cn_qty, a.price, a.ar_id,
+			b.id, b.name
+			from ar_invoice_sub a left join Customer b on a.ar_id = b.id
+			where b.name like concat(?) and a.item_code like concat(?) 
+			order by a.id desc limit 20`
+			err = repo.db.Select(&d, sql, req.Name, req.ItemCode)
+		case req.Page == "quotation":
+			sql = `select a.Id, a.ItemId, a.ArId,  
+			ifnull(a.BarCode,'') as BarCode, ifnull(a.ItemCode,'') as ItemCode, ifnull(a.ItemName,'') as ItemName, 
+			a.UnitCode, a.Qty, a.Price, a.ArId,
+			b.id, b.name
+			from QuotationSub a left join Customer b on a.ArId = b.id
+			where b.name like concat(?) or a.ItemCode like concat(?) 
+			order by a.id desc limit 20`
+			err = repo.db.Select(&d, sql, req.Name, req.ItemCode)
+		case req.Page == "saleorder":
+			sql = `select a.Id, a.ItemId, a.ArId,  
+			ifnull(a.BarCode,'') as BarCode, ifnull(a.ItemCode,'') as ItemCode, ifnull(a.ItemName,'') as ItemName, 
+			a.UnitCode, a.Qty, a.Price, a.ArId,
+			b.id, b.name
+			from SaleOrderSub a left join Customer b on a.ArId = b.id
+			where b.name like concat(?) or a.ItemCode like concat(?) 
+			order by a.id desc limit 20`
+			err = repo.db.Select(&d, sql, req.Name, req.ItemCode)
+		}
 	}
 	fmt.Println("sql = ", sql, req.ItemCode)
 	if err != nil {
@@ -2836,4 +2853,38 @@ func (repo *salesRepository) SearchCredit(req *sales.SearchByIdTemplate) (resp i
 
 	//fmt.Println("id,code,name", i.id,i.code,i.name)
 	return inv_resp, nil
+}
+
+func (repo *salesRepository) SearchHisByKeyword(req *sales.SearchByKeywordTemplate) (resp interface{}, err error) {
+	var sql string
+	d := []SearchInvModel{}
+	if req.Keyword == "" {
+		sql = `select a.id, a.doc_no,a.doc_date, a.doc_type ,a.ar_code,a.ar_name,a.sale_code,
+		a.sale_name, ifnull(a.my_description,'') as my_description,a.total_amount, a.is_cancel,a.is_confirm 
+		from ar_invoice a
+		order by a.id desc limit 30`
+		err = repo.db.Select(&d, sql)
+	} else {
+		sql = `select a.id, a.doc_no,a.doc_date, a.doc_type ,a.ar_code,a.ar_name,a.sale_code,
+		a.sale_name, ifnull(a.my_description,'') as my_description,a.total_amount, a.is_cancel,a.is_confirm 
+		from ar_invoice a
+		where a.doc_no like  concat(?,'%') or a.ar_code like  concat(?,'%') or a.ar_name like  concat(?,'%') 
+		order by a.id desc limit 30`
+		err = repo.db.Select(&d, sql, req.Keyword, req.Keyword, req.Keyword)
+	}
+	fmt.Println("sql = ", sql, req.Keyword)
+	if err != nil {
+		fmt.Println("errsss = ", err.Error())
+		return resp, err
+	}
+
+	dp := []sales.SearchInvTemplate{}
+
+	for _, dep := range d {
+		dpline := map_doc_invoic_template(dep)
+		dp = append(dp, dpline)
+	}
+
+	return dp, nil
+
 }

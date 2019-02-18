@@ -120,7 +120,7 @@ func (s *service) Invoicelist(req *SearchByKeywordTemplate) (interface{}, error)
 }
 
 func (s *service) SearchHisByKeyword(req *SearchByKeywordTemplate) (interface{}, error) {
-	resp, err := s.repo.SearchInvoiceByKeyword(req)
+	resp, err := s.repo.SearchHisByKeyword(req)
 	if err != nil {
 		return nil, err
 	}

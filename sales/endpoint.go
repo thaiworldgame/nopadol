@@ -1281,7 +1281,7 @@ func SearchInvoiceByKeyword(s Service) interface{} {
 
 func SearchSaleByItem(s Service) interface{} {
 	return func(ctx context.Context, req *SearchByItemTemplate) (interface{}, error) {
-		resp, err := s.SearchSaleByItem(&SearchByItemTemplate{Name: req.Name, ItemCode: req.ItemCode})
+		resp, err := s.SearchSaleByItem(&SearchByItemTemplate{Name: req.Name, ItemCode: req.ItemCode, Page: req.Page})
 		if err != nil {
 			fmt.Println("endpoint error =", err.Error())
 			return nil, fmt.Errorf(err.Error())

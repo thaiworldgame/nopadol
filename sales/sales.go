@@ -173,6 +173,7 @@ type SearchByItemTemplate struct {
 	ItemCode string `json:"item_code"`
 	Code     string `json:"code"`
 	Name     string `json:"name"`
+	Page     string `json:"page"`
 }
 type SearchDocTemplate struct {
 	Id            int64   `json:"id"`
@@ -505,4 +506,15 @@ type NewSearchItemTemplate struct {
 	ArCode          string  `json:"ar_code"`
 	ArId            int64   `json:"ar_id"`
 	Name            string  `json:"name"`
+	NId             int64   `json:"Id"`
+	NDocNo          string  `json:"DocNo"`
+	NDocDate        string  `json:"DocDate"`
+	NItemId         int64   `json:"ItemId"`
+	NArId           int64   `json:"ArId"`
+	NBarCode        string  `json:"BarCode"`
+	NItemCode       string  `json:"ItemCode"`
+	NItemName       string  `json:"ItemName"`
+	NUnitCode       string  `json:"UnitCode"`
+	NQty            float64 `json:"Qty"`
+	NPrice          float64 `json:"Price"`
 }
