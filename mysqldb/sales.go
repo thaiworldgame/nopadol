@@ -2801,21 +2801,20 @@ func (repo *salesRepository) SearchSaleByItem(req *sales.SearchByItemTemplate) (
 			order by a.id desc limit 20`
 			err = repo.db.Select(&d, sql, req.Name, req.ItemCode)
 		case req.Page == "quotation":
-			sql = `select a.Id, a.ItemId, a.ArId,  
-			ifnull(a.BarCode,'') as BarCode, ifnull(a.ItemCode,'') as ItemCode, ifnull(a.ItemName,'') as ItemName, 
-			a.UnitCode, a.Qty, a.Price, a.ArId,
-			b.id, b.name
-			from QuotationSub a left join Customer b on a.ArId = b.id
-			where b.name like concat(?) or a.ItemCode like concat(?) 
+			sql = `select a.Id, ifnull(a.DocDate,'') as DocDate, ifnull(a.DocNo,'') as DocNo, 
+			ifnull(a.ItemName,'') as ItemName, a.ArId, a.ArName,
+			b.UnitCode, b.Qty, b.CnQty, b.Price, ifnull(b.ItemCode,'') as ItemCode, b.ArId
+			from QuotationSub a left join QuotationSub b on a.ArId = b.ArId
+			where b.name like concat(?) and a.ItemCode like concat(?) 
 			order by a.id desc limit 20`
 			err = repo.db.Select(&d, sql, req.Name, req.ItemCode)
 		case req.Page == "saleorder":
-			sql = `select a.Id, a.ItemId, a.ArId,  
-			ifnull(a.BarCode,'') as BarCode, ifnull(a.ItemCode,'') as ItemCode, ifnull(a.ItemName,'') as ItemName, 
-			a.UnitCode, a.Qty, a.Price, a.ArId,
+			sql = `select a.id, ifnull(a.doc_no,'') as doc_no, ifnull(a.doc_date,'') as doc_date, a.item_id, a.ar_id,  
+			ifnull(a.bar_code,'') as bar_code, ifnull(a.item_code,'') as item_code, ifnull(a.item_name,'') as item_name, 
+			a.unit_code, a.qty, a.cn_qty, a.price, a.ar_id,
 			b.id, b.name
-			from SaleOrderSub a left join Customer b on a.ArId = b.id
-			where b.name like concat(?) or a.ItemCode like concat(?) 
+			from SaleOrderSub a left join Customer b on a.ar_id = b.id
+			where b.name like concat(?) and a.item_code like concat(?) 
 			order by a.id desc limit 20`
 			err = repo.db.Select(&d, sql, req.Name, req.ItemCode)
 		}
