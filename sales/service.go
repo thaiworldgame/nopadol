@@ -29,6 +29,7 @@ type Service interface {
 	CreateInvoice(req *NewInvoiceTemplate) (interface{}, error)
 	SearchInvoiceById(req *SearchByIdTemplate) (interface{}, error)
 	Invoicelist(req *SearchByKeywordTemplate) (interface{}, error)
+	CancelInvoice(req *NewInvoiceTemplate) (interface{}, error)
 }
 
 func (s *service) CreateQuotation(req *NewQuoTemplate) (interface{}, error) {
@@ -101,6 +102,13 @@ func (s *service) ConfirmQuotation(req *NewQuoTemplate) (interface{}, error) {
 
 func (s *service) CancelQuotation(req *NewQuoTemplate) (interface{}, error) {
 	resp, err := s.repo.CancelQuotation(req)
+	if err != nil {
+		return nil, err
+	}
+	return resp, nil
+}
+func (s *service) CancelInvoice(req *NewInvoiceTemplate) (interface{}, error) {
+	resp, err := s.repo.CancelInvoice(req)
 	if err != nil {
 		return nil, err
 	}
@@ -241,7 +249,7 @@ func (s *service) CreateInvoice(req *NewInvoiceTemplate) (interface{}, error) {
 	var count_item_unit int
 	var sum_item_amount float64
 	var err error
-//  verify ยอด สินค้ารายการย่อย
+	//  verify ยอด สินค้ารายการย่อย
 	fmt.Println("Service 1")
 	for _, sub_item := range req.Subs {
 		fmt.Println(sub_item.Price, "บาท")
