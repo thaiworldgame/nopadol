@@ -12,6 +12,7 @@ type service struct {
 
 type Service interface {
 	UserLogIn(req *UserLogInRequest) (interface{}, error)
+	LogIn(req *LoginRequest) (interface{}, error)
 	SearchListCompany() (interface{}, error)
 	SearchListMachine() (interface{}, error)
 	SearchCarBrand(string) (interface{}, error)
@@ -19,6 +20,7 @@ type Service interface {
 	SearchItem(string) (interface{}, error)
 
 	PickupNew(req *NewPickupRequest) (interface{}, error)
+	CancelQueue(req *QueueStatusRequest) (interface{}, error)
 	ManagePickup(req *ManagePickupRequest) (interface{}, error)
 	ManageCheckout(req *ManageCheckoutRequest) (interface{}, error)
 	ListQueue(req *ListQueueRequest) (interface{}, error)
@@ -83,6 +85,16 @@ func (s *service) SearchItem(keyword string) (interface{}, error) {
 	return resp, nil
 }
 
+func (s *service) LogIn(req *LoginRequest) (interface{}, error) {
+	resp, err := s.repo.LogIn(req)
+	if err != nil {
+		fmt.Println("error service level ", err.Error())
+		return nil, err
+	}
+	fmt.Println("service UserLogIn data -> ", resp)
+	return resp, nil
+}
+
 func (s *service) UserLogIn(req *UserLogInRequest) (interface{}, error) {
 	resp, err := s.repo.UserLogIn(req)
 	if err != nil {
@@ -110,6 +122,16 @@ func (s *service) ManagePickup(req *ManagePickupRequest) (interface{}, error) {
 		return nil, err
 	}
 	fmt.Println("service Pickup Manage Data -> ", resp)
+	return resp, nil
+}
+
+func (s *service) CancelQueue(req *QueueStatusRequest) (interface{}, error) {
+	resp, err := s.repo.CancelQueue(req)
+	if err != nil {
+		fmt.Println("error service level ", err.Error())
+		return nil, err
+	}
+	fmt.Println("service Cancel Queue -> ", resp)
 	return resp, nil
 }
 

@@ -21,7 +21,7 @@ func NewDrivethruRepository(db *sqlx.DB) drivethru.Repository {
 }
 
 func (d *drivethruRepository) SearchListCompany() (interface{}, error) {
-	rs, err := d.db.Query("select id,code,branch_name from npdl.branch ")
+	rs, err := d.db.Query("select id,code,branch_name from branch ")
 	if err != nil {
 		fmt.Println("error query database ")
 		return nil, err
@@ -162,6 +162,11 @@ func (d *drivethruRepository) SearchItem(keyword string) (interface{}, error) {
 	return it, nil
 }
 
+func (d *drivethruRepository) LogIn(req *drivethru.LoginRequest) (interface{}, error) {
+	user := userLogInModel{}
+	return user.login(d.db, req)
+}
+
 func (d *drivethruRepository) UserLogIn(req *drivethru.UserLogInRequest) (interface{}, error) {
 	user := userLogInModel{}
 	return user.Userlogin(d.db, req)
@@ -201,9 +206,15 @@ func (d *drivethruRepository) QueueProduct(req *drivethru.QueueProductRequest) (
 	return pickup.QueueProduct(d.db, req)
 }
 
-func (d *drivethruRepository) BillingDone (req *drivethru.BillingDoneRequest) (interface{}, error) {
+func (d *drivethruRepository) BillingDone(req *drivethru.BillingDoneRequest) (interface{}, error) {
 	pickup := ListQueueModel{}
 	return pickup.BillingDone(d.db, req)
+}
+
+func (d *drivethruRepository) CancelQueue(req *drivethru.QueueStatusRequest) (interface{}, error) {
+	pickup := ListQueueModel{}
+
+	return pickup.CancelQueue(d.db, req)
 }
 
 func getBranch(db *sqlx.DB, branch_id int) string {

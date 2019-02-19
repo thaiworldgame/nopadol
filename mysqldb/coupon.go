@@ -14,7 +14,7 @@ func (c *Coupon) CheckCouponUsed(db *sqlx.DB, coupon_code string, amount float64
 	var exist int
 	var used int
 
-	lccommand := `select count(*) as vCount from coupon where coupon_code = ? and amount = ?`
+	lccommand := `select count(*) as vCount from coupon where coupon_code = ? and coupon_value = ?`
 	err := db.Get(&exist, lccommand, coupon_code, amount)
 	if err != nil {
 		fmt.Println("error check coupon exist = ", err.Error())
@@ -34,8 +34,9 @@ func (c *Coupon) CheckCouponUsed(db *sqlx.DB, coupon_code string, amount float64
 		return false, "master not have coupon"
 	} else if used != 0 {
 		return false, "coupon is used"
-	}else{
+	} else {
 		return true, ""
 	}
 
 }
+

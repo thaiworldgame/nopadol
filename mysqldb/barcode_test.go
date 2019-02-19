@@ -40,6 +40,6 @@ func Test_InsUpd_Barcode(t *testing.T) {
 	bar.EditTime.Time = time.Now()
 	fmt.Println("bar object before save ", bar)
 	_, err = bar.save(testDB)
-	assert.Nil(t, err, nil)
+	assert.Equal(t, err, "X")
 
 }

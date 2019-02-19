@@ -1,18 +1,25 @@
 package mysqldb
 
 import (
+	"fmt"
 	"github.com/jmoiron/sqlx"
 	"github.com/mrtomyum/nopadol/customer"
-	"fmt"
+	"time"
 )
 
 type CustomerModel struct {
-	Id         int64  `db:"id"`
-	Code       string `db:"code"`
-	Name       string `db:"name"`
-	Address    string `db:"address"`
-	Telephone  string `db:"telephone"`
-	BillCredit int64  `db:"bill_credit"`
+	Id         int64     `db:"id"`
+	Code       string    `db:"code"`
+	Name       string    `db:"name"`
+	Address    string    `db:"address"`
+	Telephone  string    `db:"telephone"`
+	BillCredit int64     `db:"bill_credit"`
+	Email      string    `json:"email"`
+	CompanyID  int       `json:"company_id"`
+	CreateBy   string    `json:"create_by"`
+	CreateTime time.Time `json:"create_time"`
+	UpdateBy   string    `json:"update_by"`
+	UpdateTime time.Time `json:"update_time"`
 }
 
 type customerRepository struct{ db *sqlx.DB }
@@ -34,12 +41,12 @@ func (cr *customerRepository) SearchById(req *customer.SearchByIdTemplate) (resp
 	cust_resp := map_customer_template(cust)
 
 	return map[string]interface{}{
-		"id":        cust_resp.Id,
-		"code":      cust_resp.Code,
-		"name":      cust_resp.Name,
-		"address":   cust_resp.Address,
-		"telephone": cust_resp.Telephone,
-		"bill_credit":cust_resp.BillCredit,
+		"id":          cust_resp.Id,
+		"code":        cust_resp.Code,
+		"name":        cust_resp.Name,
+		"address":     cust_resp.Address,
+		"telephone":   cust_resp.Telephone,
+		"bill_credit": cust_resp.BillCredit,
 	}, nil
 }
 
@@ -69,11 +76,123 @@ func (cr *customerRepository) SearchByKeyword(req *customer.SearchByKeywordTempl
 
 func map_customer_template(x CustomerModel) customer.CustomerTemplate {
 	return customer.CustomerTemplate{
-		Id:        x.Id,
-		Code:      x.Code,
-		Name:      x.Name,
-		Address:   x.Address,
-		Telephone: x.Telephone,
-		BillCredit:x.BillCredit,
+		Id:         x.Id,
+		Code:       x.Code,
+		Name:       x.Name,
+		Address:    x.Address,
+		Telephone:  x.Telephone,
+		BillCredit: x.BillCredit,
 	}
+}
+
+func (cust *CustomerModel) Search(db *sqlx.DB, ar_code string) {
+	sql := `select id,code,name,ifnull(address,'') as address,ifnull(telephone,'') as telephone,bill_credit from Customer where code = ?`
+	rs := db.QueryRow(sql, ar_code)
+	rs.Scan(&cust.Id, &cust.Code, &cust.Name, &cust.Address, &cust.Telephone, &cust.BillCredit)
+
+	return
+}
+
+func (cr *customerRepository) StoreCustomer(req *customer.CustomerTemplate) (res interface{}, err error) {
+	cus := CustomerModel{
+		Id:         req.Id,
+		Code:       req.Code,
+		Name:       req.Name,
+		Address:    req.Address,
+		Telephone:  req.Telephone,
+		BillCredit: req.BillCredit,
+		Email:      req.Email,
+		CompanyID:  req.CompanyID,
+		CreateBy:   req.CreateBy,
+		CreateTime: time.Now(),
+		UpdateBy:   req.CreateBy,
+		UpdateTime: time.Now(),
+	}
+	// check case insert & update  (0,1)
+	var id int64
+	//if req.Id == 0 {
+	//	id, err = cus.getIdByCode(cr.db, cus.Code)
+	//	return nil, err
+	//}
+
+	cus.Id = id
+	return cus.save(cr.db)
+	//return nil,nil
+}
+
+func (c *CustomerModel) getIdByCode(db *sqlx.DB, code string) (int64, error) {
+	sql := "select id from Customer where code='"+code+"'"
+	fmt.Println(sql)
+	var curID int64
+	err := db.QueryRow(sql).Scan(&curID)
+	if err != nil {
+		fmt.Printf("error ,,,, %s \n",err.Error())
+		return -1,err
+	}
+	return curID, nil
+}
+
+func (c *CustomerModel) save(db *sqlx.DB) (interface{}, error) {
+	var curID int64
+	fmt.Println("start customer.save ,  ",c)
+	//validate id if empty -> insert
+	switch {
+	case  c.Code != "":
+		{
+			fmt.Println("check state 1 code = ",c.Code)
+			x, _ := c.getIdByCode(db, c.Code)
+			fmt.Println("id by code = ",x)
+			curID = x
+		}
+	case c.Code == "":
+		{
+			fmt.Println("check state 1 ")
+			return nil, fmt.Errorf("error no Code data")
+		}
+	}
+
+	// insert
+	if curID == -1  {
+		//new customer case
+		fmt.Println("case insert customer ")
+		sql := `insert into Customer (code,name,address,telephone,bill_credit,
+						active_status,create_by,create_time)
+		values (?,?,?,?,?,?,?,?)`
+
+		rs, err := db.Exec(sql, c.Code, c.Name, c.Address, c.Telephone, c.BillCredit, 0, c.CreateBy, c.CreateTime)
+
+		if err != nil {
+			return nil, err
+		}
+		newID, err := rs.LastInsertId()
+		if err != nil {
+			return nil, err
+		}
+		return newID, nil
+	}
+	// update
+	if curID != -1  {
+		//new customer case
+		fmt.Println("case update ")
+		sql := `update Customer
+			set 	code = ?,
+				name=?,
+				address=?,
+				telephone=?,
+				bill_credit=?,
+				active_status=?
+			where id = ?`
+
+		_, err := db.Exec(sql, c.Code, c.Name, c.Address,
+			c.Telephone, c.BillCredit, 0,curID)
+
+		if err != nil {
+			return nil, err
+		}
+		//rowCount, err := rs.RowsAffected()
+		return map[string]interface{}{
+			"result ":"success",
+		}, nil
+	}
+	return nil, nil
 }
