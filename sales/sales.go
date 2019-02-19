@@ -492,6 +492,7 @@ type NewSearchItemTemplate struct {
 	Price           float64 `json:"price"`
 	Qty             float64 `json:"qty"`
 	CnQty           float64 `json:"cn_qty"`
+	DiscountWord    float64 `db:"discount_word_sub"`
 	ItemDescription string  `json:"item_description"`
 	IsCreditNote    int64   `json:"is_credit_note"`
 	IsDebitNote     int64   `json:"is_debit_note"`
@@ -517,4 +518,6 @@ type NewSearchItemTemplate struct {
 	NUnitCode       string  `json:"UnitCode"`
 	NQty            float64 `json:"Qty"`
 	NPrice          float64 `json:"Price"`
+	NArName         string  `json:"ArName"`
+	NDiscountWord   string  `json:"DiscountWord"`
 }
