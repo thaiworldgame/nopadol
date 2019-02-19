@@ -2005,6 +2005,136 @@ func map_deposit_chq_template(x ChqInModel) sales.ChqInTemplate {
 		RefId:        x.RefId,
 	}
 }
+func (repo *salesRepository) CancelInvoice(req *sales.NewInvoiceTemplate) (resp interface{}, err error) {
+	var check_doc_exist int64
+	var check_item_strock int64
+
+	now := time.Now()
+
+	req.CancelTime = now.String()
+
+	switch {
+	case req.CancelBy == "":
+		return nil, errors.New("ไม่ได้ระบุผู้ยกเลิก")
+	case req.IsConfirm == 1:
+		return nil, errors.New("เอกสารถูกอ้างอิงไปแล้ว ไม่สามารถยกเลิกได้")
+	case req.IsCancel == 1:
+		return nil, errors.New("เอกสารถูกยกเลิกไปแล้ว ไม่สามารถยกเลิกได้")
+	}
+
+	sqlexist := `select count(doc_no) as check_exist from ar_invoice where id = ?`
+	fmt.Println("DocNo Id", req.Id)
+	err = repo.db.Get(&check_doc_exist, sqlexist, req.Id)
+	if err != nil {
+		fmt.Println("Error = ", err.Error())
+		return nil, err
+	}
+
+	fmt.Println("check_doc_exist", check_doc_exist)
+
+	if check_doc_exist != 0 {
+		fmt.Println("Cancel")
+
+		sql := `Update ar_invoice set is_cancel=1,cancel_by=?,cancel_time=? where Id=?`
+		fmt.Println("sql update = ", sql)
+		id, err := repo.db.Exec(sql, req.CancelBy, req.CancelTime, req.Id)
+		if err != nil {
+			fmt.Println("Error = ", err.Error())
+			return nil, err
+		}
+
+		rowAffect, err := id.RowsAffected()
+		fmt.Println("Row Affect = ", rowAffect)
+
+		fmt.Println("ReqID=", req.Id)
+
+		sql_del_sub := `update ar_invoice_sub set is_cancel = 1 where inv_id = ?`
+		_, err = repo.db.Exec(sql_del_sub, req.Id)
+		if err != nil {
+			fmt.Println("Error = ", err.Error())
+			return nil, err
+		}
+	}
+	sqlitems := `select count(doc_no) as check_exist from ar_invoice_sub where inv_id = ? or doc_no =?`
+	errs := repo.db.Get(&check_item_strock, sqlitems, req.Id, req.DocNo)
+	if errs != nil {
+		fmt.Println("Error = ", errs.Error())
+		return nil, errs
+	}
+	if check_item_strock != 0 {
+		var itemcode_ string
+		var qty float64
+		var qty_item float64
+		var wh_id int64
+		var wh_code string
+		var qty_location float64
+		sqlrow, err := repo.db.Query("select item_code,wh_id,qty from ar_invoice_sub where doc_no = ?", req.DocNo)
+		defer sqlrow.Close()
+		for sqlrow.Next() {
+			err = sqlrow.Scan(&itemcode_, &wh_id, &qty)
+			if err != nil {
+				fmt.Println("Error = ", errs.Error())
+				return nil, errs
+			}
+			fmt.Println(qty, "---")
+			if wh_id == 1 {
+				wh_code = "S1-A"
+			} else if wh_id == 2 {
+				wh_code = "S1-B"
+			} else if wh_id == 3 {
+				wh_code = "S2-A"
+			} else if wh_id == 4 {
+				wh_code = "S2-B"
+			} else {
+				wh_code = ""
+			}
+			//คืน stock
+			qelstrock := `select stock_qty from Item_copy1 where code = ?`
+			errs := repo.db.Get(&qty_item, qelstrock, &itemcode_)
+			if errs != nil {
+				fmt.Println("Error = ", errs.Error())
+				return nil, errs
+			}
+
+			fmt.Println("ค้นหาสิค้า")
+			fmt.Println(qty_item, "asd")
+			qty_item += qty
+
+			fmt.Println(" คืน stock ", qty_item)
+			returnstock := `update Item_copy1 set stock_qty = ? where  code = ?`
+			_, errss := repo.db.Exec(returnstock, &qty_item, &itemcode_)
+			if errss != nil {
+				fmt.Println("Error = ", err.Error())
+				return nil, errss
+			}
+			if wh_code != "" {
+				fmt.Println("ค้นหาสิค้า sk")
+				sqllocation := `select qty from StockLocation_copy1 where item_code =? And wh_code = ? `
+				errs = repo.db.Get(&qty_location, sqllocation, &itemcode_, &wh_code)
+				if errs != nil {
+					fmt.Println("Error = ", errs.Error())
+					return nil, errs
+				}
+
+				qty_location += qty
+				fmt.Println("จำนวยสินค้า ", qty_location, qty)
+				updatestock := `update StockLocation_copy1 set qty = ? where item_code = ? And wh_code = ?`
+				_, errs = repo.db.Exec(updatestock, &qty_location, &itemcode_, &wh_code)
+				if errs != nil {
+					fmt.Println("Error = ", errs.Error())
+					return nil, errs
+				}
+
+			}
+		}
+	}
+	return map[string]interface{}{
+		"id":       req.Id,
+		"doc_no":   req.DocNo,
+		"doc_date": req.DocDate,
+		"ar_code":  req.ArCode,
+	}, nil
+}
 
 func (repo *salesRepository) CreateInvoice(req *sales.NewInvoiceTemplate) (interface{}, error) {
 	var check_doc_exist int64
@@ -2149,12 +2279,130 @@ func (repo *salesRepository) CreateInvoice(req *sales.NewInvoiceTemplate) (inter
 		return nil, errs
 	}
 	if check_item_strock == 0 {
-		for _, sub := range req.Subs {
 
-			var qty float64
+		for _, sub := range req.Subs {
+			fmt.Println("ค้นหาสิค้า", sub.Location)
+			if sub.Location != "" {
+				var qty float64
+				fmt.Println("ค้นหาสิค้า", req.DocNo)
+				qelstrock := `select qty from StockLocation_copy1 where item_code = ? And wh_code = ?`
+				errs := repo.db.Get(&qty, qelstrock, sub.ItemCode, sub.Location)
+				if errs != nil {
+					fmt.Println("Error = ", errs.Error())
+					return nil, errs
+				}
+				fmt.Println("ค้นหาสิค้า")
+				fmt.Println(qty, "asd")
+				qty -= sub.Qty
+				// ตัด stock ไหม่
+				fmt.Println(" ตัด stock ไหม่", qty)
+				Updatenew := `update StockLocation_copy1 set qty = ? where item_code = ? And wh_code = ?`
+				_, errss := repo.db.Exec(Updatenew, &qty, sub.ItemCode, sub.Location)
+				if errss != nil {
+					fmt.Println("Error = ", err.Error())
+					return nil, errss
+				}
+				fmt.Println(" ตัด stock ไหม่นะ")
+			} else {
+				var qty float64
+				fmt.Println("ค้นหาสิค้า", req.DocNo)
+				qelstrock := `select stock_qty from Item_copy1 where code = ?`
+				errs := repo.db.Get(&qty, qelstrock, sub.ItemCode)
+				if errs != nil {
+					fmt.Println("Error = ", errs.Error())
+					return nil, errs
+				}
+				fmt.Println("ค้นหาสิค้า")
+				fmt.Println(qty, "asd")
+				qty -= sub.Qty
+				// ตัด stock ไหม่
+				fmt.Println(" ตัด stock ไหม่", qty)
+				Updatenew := `update Item_copy1 set stock_qty = ? where  code = ?`
+				_, errss := repo.db.Exec(Updatenew, &qty, sub.ItemCode)
+				if errss != nil {
+					fmt.Println("Error = ", err.Error())
+					return nil, errss
+				}
+				fmt.Println(" ตัด stock ไหม่นะ")
+			}
+
+		}
+	} else {
+		var itemcode_ string
+		var qty float64
+		var qty_item float64
+		var wh_id int64
+		var wh_code string
+		var qty_location float64
+		sqlrow, err := repo.db.Query("select item_code,wh_id,qty from ar_invoice_sub where doc_no = ?", req.DocNo)
+		defer sqlrow.Close()
+		for sqlrow.Next() {
+			err = sqlrow.Scan(&itemcode_, &wh_id, &qty)
+			if err != nil {
+				fmt.Println("Error = ", errs.Error())
+				return nil, errs
+			}
+			fmt.Println(qty, "---")
+			if wh_id == 1 {
+				wh_code = "S1-A"
+			} else if wh_id == 2 {
+				wh_code = "S1-B"
+			} else if wh_id == 3 {
+				wh_code = "S2-A"
+			} else if wh_id == 4 {
+				wh_code = "S2-B"
+			} else {
+				wh_code = ""
+			}
+			//คืน stock
+			qelstrock := `select stock_qty from Item_copy1 where code = ?`
+			errs := repo.db.Get(&qty_item, qelstrock, &itemcode_)
+			if errs != nil {
+				fmt.Println("Error = ", errs.Error())
+				return nil, errs
+			}
+
+			fmt.Println("ค้นหาสิค้า")
+			fmt.Println(qty_item, "asd")
+			qty_item += qty
+
+			fmt.Println(" คืน stock ", qty_item)
+			returnstock := `update Item_copy1 set stock_qty = ? where  code = ?`
+			_, errss := repo.db.Exec(returnstock, &qty_item, &itemcode_)
+			if errss != nil {
+				fmt.Println("Error = ", err.Error())
+				return nil, errss
+			}
+			if wh_code != "" {
+				fmt.Println("ค้นหาสิค้า sk")
+				sqllocation := `select qty from StockLocation_copy1 where item_code =? And wh_code = ? `
+				errs = repo.db.Get(&qty_location, sqllocation, &itemcode_, &wh_code)
+				if errs != nil {
+					fmt.Println("Error = ", errs.Error())
+					return nil, errs
+				}
+
+				qty_location += qty
+				fmt.Println("จำนวยสินค้า ", qty_location, qty)
+				updatestock := `update StockLocation_copy1 set qty = ? where item_code = ? And wh_code = ?`
+				_, errs = repo.db.Exec(updatestock, &qty_location, &itemcode_, &wh_code)
+				if errs != nil {
+					fmt.Println("Error = ", errs.Error())
+					return nil, errs
+				}
+
+			}
+
+		}
+		for _, sub := range req.Subs {
+			//ค้นหาสินค้าที่มี และคืน stock
+
+			// ตัด stock ไหม่
+			//ค้นหาสินค้าไหม่
+
 			fmt.Println("ค้นหาสิค้า", req.DocNo)
-			qelstrock := `select stock_qty form Item_copy1 where code = ?`
-			errs := repo.db.Get(&qty, qelstrock, sub.ItemCode)
+			sqlstock := `select stock_qty from Item_copy1 where code = ?`
+			errs := repo.db.Get(&qty, sqlstock, sub.ItemCode)
 			if errs != nil {
 				fmt.Println("Error = ", errs.Error())
 				return nil, errs
@@ -2164,49 +2412,37 @@ func (repo *salesRepository) CreateInvoice(req *sales.NewInvoiceTemplate) (inter
 			qty -= sub.Qty
 			// ตัด stock ไหม่
 			fmt.Println(" ตัด stock ไหม่", qty)
-			Updatenew := `update Item_copy1 set stock_qty = ? where code = ? `
-			_, errss := repo.db.Exec(Updatenew, &qty, sub.ItemCode)
+			Updatestock := `update Item_copy1 set stock_qty = ? where  code = ?`
+			_, errss := repo.db.Exec(Updatestock, &qty, sub.ItemCode)
 			if errss != nil {
 				fmt.Println("Error = ", err.Error())
 				return nil, errss
 			}
 			fmt.Println(" ตัด stock ไหม่นะ")
-		}
-	} else {
-		// // select tock
-		// var itemcode_ string
-		// var itemid string
-		// var qty int64
-		// for _, sub := range req.Subs {
-		// 	// ค้นหา สินค้า ที่ invoice_sub
-		// 	qelstrock, errs := repo.db.Query("select stock_qty form Item_copy1 where code = ?")
+			if sub.Location != "" {
+				var qtys float64
+				fmt.Println("ค้นหาสิค้า", req.DocNo)
+				qelstrock := `select qty from StockLocation_copy1 where item_code = ? And wh_code = ?`
+				errs := repo.db.Get(&qtys, qelstrock, sub.ItemCode, sub.Location)
+				if errs != nil {
+					fmt.Println("Error = ", errs.Error())
+					return nil, errs
+				}
+				fmt.Println("ค้นหาสิค้า")
+				fmt.Println(qty, "asd")
+				qtys -= sub.Qty
+				// ตัด stock ไหม่
+				fmt.Println(" ตัด stock ไหม่", qty)
+				Updatenew := `update StockLocation_copy1 set qty = ? where item_code = ? And wh_code = ?`
+				_, errss := repo.db.Exec(Updatenew, &qtys, sub.ItemCode, sub.Location)
+				if errss != nil {
+					fmt.Println("Error = ", err.Error())
+					return nil, errss
+				}
+				fmt.Println(" ตัด stock ไหม่นะ")
+			}
 
-		// 	for qelstrock.Next() {
-		// 		err := qelstrock.Scan(&itemid, &itemcode_, &qty)
-		// 		if err != nil {
-		// 			fmt.Println("Error = ", errs.Error())
-		// 			return nil, errs
-		// 		}
-		// 	}
-		// 	if errs != nil {
-		// 		fmt.Println("Error = ", errs.Error())
-		// 		return nil, errs
-		// 	}
-		// 	// คืน stock
-		// 	updatestock := `update Item_copy1 set stock_qty += ? where code = ? `
-		// 	_, err := repo.db.Exec(updatestock, &qty, &itemcode_)
-		// 	if err != nil {
-		// 		fmt.Println("Error = ", err.Error())
-		// 		return nil, err
-		// 	}
-		// 	// ตัด stock ไหม่
-		// 	Updatenew := `update Item_copy1 set stock_qty -= where code = ? `
-		// 	_, errss := repo.db.Exec(Updatenew, sub.Qty, sub.ItemCode)
-		// 	if errss != nil {
-		// 		fmt.Println("Error = ", err.Error())
-		// 		return nil, errss
-		// 	}
-		// }
+		}
 
 	}
 	sql_del_sub := `delete from ar_invoice_sub where inv_id = ?`
@@ -2220,6 +2456,18 @@ func (repo *salesRepository) CreateInvoice(req *sales.NewInvoiceTemplate) (inter
 
 	fmt.Println(req.Subs)
 	for _, sub := range req.Subs {
+		var wh_id int64
+		if sub.Location == "S1-A" {
+			wh_id = 1
+		} else if sub.Location == "S1-B" {
+			wh_id = 2
+		} else if sub.Location == "S2-A" {
+			wh_id = 3
+		} else if sub.Location == "S2-B" {
+			wh_id = 4
+		} else {
+			wh_id = 0
+		}
 		fmt.Println("เพิ่มสินค้านะ", sub, sub.ItemCode)
 		sqlsub := `INSERT INTO ar_invoice_sub(company_id,branch_id,uuid,inv_id,doc_no,doc_date,ar_id,sale_id,item_id,item_code,
 			bar_code,item_name,wh_id,shelf_id,qty,cn_qty,unit_code,price,discount_word_sub,discount_amount_sub,amount,net_amount,average_cost,sum_of_cost,item_decription,is_cancel,is_credit_note,is_debit_note,packing_rate_1,packing_rate_2,ref_no,ref_line_number,line_number) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`
@@ -2236,7 +2484,7 @@ func (repo *salesRepository) CreateInvoice(req *sales.NewInvoiceTemplate) (inter
 			sub.ItemCode,
 			sub.BarCode,
 			sub.ItemName,
-			sub.WhId,
+			wh_id,
 			sub.ShelfId,
 			sub.Qty,
 			sub.CnQty,

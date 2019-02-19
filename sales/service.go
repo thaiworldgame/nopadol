@@ -33,6 +33,7 @@ type Service interface {
 	SearchCredit(req *SearchByIdTemplate) (interface{}, error)
 	Invoicelist(req *SearchByKeywordTemplate) (interface{}, error)
 	SearchHisByKeyword(req *SearchByKeywordTemplate) (interface{}, error)
+	CancelInvoice(req *NewInvoiceTemplate) (interface{}, error)
 }
 
 func (s *service) CreateQuotation(req *NewQuoTemplate) (interface{}, error) {
@@ -105,6 +106,13 @@ func (s *service) ConfirmQuotation(req *NewQuoTemplate) (interface{}, error) {
 
 func (s *service) CancelQuotation(req *NewQuoTemplate) (interface{}, error) {
 	resp, err := s.repo.CancelQuotation(req)
+	if err != nil {
+		return nil, err
+	}
+	return resp, nil
+}
+func (s *service) CancelInvoice(req *NewInvoiceTemplate) (interface{}, error) {
+	resp, err := s.repo.CancelInvoice(req)
 	if err != nil {
 		return nil, err
 	}

@@ -32,5 +32,9 @@ func (s *service) SearchByKeyword(req *SearchByKeywordTemplate) (interface{}, er
 }
 
 func (s *service) StoreCustomer(req *CustomerTemplate) (interface{}, error){
-	return nil,nil
+	resp, err := s.repo.StoreCustomer(req)
+	if err != nil {
+		return nil,err
+	}
+	return resp,nil
 }

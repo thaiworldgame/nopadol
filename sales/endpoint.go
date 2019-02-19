@@ -430,6 +430,7 @@ type (
 		ShelfId         int64   `json:"shelf_id"`
 		Price           float64 `json:"price"`
 		UnitCode        string  `json:"unit_code"`
+		Location        string  `json:"location"`
 		Qty             float64 `json:"qty"`
 		CnQty           float64 `json:"cn_qty"`
 		DiscountWord    float64 `json:"discount_word_sub"`
@@ -449,6 +450,8 @@ type (
 		LineNumber      int64   `json:"line_number"`
 	}
 )
+
+// search item by keywork
 
 ////// Quotation /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -759,6 +762,7 @@ func map_invoice_sub_request(x NewInvoiceItemRequest) NewInvoiceItemTemplate {
 		WhId:            x.WhId,
 		ShelfId:         x.ShelfId,
 		Qty:             x.Qty,
+		Location:        x.Location,
 		Price:           x.Price,
 		DiscountWord:    x.DiscountWord,
 		DiscountAmount:  x.DiscountAmount,
@@ -1024,6 +1028,18 @@ func Invoicelist(s Service) interface{} {
 	return func(ctx context.Context, req *SearchByKeywordRequest) (interface{}, error) {
 		fmt.Println("invoicelist 522")
 		resp, err := s.Invoicelist(&SearchByKeywordTemplate{SaleCode: req.SaleCode, Keyword: req.Keyword})
+		if err != nil {
+			fmt.Println("endpoint error =", err.Error())
+			return nil, fmt.Errorf(err.Error())
+		}
+		return map[string]interface{}{
+			"data": resp,
+		}, nil
+	}
+}
+func CancelInvoice(s Service) interface{} {
+	return func(ctx context.Context, req *NewInvoiceRequest) (interface{}, error) {
+		resp, err := s.CancelInvoice(&NewInvoiceTemplate{Id: req.Id, DocNo: req.DocNo, IsConfirm: req.IsConfirm, IsCancel: req.IsCancel, CancelBy: req.CancelBy, CancelTime: req.CancelTime})
 		if err != nil {
 			fmt.Println("endpoint error =", err.Error())
 			return nil, fmt.Errorf(err.Error())

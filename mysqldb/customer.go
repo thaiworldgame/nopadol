@@ -4,19 +4,22 @@ import (
 	"fmt"
 	"github.com/jmoiron/sqlx"
 	"github.com/mrtomyum/nopadol/customer"
+	"time"
 )
 
 type CustomerModel struct {
-	Id         int64  `db:"id"`
-	Code       string `db:"code"`
-	Name       string `db:"name"`
-	Address    string `db:"address"`
-	Telephone  string `db:"telephone"`
-	BillCredit int64  `db:"bill_credit"`
-	Email      string `json:"email"`
-	CompanyID  int    `json:"company_id"`
-	CreateBy string `json:"create_by"`
-
+	Id         int64     `db:"id"`
+	Code       string    `db:"code"`
+	Name       string    `db:"name"`
+	Address    string    `db:"address"`
+	Telephone  string    `db:"telephone"`
+	BillCredit int64     `db:"bill_credit"`
+	Email      string    `json:"email"`
+	CompanyID  int       `json:"company_id"`
+	CreateBy   string    `json:"create_by"`
+	CreateTime time.Time `json:"create_time"`
+	UpdateBy   string    `json:"update_by"`
+	UpdateTime time.Time `json:"update_time"`
 }
 
 type customerRepository struct{ db *sqlx.DB }
@@ -90,7 +93,7 @@ func (cust *CustomerModel) Search(db *sqlx.DB, ar_code string) {
 	return
 }
 
-func (cr *customerRepository) StoreCustomer(req *customer.CustomerTemplate) (interface{}, error) {
+func (cr *customerRepository) StoreCustomer(req *customer.CustomerTemplate) (res interface{}, err error) {
 	cus := CustomerModel{
 		Id:         req.Id,
 		Code:       req.Code,
@@ -100,26 +103,94 @@ func (cr *customerRepository) StoreCustomer(req *customer.CustomerTemplate) (int
 		BillCredit: req.BillCredit,
 		Email:      req.Email,
 		CompanyID:  req.CompanyID,
+		CreateBy:   req.CreateBy,
+		CreateTime: time.Now(),
+		UpdateBy:   req.CreateBy,
+		UpdateTime: time.Now(),
 	}
+	// check case insert & update  (0,1)
+	var id int64
+	//if req.Id == 0 {
+	//	id, err = cus.getIdByCode(cr.db, cus.Code)
+	//	return nil, err
+	//}
 
+	cus.Id = id
 	return cus.save(cr.db)
 	//return nil,nil
 }
 
-func (c CustomerModel) save(db *sqlx.DB) (interface{}, error) {
-	// check id = 0 to new customer
-	// check code , name , telephone exists
-	// update
+func (c *CustomerModel) getIdByCode(db *sqlx.DB, code string) (int64, error) {
+	sql := `select id from Customer where code=?`
+	var curID int64
+	err := db.QueryRow(sql, code).Scan(&curID)
+
+	return curID, err
+}
+
+func (c *CustomerModel) save(db *sqlx.DB) (interface{}, error) {
+	var curID int64
+	fmt.Println("start customer.save ,  ",c)
+	//validate id if empty -> insert
+	switch {
+	//case c.Id == 0 && c.Code != "":
+	//	{
+	//		x, err := c.getIdByCode(db, c.Code)
+	//		if err != nil || x == 0 {
+	//			return nil, fmt.Errorf("error not found code ", c.Code)
+	//		}
+	//		curID = x
+	//	}
+	case c.Code == "":
+		{
+			return nil, fmt.Errorf("error no Code data")
+		}
+	}
+
 	// insert
-	sql := `insert into customer (code,name,address,telephone,bill_credit,active_status,create_by)
-		valuse (?,?,?,?,?,?,?)`
-	rs,err := db.Exec(sql,c.Code,c.Name,c.Address,c.Telephone,c.BillCredit,0,c.CreateBy)
-	if err != nil {
-		return nil,err
+	if curID == 0 {
+		//new customer case
+		sql := `insert into Customer (code,name,address,telephone,bill_credit,
+						active_status,create_by,create_time)
+		values (?,?,?,?,?,?,?,?)`
+
+		rs, err := db.Exec(sql, c.Code, c.Name, c.Address, c.Telephone, c.BillCredit, 0, c.CreateBy, c.CreateTime)
+
+		if err != nil {
+			return nil, err
+		}
+		newID, err := rs.LastInsertId()
+		if err != nil {
+			return nil, err
+		}
+		return newID, nil
 	}
-	newID ,err := rs.LastInsertId()
-	if err != nil {
-		return nil,err
+	// update
+	if curID != 0 {
+		//new customer case
+		sql := `update customer
+			set 	code = ?,
+				name=?,
+				address=?,
+				telephone=?,
+				bill_credit=?,
+				active_status=?,
+				update_by=?,
+				update_time=?
+			where id = ?`
+
+		rs, err := db.Exec(sql, c.Code, c.Name, c.Address,
+			c.Telephone, c.BillCredit, 0,
+			c.CreateBy, c.CreateTime)
+
+		if err != nil {
+			return nil, err
+		}
+		rowCount, err := rs.RowsAffected()
+		if err != nil {
+			return nil, err
+		}
+		return rowCount, nil
 	}
-	return newID, nil
+	return nil, nil
 }
