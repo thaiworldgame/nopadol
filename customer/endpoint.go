@@ -79,8 +79,9 @@ func makeNewCustomer(s Service) interface{} {
 			CompanyID:    companyID,
 			CreateBy:     userID,
 		}
+
+		fmt.Println("start endpoint store Customer with param , ",ct)
 		resp, err := s.StoreCustomer(&ct)
-		fmt.Println("start endpoint store Customer")
 		if err != nil {
 			fmt.Println("endpoint error =", err.Error())
 			return nil, fmt.Errorf(err.Error())

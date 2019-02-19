@@ -110,10 +110,10 @@ func (cr *customerRepository) StoreCustomer(req *customer.CustomerTemplate) (res
 	}
 	// check case insert & update  (0,1)
 	var id int64
-	if req.Id == 0 {
-		id, err = cus.getIdByCode(cr.db, cus.Code)
-		return nil, err
-	}
+	//if req.Id == 0 {
+	//	id, err = cus.getIdByCode(cr.db, cus.Code)
+	//	return nil, err
+	//}
 
 	cus.Id = id
 	return cus.save(cr.db)
@@ -121,7 +121,7 @@ func (cr *customerRepository) StoreCustomer(req *customer.CustomerTemplate) (res
 }
 
 func (c *CustomerModel) getIdByCode(db *sqlx.DB, code string) (int64, error) {
-	sql := `select id from customer where code=?`
+	sql := `select id from Customer where code=?`
 	var curID int64
 	err := db.QueryRow(sql, code).Scan(&curID)
 
@@ -130,16 +130,17 @@ func (c *CustomerModel) getIdByCode(db *sqlx.DB, code string) (int64, error) {
 
 func (c *CustomerModel) save(db *sqlx.DB) (interface{}, error) {
 	var curID int64
+	fmt.Println("start customer.save ,  ",c)
 	//validate id if empty -> insert
 	switch {
-	case c.Id == 0 && c.Code != "":
-		{
-			x, err := c.getIdByCode(db, c.Code)
-			if err != nil || x == 0 {
-				return nil, fmt.Errorf("error not found code ", c.Code)
-			}
-			curID = x
-		}
+	//case c.Id == 0 && c.Code != "":
+	//	{
+	//		x, err := c.getIdByCode(db, c.Code)
+	//		if err != nil || x == 0 {
+	//			return nil, fmt.Errorf("error not found code ", c.Code)
+	//		}
+	//		curID = x
+	//	}
 	case c.Code == "":
 		{
 			return nil, fmt.Errorf("error no Code data")
@@ -149,9 +150,9 @@ func (c *CustomerModel) save(db *sqlx.DB) (interface{}, error) {
 	// insert
 	if curID == 0 {
 		//new customer case
-		sql := `insert into customer (code,name,address,telephone,bill_credit,
+		sql := `insert into Customer (code,name,address,telephone,bill_credit,
 						active_status,create_by,create_time)
-		valuse (?,?,?,?,?,?,?,?)`
+		values (?,?,?,?,?,?,?,?)`
 
 		rs, err := db.Exec(sql, c.Code, c.Name, c.Address, c.Telephone, c.BillCredit, 0, c.CreateBy, c.CreateTime)
 
