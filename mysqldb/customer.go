@@ -133,16 +133,17 @@ func (c *CustomerModel) save(db *sqlx.DB) (interface{}, error) {
 	fmt.Println("start customer.save ,  ",c)
 	//validate id if empty -> insert
 	switch {
-	//case c.Id == 0 && c.Code != "":
-	//	{
-	//		x, err := c.getIdByCode(db, c.Code)
-	//		if err != nil || x == 0 {
-	//			return nil, fmt.Errorf("error not found code ", c.Code)
-	//		}
-	//		curID = x
-	//	}
+	case  c.Code != "":
+		{
+			x, err := c.getIdByCode(db, c.Code)
+			if err != nil || x == 0 {
+				return nil, fmt.Errorf("error not found code ", c.Code)
+			}
+			curID = x
+		}
 	case c.Code == "":
 		{
+
 			return nil, fmt.Errorf("error no Code data")
 		}
 	}
@@ -181,7 +182,7 @@ func (c *CustomerModel) save(db *sqlx.DB) (interface{}, error) {
 
 		rs, err := db.Exec(sql, c.Code, c.Name, c.Address,
 			c.Telephone, c.BillCredit, 0,
-			c.CreateBy, c.CreateTime)
+			c.CreateBy, c.CreateTime,curID)
 
 		if err != nil {
 			return nil, err
