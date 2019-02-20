@@ -56,6 +56,7 @@ func (it *itemModel) map2itemModel(db *sqlx.DB, req *product.ProductNewRequest) 
 	it.UnitCode = u.unitCode
 	it.PicPath1 = req.Picture
 	it.StockType = req.StockType
+	it.CompanyID = req.CompanyID
 	fmt.Println("map2itemModel return ", it.UnitCode)
 	return
 }
@@ -79,7 +80,7 @@ func (it *itemModel) verifyRequestData(db *sqlx.DB) (bool ,error){
 func(it *itemModel)checkExistsByCode(db *sqlx.DB,code string)(int64,bool){
 	var id int64=-1
 	db.QueryRow(`select id from Item where code=?`,code).Scan(&id)
-	if id == -1 {
+	if id <= 0  {
 		return -1,false
 	}
 	return id , true
