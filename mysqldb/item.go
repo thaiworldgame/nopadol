@@ -80,7 +80,7 @@ func (it *itemModel) verifyRequestData(db *sqlx.DB) (bool ,error){
 func(it *itemModel)checkExistsByCode(db *sqlx.DB,code string)(int64,bool){
 	var id int64=-1
 	db.QueryRow(`select id from Item where code=?`,code).Scan(&id)
-	if id == -1 {
+	if id <= 0  {
 		return -1,false
 	}
 	return id , true
