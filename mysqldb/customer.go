@@ -156,10 +156,13 @@ func (c *CustomerModel) save(db *sqlx.DB) (interface{}, error) {
 		//new customer case
 		fmt.Println("case insert customer ")
 		sql := `insert into Customer (code,name,address,telephone,bill_credit,
-						active_status,create_by,create_time)
-		values (?,?,?,?,?,?,?,?)`
+						active_status,create_by,create_time,company_id)
+		values (?,?,?,?,?,?,?,?,?)`
 
-		rs, err := db.Exec(sql, c.Code, c.Name, c.Address, c.Telephone, c.BillCredit, 0, c.CreateBy, c.CreateTime)
+		rs, err := db.Exec(sql, c.Code, c.Name,
+				c.Address, c.Telephone,
+				c.BillCredit, 0,
+				c.CreateBy, c.CreateTime,c.CompanyID)
 
 		if err != nil {
 			return nil, err
@@ -180,11 +183,12 @@ func (c *CustomerModel) save(db *sqlx.DB) (interface{}, error) {
 				address=?,
 				telephone=?,
 				bill_credit=?,
-				active_status=?
+				active_status=?,
+				company_id=?
 			where id = ?`
 
 		_, err := db.Exec(sql, c.Code, c.Name, c.Address,
-			c.Telephone, c.BillCredit, 0,curID)
+			c.Telephone, c.BillCredit, 0,c.CompanyID,curID)
 
 		if err != nil {
 			return nil, err
