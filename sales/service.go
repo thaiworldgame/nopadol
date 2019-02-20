@@ -1,12 +1,12 @@
 package sales
 
 import (
+	"errors"
 	"fmt"
 	"strconv"
-	"errors"
 )
 
-func New(repo Repository) (Service) {
+func New(repo Repository) Service {
 	return &service{repo}
 }
 
@@ -31,8 +31,7 @@ type Service interface {
 
 	CreateInvoice(req *NewInvoiceTemplate) (interface{}, error)
 	SearchInvoiceById(req *SearchByIdTemplate) (interface{}, error)
-
-
+	Invoicelist(req *SearchByKeywordTemplate) (interface{}, error)
 }
 
 func (s *service) CreateQuotation(req *NewQuoTemplate) (interface{}, error) {
@@ -44,15 +43,15 @@ func (s *service) CreateQuotation(req *NewQuoTemplate) (interface{}, error) {
 
 	fmt.Println("Service Quo")
 	for _, sub_item := range req.Subs {
-		if (sub_item.Qty != 0) {
+		if sub_item.Qty != 0 {
 			count_item = count_item + 1
 
 			sum_item_amount = sum_item_amount + (sub_item.Qty * (sub_item.Price - sub_item.DiscountAmount))
 		}
-		if (sub_item.ItemCode != "" && sub_item.Qty == 0) {
+		if sub_item.ItemCode != "" && sub_item.Qty == 0 {
 			count_item_qty = count_item_qty + 1
 		}
-		if (sub_item.ItemCode != "" && sub_item.UnitCode == "") {
+		if sub_item.ItemCode != "" && sub_item.UnitCode == "" {
 			count_item_unit = count_item_unit + 1
 		}
 	}
@@ -119,6 +118,16 @@ func (s *service) QuotationToSaleOrder(req *SearchByIdTemplate) (interface{}, er
 	return resp, nil
 }
 
+func (s *service) Invoicelist(req *SearchByKeywordTemplate) (interface{}, error) {
+	fmt.Println("invoicelist 2")
+	resp, err := s.repo.SearchInvoiceByKeyword(req)
+
+	if err != nil {
+		return nil, err
+	}
+	return resp, nil
+}
+
 func (s *service) CreateSaleOrder(req *NewSaleTemplate) (interface{}, error) {
 	var count_item int
 	var count_item_qty int
@@ -129,7 +138,7 @@ func (s *service) CreateSaleOrder(req *NewSaleTemplate) (interface{}, error) {
 	var item_discount_amount_sub float64
 	var err error
 	for _, sub_item := range req.Subs {
-		if (sub_item.Qty != 0) {
+		if sub_item.Qty != 0 {
 			count_item = count_item + 1
 			if sub_item.DiscountWord != "" {
 				item_discount_amount_sub, err = strconv.ParseFloat(sub_item.DiscountWord, 64)
@@ -142,10 +151,10 @@ func (s *service) CreateSaleOrder(req *NewSaleTemplate) (interface{}, error) {
 
 			sum_item_amount = sum_item_amount + (sub_item.Qty * (sub_item.Price - item_discount_amount_sub))
 		}
-		if (sub_item.ItemCode != "" && sub_item.Qty == 0) {
+		if sub_item.ItemCode != "" && sub_item.Qty == 0 {
 			count_item_qty = count_item_qty + 1
 		}
-		if (sub_item.ItemCode != "" && sub_item.UnitCode == "") {
+		if sub_item.ItemCode != "" && sub_item.UnitCode == "" {
 			count_item_unit = count_item_unit + 1
 		}
 	}
@@ -224,6 +233,7 @@ func (s *service) SearchDepositById(req *SearchByIdTemplate) (interface{}, error
 }
 
 func (s *service) SearchDepositByKeyword(req *SearchByKeywordTemplate) (interface{}, error) {
+
 	resp, err := s.repo.SearchDepositByKeyword(req)
 	if err != nil {
 		return nil, err
@@ -240,6 +250,29 @@ func (s *service) SearchReserveToDeposit(req *SearchByKeywordTemplate) (interfac
 }
 
 func (s *service) CreateInvoice(req *NewInvoiceTemplate) (interface{}, error) {
+	var count_item int
+	var count_item_qty int
+	var count_item_unit int
+	var sum_item_amount float64
+	var err error
+//  verify ยอด สินค้ารายการย่อย
+	fmt.Println("Service 1")
+	for _, sub_item := range req.Subs {
+		fmt.Println(sub_item.Price, "บาท")
+		if sub_item.Qty != 0 {
+			count_item = count_item + 1
+
+			sum_item_amount = sum_item_amount + (sub_item.Qty * (sub_item.Price - sub_item.DiscountAmount))
+		}
+		if sub_item.ItemCode != "" && sub_item.Qty == 0 {
+			count_item_qty = count_item_qty + 1
+		}
+		if sub_item.ItemCode != "" && sub_item.UnitCode == "" {
+			count_item_unit = count_item_unit + 1
+		}
+	}
+
+	// เช็คความถูกต้องของข้อมูล
 	var sum_pay_all float64
 
 	sum_pay_all = req.SumCashAmount + req.SumCreditAmount + req.SumChqAmount + req.SumBankAmount + req.SumOfDeposit + req.CouponAmount
@@ -264,6 +297,7 @@ func (s *service) CreateInvoice(req *NewInvoiceTemplate) (interface{}, error) {
 }
 
 func (s *service) SearchInvoiceById(req *SearchByIdTemplate) (interface{}, error) {
+
 	resp, err := s.repo.SearchInvoiceById(req)
 	if err != nil {
 		return nil, err
