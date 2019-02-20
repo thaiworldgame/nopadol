@@ -993,11 +993,42 @@ func (repo *salesRepository) SearchQuoById(req *sales.SearchByIdTemplate) (resp 
 	return qt_resp, nil
 }
 
-func (repo *salesRepository) SearchDocById(req *sales.SearchByIdTemplate) (resp interface{}, err error) {
-	doc := SearchDocDetailsModel{}
+func (repo *salesRepository) SearchQuoByKeyword(req *sales.SearchByKeywordTemplate) (resp interface{}, err error) {
+
+	d := []SearchDocModel{}
+
+	if req.Keyword == "" {
+		sql := `select a.Id,a.DocNo,a.DocDate, case when a.DocType = 0 then 'BO' else 'QT' end as Module,a.ArCode,a.ArName,a.SaleCode,a.SaleName,ifnull(a.MyDescription,'') as MyDescription,a.TotalAmount, a.IsCancel, a.IsConfirm from Quotation a Where a.SaleCode = ? order by Id desc limit 30`
+		err = repo.db.Select(&d, sql, req.SaleCode)
+	} else {
+		sql := `select a.Id,a.DocNo,a.DocDate, case when a.DocType = 0 then 'BO' else 'QT' end as Module,a.ArCode,a.ArName,a.SaleCode,a.SaleName,ifnull(a.MyDescription,'') as MyDescription,a.TotalAmount, a.IsCancel, a.IsConfirm from Quotation a Where (a.DocNo like CONCAT("%",?,"%") or a.ArCode like CONCAT("%",?,"%") or a.ArName like CONCAT("%",?,"%") or a.SaleCode like CONCAT("%",?,"%") or a.SaleName like CONCAT("%",?,"%")) order by Id desc limit 30`
+		err = repo.db.Select(&d, sql, req.Keyword, req.Keyword, req.Keyword, req.Keyword, req.Keyword)
+	}
+
+	//sql := `select a.Id,a.DocNo,a.DocDate, case 'QT' as Module,a.ArCode,a.ArName,a.SaleCode,a.SaleName,ifnull(a.MyDescription,'') as MyDescription,a.TotalAmount, a.IsCancel, a.IsConfirm from Quotation a where a.SaleCode = ? and (a.DocNo like CONCAT("%",?,"%") or a.ArCode like CONCAT("%",?,"%") or a.ArName like CONCAT("%",?,"%") or a.SaleCode like CONCAT("%",?,"%") or a.SaleName like CONCAT("%",?,"%")) order by Id desc limit 30`
+	//err = repo.db.Select(&d, sql)
+	if err != nil {
+		fmt.Println("err = ", err.Error())
+		return resp, err
+	}
+
+	doc := []sales.SearchDocTemplate{}
+
+	for _, c := range d {
+
+		docline := map_doc_template(c)
+		doc = append(doc, docline)
+	}
 
 	return doc, nil
 }
+
+//func (repo *salesRepository) SearchDocById(req *sales.SearchByIdTemplate) (resp interface{}, err error) {
+//	doc := SearchDocDetailsModel{}
+//
+//	return doc, nil
+//}
+
 func (repo *salesRepository) SearchDocByKeyword(req *sales.SearchByKeywordTemplate) (resp interface{}, err error) {
 
 	d := []SearchDocModel{}
@@ -1021,7 +1052,7 @@ func (repo *salesRepository) SearchDocByKeyword(req *sales.SearchByKeywordTempla
 	return doc, nil
 }
 
-func (repo *salesRepository) QuotationToSaleOrder(req * sales.SearchByIdTemplate) (resp interface{}, err error) {
+func (repo *salesRepository) QuotationToSaleOrder(req *sales.SearchByIdTemplate) (resp interface{}, err error) {
 	var check_doc_exist int
 	var count_item int
 	var count_item_qty int
@@ -1109,7 +1140,7 @@ func (repo *salesRepository) QuotationToSaleOrder(req * sales.SearchByIdTemplate
 	d.TableCode = "SO"
 
 	//API Get Post API
-	url := "http://localhost:9999/gendocno/v1/gen"
+	url := "https://n9.nopadol.com/gendocno/v1/gen"
 	var jsonStr []byte
 
 	//append(jsonStr, "":"")
@@ -1135,7 +1166,7 @@ func (repo *salesRepository) QuotationToSaleOrder(req * sales.SearchByIdTemplate
 		log.Println(err)
 	}
 
-	fmt.Println("new doc_no = ",new_doc_no)
+	fmt.Println("new doc_no = ", new_doc_no)
 
 	doc_no := new_doc_no
 
@@ -1587,6 +1618,36 @@ func (repo *salesRepository) SearchSaleOrderById(req *sales.SearchByIdTemplate) 
 	}
 
 	return so_resp, nil
+}
+
+func (repo *salesRepository) SearchSaleOrderByKeyword(req *sales.SearchByKeywordTemplate) (resp interface{}, err error) {
+
+	d := []SearchDocModel{}
+
+	if req.Keyword == "" {
+		sql := `select a.Id,a.DocNo,a.DocDate, case when a.DocType = 0 then 'RO' else 'SO' end as Module,a.ArCode,a.ArName,a.SaleCode,a.SaleName,ifnull(a.MyDescription,'') as MyDescription,a.TotalAmount, a.IsCancel, a.IsConfirm from SaleOrder a Where a.SaleCode = ? order by Id desc limit 30`
+		err = repo.db.Select(&d, sql, req.SaleCode)
+	} else {
+		sql := `select a.Id,a.DocNo,a.DocDate, case when a.DocType = 0 then 'RO' else 'SO' end as Module,a.ArCode,a.ArName,a.SaleCode,a.SaleName,ifnull(a.MyDescription,'') as MyDescription,a.TotalAmount, a.IsCancel, a.IsConfirm from SaleOrder a Where (a.DocNo like CONCAT("%",?,"%") or a.ArCode like CONCAT("%",?,"%") or a.ArName like CONCAT("%",?,"%") or a.SaleCode like CONCAT("%",?,"%") or a.SaleName like CONCAT("%",?,"%")) order by Id desc limit 30`
+		err = repo.db.Select(&d, sql, req.Keyword, req.Keyword, req.Keyword, req.Keyword, req.Keyword)
+	}
+
+	//sql := `select a.Id,a.DocNo,a.DocDate, case 'QT' as Module,a.ArCode,a.ArName,a.SaleCode,a.SaleName,ifnull(a.MyDescription,'') as MyDescription,a.TotalAmount, a.IsCancel, a.IsConfirm from Quotation a where a.SaleCode = ? and (a.DocNo like CONCAT("%",?,"%") or a.ArCode like CONCAT("%",?,"%") or a.ArName like CONCAT("%",?,"%") or a.SaleCode like CONCAT("%",?,"%") or a.SaleName like CONCAT("%",?,"%")) order by Id desc limit 30`
+	//err = repo.db.Select(&d, sql)
+	if err != nil {
+		fmt.Println("err = ", err.Error())
+		return resp, err
+	}
+
+	doc := []sales.SearchDocTemplate{}
+
+	for _, c := range d {
+
+		docline := map_doc_template(c)
+		doc = append(doc, docline)
+	}
+
+	return doc, nil
 }
 
 func map_saleorder_template(x NewSaleModel) sales.NewSaleTemplate {
