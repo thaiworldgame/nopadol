@@ -1,9 +1,9 @@
 package mysqldb
 
 import (
-	"github.com/mrtomyum/nopadol/product"
 	"fmt"
 	"github.com/jmoiron/sqlx"
+	"github.com/mrtomyum/nopadol/product"
 	//"github.com/mrtomyum/nopadol/auth"
 )
 
@@ -21,6 +21,7 @@ type ProductModel struct {
 	StockType   int64        `db:"stock_type"`
 	AverageCost float64      `db:"average_cost"`
 	StkLocation []StockModel `db:stk_location`
+	CompanyID   int          `db:"company_id"`
 }
 
 type StockModel struct {
@@ -210,136 +211,134 @@ func (p *ProductModel) SearchByBarcode(db *sqlx.DB, bar_code string) {
 	return
 }
 
-
-func (p *productRepository) StoreItem(req *product.ProductNewRequest)(resp interface{},err error){
+func (p *productRepository) StoreItem(req *product.ProductNewRequest) (resp interface{}, err error) {
 
 	item := itemModel{}
-	err = item.map2itemModel(p.db,req)
+	err = item.map2itemModel(p.db, req)
 	if err != nil {
-		fmt.Println("error p.StoreItem map2itemModel ->",err.Error())
-		return nil,err
+		fmt.Println("error p.StoreItem map2itemModel ->", err.Error())
+		return nil, err
 	}
 
-	newItemID,err := item.save(p.db)
+	newItemID, err := item.save(p.db)
 	if err != nil {
-		fmt.Println("error item.save ",err.Error())
-		return nil,err
+		fmt.Println("error item.save ", err.Error())
+		return nil, err
 	}
 
 	// insert to PackingRate Table
-	pk := packingRate{}
-	for _, value := range req.PackingRate {
-
-		u := itemUnitModel{}
-		u.id = req.UnitID
-
-		u.getByID(p.db)
-
-		pk.RatePerBaseUnit = value.RatePerBaseUnit
-		pk.ItemID = newItemID
-		pk.ItemCode = req.ItemCode
-		pk.UnitCode  = u.unitCode
-
-
-		_,err = pk.save(p.db)
-		if err != nil {
-			return nil,err
-		}
-	}
-
-	// price insert
-	pr := priceModel{}
-	for _, value := range req.Price {
-
-		u := itemUnitModel{}
-		u.id = value.UnitID
-		u.getByID(p.db) // bind จาก id
-
-		pr.UnitID = req.UnitID
-		pr.ItemId = newItemID
-		pr.ItemCode = req.ItemCode
-		pr.SalePrice1 = value.SalePrice1
-		pr.SalePrice2 = value.SalePrice2
-		pr.CompanyID = value.CompanyID
-		_,err := pr.save(p.db)
-		if err != nil {
-			return nil,err
-		}
-
-	}
-
-	// insert barcode
-	bar := barcodeModel{}
-	for _, value := range req.Barcode {
-
-		u := itemUnitModel{}
-		u.id = value.UnitID
-		u.getByID(p.db) // bind จาก id
-
-		bar.UnitID = req.UnitID
-		bar.ItemCode = req.ItemCode
-		bar.CompanyID  = req.CompanyID
-		bar.BarCode = value.Barcode
-		_,err := bar.save(p.db)
-		if err != nil {
-			return nil,err
-		}
-	}
-	return newItemID,nil
+	//pk := packingRate{}
+	//for _, value := range req.PackingRate {
+	//
+	//	u := itemUnitModel{}
+	//	u.id = req.UnitID
+	//
+	//	u.getByID(p.db)
+	//
+	//	pk.RatePerBaseUnit = value.RatePerBaseUnit
+	//	pk.ItemID = newItemID
+	//	pk.ItemCode = req.ItemCode
+	//	pk.UnitCode = u.unitCode
+	//
+	//	_, err = pk.save(p.db)
+	//	if err != nil {
+	//		return nil, err
+	//	}
+	//}
+	//
+	//// price insert
+	//pr := priceModel{}
+	//for _, value := range req.Price {
+	//
+	//	u := itemUnitModel{}
+	//	u.id = value.UnitID
+	//	u.getByID(p.db) // bind จาก id
+	//
+	//	pr.UnitID = req.UnitID
+	//	pr.ItemId = newItemID
+	//	pr.ItemCode = req.ItemCode
+	//	pr.SalePrice1 = value.SalePrice1
+	//	pr.SalePrice2 = value.SalePrice2
+	//	pr.CompanyID = value.CompanyID
+	//	_, err := pr.save(p.db)
+	//	if err != nil {
+	//		return nil, err
+	//	}
+	//
+	//}
+	//
+	//// insert barcode
+	//bar := barcodeModel{}
+	//for _, value := range req.Barcode {
+	//
+	//	u := itemUnitModel{}
+	//	u.id = value.UnitID
+	//	u.getByID(p.db) // bind จาก id
+	//
+	//	bar.UnitID = req.UnitID
+	//	bar.ItemCode = req.ItemCode
+	//	bar.CompanyID = req.CompanyID
+	//	bar.BarCode = value.Barcode
+	//	_, err := bar.save(p.db)
+	//	if err != nil {
+	//		return nil, err
+	//	}
+	//}
+	return map[string]interface{}{
+		"result" : "success",
+		"new_id" : newItemID,
+	}, nil
 	// todo : insert to Barcode table
 }
 
-
-
-func (p *productRepository) StoreBarcode(req *product.BarcodeNewRequest)(res interface{},err error){
+func (p *productRepository) StoreBarcode(req *product.BarcodeNewRequest) (res interface{}, err error) {
 
 	b := barcodeModel{BarCode: req.Barcode,
-		ItemID:req.ItemID,
-		ItemCode:req.ItemCode,
-		UnitCode:req.UnitCode,
-		UnitID: req.UnitID,
+		ItemID:   req.ItemID,
+		ItemCode: req.ItemCode,
+		UnitCode: req.UnitCode,
+		UnitID:   req.UnitID,
 	}
 
-	newID,err := b.save(p.db)
+	newID, err := b.save(p.db)
 	if err != nil {
-		return nil,err
+		return nil, err
 	}
-	return newID,err
+	return newID, err
 }
 
-func (p *productRepository) StorePrice(req *product.PriceTemplate)(interface{},error){
+func (p *productRepository) StorePrice(req *product.PriceTemplate) (interface{}, error) {
 	fmt.Println("start store price in mysql package ")
 	item := itemModel{Id: req.ItemID}
-	itemcode,err := item.getItemCodeById(p.db)
+	itemcode, err := item.getItemCodeById(p.db)
 
-	unit := itemUnitModel{id:req.UnitID}
+	unit := itemUnitModel{id: req.UnitID}
 	unit.getByID(p.db)
 
 	if err != nil {
-		return nil,err
+		return nil, err
 	}
 	pr := priceModel{
-		ItemId: req.ItemID,
-		ItemCode: itemcode,
-		UnitID: req.UnitID,
-		UnitCode: unit.unitCode,
+		ItemId:     req.ItemID,
+		ItemCode:   itemcode,
+		UnitID:     req.UnitID,
+		UnitCode:   unit.unitCode,
 		SalePrice1: req.SalePrice1,
 		SalePrice2: req.SalePrice2,
-		SaleType: req.SaleType,
-		CompanyID: req.CompanyID,
+		SaleType:   req.SaleType,
+		CompanyID:  req.CompanyID,
 	}
 	return pr.save(p.db)
 }
 
-
-func (p *productRepository) StorePackingRate(req *product.PackingRate)(interface{},error){
-	unit := itemUnitModel{id:req.UnitID}
+func (p *productRepository) StorePackingRate(req *product.PackingRate) (interface{}, error) {
+	unit := itemUnitModel{id: req.UnitID}
 	unit.getByID(p.db)
 
 	rate := packingRate{
-		ItemID: req.ItemID,
-		ItemCode: req.ItemCode,
-		UnitID: req.UnitID,
+		ItemID:          req.ItemID,
+		ItemCode:        req.ItemCode,
+		UnitID:          req.UnitID,
 		RatePerBaseUnit: req.RatePerBaseUnit,
 	}
 

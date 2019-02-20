@@ -56,6 +56,7 @@ func (it *itemModel) map2itemModel(db *sqlx.DB, req *product.ProductNewRequest) 
 	it.UnitCode = u.unitCode
 	it.PicPath1 = req.Picture
 	it.StockType = req.StockType
+	it.CompanyID = req.CompanyID
 	fmt.Println("map2itemModel return ", it.UnitCode)
 	return
 }
