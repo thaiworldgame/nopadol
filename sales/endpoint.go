@@ -429,6 +429,10 @@ type (
 		RefLineNumber   int64   `json:"ref_line_number"`
 		LineNumber      int64   `json:"line_number"`
 	}
+
+	QuotationToSaleOrderRequest struct {
+		QuoId     int64  `json:"ar_id"`
+	}
 )
 
 ////// Quotation /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -603,6 +607,21 @@ func CancelQuotation(s Service) interface{} {
 		return map[string]interface{}{
 			"data": resp,
 		}, nil
+	}
+}
+
+func QuotationToSaleOrder(s Service) interface{} {
+	return func(ctx context.Context, req *SearchByIdRequest) (interface{}, error) {
+
+		resp, err := s.QuotationToSaleOrder(&SearchByIdTemplate{Id:req.Id})
+		if err != nil {
+			fmt.Println("endpoint error =", err.Error())
+			return nil, fmt.Errorf(err.Error())
+		}
+		return map[string]interface{}{
+			"data": resp,
+		}, nil
+
 	}
 }
 

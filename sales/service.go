@@ -19,6 +19,8 @@ type Service interface {
 	SearchQueById(req *SearchByIdTemplate) (interface{}, error)
 	ConfirmQuotation(req *NewQuoTemplate) (interface{}, error)
 	CancelQuotation(req *NewQuoTemplate) (interface{}, error)
+	QuotationToSaleOrder(req *SearchByIdTemplate) (interface{}, error)
+
 	CreateSaleOrder(req *NewSaleTemplate) (interface{}, error)
 	SearchSaleOrderById(req *SearchByIdTemplate) (interface{}, error)
 	SearchDocByKeyword(req *SearchByKeywordTemplate) (interface{}, error)
@@ -26,6 +28,7 @@ type Service interface {
 	SearchDepositById(req *SearchByIdTemplate) (interface{}, error)
 	SearchDepositByKeyword(req *SearchByKeywordTemplate) (interface{}, error)
 	SearchReserveToDeposit(req *SearchByKeywordTemplate) (interface{}, error)
+
 	CreateInvoice(req *NewInvoiceTemplate) (interface{}, error)
 	SearchInvoiceById(req *SearchByIdTemplate) (interface{}, error)
 
@@ -102,6 +105,14 @@ func (s *service) ConfirmQuotation(req *NewQuoTemplate) (interface{}, error) {
 
 func (s *service) CancelQuotation(req *NewQuoTemplate) (interface{}, error) {
 	resp, err := s.repo.CancelQuotation(req)
+	if err != nil {
+		return nil, err
+	}
+	return resp, nil
+}
+
+func (s *service) QuotationToSaleOrder(req *SearchByIdTemplate) (interface{}, error) {
+	resp, err := s.repo.QuotationToSaleOrder(req)
 	if err != nil {
 		return nil, err
 	}
