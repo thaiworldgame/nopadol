@@ -602,6 +602,19 @@ func SearchQuoById(s Service) interface{} {
 	}
 }
 
+func SearchQuoByKeyword(s Service) interface{} {
+	return func(ctx context.Context, req *SearchByKeywordRequest) (interface{}, error) {
+		resp, err := s.SearchQueByKeyword(&SearchByKeywordTemplate{SaleCode: req.SaleCode, Keyword:req.Keyword})
+		if err != nil {
+			fmt.Println("endpoint error =", err.Error())
+			return nil, fmt.Errorf(err.Error())
+		}
+		return map[string]interface{}{
+			"data": resp,
+		}, nil
+	}
+}
+
 func ConfirmQuotation(s Service) interface{} {
 	return func(ctx context.Context, req *NewQuoRequest) (interface{}, error) {
 		resp, err := s.ConfirmQuotation(&NewQuoTemplate{Id: req.Id, AssertStatus: req.AssertStatus, IsConfirm: req.IsConfirm, IsCancel: req.IsCancel, ConfirmBy: req.ConfirmBy, ConfirmTime: req.ConfirmTime})
@@ -787,9 +800,23 @@ func map_invoice_sub_request(x NewInvoiceItemRequest) NewInvoiceItemTemplate {
 		IsCancel:        x.IsCancel,
 	}
 }
+
 func SearchSaleOrderById(s Service) interface{} {
 	return func(ctx context.Context, req *SearchByIdRequest) (interface{}, error) {
 		resp, err := s.SearchSaleOrderById(&SearchByIdTemplate{Id: req.Id})
+		if err != nil {
+			fmt.Println("endpoint error =", err.Error())
+			return nil, fmt.Errorf(err.Error())
+		}
+		return map[string]interface{}{
+			"data": resp,
+		}, nil
+	}
+}
+
+func SearchSaleOrderByKeyword(s Service) interface{} {
+	return func(ctx context.Context, req *SearchByKeywordRequest) (interface{}, error) {
+		resp, err := s.SearchSaleOrderByKeyword(&SearchByKeywordTemplate{SaleCode:req.SaleCode,Keyword:req.Keyword})
 		if err != nil {
 			fmt.Println("endpoint error =", err.Error())
 			return nil, fmt.Errorf(err.Error())
@@ -805,7 +832,7 @@ func SearchDocByKeyword(s Service) interface{} {
 	return func(ctx context.Context, req *SearchByKeywordRequest) (interface{}, error) {
 
 		resp, err := s.SearchDocByKeyword(&SearchByKeywordTemplate{SaleCode: req.SaleCode, Keyword: req.Keyword})
-		fmt.Println(resp, "99999999999999999999999999999999999999999999999999999999999999999999999999999999")
+		fmt.Println(resp, "")
 		if err != nil {
 			fmt.Println("endpoint error =", err.Error())
 			return nil, fmt.Errorf(err.Error())

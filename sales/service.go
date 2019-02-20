@@ -17,12 +17,14 @@ type service struct {
 type Service interface {
 	CreateQuotation(req *NewQuoTemplate) (interface{}, error)
 	SearchQueById(req *SearchByIdTemplate) (interface{}, error)
+	SearchQueByKeyword(req *SearchByKeywordTemplate) (interface{}, error)
 	ConfirmQuotation(req *NewQuoTemplate) (interface{}, error)
 	CancelQuotation(req *NewQuoTemplate) (interface{}, error)
 	QuotationToSaleOrder(req *SearchByIdTemplate) (interface{}, error)
 
 	CreateSaleOrder(req *NewSaleTemplate) (interface{}, error)
 	SearchSaleOrderById(req *SearchByIdTemplate) (interface{}, error)
+	SearchSaleOrderByKeyword(req *SearchByKeywordTemplate) (interface{}, error)
 	SearchDocByKeyword(req *SearchByKeywordTemplate) (interface{}, error)
 	CreateDeposit(req *NewDepositTemplate) (interface{}, error)
 	SearchDepositById(req *SearchByIdTemplate) (interface{}, error)
@@ -88,6 +90,14 @@ func (s *service) CreateQuotation(req *NewQuoTemplate) (interface{}, error) {
 
 func (s *service) SearchQueById(req *SearchByIdTemplate) (interface{}, error) {
 	resp, err := s.repo.SearchQuoById(req)
+	if err != nil {
+		return nil, err
+	}
+	return resp, nil
+}
+
+func (s *service) SearchQueByKeyword(req *SearchByKeywordTemplate) (interface{}, error) {
+	resp, err := s.repo.SearchQuoByKeyword(req)
 	if err != nil {
 		return nil, err
 	}
@@ -186,6 +196,14 @@ func (s *service) CreateSaleOrder(req *NewSaleTemplate) (interface{}, error) {
 
 func (s *service) SearchSaleOrderById(req *SearchByIdTemplate) (interface{}, error) {
 	resp, err := s.repo.SearchSaleOrderById(req)
+	if err != nil {
+		return nil, err
+	}
+	return resp, nil
+}
+
+func (s *service) SearchSaleOrderByKeyword(req *SearchByKeywordTemplate) (interface{}, error) {
+	resp, err := s.repo.SearchSaleOrderByKeyword(req)
 	if err != nil {
 		return nil, err
 	}
