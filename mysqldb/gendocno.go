@@ -45,11 +45,12 @@ func (repo *gendocnoRepository) Gen(req *gendocno.DocNoTemplate) (resp string, e
 
 	fmt.Println("Table = ", req.TableCode)
 	fmt.Println("BillType = ", req.BillType)
+	fmt.Println("Branch = ", req.BranchId)
 
 	d := DocNoModel{}
 
 	sql := `select BranchId,TableCode,BillType,Header,UseYear,UseMonth,UseDay,UseDash,FormatNumber,ActiveStatus from GenDocMaster where TableCode =? and BillType = ? and BranchId = ?`
-	err = repo.db.Get(&d, sql, req.TableCode, req.BillType, req.BranchId)
+	err = repo.db.Get(&d, sql, req.TableCode, req.BillType, 1)
 	if err != nil {
 		return "", err
 	}
