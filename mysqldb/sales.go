@@ -1158,6 +1158,7 @@ func (repo *salesRepository) CreateSaleOrder(req *sales.NewSaleTemplate) (resp i
 	var count_item_unit int
 	var sum_item_amount float64
 	var item_discount_amount_sub float64
+	var credit_balance float64
 
 	def := config.Default{}
 	def = config.LoadDefaultData("config/config.json")
@@ -1217,8 +1218,35 @@ func (repo *salesRepository) CreateSaleOrder(req *sales.NewSaleTemplate) (resp i
 		fmt.Println("Error = ", err.Error())
 		return nil, err
 	}
+	//CheckCredit
+	req.BeforeTaxAmount, req.TaxAmount, req.TotalAmount = config.CalcTaxItem(req.TaxType, req.TaxRate, req.AfterDiscountAmount)
+	credit_sql := `select sum(debt_limit - (debt_amount+?)) as check_balance 
+	from Customer
+	where code = ?`
+	err = repo.db.Get(&credit_balance, credit_sql, req.TotalAmount, req.ArCode)
+	fmt.Println("This Value =", req.TotalAmount)
+	fmt.Println("credit_sql = ", req.ArCode)
+	fmt.Println("credit_sql = ", credit_sql)
+	if err != nil {
+		fmt.Println("Error credit_sql = ", err.Error())
+		return nil, err
+	}
 
 	if check_doc_exist == 0 {
+		//Insert Credit
+		if credit_balance > 0 {
+			req.BeforeTaxAmount, req.TaxAmount, req.TotalAmount = config.CalcTaxItem(req.TaxType, req.TaxRate, req.AfterDiscountAmount)
+			fmt.Println("credit enough")
+			ins_credit := `update Customer set debt_amount=debt_amount+? where code=? `
+			_, err := repo.db.Exec(ins_credit, req.TotalAmount, req.ArCode)
+			fmt.Println("ins_credit =", ins_credit)
+			fmt.Println("This Value =", req.TotalAmount)
+			if err != nil {
+				return "", err
+			}
+		} else {
+			fmt.Println("credit not enough")
+		}
 
 		req.BeforeTaxAmount, req.TaxAmount, req.TotalAmount = config.CalcTaxItem(req.TaxType, req.TaxRate, req.AfterDiscountAmount)
 
@@ -1265,7 +1293,7 @@ func (repo *salesRepository) CreateSaleOrder(req *sales.NewSaleTemplate) (resp i
 			req.AllocateId,
 			req.CreateBy,
 			req.CreateTime)
-
+		//fmt.Println("This Value =", req.TotalAmount)
 		//fmt.Println("query=", sql, "Hello")
 		if err != nil {
 			return "", err
@@ -1285,6 +1313,20 @@ func (repo *salesRepository) CreateSaleOrder(req *sales.NewSaleTemplate) (resp i
 			return nil, errors.New("เอกสารโดนอ้างนำไปใช้งานแล้ว")
 		case req.IsCancel == 1:
 			return nil, errors.New("เอกสารถุกยกเลิกไปแล้ว")
+		}
+		//Update Credit
+		if credit_balance > 0 {
+			req.BeforeTaxAmount, req.TaxAmount, req.TotalAmount = config.CalcTaxItem(req.TaxType, req.TaxRate, req.AfterDiscountAmount)
+			fmt.Println("credit enough")
+			ins_credit := `update Customer set debt_amount=debt_amount+? where code=? `
+			_, err := repo.db.Exec(ins_credit, req.TotalAmount, req.ArCode)
+			fmt.Println("ins_credit =", ins_credit)
+			fmt.Println("This Value =", req.TotalAmount)
+			if err != nil {
+				return "", err
+			}
+		} else {
+			fmt.Println("credit not enough")
 		}
 
 		fmt.Println("Update")
