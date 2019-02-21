@@ -3149,6 +3149,42 @@ func (repo *salesRepository) SearchCredit(req *sales.SearchByIdTemplate) (resp i
 	return inv_resp, nil
 }
 
+/*func (repo *salesRepository) CheckCredit(req *sales.NewSaleTemplate) (resp interface{}, err error) {
+	var credit_balance float64
+
+	//CheckCredit
+	req.BeforeTaxAmount, req.TaxAmount, req.TotalAmount = config.CalcTaxItem(req.TaxType, req.TaxRate, req.AfterDiscountAmount)
+	credit_sql := `select sum(debt_limit - (debt_amount+?)) as check_balance
+	from Customer
+	where code = ?`
+	err = repo.db.Get(&credit_balance, credit_sql, req.TotalAmount, req.ArCode)
+	fmt.Println("This Value =", req.TotalAmount)
+	fmt.Println("credit_sql = ", req.ArCode)
+	fmt.Println("credit_sql = ", credit_sql)
+	if err != nil {
+		fmt.Println("Error credit_sql = ", err.Error())
+		return nil, err
+	}
+
+	if credit_balance > 0 {
+		req.BeforeTaxAmount, req.TaxAmount, req.TotalAmount = config.CalcTaxItem(req.TaxType, req.TaxRate, req.AfterDiscountAmount)
+		fmt.Println("credit enough")
+		ins_credit := `update Customer set debt_amount=debt_amount+? where code=? `
+		_, err := repo.db.Exec(ins_credit, req.TotalAmount, req.ArCode)
+		fmt.Println("ins_credit =", ins_credit)
+		fmt.Println("This Value =", req.TotalAmount)
+		if err != nil {
+			return "", err
+		}
+	} else {
+		fmt.Println("credit not enough")
+	}
+	return map[string]interface{}{
+		"doc_no":   req.DocNo,
+		"doc_date": req.DocDate,
+	}, nil
+}*/
+
 func (repo *salesRepository) SearchHisByKeyword(req *sales.SearchByKeywordTemplate) (resp interface{}, err error) {
 	var sql string
 	d := []SearchInvModel{}
