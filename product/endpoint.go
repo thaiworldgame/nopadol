@@ -137,6 +137,7 @@ func MakeNewProduct(s Service) interface{} {
 		UnitID    int64  `json:"unit_id"`
 		Picture   string `json:"picture"`
 		StockType int    `json:"stock_type"`
+		StockQty  float64  `json:"stock_qty"`
 		//Price       []requestPrice   `json:"price"`
 		//Barcode     []requestBarcode `json:"barcode"`
 		//PackingRate []RequestPacking `json:"packing_rate"`
@@ -192,6 +193,7 @@ func MakeNewProduct(s Service) interface{} {
 			StockType: req.StockType,
 			Picture:   req.Picture,
 			UnitCode:  req.UnitCode,
+			StockQty:  req.StockQty,
 			//Barcode:     barcodes,
 			//Price:       prices,
 			//PackingRate: Rates,

@@ -31,21 +31,22 @@ type ProductTemplate struct {
 }
 
 type ProductNewRequest struct {
-	ItemCode     string            `json:"item_code"`
-	ItemName     string            `json:"item_name"`
-	UnitID       int64             `json:"unit_id"`
-	UnitCode     string            `json:"unit_code"`
-	Picture      string            `json:"picture"`
-	StockType    int               `json:"stock_type"`
+	ItemCode  string `json:"item_code"`
+	ItemName  string `json:"item_name"`
+	UnitID    int64  `json:"unit_id"`
+	UnitCode  string `json:"unit_code"`
+	Picture   string `json:"picture"`
+	StockType int    `json:"stock_type"`
+	StockQty  float64  `json:"stock_qty"`
 	//Barcode      []BarcodeTemplate `json:"barcode"`
 	//Price        []PriceTemplate   `json:"price"`
 	//PackingRate  []PackingRate     `json:"packing_rate"`
-	CompanyID    int               `json:"company_id"`
-	CreateBy     string            `json:"create_by"`
-	CreateTime   time.Time         `json:"create_time"`
-	EditBy       string            `json:"edit_by"`
-	EditTime     time.Time         `json:"edit_time"`
-	DefStkUnitID int64             `json:"def_stk_unit_id"`
+	CompanyID    int       `json:"company_id"`
+	CreateBy     string    `json:"create_by"`
+	CreateTime   time.Time `json:"create_time"`
+	EditBy       string    `json:"edit_by"`
+	EditTime     time.Time `json:"edit_time"`
+	DefStkUnitID int64     `json:"def_stk_unit_id"`
 }
 
 type BarcodeNewRequest struct {
