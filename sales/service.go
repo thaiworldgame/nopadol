@@ -17,15 +17,20 @@ type service struct {
 type Service interface {
 	CreateQuotation(req *NewQuoTemplate) (interface{}, error)
 	SearchQueById(req *SearchByIdTemplate) (interface{}, error)
+	SearchQueByKeyword(req *SearchByKeywordTemplate) (interface{}, error)
 	ConfirmQuotation(req *NewQuoTemplate) (interface{}, error)
 	CancelQuotation(req *NewQuoTemplate) (interface{}, error)
+	QuotationToSaleOrder(req *SearchByIdTemplate) (interface{}, error)
+
 	CreateSaleOrder(req *NewSaleTemplate) (interface{}, error)
 	SearchSaleOrderById(req *SearchByIdTemplate) (interface{}, error)
+	SearchSaleOrderByKeyword(req *SearchByKeywordTemplate) (interface{}, error)
 	SearchDocByKeyword(req *SearchByKeywordTemplate) (interface{}, error)
 	CreateDeposit(req *NewDepositTemplate) (interface{}, error)
 	SearchDepositById(req *SearchByIdTemplate) (interface{}, error)
 	SearchDepositByKeyword(req *SearchByKeywordTemplate) (interface{}, error)
 	SearchReserveToDeposit(req *SearchByKeywordTemplate) (interface{}, error)
+
 	CreateInvoice(req *NewInvoiceTemplate) (interface{}, error)
 	SearchInvoiceById(req *SearchByIdTemplate) (interface{}, error)
 	SearchInvoiceByKeyword(req *SearchByKeywordTemplate) (interface{}, error)
@@ -96,6 +101,14 @@ func (s *service) SearchQueById(req *SearchByIdTemplate) (interface{}, error) {
 	return resp, nil
 }
 
+func (s *service) SearchQueByKeyword(req *SearchByKeywordTemplate) (interface{}, error) {
+	resp, err := s.repo.SearchQuoByKeyword(req)
+	if err != nil {
+		return nil, err
+	}
+	return resp, nil
+}
+
 func (s *service) ConfirmQuotation(req *NewQuoTemplate) (interface{}, error) {
 	resp, err := s.repo.ConfirmQuotation(req)
 	if err != nil {
@@ -111,21 +124,30 @@ func (s *service) CancelQuotation(req *NewQuoTemplate) (interface{}, error) {
 	}
 	return resp, nil
 }
+
 func (s *service) CancelInvoice(req *NewInvoiceTemplate) (interface{}, error) {
 	resp, err := s.repo.CancelInvoice(req)
+}
+
+func (s *service) QuotationToSaleOrder(req *SearchByIdTemplate) (interface{}, error) {
+	resp, err := s.repo.QuotationToSaleOrder(req)
+
 	if err != nil {
 		return nil, err
 	}
 	return resp, nil
 }
+
 func (s *service) Invoicelist(req *SearchByKeywordTemplate) (interface{}, error) {
 	fmt.Println("invoicelist 2")
 	resp, err := s.repo.SearchInvoiceByKeyword(req)
+
 	if err != nil {
 		return nil, err
 	}
 	return resp, nil
 }
+
 
 func (s *service) SearchHisByKeyword(req *SearchByKeywordTemplate) (interface{}, error) {
 	resp, err := s.repo.SearchHisByKeyword(req)
@@ -134,6 +156,8 @@ func (s *service) SearchHisByKeyword(req *SearchByKeywordTemplate) (interface{},
 	}
 	return resp, nil
 }
+
+
 func (s *service) CreateSaleOrder(req *NewSaleTemplate) (interface{}, error) {
 	var count_item int
 	var count_item_qty int
@@ -198,6 +222,7 @@ func (s *service) SearchSaleOrderById(req *SearchByIdTemplate) (interface{}, err
 	return resp, nil
 }
 
+
 func (s *service) SearchSaleByItem(req *SearchByItemTemplate) (interface{}, error) {
 	resp, err := s.repo.SearchSaleByItem(req)
 	if err != nil {
@@ -205,6 +230,7 @@ func (s *service) SearchSaleByItem(req *SearchByItemTemplate) (interface{}, erro
 	}
 	return resp, nil
 }
+
 func (s *service) SearchDocByKeyword(req *SearchByKeywordTemplate) (interface{}, error) {
 	resp, err := s.repo.SearchDocByKeyword(req)
 	if err != nil {

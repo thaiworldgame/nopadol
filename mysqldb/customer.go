@@ -121,11 +121,15 @@ func (cr *customerRepository) StoreCustomer(req *customer.CustomerTemplate) (res
 }
 
 func (c *CustomerModel) getIdByCode(db *sqlx.DB, code string) (int64, error) {
-	sql := `select id from Customer where code=?`
+	sql := "select id from Customer where code='"+code+"'"
+	fmt.Println(sql)
 	var curID int64
-	err := db.QueryRow(sql, code).Scan(&curID)
-
-	return curID, err
+	err := db.QueryRow(sql).Scan(&curID)
+	if err != nil {
+		fmt.Printf("error ,,,, %s \n",err.Error())
+		return -1,err
+	}
+	return curID, nil
 }
 
 func (c *CustomerModel) save(db *sqlx.DB) (interface{}, error) {
@@ -133,28 +137,32 @@ func (c *CustomerModel) save(db *sqlx.DB) (interface{}, error) {
 	fmt.Println("start customer.save ,  ",c)
 	//validate id if empty -> insert
 	switch {
-	//case c.Id == 0 && c.Code != "":
-	//	{
-	//		x, err := c.getIdByCode(db, c.Code)
-	//		if err != nil || x == 0 {
-	//			return nil, fmt.Errorf("error not found code ", c.Code)
-	//		}
-	//		curID = x
-	//	}
+	case  c.Code != "":
+		{
+			fmt.Println("check state 1 code = ",c.Code)
+			x, _ := c.getIdByCode(db, c.Code)
+			fmt.Println("id by code = ",x)
+			curID = x
+		}
 	case c.Code == "":
 		{
+			fmt.Println("check state 1 ")
 			return nil, fmt.Errorf("error no Code data")
 		}
 	}
 
 	// insert
-	if curID == 0 {
+	if curID == -1  {
 		//new customer case
+		fmt.Println("case insert customer ")
 		sql := `insert into Customer (code,name,address,telephone,bill_credit,
-						active_status,create_by,create_time)
-		values (?,?,?,?,?,?,?,?)`
+						active_status,create_by,create_time,company_id)
+		values (?,?,?,?,?,?,?,?,?)`
 
-		rs, err := db.Exec(sql, c.Code, c.Name, c.Address, c.Telephone, c.BillCredit, 0, c.CreateBy, c.CreateTime)
+		rs, err := db.Exec(sql, c.Code, c.Name,
+				c.Address, c.Telephone,
+				c.BillCredit, 0,
+				c.CreateBy, c.CreateTime,c.CompanyID)
 
 		if err != nil {
 			return nil, err
@@ -166,31 +174,29 @@ func (c *CustomerModel) save(db *sqlx.DB) (interface{}, error) {
 		return newID, nil
 	}
 	// update
-	if curID != 0 {
+	if curID != -1  {
 		//new customer case
-		sql := `update customer
+		fmt.Println("case update ")
+		sql := `update Customer
 			set 	code = ?,
 				name=?,
 				address=?,
 				telephone=?,
 				bill_credit=?,
 				active_status=?,
-				update_by=?,
-				update_time=?
+				company_id=?
 			where id = ?`
 
-		rs, err := db.Exec(sql, c.Code, c.Name, c.Address,
-			c.Telephone, c.BillCredit, 0,
-			c.CreateBy, c.CreateTime)
+		_, err := db.Exec(sql, c.Code, c.Name, c.Address,
+			c.Telephone, c.BillCredit, 0,c.CompanyID,curID)
 
 		if err != nil {
 			return nil, err
 		}
-		rowCount, err := rs.RowsAffected()
-		if err != nil {
-			return nil, err
-		}
-		return rowCount, nil
+		//rowCount, err := rs.RowsAffected()
+		return map[string]interface{}{
+			"result ":"success",
+		}, nil
 	}
 	return nil, nil
 }

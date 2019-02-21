@@ -37,9 +37,9 @@ type ProductNewRequest struct {
 	UnitCode     string            `json:"unit_code"`
 	Picture      string            `json:"picture"`
 	StockType    int               `json:"stock_type"`
-	Barcode      []BarcodeTemplate `json:"barcode"`
-	Price        []PriceTemplate   `json:"price"`
-	PackingRate  []PackingRate     `json:"packing_rate"`
+	//Barcode      []BarcodeTemplate `json:"barcode"`
+	//Price        []PriceTemplate   `json:"price"`
+	//PackingRate  []PackingRate     `json:"packing_rate"`
 	CompanyID    int               `json:"company_id"`
 	CreateBy     string            `json:"create_by"`
 	CreateTime   time.Time         `json:"create_time"`
