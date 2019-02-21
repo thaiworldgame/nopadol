@@ -1074,7 +1074,7 @@ func (repo *salesRepository) QuotationToSaleOrder(req *sales.SearchByIdTemplate)
 
 	q := NewQuoModel{}
 
-	sql := `select a.Id,a.DocNo,a.DocDate,a.DocType,a.Validity,a.BillType,a.ArId,a.ArCode,a.ArName,a.SaleId,a.SaleCode,a.SaleName,ifnull(a.DepartId,0) as DepartId,ifnull(a.RefNo,'') as RefNo,ifnull(a.JobId,'') as JobId,a.TaxType,a.IsConfirm,a.BillStatus,a.CreditDay,ifnull(a.DueDate,'') as DueDate,a.ExpireCredit,ifnull(a.ExpireDate,'') as ExpireDate,a.DeliveryDay,ifnull(a.DeliveryDate,'') as DeliveryDate,a.AssertStatus,a.IsConditionSend,ifnull(a.MyDescription,'') as MyDescription,a.SumOfItemAmount,ifnull(a.DiscountWord,'') as DiscountWord,a.DiscountAmount,a.AfterDiscountAmount,a.BeforeTaxAmount,a.TaxAmount,a.TotalAmount,a.NetDebtAmount,a.TaxRate,a.ProjectId,a.AllocateId,a.IsCancel,ifnull(a.CreateBy,'') as CreateBy,ifnull(a.CreateTime,'') as CreateTime,ifnull(a.EditBy,'') as EditBy,ifnull(a.EditTime,'') as EditTime,ifnull(a.CancelBy,'') as CancelBy,ifnull(a.CancelTime,'') as CancelTime,ifnull(b.address,'') as ArBillAddress,ifnull(b.telephone,'') as ArTelephone from Quotation a left join Customer b on a.ArId = b.id  where a.Id = ?`
+	sql := `select a.Id,a.CompanyId,b.BranchId,a.DocNo,a.DocDate,a.DocType,a.Validity,a.BillType,a.ArId,a.ArCode,a.ArName,a.SaleId,a.SaleCode,a.SaleName,ifnull(a.DepartId,0) as DepartId,ifnull(a.RefNo,'') as RefNo,ifnull(a.JobId,'') as JobId,a.TaxType,a.IsConfirm,a.BillStatus,a.CreditDay,ifnull(a.DueDate,'') as DueDate,a.ExpireCredit,ifnull(a.ExpireDate,'') as ExpireDate,a.DeliveryDay,ifnull(a.DeliveryDate,'') as DeliveryDate,a.AssertStatus,a.IsConditionSend,ifnull(a.MyDescription,'') as MyDescription,a.SumOfItemAmount,ifnull(a.DiscountWord,'') as DiscountWord,a.DiscountAmount,a.AfterDiscountAmount,a.BeforeTaxAmount,a.TaxAmount,a.TotalAmount,a.NetDebtAmount,a.TaxRate,a.ProjectId,a.AllocateId,a.IsCancel,ifnull(a.CreateBy,'') as CreateBy,ifnull(a.CreateTime,'') as CreateTime,ifnull(a.EditBy,'') as EditBy,ifnull(a.EditTime,'') as EditTime,ifnull(a.CancelBy,'') as CancelBy,ifnull(a.CancelTime,'') as CancelTime,ifnull(b.address,'') as ArBillAddress,ifnull(b.telephone,'') as ArTelephone from Quotation a left join Customer b on a.ArId = b.id  where a.Id = ?`
 	err = repo.db.Get(&q, sql, req.Id)
 	if err != nil {
 		fmt.Println("err = ", err.Error())
@@ -1145,10 +1145,14 @@ func (repo *salesRepository) QuotationToSaleOrder(req *sales.SearchByIdTemplate)
 
 	//append(jsonStr, "":"")
 
-	if d.BillType == 0 {
+	if d.BillType == 0 && q.BranchId == 1 {
 		jsonStr = []byte(`{"table_code":"SO","bill_type":0, "branch_id":1}`)
-	} else {
+	} else if d.BillType == 1 && q.BranchId == 1 {
 		jsonStr = []byte(`{"table_code":"SO","bill_type":1, "branch_id":1}`)
+	} else if d.BillType == 0 && q.BranchId == 2 {
+		jsonStr = []byte(`{"table_code":"SO","bill_type":0, "branch_id":2}`)
+	} else if d.BillType == 1 && q.BranchId == 2 {
+		jsonStr = []byte(`{"table_code":"SO","bill_type":1, "branch_id":2}`)
 	}
 
 	reqs, err := http.NewRequest("POST", url, bytes.NewBuffer(jsonStr))
@@ -1189,6 +1193,16 @@ func (repo *salesRepository) QuotationToSaleOrder(req *sales.SearchByIdTemplate)
 	wh_code = "S1-A"
 	shelf_code = "-"
 
+	var credit_day int
+	var delivery_day int
+
+	credit_day = int(q.CreditDay)
+	delivery_day = int(q.DeliveryDay)
+
+	due_date := now.AddDate(0, 0, credit_day).Format("2006-01-02")//strconv.Itoa(97)
+	delivery_date := now.AddDate(0,0,delivery_day).Format("2006-01-02")
+
+
 	if (check_doc_exist == 0) {
 
 		q.BeforeTaxAmount, q.TaxAmount, q.TotalAmount = config.CalcTaxItem(q.TaxType, q.TaxRate, q.AfterDiscountAmount)
@@ -1210,9 +1224,9 @@ func (repo *salesRepository) QuotationToSaleOrder(req *sales.SearchByIdTemplate)
 			q.SaleName,
 			q.DepartId,
 			q.CreditDay,
-			q.DueDate,
+			due_date,
 			q.DeliveryDay,
-			q.DeliveryDate,
+			delivery_date,
 			q.TaxRate,
 			q.IsConfirm,
 			q.MyDescription,
