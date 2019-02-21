@@ -3,9 +3,8 @@ package product
 import (
 	"encoding/json"
 	"fmt"
-	"net/http"
-
 	"github.com/acoshift/hrpc"
+	"net/http"
 )
 
 type errorResponse struct {

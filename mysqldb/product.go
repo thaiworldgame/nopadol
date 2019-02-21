@@ -2,7 +2,6 @@ package mysqldb
 
 import (
 	"fmt"
-
 	"github.com/jmoiron/sqlx"
 	"github.com/mrtomyum/nopadol/product"
 	//"github.com/mrtomyum/nopadol/auth"
@@ -226,7 +225,6 @@ func (p *productRepository) StoreItem(req *product.ProductNewRequest) (resp inte
 		fmt.Println("error item.save ", err.Error())
 		return nil, err
 	}
-
 
 	// insert to PackingRate Table
 	//pk := packingRate{}

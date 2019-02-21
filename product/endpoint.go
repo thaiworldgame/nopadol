@@ -3,9 +3,6 @@ package product
 import (
 	"context"
 	"fmt"
-	"time"
-
-	"github.com/mrtomyum/nopadol/auth"
 	//"github.com/mrtomyum/nopadol/auth"
 )
 
@@ -147,6 +144,58 @@ func MakeNewProduct(s Service) interface{} {
 	}
 	return func(ctx context.Context, req *requestNewItem) (interface{}, error) {
 
+		//var barcodes []BarcodeTemplate
+		//var prices []PriceTemplate
+		//var Rates []PackingRate
+
+		// bind barcode template
+		//if len(req.Barcode) > 0 {
+		//	fmt.Println("bind req barcocde")
+		//	for _, value := range req.Barcode {
+		//		bct := BarcodeTemplate{}
+		//		bct.Barcode = value.Barcode
+		//		bct.UnitID = value.UnitID
+		//		barcodes = append(barcodes, bct)
+		//	}
+		//}
+		//
+		//if len(req.Price) > 0 {
+		//	fmt.Println("bind req price value : ", req.Price)
+		//
+		//	// bind price template
+		//	for _, value := range req.Price {
+		//		pr := PriceTemplate{}
+		//		pr.SalePrice1 = value.SalePrice1
+		//		pr.SalePrice2 = value.SalePrice2
+		//		pr.UnitID = value.UnitID
+		//		pr.SaleType = value.SaleType
+		//		pr.CompanyID = req.CompanyID
+		//		prices = append(prices, pr)
+		//	}
+		//}
+		//
+		//if len(req.PackingRate) > 0 {
+		//
+		//	fmt.Println("bind req Rate")
+		//	for _, value := range req.PackingRate {
+		//		rt := PackingRate{}
+		//		rt.RatePerBaseUnit = value.RatePerBaseUnit
+		//		rt.UnitID = value.UnitID
+		//	}
+		//}
+		//
+		fmt.Println("request data ->", req)
+		resp, err := s.StoreItem(&ProductNewRequest{
+			ItemCode:  req.Code,
+			ItemName:  req.Name,
+			UnitID:    req.UnitID,
+			StockType: req.StockType,
+			Picture:   req.Picture,
+			UnitCode:  req.UnitCode,
+			//Barcode:     barcodes,
+			//Price:       prices,
+			//PackingRate: Rates,
+			CompanyID: req.CompanyID,
 		})
 		if err != nil {
 			fmt.Println("endpoint error =", err.Error())
