@@ -457,7 +457,9 @@ type NewInvoiceModel struct {
 	DocType             int64                 `db:"doc_type"`
 	ArId                int64                 `db:"ar_id"`
 	ArCode              string                `db:"ar_code"`
+	Code                string                `db:"code"`
 	ArName              string                `db:"ar_name"`
+	ItemName            string                `db:"item_name"`
 	ArBillAddress       string                `db:"ar_bill_address"`
 	ArTelephone         string                `db:"ar_telephone"`
 	SaleId              int64                 `db:"sale_id"`
@@ -527,6 +529,7 @@ type NewInvoiceModel struct {
 	CancelTime          string                `db:"cancel_time"`
 	CancelDescId        int64                 `db:"cancel_desc_id"`
 	CancelDesc          string                `db:"cancel_desc"`
+	ItemCode            string                `db:"item_code"`
 	Subs                []NewInvoiceItemModel `db:"subs"`
 	RecMoney            []RecMoneyModel       `db:"rec_money"`
 	CreditCard          []CreditCardModel     `db:"credit_card"`
@@ -563,7 +566,49 @@ type NewInvoiceItemModel struct {
 	RefLineNumber   int64   `db:"ref_line_number"`
 	LineNumber      int64   `db:"line_number"`
 }
-
+type NewSearchItemModel struct {
+	Id              int64   `db:"id"`
+	DocDate         string  `db:"doc_date"`
+	DocNo           string  `db:"doc_no"`
+	ItemId          int64   `db:"item_id"`
+	ItemCode        string  `db:"item_code"`
+	ItemName        string  `db:"item_name"`
+	BarCode         string  `db:"bar_code"`
+	UnitICode       string  `db:"unit_code"`
+	WhId            int64   `db:"wh_id"`
+	ShelfId         int64   `db:"shelf_id"`
+	Price           float64 `db:"price"`
+	Qty             float64 `db:"qty"`
+	CnQty           float64 `db:"cn_qty"`
+	DiscountWord    float64 `db:"discount_word_sub"`
+	ItemDescription string  `db:"item_description"`
+	IsCreditNote    int64   `db:"is_credit_note"`
+	IsDebitNote     int64   `db:"is_debit_note"`
+	PackingRate1    int64   `db:"packing_rate_1"`
+	PackingRate2    int64   `db:"packing_rate_2"`
+	SoRefNo         string  `db:"so_ref_no"`
+	AverageCost     float64 `db:"average_cost"`
+	SumOfCost       float64 `db:"sum_of_cost"`
+	RefLineNumber   int64   `db:"ref_line_number"`
+	LineNumber      int64   `db:"line_number"`
+	ArName          string  `db:"ar_name"`
+	ArCode          string  `db:"ar_code"`
+	ArId            int64   `db:"ar_id"`
+	Name            string  `db:"name"`
+	NId             int64   `db:"Id"`
+	NDocNo          string  `db:"DocNo"`
+	NDocDate        string  `db:"DocDate"`
+	NItemId         int64   `db:"ItemId"`
+	NArId           int64   `db:"ArId"`
+	NBarCode        string  `db:"BarCode"`
+	NItemCode       string  `db:"ItemCode"`
+	NItemName       string  `db:"ItemName"`
+	NUnitCode       string  `db:"UnitCode"`
+	NQty            float64 `db:"Qty"`
+	NPrice          float64 `db:"Price"`
+	NArName         string  `db:"ArName"`
+	NDiscountWord   string  `db:"DiscountWord"`
+}
 type salesRepository struct{ db *sqlx.DB }
 
 func NewSalesRepository(db *sqlx.DB) sales.Repository {
@@ -963,7 +1008,9 @@ func (repo *salesRepository) SearchQuoById(req *sales.SearchByIdTemplate) (resp 
 
 	q := NewQuoModel{}
 
-	sql := `select a.Id,a.DocNo,a.DocDate,a.DocType,a.Validity,a.BillType,a.ArId,a.ArCode,a.ArName,a.SaleId,a.SaleCode,a.SaleName,ifnull(a.DepartId,0) as DepartId,ifnull(a.RefNo,'') as RefNo,ifnull(a.JobId,'') as JobId,a.TaxType,a.IsConfirm,a.BillStatus,a.CreditDay,ifnull(a.DueDate,'') as DueDate,a.ExpireCredit,ifnull(a.ExpireDate,'') as ExpireDate,a.DeliveryDay,ifnull(a.DeliveryDate,'') as DeliveryDate,a.AssertStatus,a.IsConditionSend,ifnull(a.MyDescription,'') as MyDescription,a.SumOfItemAmount,ifnull(a.DiscountWord,'') as DiscountWord,a.DiscountAmount,a.AfterDiscountAmount,a.BeforeTaxAmount,a.TaxAmount,a.TotalAmount,a.NetDebtAmount,a.TaxRate,a.ProjectId,a.AllocateId,a.IsCancel,ifnull(a.CreateBy,'') as CreateBy,ifnull(a.CreateTime,'') as CreateTime,ifnull(a.EditBy,'') as EditBy,ifnull(a.EditTime,'') as EditTime,ifnull(a.CancelBy,'') as CancelBy,ifnull(a.CancelTime,'') as CancelTime,ifnull(b.address,'') as ArBillAddress,ifnull(b.telephone,'') as ArTelephone from Quotation a left join Customer b on a.ArId = b.id  where a.Id = ?`
+	sql := `select a.Id,a.DocNo,a.DocDate,a.DocType,a.Validity,a.BillType,a.ArId,a.ArCode,a.ArName,a.SaleId,a.SaleCode,a.SaleName,ifnull(a.DepartId,0) as DepartId,ifnull(a.RefNo,'') as RefNo,ifnull(a.JobId,'') as JobId,a.TaxType,a.IsConfirm,a.BillStatus,a.CreditDay,ifnull(a.DueDate,'') as DueDate,a.ExpireCredit,ifnull(a.ExpireDate,'') as ExpireDate,a.DeliveryDay,ifnull(a.DeliveryDate,'') as DeliveryDate,a.AssertStatus,a.IsConditionSend,ifnull(a.MyDescription,'') as MyDescription,a.SumOfItemAmount,ifnull(a.DiscountWord,'') as DiscountWord,a.DiscountAmount,a.AfterDiscountAmount,a.BeforeTaxAmount,a.TaxAmount,a.TotalAmount,a.NetDebtAmount,a.TaxRate,a.ProjectId,a.AllocateId,a.IsCancel,ifnull(a.CreateBy,'') as CreateBy,ifnull(a.CreateTime,'') as CreateTime,ifnull(a.EditBy,'') as EditBy,ifnull(a.EditTime,'') as EditTime,ifnull(a.CancelBy,'') as CancelBy,ifnull(a.CancelTime,'') as CancelTime,ifnull(b.address,'') as ArBillAddress,ifnull(b.telephone,'') as ArTelephone 
+	from Quotation a left join Customer b on a.ArId = b.id  
+	where a.Id = ?`
 	err = repo.db.Get(&q, sql, req.Id)
 	if err != nil {
 		fmt.Println("err = ", err.Error())
@@ -1171,7 +1218,7 @@ func (repo *salesRepository) CreateSaleOrder(req *sales.NewSaleTemplate) (resp i
 		return nil, err
 	}
 
-	if (check_doc_exist == 0) {
+	if check_doc_exist == 0 {
 
 		req.BeforeTaxAmount, req.TaxAmount, req.TotalAmount = config.CalcTaxItem(req.TaxType, req.TaxRate, req.AfterDiscountAmount)
 
@@ -1316,7 +1363,9 @@ func (repo *salesRepository) SearchSaleOrderById(req *sales.SearchByIdTemplate) 
 
 	s := NewSaleModel{}
 
-	sql := `select a.Id,a.DocNo,ifnull(a.DocDate,'') as DocDate,a.CompanyId,a.BranchId,a.DocType,a.BillType,a.TaxType,a.ArId,ifnull(a.ArCode,'') as ArCode,ifnull(a.ArName,'') as ArName,a.SaleId,ifnull(a.SaleCode,'') as SaleCode,ifnull(a.SaleName,'') as SaleName,a.DepartId,a.CreditDay,ifnull(a.DueDate,'') as DueDate,a.DeliveryDay,ifnull(a.DeliveryDate,'') as DeliveryDate,a.TaxRate,a.IsConfirm,ifnull(a.MyDescription,'') as MyDescription,a.BillStatus,a.HoldingStatus,a.SumOfItemAmount,ifnull(a.DiscountWord,'') as DiscountWord,a.DiscountAmount,a.AfterDiscountAmount,a.BeforeTaxAmount,a.TaxAmount,a.TotalAmount,a.NetDebtAmount,a.IsCancel,a.IsConditionSend,a.DeliveryAddressId,ifnull(a.CarLicense,'') as CarLicense,ifnull(a.PersonReceiveTel,'') as PersonReceiveTel,ifnull(a.JobId,'') as JobId,a.ProjectId,a.AllocateId,ifnull(a.CreateBy,'') as CreateBy,a.CreateTime,ifnull(a.EditBy,'') as EditBy,ifnull(a.EditTime,'') as EditTime, ifnull(a.CancelBy,'') as CancelBy,ifnull(a.CancelTime,'') as CancelTime, ifnull(a.ConfirmBy,'') as ConfirmBy,ifnull(a.ConfirmTime,'') as ConfirmTime,ifnull(b.address,'') as ArBillAddress,ifnull(b.telephone,'') as ArTelephone from SaleOrder a left join Customer b on a.ArId = b.id where a.id=?`
+	sql := `select a.Id,a.DocNo,ifnull(a.DocDate,'') as DocDate,a.CompanyId,a.BranchId,a.DocType,a.BillType,a.TaxType,a.ArId,ifnull(a.ArCode,'') as ArCode,ifnull(a.ArName,'') as ArName,a.SaleId,ifnull(a.SaleCode,'') as SaleCode,ifnull(a.SaleName,'') as SaleName,a.DepartId,a.CreditDay,ifnull(a.DueDate,'') as DueDate,a.DeliveryDay,ifnull(a.DeliveryDate,'') as DeliveryDate,a.TaxRate,a.IsConfirm,ifnull(a.MyDescription,'') as MyDescription,a.BillStatus,a.HoldingStatus,a.SumOfItemAmount,ifnull(a.DiscountWord,'') as DiscountWord,a.DiscountAmount,a.AfterDiscountAmount,a.BeforeTaxAmount,a.TaxAmount,a.TotalAmount,a.NetDebtAmount,a.IsCancel,a.IsConditionSend,a.DeliveryAddressId,ifnull(a.CarLicense,'') as CarLicense,ifnull(a.PersonReceiveTel,'') as PersonReceiveTel,ifnull(a.JobId,'') as JobId,a.ProjectId,a.AllocateId,ifnull(a.CreateBy,'') as CreateBy,a.CreateTime,ifnull(a.EditBy,'') as EditBy,ifnull(a.EditTime,'') as EditTime, ifnull(a.CancelBy,'') as CancelBy,ifnull(a.CancelTime,'') as CancelTime, ifnull(a.ConfirmBy,'') as ConfirmBy,ifnull(a.ConfirmTime,'') as ConfirmTime,ifnull(b.address,'') as ArBillAddress,ifnull(b.telephone,'') as ArTelephone 
+	from SaleOrder a left join Customer b on a.ArId = b.id 
+	where a.id=?`
 	err = repo.db.Get(&s, sql, req.Id)
 	if err != nil {
 		fmt.Println("err = ", err.Error())
@@ -1329,7 +1378,9 @@ func (repo *salesRepository) SearchSaleOrderById(req *sales.SearchByIdTemplate) 
 
 	fmt.Println("s.Id =", s.Id)
 
-	sql_sub := `select a.Id,a.SOId,a.ItemId,a.ItemCode,a.ItemName,ifnull(a.WHCode,'') as WHCode,ifnull(a.ShelfCode,'') as ShelfCode,a.Qty,a.RemainQty,a.Price,ifnull(a.DiscountWord,'') as DiscountWord,DiscountAmount,ifnull(a.UnitCode,'') as UnitCode,ifnull(a.BarCode,'') as BarCode,ifnull(a.ItemDescription,'') as ItemDescription,a.StockType,a.AverageCost,a.SumOfCost,a.ItemAmount,a.PackingRate1,a.LineNumber,a.IsCancel from SaleOrderSub a  where SOId = ? order by a.linenumber`
+	sql_sub := `select a.Id,a.SOId,a.ItemId,a.ItemCode,a.ItemName,ifnull(a.WHCode,'') as WHCode,ifnull(a.ShelfCode,'') as ShelfCode,a.Qty,a.RemainQty,a.Price,ifnull(a.DiscountWord,'') as DiscountWord,DiscountAmount,ifnull(a.UnitCode,'') as UnitCode,ifnull(a.BarCode,'') as BarCode,ifnull(a.ItemDescription,'') as ItemDescription,a.StockType,a.AverageCost,a.SumOfCost,a.ItemAmount,a.PackingRate1,a.LineNumber,a.IsCancel 
+	from SaleOrderSub a  
+	where SOId = ? order by a.linenumber`
 	err = repo.db.Select(&subs, sql_sub, s.Id)
 	fmt.Println("sql_sub = ", sql_sub)
 	if err != nil {
@@ -1705,7 +1756,9 @@ func (repo *salesRepository) SearchDepositById(req *sales.SearchByIdTemplate) (r
 
 	d := NewDepositModel{}
 
-	sql := `select a.id, a.company_id, a.branch_id, ifnull(a.uuid,'') as uuid, ifnull(a.doc_no,'') as doc_no, ifnull(a.tax_no,'') as tax_no, ifnull(a.doc_date,'') as doc_date, a.bill_type, a.ar_id, ifnull(a.ar_code,'') as ar_code, ifnull(a.ar_name,'') as ar_name,a.sale_id, ifnull(a.sale_code,'') as sale_code, ifnull(a.sale_name,'') as sale_name,a.tax_type, a.tax_rate, ifnull(a.ref_no,'') as ref_no, a.credit_day, ifnull(a.due_date,'') as due_date, a.depart_id, a.allocate_id, a.project_id, ifnull(a.my_description,'') as my_description, a.before_tax_amount, a.tax_amount, a.total_amount, a.net_amount ,a.bill_balance ,a.cash_amount ,a.creditcard_amount, a.chq_amount, a.bank_amount, a.is_return_money, a.is_cancel, a.is_confirm, ifnull(a.scg_id,'') as scg_id, ifnull(a.job_no,'') as job_no, ifnull(a.create_by,'') as create_by, ifnull(a.create_time,'') as create_time, ifnull(a.edit_by,'') as edit_by, ifnull(a.edit_time,'') as edit_time, ifnull(a.cancel_by,'') as cancel_by, ifnull(a.cancel_time,'') as cancel_time, ifnull(a.confirm_by,'') as confirm_by, ifnull(a.confirm_time,'') as confirm_time,ifnull(b.address,'') as ar_bill_address,ifnull(b.telephone,'') as ar_telephone from ar_deposit a left join Customer b on a.ar_id = b.id where a.id=?`
+	sql := `select a.id, a.company_id, a.branch_id, ifnull(a.uuid,'') as uuid, ifnull(a.doc_no,'') as doc_no, ifnull(a.tax_no,'') as tax_no, ifnull(a.doc_date,'') as doc_date, a.bill_type, a.ar_id, ifnull(a.ar_code,'') as ar_code, ifnull(a.ar_name,'') as ar_name,a.sale_id, ifnull(a.sale_code,'') as sale_code, ifnull(a.sale_name,'') as sale_name,a.tax_type, a.tax_rate, ifnull(a.ref_no,'') as ref_no, a.credit_day, ifnull(a.due_date,'') as due_date, a.depart_id, a.allocate_id, a.project_id, ifnull(a.my_description,'') as my_description, a.before_tax_amount, a.tax_amount, a.total_amount, a.net_amount ,a.bill_balance ,a.cash_amount ,a.creditcard_amount, a.chq_amount, a.bank_amount, a.is_return_money, a.is_cancel, a.is_confirm, ifnull(a.scg_id,'') as scg_id, ifnull(a.job_no,'') as job_no, ifnull(a.create_by,'') as create_by, ifnull(a.create_time,'') as create_time, ifnull(a.edit_by,'') as edit_by, ifnull(a.edit_time,'') as edit_time, ifnull(a.cancel_by,'') as cancel_by, ifnull(a.cancel_time,'') as cancel_time, ifnull(a.confirm_by,'') as confirm_by, ifnull(a.confirm_time,'') as confirm_time,ifnull(b.address,'') as ar_bill_address,ifnull(b.telephone,'') as ar_telephone 
+	from ar_deposit a left join Customer b on a.ar_id = b.id 
+	where a.id=?`
 	err = repo.db.Get(&d, sql, req.Id)
 	if err != nil {
 		fmt.Println("err = ", err.Error())
@@ -1751,10 +1804,16 @@ func (repo *salesRepository) SearchDepositByKeyword(req *sales.SearchByKeywordTe
 	d := []NewDepositModel{}
 
 	if req.Keyword == "" {
-		sql = `select a.id, a.company_id, a.branch_id, ifnull(a.uuid,'') as uuid, ifnull(a.doc_no,'') as doc_no, ifnull(a.tax_no,'') as tax_no, ifnull(a.doc_date,'') as doc_date, a.bill_type, a.ar_id, ifnull(a.ar_code,'') as ar_code, ifnull(a.ar_name,'') as ar_name,a.sale_id, ifnull(a.sale_code,'') as sale_code, ifnull(a.sale_name,'') as sale_name,a.tax_type, a.tax_rate, ifnull(a.ref_no,'') as ref_no, a.credit_day, ifnull(a.due_date,'') as due_date, a.depart_id, a.allocate_id, a.project_id, ifnull(a.my_description,'') as my_description, a.before_tax_amount, a.tax_amount, a.total_amount, a.net_amount ,a.bill_balance ,a.cash_amount ,a.creditcard_amount, a.chq_amount, a.bank_amount, a.is_return_money, a.is_cancel, a.is_confirm, ifnull(a.scg_id,'') as scg_id, ifnull(a.job_no,'') as job_no, ifnull(a.create_by,'') as create_by, ifnull(a.create_time,'') as create_time, ifnull(a.edit_by,'') as edit_by, ifnull(a.edit_time,'') as edit_time, ifnull(a.cancel_by,'') as cancel_by, ifnull(a.cancel_time,'') as cancel_time, ifnull(a.confirm_by,'') as confirm_by, ifnull(a.confirm_time,'') as confirm_time,ifnull(b.address,'') as ar_bill_address,ifnull(b.telephone,'') as ar_telephone from ar_deposit a left join Customer b on a.ar_id = b.id  order by a.id desc limit 30`
+		sql = `select a.id, a.company_id, a.branch_id, ifnull(a.uuid,'') as uuid, ifnull(a.doc_no,'') as doc_no, ifnull(a.tax_no,'') as tax_no, ifnull(a.doc_date,'') as doc_date, a.bill_type, a.ar_id, ifnull(a.ar_code,'') as ar_code, ifnull(a.ar_name,'') as ar_name,a.sale_id, ifnull(a.sale_code,'') as sale_code, ifnull(a.sale_name,'') as sale_name,a.tax_type, a.tax_rate, ifnull(a.ref_no,'') as ref_no, a.credit_day, ifnull(a.due_date,'') as due_date, a.depart_id, a.allocate_id, a.project_id, ifnull(a.my_description,'') as my_description, a.before_tax_amount, a.tax_amount, a.total_amount, a.net_amount ,a.bill_balance ,a.cash_amount ,a.creditcard_amount, a.chq_amount, a.bank_amount, a.is_return_money, a.is_cancel, a.is_confirm, ifnull(a.scg_id,'') as scg_id, ifnull(a.job_no,'') as job_no, ifnull(a.create_by,'') as create_by, ifnull(a.create_time,'') as create_time, ifnull(a.edit_by,'') as edit_by, ifnull(a.edit_time,'') as edit_time, ifnull(a.cancel_by,'') as cancel_by, ifnull(a.cancel_time,'') as cancel_time, ifnull(a.confirm_by,'') as confirm_by, ifnull(a.confirm_time,'') as confirm_time,
+		ifnull(b.address,'') as ar_bill_address,ifnull(b.telephone,'') as ar_telephone 
+		from ar_deposit a left join Customer b on a.ar_id = b.id  
+		order by a.id desc limit 30`
 		err = repo.db.Select(&d, sql)
 	} else {
-		sql = `select a.id, a.company_id, a.branch_id, ifnull(a.uuid,'') as uuid, ifnull(a.doc_no,'') as doc_no, ifnull(a.tax_no,'') as tax_no, ifnull(a.doc_date,'') as doc_date, a.bill_type, a.ar_id, ifnull(a.ar_code,'') as ar_code, ifnull(a.ar_name,'') as ar_name,a.sale_id, ifnull(a.sale_code,'') as sale_code, ifnull(a.sale_name,'') as sale_name,a.tax_type, a.tax_rate, ifnull(a.ref_no,'') as ref_no, a.credit_day, ifnull(a.due_date,'') as due_date, a.depart_id, a.allocate_id, a.project_id, ifnull(a.my_description,'') as my_description, a.before_tax_amount, a.tax_amount, a.total_amount, a.net_amount ,a.bill_balance ,a.cash_amount ,a.creditcard_amount, a.chq_amount, a.bank_amount, a.is_return_money, a.is_cancel, a.is_confirm, ifnull(a.scg_id,'') as scg_id, ifnull(a.job_no,'') as job_no, ifnull(a.create_by,'') as create_by, ifnull(a.create_time,'') as create_time, ifnull(a.edit_by,'') as edit_by, ifnull(a.edit_time,'') as edit_time, ifnull(a.cancel_by,'') as cancel_by, ifnull(a.cancel_time,'') as cancel_time, ifnull(a.confirm_by,'') as confirm_by, ifnull(a.confirm_time,'') as confirm_time,ifnull(b.address,'') as ar_bill_address,ifnull(b.telephone,'') as ar_telephone from ar_deposit a left join Customer b on a.ar_id = b.id  where a.doc_no like  concat(?,'%') or a.ar_code like  concat(?,'%') or a.ar_name like  concat(?,'%') order by a.id desc limit 30`
+		sql = `select a.id, a.company_id, a.branch_id, ifnull(a.uuid,'') as uuid, ifnull(a.doc_no,'') as doc_no, ifnull(a.tax_no,'') as tax_no, ifnull(a.doc_date,'') as doc_date, a.bill_type, a.ar_id, ifnull(a.ar_code,'') as ar_code, ifnull(a.ar_name,'') as ar_name,a.sale_id, ifnull(a.sale_code,'') as sale_code, ifnull(a.sale_name,'') as sale_name,a.tax_type, a.tax_rate, ifnull(a.ref_no,'') as ref_no, a.credit_day, ifnull(a.due_date,'') as due_date, a.depart_id, a.allocate_id, a.project_id, ifnull(a.my_description,'') as my_description, a.before_tax_amount, a.tax_amount, a.total_amount, a.net_amount ,a.bill_balance ,a.cash_amount ,a.creditcard_amount, a.chq_amount, a.bank_amount, a.is_return_money, a.is_cancel, a.is_confirm, ifnull(a.scg_id,'') as scg_id, ifnull(a.job_no,'') as job_no, ifnull(a.create_by,'') as create_by, ifnull(a.create_time,'') as create_time, ifnull(a.edit_by,'') as edit_by, ifnull(a.edit_time,'') as edit_time, ifnull(a.cancel_by,'') as cancel_by, ifnull(a.cancel_time,'') as cancel_time, ifnull(a.confirm_by,'') as confirm_by, ifnull(a.confirm_time,'') as confirm_time,ifnull(b.address,'') as ar_bill_address,ifnull(b.telephone,'') as ar_telephone 
+		from ar_deposit a left join Customer b on a.ar_id = b.id  
+		where a.doc_no like  concat(?,'%') or a.ar_code like  concat(?,'%') or a.ar_name like  concat(?,'%') 
+		order by a.id desc limit 30`
 		err = repo.db.Select(&d, sql, req.Keyword, req.Keyword, req.Keyword)
 	}
 
@@ -1783,7 +1842,9 @@ func (repo *salesRepository) SearchReserveToDeposit(req *sales.SearchByKeywordTe
 		sql = `select a.Id,a.DocNo,ifnull(a.DocDate,'') as DocDate,a.CompanyId,a.BranchId,a.DocType,a.BillType,a.TaxType,a.ArId,ifnull(a.ArCode,'') as ArCode,ifnull(a.ArName,'') as ArName,a.SaleId,ifnull(a.SaleCode,'') as SaleCode,ifnull(a.SaleName,'') as SaleName,a.IsConfirm,ifnull(a.MyDescription,'') as MyDescription,a.BillStatus,a.HoldingStatus,a.TotalAmount,a.NetDebtAmount,ifnull(b.address,'') as ArBillAddress,ifnull(b.telephone,'') as ArTelephone from SaleOrder a left join Customer on a.ArId = b.id where DocType = 0 and BillStatus = 0 and IsCancel = 0 and ar_id = ? order by Id desc limit 30`
 		err = repo.db.Select(&rsv, sql, req.ArId)
 	} else {
-		sql = `select a.Id,a.DocNo,ifnull(a.DocDate,'') as DocDate,a.CompanyId,a.BranchId,a.DocType,a.BillType,a.TaxType,a.ArId,ifnull(a.ArCode,'') as ArCode,ifnull(a.ArName,'') as ArName,a.SaleId,ifnull(a.SaleCode,'') as SaleCode,ifnull(a.SaleName,'') as SaleName,a.IsConfirm,ifnull(a.MyDescription,'') as MyDescription,a.BillStatus,a.HoldingStatus,a.TotalAmount,a.NetDebtAmount,ifnull(b.address,'') as ArBillAddress,ifnull(b.telephone,'') as ArTelephone from SaleOrder a left join Customer on a.ArId = b.id where DocType = 0 and BillStatus = 0 and IsCancel = 0 and ar_id = ? and (DocNo like  concat('%',?,'%') or MyDescription like  concat('%',?,'%') )order by Id desc limit 30`
+		sql = `select a.Id,a.DocNo,ifnull(a.DocDate,'') as DocDate,a.CompanyId,a.BranchId,a.DocType,a.BillType,a.TaxType,a.ArId,ifnull(a.ArCode,'') as ArCode,ifnull(a.ArName,'') as ArName,a.SaleId,ifnull(a.SaleCode,'') as SaleCode,ifnull(a.SaleName,'') as SaleName,a.IsConfirm,ifnull(a.MyDescription,'') as MyDescription,a.BillStatus,a.HoldingStatus,a.TotalAmount,a.NetDebtAmount,ifnull(b.address,'') as ArBillAddress,ifnull(b.telephone,'') as ArTelephone 
+		from SaleOrder a left join Customer on a.ArId = b.id 
+		where DocType = 0 and BillStatus = 0 and IsCancel = 0 and ar_id = ? and (DocNo like  concat('%',?,'%') or MyDescription like  concat('%',?,'%') )order by Id desc limit 30`
 		err = repo.db.Select(&rsv, sql, req.ArId, req.Keyword, req.Keyword)
 	}
 	if err != nil {
@@ -1944,6 +2005,136 @@ func map_deposit_chq_template(x ChqInModel) sales.ChqInTemplate {
 		RefId:        x.RefId,
 	}
 }
+func (repo *salesRepository) CancelInvoice(req *sales.NewInvoiceTemplate) (resp interface{}, err error) {
+	var check_doc_exist int64
+	var check_item_strock int64
+
+	now := time.Now()
+
+	req.CancelTime = now.String()
+
+	switch {
+	case req.CancelBy == "":
+		return nil, errors.New("ไม่ได้ระบุผู้ยกเลิก")
+	case req.IsConfirm == 1:
+		return nil, errors.New("เอกสารถูกอ้างอิงไปแล้ว ไม่สามารถยกเลิกได้")
+	case req.IsCancel == 1:
+		return nil, errors.New("เอกสารถูกยกเลิกไปแล้ว ไม่สามารถยกเลิกได้")
+	}
+
+	sqlexist := `select count(doc_no) as check_exist from ar_invoice where id = ?`
+	fmt.Println("DocNo Id", req.Id)
+	err = repo.db.Get(&check_doc_exist, sqlexist, req.Id)
+	if err != nil {
+		fmt.Println("Error = ", err.Error())
+		return nil, err
+	}
+
+	fmt.Println("check_doc_exist", check_doc_exist)
+
+	if check_doc_exist != 0 {
+		fmt.Println("Cancel")
+
+		sql := `Update ar_invoice set is_cancel=1,cancel_by=?,cancel_time=? where Id=?`
+		fmt.Println("sql update = ", sql)
+		id, err := repo.db.Exec(sql, req.CancelBy, req.CancelTime, req.Id)
+		if err != nil {
+			fmt.Println("Error = ", err.Error())
+			return nil, err
+		}
+
+		rowAffect, err := id.RowsAffected()
+		fmt.Println("Row Affect = ", rowAffect)
+
+		fmt.Println("ReqID=", req.Id)
+
+		sql_del_sub := `update ar_invoice_sub set is_cancel = 1 where inv_id = ?`
+		_, err = repo.db.Exec(sql_del_sub, req.Id)
+		if err != nil {
+			fmt.Println("Error = ", err.Error())
+			return nil, err
+		}
+	}
+	sqlitems := `select count(doc_no) as check_exist from ar_invoice_sub where inv_id = ? or doc_no =?`
+	errs := repo.db.Get(&check_item_strock, sqlitems, req.Id, req.DocNo)
+	if errs != nil {
+		fmt.Println("Error = ", errs.Error())
+		return nil, errs
+	}
+	if check_item_strock != 0 {
+		var itemcode_ string
+		var qty float64
+		var qty_item float64
+		var wh_id int64
+		var wh_code string
+		var qty_location float64
+		sqlrow, err := repo.db.Query("select item_code,wh_id,qty from ar_invoice_sub where doc_no = ?", req.DocNo)
+		defer sqlrow.Close()
+		for sqlrow.Next() {
+			err = sqlrow.Scan(&itemcode_, &wh_id, &qty)
+			if err != nil {
+				fmt.Println("Error = ", errs.Error())
+				return nil, errs
+			}
+			fmt.Println(qty, "---")
+			if wh_id == 1 {
+				wh_code = "S1-A"
+			} else if wh_id == 2 {
+				wh_code = "S1-B"
+			} else if wh_id == 3 {
+				wh_code = "S2-A"
+			} else if wh_id == 4 {
+				wh_code = "S2-B"
+			} else {
+				wh_code = ""
+			}
+			//คืน stock
+			qelstrock := `select stock_qty from Item_copy1 where code = ?`
+			errs := repo.db.Get(&qty_item, qelstrock, &itemcode_)
+			if errs != nil {
+				fmt.Println("Error = ", errs.Error())
+				return nil, errs
+			}
+
+			fmt.Println("ค้นหาสิค้า")
+			fmt.Println(qty_item, "asd")
+			qty_item += qty
+
+			fmt.Println(" คืน stock ", qty_item)
+			returnstock := `update Item_copy1 set stock_qty = ? where  code = ?`
+			_, errss := repo.db.Exec(returnstock, &qty_item, &itemcode_)
+			if errss != nil {
+				fmt.Println("Error = ", err.Error())
+				return nil, errss
+			}
+			if wh_code != "" {
+				fmt.Println("ค้นหาสิค้า sk")
+				sqllocation := `select qty from StockLocation_copy1 where item_code =? And wh_code = ? `
+				errs = repo.db.Get(&qty_location, sqllocation, &itemcode_, &wh_code)
+				if errs != nil {
+					fmt.Println("Error = ", errs.Error())
+					return nil, errs
+				}
+
+				qty_location += qty
+				fmt.Println("จำนวยสินค้า ", qty_location, qty)
+				updatestock := `update StockLocation_copy1 set qty = ? where item_code = ? And wh_code = ?`
+				_, errs = repo.db.Exec(updatestock, &qty_location, &itemcode_, &wh_code)
+				if errs != nil {
+					fmt.Println("Error = ", errs.Error())
+					return nil, errs
+				}
+
+			}
+		}
+	}
+	return map[string]interface{}{
+		"id":       req.Id,
+		"doc_no":   req.DocNo,
+		"doc_date": req.DocDate,
+		"ar_code":  req.ArCode,
+	}, nil
+}
 
 func (repo *salesRepository) CreateInvoice(req *sales.NewInvoiceTemplate) (interface{}, error) {
 	var check_doc_exist int64
@@ -2088,12 +2279,130 @@ func (repo *salesRepository) CreateInvoice(req *sales.NewInvoiceTemplate) (inter
 		return nil, errs
 	}
 	if check_item_strock == 0 {
-		for _, sub := range req.Subs {
 
-			var qty float64
+		for _, sub := range req.Subs {
+			fmt.Println("ค้นหาสิค้า", sub.Location)
+			if sub.Location != "" {
+				var qty float64
+				fmt.Println("ค้นหาสิค้า", req.DocNo)
+				qelstrock := `select qty from StockLocation_copy1 where item_code = ? And wh_code = ?`
+				errs := repo.db.Get(&qty, qelstrock, sub.ItemCode, sub.Location)
+				if errs != nil {
+					fmt.Println("Error = ", errs.Error())
+					return nil, errs
+				}
+				fmt.Println("ค้นหาสิค้า")
+				fmt.Println(qty, "asd")
+				qty -= sub.Qty
+				// ตัด stock ไหม่
+				fmt.Println(" ตัด stock ไหม่", qty)
+				Updatenew := `update StockLocation_copy1 set qty = ? where item_code = ? And wh_code = ?`
+				_, errss := repo.db.Exec(Updatenew, &qty, sub.ItemCode, sub.Location)
+				if errss != nil {
+					fmt.Println("Error = ", err.Error())
+					return nil, errss
+				}
+				fmt.Println(" ตัด stock ไหม่นะ")
+			} else {
+				var qty float64
+				fmt.Println("ค้นหาสิค้า", req.DocNo)
+				qelstrock := `select stock_qty from Item_copy1 where code = ?`
+				errs := repo.db.Get(&qty, qelstrock, sub.ItemCode)
+				if errs != nil {
+					fmt.Println("Error = ", errs.Error())
+					return nil, errs
+				}
+				fmt.Println("ค้นหาสิค้า")
+				fmt.Println(qty, "asd")
+				qty -= sub.Qty
+				// ตัด stock ไหม่
+				fmt.Println(" ตัด stock ไหม่", qty)
+				Updatenew := `update Item_copy1 set stock_qty = ? where  code = ?`
+				_, errss := repo.db.Exec(Updatenew, &qty, sub.ItemCode)
+				if errss != nil {
+					fmt.Println("Error = ", err.Error())
+					return nil, errss
+				}
+				fmt.Println(" ตัด stock ไหม่นะ")
+			}
+
+		}
+	} else {
+		var itemcode_ string
+		var qty float64
+		var qty_item float64
+		var wh_id int64
+		var wh_code string
+		var qty_location float64
+		sqlrow, err := repo.db.Query("select item_code,wh_id,qty from ar_invoice_sub where doc_no = ?", req.DocNo)
+		defer sqlrow.Close()
+		for sqlrow.Next() {
+			err = sqlrow.Scan(&itemcode_, &wh_id, &qty)
+			if err != nil {
+				fmt.Println("Error = ", errs.Error())
+				return nil, errs
+			}
+			fmt.Println(qty, "---")
+			if wh_id == 1 {
+				wh_code = "S1-A"
+			} else if wh_id == 2 {
+				wh_code = "S1-B"
+			} else if wh_id == 3 {
+				wh_code = "S2-A"
+			} else if wh_id == 4 {
+				wh_code = "S2-B"
+			} else {
+				wh_code = ""
+			}
+			//คืน stock
+			qelstrock := `select stock_qty from Item_copy1 where code = ?`
+			errs := repo.db.Get(&qty_item, qelstrock, &itemcode_)
+			if errs != nil {
+				fmt.Println("Error = ", errs.Error())
+				return nil, errs
+			}
+
+			fmt.Println("ค้นหาสิค้า")
+			fmt.Println(qty_item, "asd")
+			qty_item += qty
+
+			fmt.Println(" คืน stock ", qty_item)
+			returnstock := `update Item_copy1 set stock_qty = ? where  code = ?`
+			_, errss := repo.db.Exec(returnstock, &qty_item, &itemcode_)
+			if errss != nil {
+				fmt.Println("Error = ", err.Error())
+				return nil, errss
+			}
+			if wh_code != "" {
+				fmt.Println("ค้นหาสิค้า sk")
+				sqllocation := `select qty from StockLocation_copy1 where item_code =? And wh_code = ? `
+				errs = repo.db.Get(&qty_location, sqllocation, &itemcode_, &wh_code)
+				if errs != nil {
+					fmt.Println("Error = ", errs.Error())
+					return nil, errs
+				}
+
+				qty_location += qty
+				fmt.Println("จำนวยสินค้า ", qty_location, qty)
+				updatestock := `update StockLocation_copy1 set qty = ? where item_code = ? And wh_code = ?`
+				_, errs = repo.db.Exec(updatestock, &qty_location, &itemcode_, &wh_code)
+				if errs != nil {
+					fmt.Println("Error = ", errs.Error())
+					return nil, errs
+				}
+
+			}
+
+		}
+		for _, sub := range req.Subs {
+			//ค้นหาสินค้าที่มี และคืน stock
+
+			// ตัด stock ไหม่
+			//ค้นหาสินค้าไหม่
+
 			fmt.Println("ค้นหาสิค้า", req.DocNo)
-			qelstrock := `select stock_qty form Item_copy1 where code = ?`
-			errs := repo.db.Get(&qty, qelstrock, sub.ItemCode)
+			sqlstock := `select stock_qty from Item_copy1 where code = ?`
+			errs := repo.db.Get(&qty, sqlstock, sub.ItemCode)
 			if errs != nil {
 				fmt.Println("Error = ", errs.Error())
 				return nil, errs
@@ -2103,49 +2412,37 @@ func (repo *salesRepository) CreateInvoice(req *sales.NewInvoiceTemplate) (inter
 			qty -= sub.Qty
 			// ตัด stock ไหม่
 			fmt.Println(" ตัด stock ไหม่", qty)
-			Updatenew := `update Item_copy1 set stock_qty = ? where code = ? `
-			_, errss := repo.db.Exec(Updatenew, &qty, sub.ItemCode)
+			Updatestock := `update Item_copy1 set stock_qty = ? where  code = ?`
+			_, errss := repo.db.Exec(Updatestock, &qty, sub.ItemCode)
 			if errss != nil {
 				fmt.Println("Error = ", err.Error())
 				return nil, errss
 			}
 			fmt.Println(" ตัด stock ไหม่นะ")
-		}
-	} else {
-		// // select tock
-		// var itemcode_ string
-		// var itemid string
-		// var qty int64
-		// for _, sub := range req.Subs {
-		// 	// ค้นหา สินค้า ที่ invoice_sub
-		// 	qelstrock, errs := repo.db.Query("select stock_qty form Item_copy1 where code = ?")
+			if sub.Location != "" {
+				var qtys float64
+				fmt.Println("ค้นหาสิค้า", req.DocNo)
+				qelstrock := `select qty from StockLocation_copy1 where item_code = ? And wh_code = ?`
+				errs := repo.db.Get(&qtys, qelstrock, sub.ItemCode, sub.Location)
+				if errs != nil {
+					fmt.Println("Error = ", errs.Error())
+					return nil, errs
+				}
+				fmt.Println("ค้นหาสิค้า")
+				fmt.Println(qty, "asd")
+				qtys -= sub.Qty
+				// ตัด stock ไหม่
+				fmt.Println(" ตัด stock ไหม่", qty)
+				Updatenew := `update StockLocation_copy1 set qty = ? where item_code = ? And wh_code = ?`
+				_, errss := repo.db.Exec(Updatenew, &qtys, sub.ItemCode, sub.Location)
+				if errss != nil {
+					fmt.Println("Error = ", err.Error())
+					return nil, errss
+				}
+				fmt.Println(" ตัด stock ไหม่นะ")
+			}
 
-		// 	for qelstrock.Next() {
-		// 		err := qelstrock.Scan(&itemid, &itemcode_, &qty)
-		// 		if err != nil {
-		// 			fmt.Println("Error = ", errs.Error())
-		// 			return nil, errs
-		// 		}
-		// 	}
-		// 	if errs != nil {
-		// 		fmt.Println("Error = ", errs.Error())
-		// 		return nil, errs
-		// 	}
-		// 	// คืน stock
-		// 	updatestock := `update Item_copy1 set stock_qty += ? where code = ? `
-		// 	_, err := repo.db.Exec(updatestock, &qty, &itemcode_)
-		// 	if err != nil {
-		// 		fmt.Println("Error = ", err.Error())
-		// 		return nil, err
-		// 	}
-		// 	// ตัด stock ไหม่
-		// 	Updatenew := `update Item_copy1 set stock_qty -= where code = ? `
-		// 	_, errss := repo.db.Exec(Updatenew, sub.Qty, sub.ItemCode)
-		// 	if errss != nil {
-		// 		fmt.Println("Error = ", err.Error())
-		// 		return nil, errss
-		// 	}
-		// }
+		}
 
 	}
 	sql_del_sub := `delete from ar_invoice_sub where inv_id = ?`
@@ -2159,6 +2456,18 @@ func (repo *salesRepository) CreateInvoice(req *sales.NewInvoiceTemplate) (inter
 
 	fmt.Println(req.Subs)
 	for _, sub := range req.Subs {
+		var wh_id int64
+		if sub.Location == "S1-A" {
+			wh_id = 1
+		} else if sub.Location == "S1-B" {
+			wh_id = 2
+		} else if sub.Location == "S2-A" {
+			wh_id = 3
+		} else if sub.Location == "S2-B" {
+			wh_id = 4
+		} else {
+			wh_id = 0
+		}
 		fmt.Println("เพิ่มสินค้านะ", sub, sub.ItemCode)
 		sqlsub := `INSERT INTO ar_invoice_sub(company_id,branch_id,uuid,inv_id,doc_no,doc_date,ar_id,sale_id,item_id,item_code,
 			bar_code,item_name,wh_id,shelf_id,qty,cn_qty,unit_code,price,discount_word_sub,discount_amount_sub,amount,net_amount,average_cost,sum_of_cost,item_decription,is_cancel,is_credit_note,is_debit_note,packing_rate_1,packing_rate_2,ref_no,ref_line_number,line_number) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`
@@ -2175,7 +2484,7 @@ func (repo *salesRepository) CreateInvoice(req *sales.NewInvoiceTemplate) (inter
 			sub.ItemCode,
 			sub.BarCode,
 			sub.ItemName,
-			sub.WhId,
+			wh_id,
 			sub.ShelfId,
 			sub.Qty,
 			sub.CnQty,
@@ -2526,11 +2835,14 @@ func map_invoice_template(x NewInvoiceModel) sales.NewInvoiceTemplate {
 		ArCode:              x.ArCode,
 		ArId:                x.ArId,
 		ArName:              x.ArName,
+		ItemName:            x.ItemName,
+		ItemCode:            x.ItemCode,
 		ArBillAddress:       x.ArBillAddress,
 		ArTelephone:         x.ArTelephone,
 		BeforeTaxAmount:     x.BeforeTaxAmount,
 		BranchId:            x.BranchId,
 		BillType:            x.BillType,
+		DocType:             x.DocType,
 		SumBankAmount:       x.SumBankAmount,
 		BillBalance:         x.BillBalance,
 		ConfirmTime:         x.ConfirmTime,
@@ -2648,12 +2960,170 @@ func (repo *salesRepository) SearchInvoiceByKeyword(req *sales.SearchByKeywordTe
 
 	d := []SearchInvModel{}
 
-	sql = `select a.id,a.doc_no,a.doc_date,a.doc_type
-		,a.ar_code,a.ar_name,a.sale_code,
-		a.sale_name,ifnull(a.my_description,'') as my_description,
-		a.total_amount,a.is_cancel,a.is_confirm from ar_invoice a where a.is_cancel = 0 and doc_type = 0`
+	sql = `select a.id,a.doc_no,a.doc_date,a.doc_type,a.ar_code,a.ar_name,a.sale_code,a.sale_name,ifnull(a.my_description,'') as my_description,
+		a.total_amount,a.is_cancel,a.is_confirm 
+		from ar_invoice a 
+		where a.is_cancel = 0 and doc_type = 0`
 	err = repo.db.Select(&d, sql)
 
+	fmt.Println("sql = ", sql, req.Keyword)
+	if err != nil {
+		fmt.Println("errsss = ", err.Error())
+		return resp, err
+	}
+
+	dp := []sales.SearchInvTemplate{}
+
+	for _, dep := range d {
+		dpline := map_doc_invoic_template(dep)
+		dp = append(dp, dpline)
+	}
+
+	return dp, nil
+
+}
+
+func map_searchitem_template(x NewSearchItemModel) sales.NewSearchItemTemplate {
+	return sales.NewSearchItemTemplate{
+		Id:              x.Id,
+		DocDate:         x.DocDate,
+		DocNo:           x.DocNo,
+		ItemId:          x.ItemId,
+		ItemCode:        x.ItemCode,
+		ItemName:        x.ItemName,
+		BarCode:         x.BarCode,
+		UnitICode:       x.UnitICode,
+		WhId:            x.WhId,
+		ShelfId:         x.ShelfId,
+		Price:           x.Price,
+		Qty:             x.Qty,
+		CnQty:           x.CnQty,
+		ItemDescription: x.ItemDescription,
+		IsCreditNote:    x.IsCreditNote,
+		IsDebitNote:     x.IsDebitNote,
+		PackingRate1:    x.PackingRate1,
+		PackingRate2:    x.PackingRate2,
+		SoRefNo:         x.SoRefNo,
+		AverageCost:     x.AverageCost,
+		SumOfCost:       x.SumOfCost,
+		RefLineNumber:   x.RefLineNumber,
+		LineNumber:      x.LineNumber,
+		ArName:          x.ArName,
+		ArCode:          x.ArCode,
+		ArId:            x.ArId,
+		Name:            x.Name,
+		NId:             x.NId,
+		NDocNo:          x.NDocNo,
+		NDocDate:        x.NDocDate,
+		NItemId:         x.NItemId,
+		NArId:           x.NArId,
+		NBarCode:        x.NBarCode,
+		NItemCode:       x.NItemCode,
+		NItemName:       x.NItemName,
+		NUnitCode:       x.NUnitCode,
+		NQty:            x.NQty,
+		NPrice:          x.NPrice,
+		NArName:         x.NArName,
+		DiscountWord:    x.DiscountWord,
+		NDiscountWord:   x.NDiscountWord,
+	}
+
+}
+
+func (repo *salesRepository) SearchSaleByItem(req *sales.SearchByItemTemplate) (resp interface{}, err error) {
+	var sql string
+	d := []NewSearchItemModel{}
+	if req.Name == "" && req.ItemCode == "" {
+		fmt.Println("No Data")
+	} else {
+		/*	sql = `select a.id, ifnull(a.doc_no,'') as doc_no, ifnull(a.doc_date,'') as doc_date, a.item_id, a.ar_id,
+			ifnull(a.bar_code,'') as bar_code, ifnull(a.item_code,'') as item_code, ifnull(a.item_name,'') as item_name,
+			a.unit_code, a.qty, a.cn_qty, a.price, a.ar_id,
+			b.id, b.name
+			from ar_invoice_sub a left join Customer b on a.ar_id = b.id
+			where b.name like concat(?) and a.item_code like concat(?)
+			order by a.id desc limit 20`
+			err = repo.db.Select(&d, sql, req.Name, req.ItemCode)*/
+		switch {
+		case req.Page == "invoice":
+			sql = `select a.id, ifnull(a.doc_no,'') as doc_no, ifnull(a.doc_date,'') as doc_date, a.item_id, a.ar_id,  
+			ifnull(a.bar_code,'') as bar_code, ifnull(a.item_code,'') as item_code, ifnull(a.item_name,'') as item_name, 
+			a.unit_code, a.qty, a.cn_qty, a.price, a.ar_id,
+			b.id, b.name
+			from ar_invoice_sub a left join Customer b on a.ar_id = b.id
+			where b.name like concat(?) and a.item_code like concat(?) 
+			order by a.id desc limit 20`
+			err = repo.db.Select(&d, sql, req.Name, req.ItemCode)
+		case req.Page == "quotation":
+			sql = `select distinct a.Id, ifnull(a.DocDate,'') as DocDate, ifnull(a.DocNo,'') as DocNo, 
+			a.ArId, a.ArName,
+			b.UnitCode, b.Qty, b.Price, ifnull(b.ItemCode,'') as ItemCode, b.ArId, ifnull(b.ItemName,'') as ItemName,b.ArId, ifnull(b.DiscountWord,'') as DiscountWord
+			from Quotation a left join QuotationSub b on a.ArId = b.ArId
+			where a.ArName like concat(?) and b.ItemCode like concat(?) 
+			order by a.Id desc limit 20`
+			err = repo.db.Select(&d, sql, req.Name, req.ItemCode)
+		case req.Page == "saleorder":
+			sql = `select distinct a.Id, ifnull(a.DocDate,'') as DocDate, ifnull(a.DocNo,'') as DocNo, 
+			a.ArId, a.ArName,
+			b.UnitCode, b.Qty, b.Price, ifnull(b.ItemCode,'') as ItemCode, b.ArId, ifnull(b.ItemName,'') as ItemName,b.ArId, ifnull(b.DiscountWord,'') as DiscountWord
+			from SaleOrder a left join SaleOrderSub b on a.ArId = b.ArId
+			where a.ArName like concat(?) and b.ItemCode like concat(?) 
+			order by a.Id desc limit 20`
+			err = repo.db.Select(&d, sql, req.Name, req.ItemCode)
+		}
+	}
+	fmt.Println("sql = ", sql, req.ItemCode)
+	if err != nil {
+		fmt.Println("err = ", err.Error())
+		return resp, err
+	}
+
+	dp := []sales.NewSearchItemTemplate{}
+	for _, dep := range d {
+		dpline := map_searchitem_template(dep)
+		dp = append(dp, dpline)
+	}
+
+	return dp, nil
+}
+
+func (repo *salesRepository) SearchCredit(req *sales.SearchByIdTemplate) (resp interface{}, err error) {
+
+	i := NewInvoiceModel{}
+
+	sql := `select a.id, a.code, a.name, a.debt_amount, a.debt_limit , a.active_status, a.create_by
+	from Customer 
+	where a.id=?`
+	err = repo.db.Get(&i, sql, req.Id)
+	fmt.Println("sql = ", sql)
+	if err != nil {
+		fmt.Println("err = ", err.Error())
+		return resp, err
+	}
+
+	inv_resp := map_invoice_template(i)
+
+	//fmt.Println("id,code,name", i.id,i.code,i.name)
+	return inv_resp, nil
+}
+
+func (repo *salesRepository) SearchHisByKeyword(req *sales.SearchByKeywordTemplate) (resp interface{}, err error) {
+	var sql string
+	d := []SearchInvModel{}
+	if req.Keyword == "" {
+		sql = `select a.id, a.doc_no,a.doc_date, a.doc_type ,a.ar_code,a.ar_name,a.sale_code,
+		a.sale_name, ifnull(a.my_description,'') as my_description,a.total_amount, a.is_cancel,a.is_confirm 
+		from ar_invoice a
+		order by a.id desc limit 30`
+		err = repo.db.Select(&d, sql)
+	} else {
+		sql = `select a.id, a.doc_no,a.doc_date, a.doc_type ,a.ar_code,a.ar_name,a.sale_code,
+		a.sale_name, ifnull(a.my_description,'') as my_description,a.total_amount, a.is_cancel,a.is_confirm 
+		from ar_invoice a
+		where a.doc_no like  concat(?,'%') or a.ar_code like  concat(?,'%') or a.ar_name like  concat(?,'%') 
+		order by a.id desc limit 30`
+		err = repo.db.Select(&d, sql, req.Keyword, req.Keyword, req.Keyword)
+	}
 	fmt.Println("sql = ", sql, req.Keyword)
 	if err != nil {
 		fmt.Println("errsss = ", err.Error())

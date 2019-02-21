@@ -3,6 +3,9 @@ package product
 import (
 	"context"
 	"fmt"
+	"time"
+
+	"github.com/mrtomyum/nopadol/auth"
 	//"github.com/mrtomyum/nopadol/auth"
 )
 
@@ -147,7 +150,8 @@ func MakeNewProduct(s Service) interface{} {
 		var barcodes []BarcodeTemplate
 		var prices []PriceTemplate
 		var Rates []PackingRate
-
+		companyID := auth.GetCompanyID(ctx)
+		userID := auth.GetUserCode(ctx)
 		// bind barcode template
 		if len(req.Barcode) > 0 {
 			fmt.Println("bind req barcocde")
@@ -169,7 +173,7 @@ func MakeNewProduct(s Service) interface{} {
 				pr.SalePrice2 = value.SalePrice2
 				pr.UnitID = value.UnitID
 				pr.SaleType = value.SaleType
-				pr.CompanyID = req.CompanyID
+				pr.CompanyID = companyID
 				prices = append(prices, pr)
 			}
 		}
@@ -194,7 +198,9 @@ func MakeNewProduct(s Service) interface{} {
 			Barcode:     barcodes,
 			Price:       prices,
 			PackingRate: Rates,
-			CompanyID:   req.CompanyID,
+			CompanyID:   companyID,
+			CreateBy:    userID,
+			CreateTime:  time.Now(),
 		})
 		if err != nil {
 			fmt.Println("endpoint error =", err.Error())
