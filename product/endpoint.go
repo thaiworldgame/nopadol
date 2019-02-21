@@ -3,6 +3,9 @@ package product
 import (
 	"context"
 	"fmt"
+	"time"
+
+	"github.com/mrtomyum/nopadol/auth"
 	//"github.com/mrtomyum/nopadol/auth"
 )
 
@@ -112,25 +115,26 @@ func MakeNewProduct(s Service) interface{} {
 	// unitID กรณี รับจากระบบ erp บน Web รับเป็น ID ก็ได้
 	// unitID กรณี รับจากการโอนจาก BC ให้รับเป็น UnitCode แทน
 	// unitID กรณี ส่งมาเป็น UnitID หรือ UnitCode อย่างใดอย่างนึง ต้อง Bind ค่า ให้ครบก่อนน่าจะดี
-	//type requestPrice struct {
-	//	UnitID     int64   `json:"unit_id"`
-	//	UnitCode   string  `json:"unit_code"`
-	//	SalePrice1 float64 `json:"sale_price_1"`
-	//	SalePrice2 float64 `json:"sale_price_2"`
-	//	SaleType   int     `json:"sale_type"`
-	//}
-	//type requestBarcode struct {
-	//	Barcode  string `json:"barcode"`
-	//	UnitCode string `json:"unit_code"`
-	//	UnitID   int64  `json:"unit_id"`
-	//}
-	//
-	//type RequestPacking struct {
-	//	UnitID          int64  `json:"unit_id"`
-	//	UnitCode        string `json:"unit_code"`
-	//	RatePerBaseUnit int    `json:"rate_per_base_unit"`
-	//}
+	type requestPrice struct {
+		UnitID     int64   `json:"unit_id"`
+		UnitCode   string  `json:"unit_code"`
+		SalePrice1 float64 `json:"sale_price_1"`
+		SalePrice2 float64 `json:"sale_price_2"`
+		SaleType   int     `json:"sale_type"`
+	}
+	type requestBarcode struct {
+		Barcode  string `json:"barcode"`
+		UnitCode string `json:"unit_code"`
+		UnitID   int64  `json:"unit_id"`
+	}
+
+	type RequestPacking struct {
+		UnitID          int64  `json:"unit_id"`
+		UnitCode        string `json:"unit_code"`
+		RatePerBaseUnit int    `json:"rate_per_base_unit"`
+	}
 	type requestNewItem struct {
+
 		Code      string `json:"code"`
 		Name      string `json:"name"`
 		UnitCode  string `json:"unit_code"`
@@ -142,51 +146,54 @@ func MakeNewProduct(s Service) interface{} {
 		//Barcode     []requestBarcode `json:"barcode"`
 		//PackingRate []RequestPacking `json:"packing_rate"`
 		CompanyID int `json:"company_id"`
+
 	}
 	return func(ctx context.Context, req *requestNewItem) (interface{}, error) {
 
-		//var barcodes []BarcodeTemplate
-		//var prices []PriceTemplate
-		//var Rates []PackingRate
-
+		var barcodes []BarcodeTemplate
+		var prices []PriceTemplate
+		var Rates []PackingRate
+		companyID := auth.GetCompanyID(ctx)
+		userID := auth.GetUserCode(ctx)
 		// bind barcode template
-		//if len(req.Barcode) > 0 {
-		//	fmt.Println("bind req barcocde")
-		//	for _, value := range req.Barcode {
-		//		bct := BarcodeTemplate{}
-		//		bct.Barcode = value.Barcode
-		//		bct.UnitID = value.UnitID
-		//		barcodes = append(barcodes, bct)
-		//	}
-		//}
-		//
-		//if len(req.Price) > 0 {
-		//	fmt.Println("bind req price value : ", req.Price)
-		//
-		//	// bind price template
-		//	for _, value := range req.Price {
-		//		pr := PriceTemplate{}
-		//		pr.SalePrice1 = value.SalePrice1
-		//		pr.SalePrice2 = value.SalePrice2
-		//		pr.UnitID = value.UnitID
-		//		pr.SaleType = value.SaleType
-		//		pr.CompanyID = req.CompanyID
-		//		prices = append(prices, pr)
-		//	}
-		//}
-		//
-		//if len(req.PackingRate) > 0 {
-		//
-		//	fmt.Println("bind req Rate")
-		//	for _, value := range req.PackingRate {
-		//		rt := PackingRate{}
-		//		rt.RatePerBaseUnit = value.RatePerBaseUnit
-		//		rt.UnitID = value.UnitID
-		//	}
-		//}
-		//
+		if len(req.Barcode) > 0 {
+			fmt.Println("bind req barcocde")
+			for _, value := range req.Barcode {
+				bct := BarcodeTemplate{}
+				bct.Barcode = value.Barcode
+				bct.UnitID = value.UnitID
+				barcodes = append(barcodes, bct)
+			}
+		}
+
+		if len(req.Price) > 0 {
+			fmt.Println("bind req price value : ", req.Price)
+
+			// bind price template
+			for _, value := range req.Price {
+				pr := PriceTemplate{}
+				pr.SalePrice1 = value.SalePrice1
+				pr.SalePrice2 = value.SalePrice2
+				pr.UnitID = value.UnitID
+				pr.SaleType = value.SaleType
+				pr.CompanyID = companyID
+				prices = append(prices, pr)
+			}
+		}
+
+		if len(req.PackingRate) > 0 {
+
+			fmt.Println("bind req Rate")
+			for _, value := range req.PackingRate {
+				rt := PackingRate{}
+				rt.RatePerBaseUnit = value.RatePerBaseUnit
+				rt.UnitID = value.UnitID
+			}
+		}
+
 		fmt.Println("request data ->", req)
 		resp, err := s.StoreItem(&ProductNewRequest{
+
 			ItemCode:  req.Code,
 			ItemName:  req.Name,
 			UnitID:    req.UnitID,

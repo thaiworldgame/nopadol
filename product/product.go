@@ -31,6 +31,7 @@ type ProductTemplate struct {
 }
 
 type ProductNewRequest struct {
+
 	ItemCode  string `json:"item_code"`
 	ItemName  string `json:"item_name"`
 	UnitID    int64  `json:"unit_id"`
@@ -47,6 +48,7 @@ type ProductNewRequest struct {
 	EditBy       string    `json:"edit_by"`
 	EditTime     time.Time `json:"edit_time"`
 	DefStkUnitID int64     `json:"def_stk_unit_id"`
+
 }
 
 type BarcodeNewRequest struct {

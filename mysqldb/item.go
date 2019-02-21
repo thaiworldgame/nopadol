@@ -6,7 +6,6 @@ import (
 	"github.com/jmoiron/sqlx"
 	"github.com/mrtomyum/nopadol/product"
 	"log"
-	"time"
 )
 
 const (
@@ -51,6 +50,7 @@ type itemModel struct {
 
 func (it *itemModel) map2itemModel(db *sqlx.DB, req *product.ProductNewRequest) (err error) {
 	u := itemUnitModel{id: req.UnitID}
+
 	u.unitCode = req.UnitCode
 
 	fmt.Println("map2itemModel  unitid -->", req.UnitID)
@@ -71,15 +71,18 @@ func (it *itemModel) map2itemModel(db *sqlx.DB, req *product.ProductNewRequest) 
 			it.UnitCode = u.unitCode
 		}
 	}
+
 	it.Code = req.ItemCode
 	it.Name = req.ItemName
-	//it.UnitCode = u.unitCode
+	it.UnitCode = u.unitCode
 	it.PicPath1 = req.Picture
 	it.StockType = req.StockType
+
 	it.CompanyID = req.CompanyID
 	it.CreateBy = req.CreateBy
 	it.CreateTime.Time = time.Now()
 	it.StockQty = req.StockQty
+
 
 	fmt.Println("map2itemModel return ", it.UnitCode)
 	return
@@ -99,6 +102,13 @@ func (it *itemModel) verifyRequestData(db *sqlx.DB) (bool, error) {
 
 	return true, nil
 }
+
+
+func(it *itemModel)checkExistsByCode(db *sqlx.DB,code string)(int64,bool){
+	var id int64=-1
+	db.QueryRow(`select id from Item where code=?`,code).Scan(&id)
+	if id == -1 {
+		return -1,false
 
 func (it *itemModel) checkExistsByCode(db *sqlx.DB, code string) (int64, bool) {
 	var id int64 = -1

@@ -28,7 +28,6 @@ func MakeHandler(s Service) http.Handler{
 	mux := http.NewServeMux()
 	mux.Handle("/posslip",m.Handler(PosSlip(s)))
 	mux.Handle("/posdrivethruslip",m.Handler(PosDriveThruSlip(s)))
-	mux.Handle("/invoice",m.Handler(PrintInvoice(s)))
 
 	return mustLogin()(mux)
 }

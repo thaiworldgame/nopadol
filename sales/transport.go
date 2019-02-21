@@ -29,13 +29,10 @@ func MakeHandler(s Service) http.Handler {
 	mux := http.NewServeMux()
 	mux.Handle("/quo/new", m.Handler(CreateQuotation(s)))
 	mux.Handle("/quo/search/id", m.Handler(SearchQuoById(s)))
-	mux.Handle("/quo/search/keyword", m.Handler(SearchQuoByKeyword(s)))
 	mux.Handle("/quo/confirm", m.Handler(ConfirmQuotation(s)))
 	mux.Handle("/quo/cancel", m.Handler(CancelQuotation(s)))
-	mux.Handle("/quo/gen/saleorder",m.Handler(QuotationToSaleOrder(s)))
 	mux.Handle("/sale/new", m.Handler(CreateSaleOrder(s)))
 	mux.Handle("/sale/search/id", m.Handler(SearchSaleOrderById(s)))
-	mux.Handle("/sale/search/keyword", m.Handler(SearchSaleOrderByKeyword(s)))
 	mux.Handle("/sale/doc/search", m.Handler(SearchDocByKeyword(s)))
 	mux.Handle("/dep/new", m.Handler(CreateDeposit(s)))
 	mux.Handle("/dep/search/id", m.Handler(SearchDepositById(s)))
@@ -43,8 +40,13 @@ func MakeHandler(s Service) http.Handler {
 	mux.Handle("/dep/reserve/search", m.Handler(SearchReserveToDeposit(s)))
 	mux.Handle("/inv/search/id", m.Handler(SearchInvoiceById(s)))
 	mux.Handle("/inv/new", m.Handler(CreateInvoice(s)))
+	mux.Handle("/inv/search/keyword", m.Handler(SearchInvoiceByKeyword(s)))
+	mux.Handle("/sale/search/item", m.Handler(SearchSaleByItem(s)))
+	mux.Handle("/search/credit", m.Handler(SearchCredit(s)))
 	mux.Handle("/inv/list", m.Handler(Invoicelist(s)))
-	 
+	mux.Handle("/his/search/keyword", m.Handler(SearchHisByKeyword(s)))
+	mux.Handle("/inv/cancel", m.Handler(CancelInvoice(s)))
+
 	return mustLogin()(mux)
 
 }

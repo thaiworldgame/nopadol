@@ -67,7 +67,7 @@ func makeNewCustomer(s Service) interface{} {
 	}
 
 	return func(ctx context.Context, req *request) (interface{}, error) {
-		//companyID := auth.GetCompanyID(ctx)
+		companyID := auth.GetCompanyID(ctx)
 		userID := auth.GetUserCode(ctx)
 		ct := CustomerTemplate{
 			Code:         req.Code,
@@ -76,7 +76,7 @@ func makeNewCustomer(s Service) interface{} {
 			Telephone:    req.Telephone,
 			CreditAmount: req.CreditAmount,
 			Email:        req.Email,
-			CompanyID:    req.CompanyID,
+			CompanyID:    companyID,
 			CreateBy:     userID,
 		}
 
