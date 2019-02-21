@@ -333,6 +333,8 @@ type (
 		Id                  int64                   `json:"id"`
 		CompanyId           int64                   `json:"company_id"`
 		BranchId            int64                   `json:"branch_id"`
+		ItemId              int64                   `json:"item_id"`
+		ItemCode            string                  `json:"item_code"`
 		Uuid                string                  `json:"uuid"`
 		DocNo               string                  `json:"doc_no"`
 		TaxNo               string                  `json:"tax_no"`
@@ -428,6 +430,7 @@ type (
 		ShelfId         int64   `json:"shelf_id"`
 		Price           float64 `json:"price"`
 		UnitCode        string  `json:"unit_code"`
+		Location        string  `json:"location"`
 		Qty             float64 `json:"qty"`
 		CnQty           float64 `json:"cn_qty"`
 		DiscountWord    float64 `json:"discount_word_sub"`
@@ -451,6 +454,8 @@ type (
 		QuoId     int64  `json:"ar_id"`
 	}
 )
+
+// search item by keywork
 
 ////// Quotation /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -789,6 +794,7 @@ func map_invoice_sub_request(x NewInvoiceItemRequest) NewInvoiceItemTemplate {
 		WhId:            x.WhId,
 		ShelfId:         x.ShelfId,
 		Qty:             x.Qty,
+		Location:        x.Location,
 		Price:           x.Price,
 		DiscountWord:    x.DiscountWord,
 		DiscountAmount:  x.DiscountAmount,
@@ -1077,6 +1083,18 @@ func Invoicelist(s Service) interface{} {
 		}, nil
 	}
 }
+func CancelInvoice(s Service) interface{} {
+	return func(ctx context.Context, req *NewInvoiceRequest) (interface{}, error) {
+		resp, err := s.CancelInvoice(&NewInvoiceTemplate{Id: req.Id, DocNo: req.DocNo, IsConfirm: req.IsConfirm, IsCancel: req.IsCancel, CancelBy: req.CancelBy, CancelTime: req.CancelTime})
+		if err != nil {
+			fmt.Println("endpoint error =", err.Error())
+			return nil, fmt.Errorf(err.Error())
+		}
+		return map[string]interface{}{
+			"data": resp,
+		}, nil
+	}
+}
 
 func CreateInvoice(s Service) interface{} {
 	fmt.Println("endpoint 1")
@@ -1300,6 +1318,58 @@ func map_invoice_request(x *NewInvoiceRequest) NewInvoiceTemplate {
 func SearchInvoiceById(s Service) interface{} {
 	return func(ctx context.Context, req *SearchByIdRequest) (interface{}, error) {
 		resp, err := s.SearchInvoiceById(&SearchByIdTemplate{Id: req.Id})
+		if err != nil {
+			fmt.Println("endpoint error =", err.Error())
+			return nil, fmt.Errorf(err.Error())
+		}
+		return map[string]interface{}{
+			"data": resp,
+		}, nil
+	}
+}
+
+func SearchInvoiceByKeyword(s Service) interface{} {
+	return func(ctx context.Context, req *SearchByKeywordRequest) (interface{}, error) {
+		resp, err := s.SearchInvoiceByKeyword(&SearchByKeywordTemplate{SaleCode: req.SaleCode, Keyword: req.Keyword})
+		if err != nil {
+			fmt.Println("endpoint error =", err.Error())
+			return nil, fmt.Errorf(err.Error())
+		}
+		return map[string]interface{}{
+			"data": resp,
+		}, nil
+	}
+}
+
+func SearchSaleByItem(s Service) interface{} {
+	return func(ctx context.Context, req *SearchByItemTemplate) (interface{}, error) {
+		resp, err := s.SearchSaleByItem(&SearchByItemTemplate{Name: req.Name, ItemCode: req.ItemCode, Page: req.Page})
+		if err != nil {
+			fmt.Println("endpoint error =", err.Error())
+			return nil, fmt.Errorf(err.Error())
+		}
+		return map[string]interface{}{
+			"data": resp,
+		}, nil
+	}
+}
+
+func SearchCredit(s Service) interface{} {
+	return func(ctx context.Context, req *SearchByIdRequest) (interface{}, error) {
+		resp, err := s.SearchCredit(&SearchByIdTemplate{Id: req.Id})
+		if err != nil {
+			fmt.Println("endpoint error =", err.Error())
+			return nil, fmt.Errorf(err.Error())
+		}
+		return map[string]interface{}{
+			"data": resp,
+		}, nil
+	}
+}
+
+func SearchHisByKeyword(s Service) interface{} {
+	return func(ctx context.Context, req *SearchByKeywordRequest) (interface{}, error) {
+		resp, err := s.SearchHisByKeyword(&SearchByKeywordTemplate{SaleCode: req.SaleCode, Keyword: req.Keyword})
 		if err != nil {
 			fmt.Println("endpoint error =", err.Error())
 			return nil, fmt.Errorf(err.Error())
