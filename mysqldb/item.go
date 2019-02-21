@@ -6,6 +6,7 @@ import (
 	"github.com/jmoiron/sqlx"
 	"github.com/mrtomyum/nopadol/product"
 	"log"
+	"time"
 )
 
 const (
@@ -104,11 +105,7 @@ func (it *itemModel) verifyRequestData(db *sqlx.DB) (bool, error) {
 }
 
 
-func(it *itemModel)checkExistsByCode(db *sqlx.DB,code string)(int64,bool){
-	var id int64=-1
-	db.QueryRow(`select id from Item where code=?`,code).Scan(&id)
-	if id == -1 {
-		return -1,false
+
 
 func (it *itemModel) checkExistsByCode(db *sqlx.DB, code string) (int64, bool) {
 	var id int64 = -1
@@ -138,16 +135,21 @@ func (it *itemModel) save(db *sqlx.DB) (newID int64, err error) {
 
 		// update
 		fmt.Println("update case to item.id -> ", id)
-		db.Exec(`update Item set
+		_ ,err := db.Exec(`update Item set
 			item_name=?,
 			short_name=?,
 			pic_path1 = ? ,
 			pic_path2=?,
 			company_id=?,
 			stock_type=?,
-			stock_qty=?,
+			stock_qty=?
 			where id = ?`,
 			it.Name, it.ShortName, it.PicPath1, it.PicPath2, it.CompanyID, it.StockType, it.StockQty, id)
+		if err != nil {
+			log.Println("error update item %v",err.Error())
+			return -1,err
+		}
+
 		newID = id
 	} else {
 
