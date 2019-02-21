@@ -33,12 +33,7 @@ type Service interface {
 
 	CreateInvoice(req *NewInvoiceTemplate) (interface{}, error)
 	SearchInvoiceById(req *SearchByIdTemplate) (interface{}, error)
-	SearchInvoiceByKeyword(req *SearchByKeywordTemplate) (interface{}, error)
-	SearchSaleByItem(req *SearchByItemTemplate) (interface{}, error)
-	SearchCredit(req *SearchByIdTemplate) (interface{}, error)
 	Invoicelist(req *SearchByKeywordTemplate) (interface{}, error)
-	SearchHisByKeyword(req *SearchByKeywordTemplate) (interface{}, error)
-	CancelInvoice(req *NewInvoiceTemplate) (interface{}, error)
 }
 
 func (s *service) CreateQuotation(req *NewQuoTemplate) (interface{}, error) {
@@ -125,13 +120,8 @@ func (s *service) CancelQuotation(req *NewQuoTemplate) (interface{}, error) {
 	return resp, nil
 }
 
-func (s *service) CancelInvoice(req *NewInvoiceTemplate) (interface{}, error) {
-	resp, err := s.repo.CancelInvoice(req)
-}
-
 func (s *service) QuotationToSaleOrder(req *SearchByIdTemplate) (interface{}, error) {
 	resp, err := s.repo.QuotationToSaleOrder(req)
-
 	if err != nil {
 		return nil, err
 	}
@@ -147,16 +137,6 @@ func (s *service) Invoicelist(req *SearchByKeywordTemplate) (interface{}, error)
 	}
 	return resp, nil
 }
-
-
-func (s *service) SearchHisByKeyword(req *SearchByKeywordTemplate) (interface{}, error) {
-	resp, err := s.repo.SearchHisByKeyword(req)
-	if err != nil {
-		return nil, err
-	}
-	return resp, nil
-}
-
 
 func (s *service) CreateSaleOrder(req *NewSaleTemplate) (interface{}, error) {
 	var count_item int
@@ -222,9 +202,8 @@ func (s *service) SearchSaleOrderById(req *SearchByIdTemplate) (interface{}, err
 	return resp, nil
 }
 
-
-func (s *service) SearchSaleByItem(req *SearchByItemTemplate) (interface{}, error) {
-	resp, err := s.repo.SearchSaleByItem(req)
+func (s *service) SearchSaleOrderByKeyword(req *SearchByKeywordTemplate) (interface{}, error) {
+	resp, err := s.repo.SearchSaleOrderByKeyword(req)
 	if err != nil {
 		return nil, err
 	}
@@ -294,7 +273,7 @@ func (s *service) CreateInvoice(req *NewInvoiceTemplate) (interface{}, error) {
 	var count_item_unit int
 	var sum_item_amount float64
 	var err error
-	//  verify ยอด สินค้ารายการย่อย
+//  verify ยอด สินค้ารายการย่อย
 	fmt.Println("Service 1")
 	for _, sub_item := range req.Subs {
 		fmt.Println(sub_item.Price, "บาท")
@@ -338,23 +317,6 @@ func (s *service) CreateInvoice(req *NewInvoiceTemplate) (interface{}, error) {
 func (s *service) SearchInvoiceById(req *SearchByIdTemplate) (interface{}, error) {
 
 	resp, err := s.repo.SearchInvoiceById(req)
-	if err != nil {
-		return nil, err
-	}
-
-	return resp, nil
-}
-
-func (s *service) SearchInvoiceByKeyword(req *SearchByKeywordTemplate) (interface{}, error) {
-	resp, err := s.repo.SearchInvoiceByKeyword(req)
-	if err != nil {
-		return nil, err
-	}
-	return resp, nil
-}
-
-func (s *service) SearchCredit(req *SearchByIdTemplate) (interface{}, error) {
-	resp, err := s.repo.SearchCredit(req)
 	if err != nil {
 		return nil, err
 	}

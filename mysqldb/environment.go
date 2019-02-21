@@ -2,9 +2,8 @@ package mysqldb
 
 import (
 	"fmt"
-
-	"github.com/jmoiron/sqlx"
 	"github.com/mrtomyum/nopadol/environment"
+	"github.com/jmoiron/sqlx"
 )
 
 type DepartmentModel struct {
@@ -38,9 +37,9 @@ func (repo *envRepository) SearchDepartmentById(req *environment.SearchByIdTempl
 	cust_resp := map_data_template(d)
 
 	return map[string]interface{}{
-		"id":   cust_resp.Id,
-		"code": cust_resp.Code,
-		"name": cust_resp.Name,
+		"id":        cust_resp.Id,
+		"code":      cust_resp.Code,
+		"name":      cust_resp.Name,
 	}, nil
 }
 
@@ -48,9 +47,7 @@ func (repo *envRepository) SearchDepartmentByKeyword(req *environment.SearchByKe
 
 	deps := []DepartmentModel{}
 
-	sql := `select id,code,name 
-	from Department 
-	where (code like concat('%',?,'%')  or name like concat('%',?,'%'))  and active_status =1 order by code`
+	sql := `select id,code,name from Department where (code like concat('%',?,'%')  or name like concat('%',?,'%'))  and active_status =1 order by code`
 	err = repo.db.Select(&deps, sql, req.Keyword, req.Keyword)
 	if err != nil {
 		fmt.Println("err = ", err.Error())
@@ -66,6 +63,7 @@ func (repo *envRepository) SearchDepartmentByKeyword(req *environment.SearchByKe
 	return departments, nil
 }
 
+
 func (repo *envRepository) SearchProjectById(req *environment.SearchByIdTemplate) (resp interface{}, err error) {
 
 	p := DepartmentModel{}
@@ -80,11 +78,12 @@ func (repo *envRepository) SearchProjectById(req *environment.SearchByIdTemplate
 	cust_resp := map_data_template(p)
 
 	return map[string]interface{}{
-		"id":   cust_resp.Id,
-		"code": cust_resp.Code,
-		"name": cust_resp.Name,
+		"id":        cust_resp.Id,
+		"code":      cust_resp.Code,
+		"name":      cust_resp.Name,
 	}, nil
 }
+
 
 func (repo *envRepository) SearchProjectByKeyword(req *environment.SearchByKeywordTemplate) (resp interface{}, err error) {
 
@@ -106,6 +105,7 @@ func (repo *envRepository) SearchProjectByKeyword(req *environment.SearchByKeywo
 	return projects, nil
 }
 
+
 func (repo *envRepository) SearchAllocateById(req *environment.SearchByIdTemplate) (resp interface{}, err error) {
 
 	a := DepartmentModel{}
@@ -120,11 +120,12 @@ func (repo *envRepository) SearchAllocateById(req *environment.SearchByIdTemplat
 	cust_resp := map_data_template(a)
 
 	return map[string]interface{}{
-		"id":   cust_resp.Id,
-		"code": cust_resp.Code,
-		"name": cust_resp.Name,
+		"id":        cust_resp.Id,
+		"code":      cust_resp.Code,
+		"name":      cust_resp.Name,
 	}, nil
 }
+
 
 func (repo *envRepository) SearchAllocateByKeyword(req *environment.SearchByKeywordTemplate) (resp interface{}, err error) {
 
@@ -146,11 +147,12 @@ func (repo *envRepository) SearchAllocateByKeyword(req *environment.SearchByKeyw
 	return allocates, nil
 }
 
+
 func map_data_template(x DepartmentModel) environment.DepartmentTemplate {
-	fmt.Println("Code =", x.Code)
+	fmt.Println("Code =",x.Code)
 	return environment.DepartmentTemplate{
-		Id:   x.Id,
-		Code: x.Code,
-		Name: x.Name,
+		Id:        x.Id,
+		Code:      x.Code,
+		Name:      x.Name,
 	}
 }
