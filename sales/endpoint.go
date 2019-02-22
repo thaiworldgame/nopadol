@@ -1308,19 +1308,6 @@ func SearchSaleByItem(s Service) interface{} {
 	}
 }
 
-func SearchCredit(s Service) interface{} {
-	return func(ctx context.Context, req *SearchByIdRequest) (interface{}, error) {
-		resp, err := s.SearchCredit(&SearchByIdTemplate{Id: req.Id})
-		if err != nil {
-			fmt.Println("endpoint error =", err.Error())
-			return nil, fmt.Errorf(err.Error())
-		}
-		return map[string]interface{}{
-			"data": resp,
-		}, nil
-	}
-}
-
 func SearchHisByKeyword(s Service) interface{} {
 	return func(ctx context.Context, req *SearchByKeywordRequest) (interface{}, error) {
 		resp, err := s.SearchHisByKeyword(&SearchByKeywordTemplate{SaleCode: req.SaleCode, Keyword: req.Keyword})

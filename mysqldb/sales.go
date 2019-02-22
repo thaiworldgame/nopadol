@@ -3087,14 +3087,6 @@ func (repo *salesRepository) SearchSaleByItem(req *sales.SearchByItemTemplate) (
 	if req.Name == "" && req.ItemCode == "" {
 		fmt.Println("No Data")
 	} else {
-		/*	sql = `select a.id, ifnull(a.doc_no,'') as doc_no, ifnull(a.doc_date,'') as doc_date, a.item_id, a.ar_id,
-			ifnull(a.bar_code,'') as bar_code, ifnull(a.item_code,'') as item_code, ifnull(a.item_name,'') as item_name,
-			a.unit_code, a.qty, a.cn_qty, a.price, a.ar_id,
-			b.id, b.name
-			from ar_invoice_sub a left join Customer b on a.ar_id = b.id
-			where b.name like concat(?) and a.item_code like concat(?)
-			order by a.id desc limit 20`
-			err = repo.db.Select(&d, sql, req.Name, req.ItemCode)*/
 		switch {
 		case req.Page == "invoice":
 			sql = `select a.id, ifnull(a.doc_no,'') as doc_no, ifnull(a.doc_date,'') as doc_date, a.item_id, a.ar_id,  
@@ -3136,26 +3128,6 @@ func (repo *salesRepository) SearchSaleByItem(req *sales.SearchByItemTemplate) (
 	}
 
 	return dp, nil
-}
-
-func (repo *salesRepository) SearchCredit(req *sales.SearchByIdTemplate) (resp interface{}, err error) {
-
-	i := NewInvoiceModel{}
-
-	sql := `select a.id, a.code, a.name, a.debt_amount, a.debt_limit , a.active_status, a.create_by
-	from Customer 
-	where a.id=?`
-	err = repo.db.Get(&i, sql, req.Id)
-	fmt.Println("sql = ", sql)
-	if err != nil {
-		fmt.Println("err = ", err.Error())
-		return resp, err
-	}
-
-	inv_resp := map_invoice_template(i)
-
-	//fmt.Println("id,code,name", i.id,i.code,i.name)
-	return inv_resp, nil
 }
 
 /*func (repo *salesRepository) CheckCredit(req *sales.NewSaleTemplate) (resp interface{}, err error) {

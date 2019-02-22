@@ -30,7 +30,6 @@ type Service interface {
 	SearchInvoiceById(req *SearchByIdTemplate) (interface{}, error)
 	SearchInvoiceByKeyword(req *SearchByKeywordTemplate) (interface{}, error)
 	SearchSaleByItem(req *SearchByItemTemplate) (interface{}, error)
-	SearchCredit(req *SearchByIdTemplate) (interface{}, error)
 	Invoicelist(req *SearchByKeywordTemplate) (interface{}, error)
 	SearchHisByKeyword(req *SearchByKeywordTemplate) (interface{}, error)
 	CancelInvoice(req *NewInvoiceTemplate) (interface{}, error)
@@ -324,14 +323,5 @@ func (s *service) SearchInvoiceByKeyword(req *SearchByKeywordTemplate) (interfac
 	if err != nil {
 		return nil, err
 	}
-	return resp, nil
-}
-
-func (s *service) SearchCredit(req *SearchByIdTemplate) (interface{}, error) {
-	resp, err := s.repo.SearchCredit(req)
-	if err != nil {
-		return nil, err
-	}
-
 	return resp, nil
 }
