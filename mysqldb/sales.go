@@ -3087,14 +3087,6 @@ func (repo *salesRepository) SearchSaleByItem(req *sales.SearchByItemTemplate) (
 	if req.Name == "" && req.ItemCode == "" {
 		fmt.Println("No Data")
 	} else {
-		/*	sql = `select a.id, ifnull(a.doc_no,'') as doc_no, ifnull(a.doc_date,'') as doc_date, a.item_id, a.ar_id,
-			ifnull(a.bar_code,'') as bar_code, ifnull(a.item_code,'') as item_code, ifnull(a.item_name,'') as item_name,
-			a.unit_code, a.qty, a.cn_qty, a.price, a.ar_id,
-			b.id, b.name
-			from ar_invoice_sub a left join Customer b on a.ar_id = b.id
-			where b.name like concat(?) and a.item_code like concat(?)
-			order by a.id desc limit 20`
-			err = repo.db.Select(&d, sql, req.Name, req.ItemCode)*/
 		switch {
 		case req.Page == "invoice":
 			sql = `select a.id, ifnull(a.doc_no,'') as doc_no, ifnull(a.doc_date,'') as doc_date, a.item_id, a.ar_id,  
@@ -3136,26 +3128,6 @@ func (repo *salesRepository) SearchSaleByItem(req *sales.SearchByItemTemplate) (
 	}
 
 	return dp, nil
-}
-
-func (repo *salesRepository) SearchCredit(req *sales.SearchByIdTemplate) (resp interface{}, err error) {
-
-	i := NewInvoiceModel{}
-
-	sql := `select a.id, a.code, a.name, a.debt_amount, a.debt_limit , a.active_status, a.create_by
-	from Customer 
-	where a.id=?`
-	err = repo.db.Get(&i, sql, req.Id)
-	fmt.Println("sql = ", sql)
-	if err != nil {
-		fmt.Println("err = ", err.Error())
-		return resp, err
-	}
-
-	inv_resp := map_invoice_template(i)
-
-	//fmt.Println("id,code,name", i.id,i.code,i.name)
-	return inv_resp, nil
 }
 
 /*func (repo *salesRepository) CheckCredit(req *sales.NewSaleTemplate) (resp interface{}, err error) {
@@ -3223,7 +3195,81 @@ func (repo *salesRepository) SearchHisByKeyword(req *sales.SearchByKeywordTempla
 		dpline := map_doc_invoic_template(dep)
 		dp = append(dp, dpline)
 	}
+	return dp, nil
+}
+
+func map_hiscustomer_template(x NewSearchItemModel) sales.NewSearchItemTemplate {
+	return sales.NewSearchItemTemplate{
+		Id:              x.Id,
+		DocDate:         x.DocDate,
+		DocNo:           x.DocNo,
+		ItemId:          x.ItemId,
+		ItemCode:        x.ItemCode,
+		ItemName:        x.ItemName,
+		BarCode:         x.BarCode,
+		UnitICode:       x.UnitICode,
+		WhId:            x.WhId,
+		ShelfId:         x.ShelfId,
+		Price:           x.Price,
+		Qty:             x.Qty,
+		CnQty:           x.CnQty,
+		ItemDescription: x.ItemDescription,
+		IsCreditNote:    x.IsCreditNote,
+		IsDebitNote:     x.IsDebitNote,
+		PackingRate1:    x.PackingRate1,
+		PackingRate2:    x.PackingRate2,
+		SoRefNo:         x.SoRefNo,
+		AverageCost:     x.AverageCost,
+		SumOfCost:       x.SumOfCost,
+		RefLineNumber:   x.RefLineNumber,
+		LineNumber:      x.LineNumber,
+		ArName:          x.ArName,
+		ArCode:          x.ArCode,
+		ArId:            x.ArId,
+		Name:            x.Name,
+		NId:             x.NId,
+		NDocNo:          x.NDocNo,
+		NDocDate:        x.NDocDate,
+		NItemId:         x.NItemId,
+		NArId:           x.NArId,
+		NBarCode:        x.NBarCode,
+		NItemCode:       x.NItemCode,
+		NItemName:       x.NItemName,
+		NUnitCode:       x.NUnitCode,
+		NQty:            x.NQty,
+		NPrice:          x.NPrice,
+		NArName:         x.NArName,
+		DiscountWord:    x.DiscountWord,
+		NDiscountWord:   x.NDiscountWord,
+	}
+
+}
+
+func (repo *salesRepository) SearchHisCustomer(req *sales.SearchHisCustomerTemplate) (resp interface{}, err error) {
+	var sql string
+	d := []NewSearchItemModel{}
+	if req.Name == "" && req.ItemCode == "" {
+		fmt.Println("No Data")
+	} else {
+		sql = `select distinct a.Id, ifnull(a.DocDate,'') as DocDate, ifnull(a.DocNo,'') as DocNo, 
+		a.ArId, a.ArName,
+		b.UnitCode, b.Qty, b.Price, ifnull(b.ItemCode,'') as ItemCode, b.ArId, ifnull(b.ItemName,'') as ItemName,b.ArId, ifnull(b.DiscountWord,'') as DiscountWord
+		from SaleOrder a left join SaleOrderSub b on a.ArId = b.ArId
+		where a.ArName like concat(?)
+		order by a.Id desc limit 20`
+		err = repo.db.Select(&d, sql, req.Name, req.ItemCode)
+	}
+	fmt.Println("sql = ", sql, req.ItemCode)
+	if err != nil {
+		fmt.Println("err = ", err.Error())
+		return resp, err
+	}
+
+	dp := []sales.NewSearchItemTemplate{}
+	for _, dep := range d {
+		dpline := map_searchitem_template(dep)
+		dp = append(dp, dpline)
+	}
 
 	return dp, nil
-
 }

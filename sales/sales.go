@@ -48,7 +48,7 @@ type NewQuoTemplate struct {
 	CreateTime          string               `json:"create_time"`
 	EditBy              string               `json:"edit_by"`
 	EditTime            string               `json:"edit_time"`
-	ConfirmBy           string               `json:confirm_by`
+	ConfirmBy           string               `json:"confirm_by"`
 	ConfirmTime         string               `json:"confirm_time"`
 	CancelBy            string               `json:"cancel_by"`
 	CancelTime          string               `json:"cancel_time"`
@@ -157,7 +157,6 @@ type NewSaleItemTemplate struct {
 	RefLineNumber   int64   `json:"ref_line_number"`
 	IsCancel        int64   `json:"is_cancel"`
 }
- 
 
 type SearchByIdTemplate struct {
 	Id int64 `json:"id"`
@@ -176,6 +175,7 @@ type SearchByItemTemplate struct {
 	Name     string `json:"name"`
 	Page     string `json:"page"`
 }
+
 type SearchDocTemplate struct {
 	Id            int64   `json:"id"`
 	DocNo         string  `json:"doc_no"`
@@ -460,7 +460,7 @@ type NewInvoiceItemTemplate struct {
 	ShelfId         int64   `json:"shelf_id"`
 	Price           float64 `json:"price"`
 	UnitCode        string  `json:"unit_code"`
-	Location		string	`json:"location"`
+	Location        string  `json:"location"`
 	Qty             float64 `json:"qty"`
 	CnQty           float64 `json:"cn_qty"`
 	DiscountWord    float64 `json:"discount_word_sub"`
@@ -522,4 +522,13 @@ type NewSearchItemTemplate struct {
 	NPrice          float64 `json:"Price"`
 	NArName         string  `json:"ArName"`
 	NDiscountWord   string  `json:"DiscountWord"`
+}
+
+type SearchHisCustomerTemplate struct {
+	ArId     string `json:"ar_id"`
+	ArCode   string `json:"ar_code"`
+	ItemCode string `json:"item_code"`
+	Code     string `json:"code"`
+	Name     string `json:"name"`
+	Page     string `json:"page"`
 }

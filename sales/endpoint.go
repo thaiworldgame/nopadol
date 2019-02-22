@@ -54,7 +54,7 @@ type (
 		CreateTime          string              `json:"create_time"`
 		EditBy              string              `json:"edit_by"`
 		EditTime            string              `json:"edit_time"`
-		ConfirmBy           string              `json:confirm_by`
+		ConfirmBy           string              `json:"confirm_by"`
 		ConfirmTime         string              `json:"confirm_time"`
 		CancelBy            string              `json:"cancel_by"`
 		CancelTime          string              `json:"cancel_time"`
@@ -1308,9 +1308,9 @@ func SearchSaleByItem(s Service) interface{} {
 	}
 }
 
-func SearchCredit(s Service) interface{} {
-	return func(ctx context.Context, req *SearchByIdRequest) (interface{}, error) {
-		resp, err := s.SearchCredit(&SearchByIdTemplate{Id: req.Id})
+func SearchHisByKeyword(s Service) interface{} {
+	return func(ctx context.Context, req *SearchByKeywordRequest) (interface{}, error) {
+		resp, err := s.SearchHisByKeyword(&SearchByKeywordTemplate{SaleCode: req.SaleCode, Keyword: req.Keyword})
 		if err != nil {
 			fmt.Println("endpoint error =", err.Error())
 			return nil, fmt.Errorf(err.Error())
@@ -1321,9 +1321,9 @@ func SearchCredit(s Service) interface{} {
 	}
 }
 
-func SearchHisByKeyword(s Service) interface{} {
-	return func(ctx context.Context, req *SearchByKeywordRequest) (interface{}, error) {
-		resp, err := s.SearchHisByKeyword(&SearchByKeywordTemplate{SaleCode: req.SaleCode, Keyword: req.Keyword})
+func SearchHisCustomer(s Service) interface{} {
+	return func(ctx context.Context, req *SearchHisCustomerTemplate) (interface{}, error) {
+		resp, err := s.SearchHisCustomer(&SearchHisCustomerTemplate{ArId: req.ArId})
 		if err != nil {
 			fmt.Println("endpoint error =", err.Error())
 			return nil, fmt.Errorf(err.Error())
