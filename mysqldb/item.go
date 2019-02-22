@@ -6,6 +6,7 @@ import (
 	"github.com/jmoiron/sqlx"
 	"github.com/mrtomyum/nopadol/product"
 	"log"
+	"time"
 )
 
 const (
@@ -39,7 +40,7 @@ type itemModel struct {
 	PicPath2     string         `db:"picture_path2"`
 	AverageCost  float64        `db:"average_cost"`
 	ActiveStatus int            `db:"active_status"`
-	ItemStatus   int            `db: "item_status"`
+	ItemStatus   int            `db:"item_status"`
 	CompanyID    int            `db:"company_id"`
 	CreateBy     string         `db:"create_by"`
 	CreateTime   mysql.NullTime `db:"create_time"`
@@ -77,12 +78,11 @@ func (it *itemModel) map2itemModel(db *sqlx.DB, req *product.ProductNewRequest) 
 	it.UnitCode = u.unitCode
 	it.PicPath1 = req.Picture
 	it.StockType = req.StockType
-
 	it.CompanyID = req.CompanyID
 	it.CreateBy = req.CreateBy
 	it.CreateTime.Time = time.Now()
 	it.StockQty = req.StockQty
-
+	it.ActiveStatus = req.ActiveStatus
 
 	fmt.Println("map2itemModel return ", it.UnitCode)
 	return
@@ -102,13 +102,6 @@ func (it *itemModel) verifyRequestData(db *sqlx.DB) (bool, error) {
 
 	return true, nil
 }
-
-
-func(it *itemModel)checkExistsByCode(db *sqlx.DB,code string)(int64,bool){
-	var id int64=-1
-	db.QueryRow(`select id from Item where code=?`,code).Scan(&id)
-	if id == -1 {
-		return -1,false
 
 func (it *itemModel) checkExistsByCode(db *sqlx.DB, code string) (int64, bool) {
 	var id int64 = -1
@@ -138,7 +131,7 @@ func (it *itemModel) save(db *sqlx.DB) (newID int64, err error) {
 
 		// update
 		fmt.Println("update case to item.id -> ", id)
-		db.Exec(`update Item set
+		_, err := db.Exec(`update Item set
 			item_name=?,
 			short_name=?,
 			pic_path1 = ? ,
@@ -146,8 +139,14 @@ func (it *itemModel) save(db *sqlx.DB) (newID int64, err error) {
 			company_id=?,
 			stock_type=?,
 			stock_qty=?,
+			active_status=?
 			where id = ?`,
-			it.Name, it.ShortName, it.PicPath1, it.PicPath2, it.CompanyID, it.StockType, it.StockQty, id)
+			it.Name, it.ShortName, it.PicPath1, it.PicPath2, it.CompanyID, it.StockType, it.StockQty,it.ActiveStatus, id)
+		if err != nil {
+			log.Println("error update item %v", err.Error())
+			return -1, err
+		}
+
 		newID = id
 	} else {
 
@@ -169,10 +168,12 @@ func (it *itemModel) save(db *sqlx.DB) (newID int64, err error) {
 			create_time,
 			edit_by,
 			edit_time,
-			company_id) values (
+			company_id,
+			active_status)
+			values (
 			?,?,?,?,?,
 			?,?,?,?,?,
-			?,?,?,?
+			?,?,?,?,?,?
 			)
 	`
 		rs, err := db.Exec(lcCommand,
