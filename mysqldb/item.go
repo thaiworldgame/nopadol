@@ -109,11 +109,13 @@ func (it *itemModel) checkExistsByCode(db *sqlx.DB, code string) (int64, bool) {
 	if err != nil {
 		fmt.Println("error checkExistsByCode ", err.Error())
 		return -1, false
+
 	}
 	if id <= 0 {
 		fmt.Println(" id <0 error ")
 		return -1, false
 	}
+
 	return id, true
 }
 
@@ -154,6 +156,7 @@ func (it *itemModel) save(db *sqlx.DB) (newID int64, err error) {
 		// case new
 		// todo : insert item flage incomplete
 		lcCommand := `insert into Item (
+
 			code,item_name,short_name,unit_code,buy_unit,
 			stock_type,pic_path1,pic_path2,active_status,stock_qty,
 			create_by,create_time,edit_by,edit_time,company_id)
@@ -161,6 +164,7 @@ func (it *itemModel) save(db *sqlx.DB) (newID int64, err error) {
 			?,?,?,?,?,
 			?,?,?,?,?,
 			?,?,?,?,?
+
 			)
 	`
 		rs, err := db.Exec(lcCommand,

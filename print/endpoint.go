@@ -65,3 +65,28 @@ func PosDriveThruSlip(s Service) interface{} {
 	}
 }
 
+
+//func Slip(s Service) interface{} {
+//	fmt.Println("EndPoint")
+//	return func(ctx context.Context, req *InvoiceRequest) (interface{}, error) {
+//		resp, err := s.Slip(&InvoiceTemplate{})
+//		if err != nil {
+//			fmt.Println("endpoint error =", err.Error())
+//			//return nil, fmt.Errorf(err.Error())
+//			return map[string]interface{}{
+//				"success": false,
+//				"error":   true,
+//				"message": err.Error(),
+//				"data":    "",
+//			}, nil
+//		}
+//
+//		return map[string]interface{}{
+//			"success": true,
+//			"error":   false,
+//			"message": "",
+//			"data":    resp,
+//		}, nil
+//	}
+//}
+

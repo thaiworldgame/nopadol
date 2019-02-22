@@ -118,6 +118,7 @@ func (s *service) CancelInvoice(req *NewInvoiceTemplate) (interface{}, error) {
 	}
 	return resp, nil
 }
+
 func (s *service) Invoicelist(req *SearchByKeywordTemplate) (interface{}, error) {
 	fmt.Println("invoicelist 2")
 	resp, err := s.repo.SearchInvoiceByKeyword(req)
@@ -205,6 +206,7 @@ func (s *service) SearchSaleByItem(req *SearchByItemTemplate) (interface{}, erro
 	}
 	return resp, nil
 }
+
 func (s *service) SearchDocByKeyword(req *SearchByKeywordTemplate) (interface{}, error) {
 	resp, err := s.repo.SearchDocByKeyword(req)
 	if err != nil {
