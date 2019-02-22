@@ -205,7 +205,6 @@ func (it *itemModel) save(db *sqlx.DB) (newID int64, err error) {
 
 	}
 
-
 	// todo : insert barcode (default barcode = itemcode)
 	// todo : insert price (option)
 	// todo : insert ItemRate (default baseUnit rate=1)
