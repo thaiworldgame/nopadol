@@ -9,6 +9,11 @@ import (
 	"github.com/jmoiron/sqlx"
 	"github.com/mrtomyum/nopadol/config"
 	"github.com/mrtomyum/nopadol/sales"
+	"github.com/mrtomyum/nopadol/gendocno"
+	"encoding/json"
+	"net/http"
+	"bytes"
+	"log"
 )
 
 type NewQuoModel struct {
