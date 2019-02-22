@@ -333,6 +333,8 @@ type (
 		Id                  int64                   `json:"id"`
 		CompanyId           int64                   `json:"company_id"`
 		BranchId            int64                   `json:"branch_id"`
+		ItemId              int64                   `json:"item_id"`
+		ItemCode            string                  `json:"item_code"`
 		Uuid                string                  `json:"uuid"`
 		DocNo               string                  `json:"doc_no"`
 		TaxNo               string                  `json:"tax_no"`
@@ -447,11 +449,9 @@ type (
 		RefLineNumber   int64   `json:"ref_line_number"`
 		LineNumber      int64   `json:"line_number"`
 	}
-
-	QuotationToSaleOrderRequest struct {
-		QuoId     int64  `json:"ar_id"`
-	}
 )
+
+// search item by keywork
 
 ////// Quotation /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -603,19 +603,6 @@ func SearchQuoById(s Service) interface{} {
 	}
 }
 
-func SearchQuoByKeyword(s Service) interface{} {
-	return func(ctx context.Context, req *SearchByKeywordRequest) (interface{}, error) {
-		resp, err := s.SearchQueByKeyword(&SearchByKeywordTemplate{SaleCode: req.SaleCode, Keyword:req.Keyword})
-		if err != nil {
-			fmt.Println("endpoint error =", err.Error())
-			return nil, fmt.Errorf(err.Error())
-		}
-		return map[string]interface{}{
-			"data": resp,
-		}, nil
-	}
-}
-
 func ConfirmQuotation(s Service) interface{} {
 	return func(ctx context.Context, req *NewQuoRequest) (interface{}, error) {
 		resp, err := s.ConfirmQuotation(&NewQuoTemplate{Id: req.Id, AssertStatus: req.AssertStatus, IsConfirm: req.IsConfirm, IsCancel: req.IsCancel, ConfirmBy: req.ConfirmBy, ConfirmTime: req.ConfirmTime})
@@ -639,21 +626,6 @@ func CancelQuotation(s Service) interface{} {
 		return map[string]interface{}{
 			"data": resp,
 		}, nil
-	}
-}
-
-func QuotationToSaleOrder(s Service) interface{} {
-	return func(ctx context.Context, req *SearchByIdRequest) (interface{}, error) {
-
-		resp, err := s.QuotationToSaleOrder(&SearchByIdTemplate{Id:req.Id})
-		if err != nil {
-			fmt.Println("endpoint error =", err.Error())
-			return nil, fmt.Errorf(err.Error())
-		}
-		return map[string]interface{}{
-			"data": resp,
-		}, nil
-
 	}
 }
 
@@ -802,23 +774,9 @@ func map_invoice_sub_request(x NewInvoiceItemRequest) NewInvoiceItemTemplate {
 		IsCancel:        x.IsCancel,
 	}
 }
-
 func SearchSaleOrderById(s Service) interface{} {
 	return func(ctx context.Context, req *SearchByIdRequest) (interface{}, error) {
 		resp, err := s.SearchSaleOrderById(&SearchByIdTemplate{Id: req.Id})
-		if err != nil {
-			fmt.Println("endpoint error =", err.Error())
-			return nil, fmt.Errorf(err.Error())
-		}
-		return map[string]interface{}{
-			"data": resp,
-		}, nil
-	}
-}
-
-func SearchSaleOrderByKeyword(s Service) interface{} {
-	return func(ctx context.Context, req *SearchByKeywordRequest) (interface{}, error) {
-		resp, err := s.SearchSaleOrderByKeyword(&SearchByKeywordTemplate{SaleCode:req.SaleCode,Keyword:req.Keyword})
 		if err != nil {
 			fmt.Println("endpoint error =", err.Error())
 			return nil, fmt.Errorf(err.Error())
@@ -834,7 +792,7 @@ func SearchDocByKeyword(s Service) interface{} {
 	return func(ctx context.Context, req *SearchByKeywordRequest) (interface{}, error) {
 
 		resp, err := s.SearchDocByKeyword(&SearchByKeywordTemplate{SaleCode: req.SaleCode, Keyword: req.Keyword})
-		fmt.Println(resp, "")
+		fmt.Println(resp, "99999999999999999999999999999999999999999999999999999999999999999999999999999999")
 		if err != nil {
 			fmt.Println("endpoint error =", err.Error())
 			return nil, fmt.Errorf(err.Error())

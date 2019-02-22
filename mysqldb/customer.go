@@ -143,7 +143,6 @@ func (c *CustomerModel) save(db *sqlx.DB) (interface{}, error) {
 	//	}
 	case c.Code == "":
 		{
-			fmt.Println("check state 1 ")
 			return nil, fmt.Errorf("error no Code data")
 		}
 	}
@@ -151,7 +150,6 @@ func (c *CustomerModel) save(db *sqlx.DB) (interface{}, error) {
 	// insert
 	if curID == 0 {
 		//new customer case
-		fmt.Println("case insert customer ")
 		sql := `insert into Customer (code,name,address,telephone,bill_credit,
 						active_status,create_by,create_time)
 		values (?,?,?,?,?,?,?,?)`

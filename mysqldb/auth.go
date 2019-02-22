@@ -4,10 +4,11 @@ import (
 	//"fmt"
 	"database/sql"
 	"fmt"
+	"time"
+
 	"github.com/jmoiron/sqlx"
 	"github.com/mrtomyum/nopadol/auth"
-	"github.com/satori/go.uuid"
-	"time"
+	uuid "github.com/satori/go.uuid"
 )
 
 type UserAccess struct {
@@ -34,7 +35,7 @@ type authRepository struct {
 }
 
 func (repo *authRepository) GetToken(tokenID string) (*auth.Token, error) {
-	fmt.Println("start mysqldb.auth.GetToken ... with token ",tokenID)
+	fmt.Println("start mysqldb.auth.GetToken ... with token ", tokenID)
 	var m struct {
 		CompanyID  sql.NullInt64  `db:"company_id"`
 		UserID     sql.NullInt64  `db:"user_id"`
@@ -42,7 +43,7 @@ func (repo *authRepository) GetToken(tokenID string) (*auth.Token, error) {
 		UserName   sql.NullString `db:"user_name"`
 		BranchID   sql.NullInt64  `db:"branch_id"`
 		BranchCode sql.NullString `db:"branch_code"`
-		ZoneID     sql.NullString  `db:"zone_id"`
+		ZoneID     sql.NullString `db:"zone_id"`
 		TokenID    sql.NullString `db:"token"`
 		Created    time.Time      `db:"created"`
 	}
@@ -52,16 +53,16 @@ func (repo *authRepository) GetToken(tokenID string) (*auth.Token, error) {
 		"user_code," +
 		"b.company_id," +
 		"b.branch_id," +
-		"b.branch_code,"+
-		"b.zone_id, "+
+		"b.branch_code," +
+		"b.zone_id, " +
 		"b.name ," +
 		"a.create_time " +
-		"from "+dbname+".user_access a inner join npdl.`user` b on a.user_id=b.id "+
-		" where access_token='"+tokenID+"'"
+		"from " + dbname + ".user_access a inner join npdl.`user` b on a.user_id=b.id " +
+		" where access_token='" + tokenID + "'"
 	fmt.Println(sqlcommand)
 	rows := repo.db.QueryRow(sqlcommand)
 	//err := rows.Scan(
-		rows.Scan(
+	rows.Scan(
 		&m.UserID,
 		&m.UserCode,
 		&m.CompanyID,
@@ -91,7 +92,7 @@ func (repo *authRepository) GetToken(tokenID string) (*auth.Token, error) {
 		tk.CompanyID = -1
 	}
 	if m.UserID.Valid {
-		tk.UserID= m.UserID.Int64
+		tk.UserID = m.UserID.Int64
 	} else {
 		tk.UserID = -1
 	}
@@ -101,7 +102,7 @@ func (repo *authRepository) GetToken(tokenID string) (*auth.Token, error) {
 		tk.BranchID = -1
 	}
 	if m.ZoneID.Valid {
-		tk.ZoneID= m.ZoneID.String
+		tk.ZoneID = m.ZoneID.String
 	}
 	if m.TokenID.Valid {
 		tk.TokenID = m.TokenID.String

@@ -2,6 +2,7 @@ package mysqldb
 
 import (
 	"fmt"
+
 	"github.com/jmoiron/sqlx"
 	"github.com/mrtomyum/nopadol/product"
 	//"github.com/mrtomyum/nopadol/auth"
@@ -226,7 +227,6 @@ func (p *productRepository) StoreItem(req *product.ProductNewRequest) (resp inte
 		return nil, err
 	}
 
-	// insert to PackingRate Table
 	//pk := packingRate{}
 	//for _, value := range req.PackingRate {
 	//
@@ -247,6 +247,7 @@ func (p *productRepository) StoreItem(req *product.ProductNewRequest) (resp inte
 	//}
 	//
 	//// price insert
+
 	//pr := priceModel{}
 	//for _, value := range req.Price {
 	//
@@ -255,8 +256,9 @@ func (p *productRepository) StoreItem(req *product.ProductNewRequest) (resp inte
 	//	u.getByID(p.db) // bind จาก id
 	//
 	//	pr.UnitID = req.UnitID
-	//	pr.ItemId = newItemID
-	//	pr.ItemCode = req.ItemCode
+
+	//	pr.ItemId = value.ItemID
+
 	//	pr.SalePrice1 = value.SalePrice1
 	//	pr.SalePrice2 = value.SalePrice2
 	//	pr.CompanyID = value.CompanyID
@@ -288,6 +290,7 @@ func (p *productRepository) StoreItem(req *product.ProductNewRequest) (resp inte
 		"result" : "success",
 		"new_id" : newItemID,
 	}, nil
+
 	// todo : insert to Barcode table
 }
 
@@ -308,26 +311,36 @@ func (p *productRepository) StoreBarcode(req *product.BarcodeNewRequest) (res in
 }
 
 func (p *productRepository) StorePrice(req *product.PriceTemplate) (interface{}, error) {
-	fmt.Println("start store price in mysql package ")
-	item := itemModel{Id: req.ItemID}
-	itemcode, err := item.getItemCodeById(p.db)
 
-	unit := itemUnitModel{id: req.UnitID}
-	unit.getByID(p.db)
+	fmt.Println("start store price in mysql package req: ",req)
+	item := itemModel{Code: req.ItemCode}
 
+
+	itemID, err := item.getItemIDbyCode(p.db,req.ItemCode)
 	if err != nil {
 		return nil, err
 	}
+	unit := itemUnitModel{unitCode: req.UnitCode}
+	//unit.getByID(p.db)
+	unit.getByCode(p.db)
+
+	if req.UnitCode =="" {
+		return nil, fmt.Errorf("unitcode is empty")
+	}
+
+
 	pr := priceModel{
-		ItemId:     req.ItemID,
-		ItemCode:   itemcode,
-		UnitID:     req.UnitID,
-		UnitCode:   unit.unitCode,
+		ItemId:     itemID,
+		ItemCode:   req.ItemCode,
+		UnitID:     unit.id,
+		UnitCode:   req.UnitCode,
+
 		SalePrice1: req.SalePrice1,
 		SalePrice2: req.SalePrice2,
 		SaleType:   req.SaleType,
 		CompanyID:  req.CompanyID,
 	}
+
 	return pr.save(p.db)
 }
 
