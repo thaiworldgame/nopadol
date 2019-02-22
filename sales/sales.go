@@ -157,6 +157,7 @@ type NewSaleItemTemplate struct {
 	RefLineNumber   int64   `json:"ref_line_number"`
 	IsCancel        int64   `json:"is_cancel"`
 }
+ 
 
 type SearchByIdTemplate struct {
 	Id int64 `json:"id"`

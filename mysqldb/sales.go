@@ -4,15 +4,16 @@ import (
 	"errors"
 	"fmt"
 	"strconv"
-	"net/http"
-	"bytes"
-	"log"
-	"github.com/mrtomyum/nopadol/gendocno"
-	"encoding/json"
 	"time"
+
 	"github.com/jmoiron/sqlx"
 	"github.com/mrtomyum/nopadol/config"
 	"github.com/mrtomyum/nopadol/sales"
+	"github.com/mrtomyum/nopadol/gendocno"
+	"encoding/json"
+	"net/http"
+	"bytes"
+	"log"
 )
 
 type NewQuoModel struct {
@@ -461,7 +462,9 @@ type NewInvoiceModel struct {
 	DocType             int64                 `db:"doc_type"`
 	ArId                int64                 `db:"ar_id"`
 	ArCode              string                `db:"ar_code"`
+	Code                string                `db:"code"`
 	ArName              string                `db:"ar_name"`
+	ItemName            string                `db:"item_name"`
 	ArBillAddress       string                `db:"ar_bill_address"`
 	ArTelephone         string                `db:"ar_telephone"`
 	SaleId              int64                 `db:"sale_id"`
@@ -531,6 +534,7 @@ type NewInvoiceModel struct {
 	CancelTime          string                `db:"cancel_time"`
 	CancelDescId        int64                 `db:"cancel_desc_id"`
 	CancelDesc          string                `db:"cancel_desc"`
+	ItemCode            string                `db:"item_code"`
 	Subs                []NewInvoiceItemModel `db:"subs"`
 	RecMoney            []RecMoneyModel       `db:"rec_money"`
 	CreditCard          []CreditCardModel     `db:"credit_card"`
@@ -1037,42 +1041,11 @@ func (repo *salesRepository) SearchQuoById(req *sales.SearchByIdTemplate) (resp 
 	return qt_resp, nil
 }
 
-func (repo *salesRepository) SearchQuoByKeyword(req *sales.SearchByKeywordTemplate) (resp interface{}, err error) {
-
-	d := []SearchDocModel{}
-
-	if req.Keyword == "" {
-		sql := `select a.Id,a.DocNo,a.DocDate, case when a.DocType = 0 then 'BO' else 'QT' end as Module,a.ArCode,a.ArName,a.SaleCode,a.SaleName,ifnull(a.MyDescription,'') as MyDescription,a.TotalAmount, a.IsCancel, a.IsConfirm from Quotation a Where a.SaleCode = ? order by Id desc limit 30`
-		err = repo.db.Select(&d, sql, req.SaleCode)
-	} else {
-		sql := `select a.Id,a.DocNo,a.DocDate, case when a.DocType = 0 then 'BO' else 'QT' end as Module,a.ArCode,a.ArName,a.SaleCode,a.SaleName,ifnull(a.MyDescription,'') as MyDescription,a.TotalAmount, a.IsCancel, a.IsConfirm from Quotation a Where (a.DocNo like CONCAT("%",?,"%") or a.ArCode like CONCAT("%",?,"%") or a.ArName like CONCAT("%",?,"%") or a.SaleCode like CONCAT("%",?,"%") or a.SaleName like CONCAT("%",?,"%")) order by Id desc limit 30`
-		err = repo.db.Select(&d, sql, req.Keyword, req.Keyword, req.Keyword, req.Keyword, req.Keyword)
-	}
-
-	//sql := `select a.Id,a.DocNo,a.DocDate, case 'QT' as Module,a.ArCode,a.ArName,a.SaleCode,a.SaleName,ifnull(a.MyDescription,'') as MyDescription,a.TotalAmount, a.IsCancel, a.IsConfirm from Quotation a where a.SaleCode = ? and (a.DocNo like CONCAT("%",?,"%") or a.ArCode like CONCAT("%",?,"%") or a.ArName like CONCAT("%",?,"%") or a.SaleCode like CONCAT("%",?,"%") or a.SaleName like CONCAT("%",?,"%")) order by Id desc limit 30`
-	//err = repo.db.Select(&d, sql)
-	if err != nil {
-		fmt.Println("err = ", err.Error())
-		return resp, err
-	}
-
-	doc := []sales.SearchDocTemplate{}
-
-	for _, c := range d {
-
-		docline := map_doc_template(c)
-		doc = append(doc, docline)
-	}
+func (repo *salesRepository) SearchDocById(req *sales.SearchByIdTemplate) (resp interface{}, err error) {
+	doc := SearchDocDetailsModel{}
 
 	return doc, nil
 }
-
-//func (repo *salesRepository) SearchDocById(req *sales.SearchByIdTemplate) (resp interface{}, err error) {
-//	doc := SearchDocDetailsModel{}
-//
-//	return doc, nil
-//}
-
 func (repo *salesRepository) SearchDocByKeyword(req *sales.SearchByKeywordTemplate) (resp interface{}, err error) {
 
 	d := []SearchDocModel{}
@@ -1349,6 +1322,7 @@ func (repo *salesRepository) QuotationToSaleOrder(req *sales.SearchByIdTemplate)
 		"doc_date": doc_date,
 	}, nil
 }
+
 
 func map_doc_template(x SearchDocModel) sales.SearchDocTemplate {
 	return sales.SearchDocTemplate{
@@ -1722,36 +1696,6 @@ func (repo *salesRepository) SearchSaleOrderById(req *sales.SearchByIdTemplate) 
 	}
 
 	return so_resp, nil
-}
-
-func (repo *salesRepository) SearchSaleOrderByKeyword(req *sales.SearchByKeywordTemplate) (resp interface{}, err error) {
-
-	d := []SearchDocModel{}
-
-	if req.Keyword == "" {
-		sql := `select a.Id,a.DocNo,a.DocDate, case when a.DocType = 0 then 'RO' else 'SO' end as Module,a.ArCode,a.ArName,a.SaleCode,a.SaleName,ifnull(a.MyDescription,'') as MyDescription,a.TotalAmount, a.IsCancel, a.IsConfirm from SaleOrder a Where a.SaleCode = ? order by Id desc limit 30`
-		err = repo.db.Select(&d, sql, req.SaleCode)
-	} else {
-		sql := `select a.Id,a.DocNo,a.DocDate, case when a.DocType = 0 then 'RO' else 'SO' end as Module,a.ArCode,a.ArName,a.SaleCode,a.SaleName,ifnull(a.MyDescription,'') as MyDescription,a.TotalAmount, a.IsCancel, a.IsConfirm from SaleOrder a Where (a.DocNo like CONCAT("%",?,"%") or a.ArCode like CONCAT("%",?,"%") or a.ArName like CONCAT("%",?,"%") or a.SaleCode like CONCAT("%",?,"%") or a.SaleName like CONCAT("%",?,"%")) order by Id desc limit 30`
-		err = repo.db.Select(&d, sql, req.Keyword, req.Keyword, req.Keyword, req.Keyword, req.Keyword)
-	}
-
-	//sql := `select a.Id,a.DocNo,a.DocDate, case 'QT' as Module,a.ArCode,a.ArName,a.SaleCode,a.SaleName,ifnull(a.MyDescription,'') as MyDescription,a.TotalAmount, a.IsCancel, a.IsConfirm from Quotation a where a.SaleCode = ? and (a.DocNo like CONCAT("%",?,"%") or a.ArCode like CONCAT("%",?,"%") or a.ArName like CONCAT("%",?,"%") or a.SaleCode like CONCAT("%",?,"%") or a.SaleName like CONCAT("%",?,"%")) order by Id desc limit 30`
-	//err = repo.db.Select(&d, sql)
-	if err != nil {
-		fmt.Println("err = ", err.Error())
-		return resp, err
-	}
-
-	doc := []sales.SearchDocTemplate{}
-
-	for _, c := range d {
-
-		docline := map_doc_template(c)
-		doc = append(doc, docline)
-	}
-
-	return doc, nil
 }
 
 func map_saleorder_template(x NewSaleModel) sales.NewSaleTemplate {
@@ -2753,6 +2697,7 @@ func (repo *salesRepository) CreateInvoice(req *sales.NewInvoiceTemplate) (inter
 
 		}
 		for _, sub := range req.Subs {
+
 			//ค้นหาสินค้าที่มี และคืน stock
 
 			// ตัด stock ไหม่
@@ -3193,8 +3138,8 @@ func map_invoice_template(x NewInvoiceModel) sales.NewInvoiceTemplate {
 		ArCode:              x.ArCode,
 		ArId:                x.ArId,
 		ArName:              x.ArName,
-		//ItemName:            x.ItemName,
-		//ItemCode:            x.ItemCode,
+		ItemName:            x.ItemName,
+		ItemCode:            x.ItemCode,
 		ArBillAddress:       x.ArBillAddress,
 		ArTelephone:         x.ArTelephone,
 		BeforeTaxAmount:     x.BeforeTaxAmount,

@@ -93,7 +93,9 @@ type BarcodeTemplate struct {
 type PriceTemplate struct {
 	Id         int64   `json:"id"`
 	ItemID     int64   `json:"item_id"`
+	ItemCode   string  `json:"item_code"`
 	UnitID     int64   `json:"unit_id"`
+	UnitCode   string  `json:"unit_code"`
 	SalePrice1 float64 `json:"sale_price_1"`
 	SalePrice2 float64 `json:"sale_price_2"`
 	SaleType   int     `json:"sale_type"`
