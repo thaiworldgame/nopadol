@@ -19,8 +19,8 @@ type Service interface {
 	SearchQueById(req *SearchByIdTemplate) (interface{}, error)
 	SearchQueByKeyword(req *SearchByKeywordTemplate) (interface{}, error)
 	ConfirmQuotation(req *NewQuoTemplate) (interface{}, error)
-	CancelQuotation(req *NewQuoTemplate) (interface{}, error)
 	QuotationToSaleOrder(req *SearchByIdTemplate) (interface{}, error)
+	CancelQuotation(req *NewQuoTemplate) (interface{}, error)
 
 	CreateSaleOrder(req *NewSaleTemplate) (interface{}, error)
 	SearchSaleOrderById(req *SearchByIdTemplate) (interface{}, error)
@@ -118,14 +118,6 @@ func (s *service) ConfirmQuotation(req *NewQuoTemplate) (interface{}, error) {
 	return resp, nil
 }
 
-func (s *service) CancelQuotation(req *NewQuoTemplate) (interface{}, error) {
-	resp, err := s.repo.CancelQuotation(req)
-	if err != nil {
-		return nil, err
-	}
-	return resp, nil
-}
-
 func (s *service) QuotationToSaleOrder(req *SearchByIdTemplate) (interface{}, error) {
 	resp, err := s.repo.QuotationToSaleOrder(req)
 	if err != nil {
@@ -134,6 +126,13 @@ func (s *service) QuotationToSaleOrder(req *SearchByIdTemplate) (interface{}, er
 	return resp, nil
 }
 
+func (s *service) CancelQuotation(req *NewQuoTemplate) (interface{}, error) {
+	resp, err := s.repo.CancelQuotation(req)
+	if err != nil {
+		return nil, err
+	}
+	return resp, nil
+}
 func (s *service) CancelInvoice(req *NewInvoiceTemplate) (interface{}, error) {
 	resp, err := s.repo.CancelInvoice(req)
 	if err != nil {

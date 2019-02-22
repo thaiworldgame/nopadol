@@ -449,10 +449,6 @@ type (
 		RefLineNumber   int64   `json:"ref_line_number"`
 		LineNumber      int64   `json:"line_number"`
 	}
-
-	QuotationToSaleOrderRequest struct {
-		QuoId     int64  `json:"ar_id"`
-	}
 )
 
 // search item by keywork
@@ -633,19 +629,6 @@ func ConfirmQuotation(s Service) interface{} {
 	}
 }
 
-func CancelQuotation(s Service) interface{} {
-	return func(ctx context.Context, req *NewQuoRequest) (interface{}, error) {
-		resp, err := s.CancelQuotation(&NewQuoTemplate{Id: req.Id, AssertStatus: req.AssertStatus, IsConfirm: req.IsConfirm, IsCancel: req.IsCancel, CancelBy: req.CancelBy, CancelTime: req.CancelTime})
-		if err != nil {
-			fmt.Println("endpoint error =", err.Error())
-			return nil, fmt.Errorf(err.Error())
-		}
-		return map[string]interface{}{
-			"data": resp,
-		}, nil
-	}
-}
-
 func QuotationToSaleOrder(s Service) interface{} {
 	return func(ctx context.Context, req *SearchByIdRequest) (interface{}, error) {
 
@@ -658,6 +641,19 @@ func QuotationToSaleOrder(s Service) interface{} {
 			"data": resp,
 		}, nil
 
+	}
+}
+
+func CancelQuotation(s Service) interface{} {
+	return func(ctx context.Context, req *NewQuoRequest) (interface{}, error) {
+		resp, err := s.CancelQuotation(&NewQuoTemplate{Id: req.Id, AssertStatus: req.AssertStatus, IsConfirm: req.IsConfirm, IsCancel: req.IsCancel, CancelBy: req.CancelBy, CancelTime: req.CancelTime})
+		if err != nil {
+			fmt.Println("endpoint error =", err.Error())
+			return nil, fmt.Errorf(err.Error())
+		}
+		return map[string]interface{}{
+			"data": resp,
+		}, nil
 	}
 }
 
@@ -837,7 +833,7 @@ func SearchDocByKeyword(s Service) interface{} {
 	return func(ctx context.Context, req *SearchByKeywordRequest) (interface{}, error) {
 
 		resp, err := s.SearchDocByKeyword(&SearchByKeywordTemplate{SaleCode: req.SaleCode, Keyword: req.Keyword})
-		fmt.Println(resp, "99999999999999999999999999999999999999999999999999999999999999999999999999999999")
+		fmt.Println(resp, "")
 		if err != nil {
 			fmt.Println("endpoint error =", err.Error())
 			return nil, fmt.Errorf(err.Error())

@@ -1076,11 +1076,13 @@ func (repo *salesRepository) SearchQuoByKeyword(req *sales.SearchByKeywordTempla
 	return doc, nil
 }
 
+
 func (repo *salesRepository) SearchDocById(req *sales.SearchByIdTemplate) (resp interface{}, err error) {
 	doc := SearchDocDetailsModel{}
 
 	return doc, nil
 }
+
 func (repo *salesRepository) SearchDocByKeyword(req *sales.SearchByKeywordTemplate) (resp interface{}, err error) {
 
 	d := []SearchDocModel{}
