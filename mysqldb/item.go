@@ -168,11 +168,12 @@ func (it *itemModel) save(db *sqlx.DB) (newID int64, err error) {
 			create_time,
 			edit_by,
 			edit_time,
-			company_id,active_status)
+			company_id,
+			active_status)
 			values (
 			?,?,?,?,?,
 			?,?,?,?,?,
-			?,?,?,?,?
+			?,?,?,?,?,?
 			)
 	`
 		rs, err := db.Exec(lcCommand,
