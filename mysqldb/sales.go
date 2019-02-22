@@ -1318,6 +1318,15 @@ func (repo *salesRepository) CreateSaleOrder(req *sales.NewSaleTemplate) (resp i
 		if credit_balance > 0 {
 			req.BeforeTaxAmount, req.TaxAmount, req.TotalAmount = config.CalcTaxItem(req.TaxType, req.TaxRate, req.AfterDiscountAmount)
 			fmt.Println("credit enough")
+			if credit_balance > 0 {
+				re_credit := `update Customer,SaleOrder set Customer.debt_amount=Customer.debt_amount+(SaleOrder.TotalAmount-?) where code=? `
+				_, err := repo.db.Exec(re_credit, req.TotalAmount, req.ArCode)
+				fmt.Println("Re_TotalAmount = ", req.TotalAmount)
+				fmt.Println("Re_ARCODE = ", req.ArCode)
+				if err != nil {
+					return "", err
+				}
+			}
 			ins_credit := `update Customer set debt_amount=debt_amount+? where code=? `
 			_, err := repo.db.Exec(ins_credit, req.TotalAmount, req.ArCode)
 			fmt.Println("ins_credit =", ins_credit)
