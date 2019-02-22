@@ -131,13 +131,16 @@ func MakeNewProduct(s Service) interface{} {
 	//	RatePerBaseUnit int    `json:"rate_per_base_unit"`
 	//}
 	type requestNewItem struct {
-		Code      string  `json:"code"`
-		Name      string  `json:"name"`
-		UnitCode  string  `json:"unit_code"`
-		UnitID    int64   `json:"unit_id"`
-		Picture   string  `json:"picture"`
-		StockType int     `json:"stock_type"`
-		StockQty  float64 `json:"stock_qty"`
+		Code         string  `json:"code"`
+		Name         string  `json:"name"`
+		UnitCode     string  `json:"unit_code"`
+		UnitID       int64   `json:"unit_id"`
+		Picture      string  `json:"picture"`
+		StockType    int     `json:"stock_type"`
+		StockQty     float64 `json:"stock_qty"`
+		ActiveStatus int     `json:"active_status"`
+		CreateBy     string  `json:"create_by"`
+
 		//Price       []requestPrice   `json:"price"`
 		//Barcode     []requestBarcode `json:"barcode"`
 		//PackingRate []RequestPacking `json:"packing_rate"`
@@ -187,13 +190,15 @@ func MakeNewProduct(s Service) interface{} {
 		//
 		fmt.Println("request data ->", req)
 		resp, err := s.StoreItem(&ProductNewRequest{
-			ItemCode:  req.Code,
-			ItemName:  req.Name,
-			UnitID:    req.UnitID,
-			StockType: req.StockType,
-			Picture:   req.Picture,
-			UnitCode:  req.UnitCode,
-			StockQty:  req.StockQty,
+			ItemCode:     req.Code,
+			ItemName:     req.Name,
+			UnitID:       req.UnitID,
+			StockType:    req.StockType,
+			Picture:      req.Picture,
+			UnitCode:     req.UnitCode,
+			StockQty:     req.StockQty,
+			ActiveStatus: req.ActiveStatus,
+			CreateBy:     req.CreateBy,
 			//Barcode:     barcodes,
 			//Price:       prices,
 			//PackingRate: Rates,
