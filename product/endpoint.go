@@ -3,7 +3,6 @@ package product
 import (
 	"context"
 	"fmt"
-	"time"
 
 	"github.com/mrtomyum/nopadol/auth"
 	//"github.com/mrtomyum/nopadol/auth"
@@ -134,19 +133,17 @@ func MakeNewProduct(s Service) interface{} {
 		RatePerBaseUnit int    `json:"rate_per_base_unit"`
 	}
 	type requestNewItem struct {
-
-		Code      string `json:"code"`
-		Name      string `json:"name"`
-		UnitCode  string `json:"unit_code"`
-		UnitID    int64  `json:"unit_id"`
-		Picture   string `json:"picture"`
-		StockType int    `json:"stock_type"`
-		StockQty  float64  `json:"stock_qty"`
+		Code      string  `json:"code"`
+		Name      string  `json:"name"`
+		UnitCode  string  `json:"unit_code"`
+		UnitID    int64   `json:"unit_id"`
+		Picture   string  `json:"picture"`
+		StockType int     `json:"stock_type"`
+		StockQty  float64 `json:"stock_qty"`
 		//Price       []requestPrice   `json:"price"`
 		//Barcode     []requestBarcode `json:"barcode"`
 		//PackingRate []RequestPacking `json:"packing_rate"`
 		CompanyID int `json:"company_id"`
-
 	}
 	return func(ctx context.Context, req *requestNewItem) (interface{}, error) {
 
