@@ -134,16 +134,19 @@ func MakeNewProduct(s Service) interface{} {
 		RatePerBaseUnit int    `json:"rate_per_base_unit"`
 	}
 	type requestNewItem struct {
-		Code        string           `json:"code"`
-		Name        string           `json:"name"`
-		UnitCode    string           `json:"unit_code"`
-		UnitID      int64            `json:"unit_id"`
-		Picture     string           `json:"picture"`
-		StockType   int              `json:"stock_type"`
-		Price       []requestPrice   `json:"price"`
-		Barcode     []requestBarcode `json:"barcode"`
-		PackingRate []RequestPacking `json:"packing_rate"`
-		CompanyID   int              `json:"company_id"`
+
+		Code      string `json:"code"`
+		Name      string `json:"name"`
+		UnitCode  string `json:"unit_code"`
+		UnitID    int64  `json:"unit_id"`
+		Picture   string `json:"picture"`
+		StockType int    `json:"stock_type"`
+		StockQty  float64  `json:"stock_qty"`
+		//Price       []requestPrice   `json:"price"`
+		//Barcode     []requestBarcode `json:"barcode"`
+		//PackingRate []RequestPacking `json:"packing_rate"`
+		CompanyID int `json:"company_id"`
+
 	}
 	return func(ctx context.Context, req *requestNewItem) (interface{}, error) {
 
@@ -190,17 +193,18 @@ func MakeNewProduct(s Service) interface{} {
 
 		fmt.Println("request data ->", req)
 		resp, err := s.StoreItem(&ProductNewRequest{
-			ItemCode:    req.Code,
-			ItemName:    req.Name,
-			UnitID:      req.UnitID,
-			StockType:   req.StockType,
-			Picture:     req.Picture,
-			Barcode:     barcodes,
-			Price:       prices,
-			PackingRate: Rates,
-			CompanyID:   companyID,
-			CreateBy:    userID,
-			CreateTime:  time.Now(),
+
+			ItemCode:  req.Code,
+			ItemName:  req.Name,
+			UnitID:    req.UnitID,
+			StockType: req.StockType,
+			Picture:   req.Picture,
+			UnitCode:  req.UnitCode,
+			StockQty:  req.StockQty,
+			//Barcode:     barcodes,
+			//Price:       prices,
+			//PackingRate: Rates,
+			CompanyID: req.CompanyID,
 		})
 		if err != nil {
 			fmt.Println("endpoint error =", err.Error())

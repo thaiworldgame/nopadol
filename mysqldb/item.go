@@ -45,65 +45,111 @@ type itemModel struct {
 	CreateTime   mysql.NullTime `db:"create_time"`
 	EditBy       string         `db:"edit_by"`
 	EditTime     mysql.NullTime `db:"edit_time"`
+	StockQty     float64        `db:"stockqty"`
 }
 
 func (it *itemModel) map2itemModel(db *sqlx.DB, req *product.ProductNewRequest) (err error) {
 	u := itemUnitModel{id: req.UnitID}
+
+	u.unitCode = req.UnitCode
+
 	fmt.Println("map2itemModel  unitid -->", req.UnitID)
-	err = u.getByID(db)
+
+	if req.UnitID != 0 && req.UnitCode == "" {
+		err = u.getByID(db)
+		if err != nil {
+			return err
+		}
+		it.UnitCode = u.unitCode
+	} else {
+		if req.UnitCode != "" {
+			fmt.Println("case find by unitcode ")
+			err = u.getByCode(db)
+			if err != nil {
+				return err
+			}
+			it.UnitCode = u.unitCode
+		}
+	}
+
 	it.Code = req.ItemCode
 	it.Name = req.ItemName
 	it.UnitCode = u.unitCode
 	it.PicPath1 = req.Picture
 	it.StockType = req.StockType
+
+	it.CompanyID = req.CompanyID
+	it.CreateBy = req.CreateBy
+	it.CreateTime.Time = time.Now()
+	it.StockQty = req.StockQty
+
+
 	fmt.Println("map2itemModel return ", it.UnitCode)
 	return
 }
-func (it *itemModel) verifyRequestData(db *sqlx.DB) (bool ,error){
-	if it.Code =="" {
-		return false,fmt.Errorf("Item Code not found ")
+func (it *itemModel) verifyRequestData(db *sqlx.DB) (bool, error) {
+	if it.Code == "" {
+		return false, fmt.Errorf("Item Code not found ")
 	}
 
-	if it.UnitCode ==""{
-		return false , fmt.Errorf("Unit Code not Found..")
+	if it.UnitCode == "" {
+		return false, fmt.Errorf("Unit Code not Found..")
 	}
 
-	if it.Name ==""{
+	if it.Name == "" {
 		return false, fmt.Errorf("Item Name not found...")
 	}
 
-
-	return true,nil
+	return true, nil
 }
+
 
 func(it *itemModel)checkExistsByCode(db *sqlx.DB,code string)(int64,bool){
 	var id int64=-1
 	db.QueryRow(`select id from Item where code=?`,code).Scan(&id)
 	if id == -1 {
 		return -1,false
+
+func (it *itemModel) checkExistsByCode(db *sqlx.DB, code string) (int64, bool) {
+	var id int64 = -1
+	err := db.QueryRow(`select id from Item where code=?`, code).Scan(&id)
+	if err != nil {
+		fmt.Println("error checkExistsByCode ", err.Error())
+		return -1, false
 	}
-	return id , true
+	if id <= 0 {
+		fmt.Println(" id <0 error ")
+		return -1, false
+	}
+	return id, true
 }
 
 func (it *itemModel) save(db *sqlx.DB) (newID int64, err error) {
 	//check new data item
-	fmt.Println("start item.save() req ",it)
-	_,err = it.verifyRequestData(db)
+	fmt.Println("start item.save() req ", it)
+	_, err = it.verifyRequestData(db)
 
 	if err != nil {
 		return -1, fmt.Errorf("verify state not pass error %v ", err.Error())
 	}
 
-	id,ok := it.checkExistsByCode(db,it.Code)
-	if ok  {
+	id, ok := it.checkExistsByCode(db, it.Code)
+	if ok {
 
 		// update
-		fmt.Println("update case to item.id -> ",id)
-		db.Exec(`update Item set item_name=?,short_name=?,pic_path1 = ? , pic_path2=?
+		fmt.Println("update case to item.id -> ", id)
+		db.Exec(`update Item set
+			item_name=?,
+			short_name=?,
+			pic_path1 = ? ,
+			pic_path2=?,
+			company_id=?,
+			stock_type=?,
+			stock_qty=?,
 			where id = ?`,
-			it.Name,it.ShortName,it.PicPath1,it.PicPath2,id)
+			it.Name, it.ShortName, it.PicPath1, it.PicPath2, it.CompanyID, it.StockType, it.StockQty, id)
 		newID = id
-	}else {
+	} else {
 
 		fmt.Println("insert case ")
 		// case new
@@ -118,6 +164,7 @@ func (it *itemModel) save(db *sqlx.DB) (newID int64, err error) {
 			pic_path1,
 			pic_path2,
 			active_status,
+			stock_qty,
 			create_by,
 			create_time,
 			edit_by,
@@ -138,6 +185,7 @@ func (it *itemModel) save(db *sqlx.DB) (newID int64, err error) {
 			it.PicPath1,
 			it.PicPath2,
 			it.ActiveStatus,
+			it.StockQty,
 			it.CreateBy,
 			it.CreateTime,
 			it.EditBy,
@@ -156,7 +204,6 @@ func (it *itemModel) save(db *sqlx.DB) (newID int64, err error) {
 
 	}
 
-
 	// todo : insert barcode (default barcode = itemcode)
 	// todo : insert price (option)
 	// todo : insert ItemRate (default baseUnit rate=1)
@@ -172,8 +219,8 @@ func (it *itemModel) getItemIDbyCode(db *sqlx.DB, code string) (int64, error) {
 	return it.Id, nil
 }
 
-func (it *itemModel) getItemCodeById(db *sqlx.DB) (string ,error) {
+func (it *itemModel) getItemCodeById(db *sqlx.DB) (string, error) {
 	db.QueryRow(`select code from Item where id=?`, it.Id).Scan(&it.Code)
 	fmt.Printf("UnitCode from UnitID %s is %v \n", it.Id, it.Code)
-	return it.Code,nil
+	return it.Code, nil
 }
