@@ -117,12 +117,10 @@ func (b *barcodeModel) save(db *sqlx.DB) (id int64, err error) {
 			item_id=?,
 			unit_id = ?,
 			active_status=?,
-			edit_by = ?,
-			edit_time=?,
 			company_id=?
 			where id = ?`
 		_, err := db.Exec(lcCommand,
-			b.BarCode, b.ItemID, b.UnitID, b.ActiveStatus, b.EditBy, b.EditTime, b.CompanyID, curID)
+			b.BarCode, b.ItemID, b.UnitID, b.ActiveStatus, b.CompanyID, curID)
 		if err != nil {
 			log.Printf("sql exec err ", err.Error())
 			return -1, err
@@ -139,10 +137,9 @@ func (b *barcodeModel) save(db *sqlx.DB) (id int64, err error) {
 		unit_code,
 		active_status,
 		item_id,
-		item_code,
-		create_by,
-		create_time)
-	values (?,?,?,?,?,?,?,?)`
+		item_code
+		)
+	values (?,?,?,?,?,?)`
 		rs, err := db.Exec(lcCommand,
 			b.BarCode,
 			b.UnitID,
@@ -150,8 +147,7 @@ func (b *barcodeModel) save(db *sqlx.DB) (id int64, err error) {
 			b.ActiveStatus,
 			b.ItemID,
 			b.ItemCode,
-			b.CreateBy,
-			b.CreateTime.Time)
+			)
 		if err != nil {
 			log.Printf("sql exec err ", err.Error())
 			return -1, err
