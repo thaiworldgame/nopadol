@@ -3,6 +3,7 @@ package customer
 import (
 	"context"
 	"fmt"
+	"github.com/mrtomyum/nopadol/auth"
 )
 
 //type Endpoint interface {
@@ -46,6 +47,77 @@ func SearchByKeyword(s Service) interface{} {
 		resp, err := s.SearchByKeyword(&SearchByKeywordTemplate{Keyword: req.Keyword})
 		if err != nil {
 			fmt.Println("endpoint error ", err.Error())
+			return nil, fmt.Errorf(err.Error())
+		}
+		return map[string]interface{}{
+			"data": resp,
+		}, nil
+	}
+}
+
+func makeNewCustomer(s Service) interface{} {
+	type request struct {
+		Code         string  `json:"code"`
+		Name         string  `json:"name"`
+		BillAddress  string  `json:"bill_address"`
+		Telephone    string  `json:"telephone"`
+		Email        string  `json:"email"`
+		CreditAmount float64 `json:"credit_amount"`
+		CompanyID    int     `json:"company_id"`
+	}
+
+	return func(ctx context.Context, req *request) (interface{}, error) {
+		//companyID := auth.GetCompanyID(ctx)
+		userID := auth.GetUserCode(ctx)
+		ct := CustomerTemplate{
+			Code:         req.Code,
+			Name:         req.Name,
+			Address:      req.BillAddress,
+			Telephone:    req.Telephone,
+			CreditAmount: req.CreditAmount,
+			Email:        req.Email,
+			CompanyID:    req.CompanyID,
+			CreateBy:     userID,
+		}
+
+		fmt.Println("start endpoint store Customer with param , ",ct)
+		resp, err := s.StoreCustomer(&ct)
+		if err != nil {
+			fmt.Println("endpoint error =", err.Error())
+			return nil, fmt.Errorf(err.Error())
+		}
+		return map[string]interface{}{
+			"data": resp,
+		}, nil
+	}
+}
+
+func makeUpdateCustomer(s Service) interface{} {
+	type request struct {
+		Id           int64   `json:"id"`
+		Code         string  `json:"code"`
+		Name         string  `json:"name"`
+		BillAddress  string  `json:"bill_address"`
+		Telephone    string  `json:"telephone"`
+		Email        string  `json:"email"`
+		CreditAmount float64 `json:"credit_amount"`
+		CompanyID    int     `json:"compayny_id"`
+	}
+
+	return func(ctx context.Context, req *request) (interface{}, error) {
+		ct := CustomerTemplate{
+			Code:         req.Code,
+			Name:         req.Name,
+			Address:      req.BillAddress,
+			Telephone:    req.Telephone,
+			CreditAmount: req.CreditAmount,
+			Email:        req.Email,
+			CompanyID:    req.CompanyID,
+		}
+		resp, err := s.StoreCustomer(&ct)
+		fmt.Println("start endpoint store Customer")
+		if err != nil {
+			fmt.Println("endpoint error =", err.Error())
 			return nil, fmt.Errorf(err.Error())
 		}
 		return map[string]interface{}{

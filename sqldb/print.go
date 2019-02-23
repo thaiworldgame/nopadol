@@ -239,7 +239,7 @@ func (repo *printRepository) PosSlip(req *print.PosSlipRequestTemplate) (resp in
 	pt.OpenCashBox()
 	pt.End()
 
-	return req.DocNo, err
+	return req.DocNo, nil
 }
 
 func (repo *printRepository) PosDriveThruSlip(req *print.PosDriveThruSlipRequestTemplate) (resp interface{}, err error) {
@@ -455,6 +455,7 @@ func (repo *printRepository) PosDriveThruSlipCopy(req PosSlipModel) {
 
 		pt.SetFont("A")
 
+		fmt.Println("Moo")
 		pt.WriteStringLines(" " + sub.ItemName + "\n")
 
 		vItemAmount = sub.Qty * (sub.Price - sub.DiscountAmount)

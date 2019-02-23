@@ -2,9 +2,10 @@ package mysqldb
 
 import (
 	"fmt"
-	"github.com/jmoiron/sqlx"
 	"strconv"
 	"time"
+
+	"github.com/jmoiron/sqlx"
 	"github.com/mrtomyum/nopadol/gendocno"
 )
 
@@ -13,12 +14,12 @@ type DocNoModel struct {
 	TableCode    string `db:"TableCode"`
 	BillType     int64  `db:"BillType"`
 	Header       string `db:"Header"`
-	UseYear      int64    `db:"UseYear"`
-	UseMonth     int64    `db:"UseMonth"`
-	UseDay       int64    `db:"UseDay"`
-	UseDash      int64    `db:"UseDash"`
-	FormatNumber int64    `db:"FormatNumber"`
-	ActiveStatus int64    `db:"ActiveStatus"`
+	UseYear      int64  `db:"UseYear"`
+	UseMonth     int64  `db:"UseMonth"`
+	UseDay       int64  `db:"UseDay"`
+	UseDash      int64  `db:"UseDash"`
+	FormatNumber int64  `db:"FormatNumber"`
+	ActiveStatus int64  `db:"ActiveStatus"`
 }
 
 type gendocnoRepository struct{ db *sqlx.DB }
@@ -119,19 +120,21 @@ func GetLastDocNo(db *sqlx.DB, branch_id int64, table_code string, formatnum int
 
 	switch table_code {
 	case "QT":
-		sqlcase = `select cast(right(ifnull(max(docno),0),?) as int)+1 maxno from Quotation where CompanyId = ? and BranchId = ? and BillType = ? and year(DocDate) = year(CURDATE()) and month(DocDate) = month(CURDATE())`
+		sqlcase = `select cast(right(ifnull(max(docno),0),?) as int)+1 maxno from Quotation where CompanyId = ? and BranchId = ? and DocType = 1 and BillType = ? and year(DocDate) = year(CURDATE()) and month(DocDate) = month(CURDATE())`
 	case "BO":
-		sqlcase = `select cast(right(ifnull(max(docno),0),?) as int)+1 maxno from Quotation where CompanyId = ? and BranchId = ? and BillType = ? and year(DocDate) = year(CURDATE()) and month(DocDate) = month(CURDATE())`
+		sqlcase = `select cast(right(ifnull(max(docno),0),?) as int)+1 maxno from Quotation where CompanyId = ? and BranchId = ? and DocType = 0 and BillType = ? and year(DocDate) = year(CURDATE()) and month(DocDate) = month(CURDATE())`
 	case "SO":
 		sqlcase = `select cast(right(ifnull(max(docno),0),?) as int)+1 maxno from SaleOrder where CompanyId = ? and BranchId = ? and DocType = 1 and BillType = ? and year(DocDate) = year(CURDATE()) and month(DocDate) = month(CURDATE())`
 	case "RO":
 		sqlcase = `select cast(right(ifnull(max(docno),0),?) as int)+1 maxno from SaleOrder where CompanyId = ? and BranchId = ? and DocType = 0 and BillType = ? and year(DocDate) = year(CURDATE()) and month(DocDate) = month(CURDATE())`
 	case "DP":
 		sqlcase = `select cast(right(ifnull(max(doc_no),0),?) as int)+1 maxno from ar_deposit where company_id = ? and branch_id = ? and bill_type = ? and year(doc_date) = year(CURDATE()) and month(doc_date) = month(CURDATE())`
+	case "IV":
+		sqlcase = `select cast(right(ifnull(max(doc_no),0),?) as int)+1 maxno from ar_invoice where company_id = ? and branch_id = ? and doc_type = 0 and bill_type = ? and year(doc_date) = year(CURDATE()) and month(doc_date) = month(CURDATE())`
 	}
 
 	sql = sqlcase
-	fmt.Println("Branch ID =",branch_id)
+	fmt.Println("Branch ID =", branch_id)
 	fmt.Println("Query = ", sql)
 	err = db.Get(&last_no, sql, formatnum, 1, branch_id, bill_type)
 	if err != nil {

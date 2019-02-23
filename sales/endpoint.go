@@ -1,8 +1,8 @@
 package sales
 
 import (
-	"fmt"
 	"context"
+	"fmt"
 )
 
 type (
@@ -18,11 +18,11 @@ type (
 		ArName              string              `json:"ar_name"`
 		ArBillAddress       string              `json:"ar_bill_address"`
 		ArTelephone         string              `json:"ar_telephone"`
-		SaleId              int                 `json:"sale_id"`
+		SaleId              int64               `json:"sale_id"`
 		SaleCode            string              `json:"sale_code"`
 		SaleName            string              `json:"sale_name"`
 		BillType            int64               `json:"bill_type"`
-		TaxType             int                 `json:"tax_type"`
+		TaxType             int64               `json:"tax_type"`
 		TaxRate             float64             `json:"tax_rate"`
 		DepartId            int64               `json:"depart_id"`
 		RefNo               string              `json:"ref_no"`
@@ -54,6 +54,8 @@ type (
 		CreateTime          string              `json:"create_time"`
 		EditBy              string              `json:"edit_by"`
 		EditTime            string              `json:"edit_time"`
+		ConfirmBy           string              `json:"confirm_by"`
+		ConfirmTime         string              `json:"confirm_time"`
 		CancelBy            string              `json:"cancel_by"`
 		CancelTime          string              `json:"cancel_time"`
 		Subs                []NewQuoItemRequest `json:"subs"`
@@ -91,11 +93,11 @@ type (
 		ArName              string               `json:"ar_name"`
 		ArBillAddress       string               `json:"ar_bill_address"`
 		ArTelephone         string               `json:"ar_telephone"`
-		SaleId              int                  `json:"sale_id"`
+		SaleId              int64                `json:"sale_id"`
 		SaleCode            string               `json:"sale_code"`
 		SaleName            string               `json:"sale_name"`
 		BillType            int64                `json:"bill_type"`
-		TaxType             int                  `json:"tax_type"`
+		TaxType             int64                `json:"tax_type"`
 		TaxRate             float64              `json:"tax_rate"`
 		DepartId            int64                `json:"depart_id"`
 		RefNo               string               `json:"ref_no"`
@@ -297,6 +299,16 @@ type (
 		ChqBalance   float64 `json:"chq_balance"`
 		Description  string  `json:"description"`
 	}
+	Bankpay struct {
+		Id           int64   `json:"id"`
+		RefId        int64   `json:"ref_id"`
+		BankAccont   string  `json:"bank_account"`
+		BankName     string  `json:"bank_name"`
+		BankAmount   float64 `json:"bank_amount"`
+		Activestatus int64   `json:"active_status"`
+		CreateBy     string  `json:"create_by"`
+		EditBy       string  `json:"edit_by"`
+	}
 
 	RecMoney struct {
 		Id             int64   `json:"id"`
@@ -321,6 +333,8 @@ type (
 		Id                  int64                   `json:"id"`
 		CompanyId           int64                   `json:"company_id"`
 		BranchId            int64                   `json:"branch_id"`
+		ItemId              int64                   `json:"item_id"`
+		ItemCode            string                  `json:"item_code"`
 		Uuid                string                  `json:"uuid"`
 		DocNo               string                  `json:"doc_no"`
 		TaxNo               string                  `json:"tax_no"`
@@ -340,7 +354,7 @@ type (
 		TaxType             int64                   `json:"tax_type"`
 		TaxRate             float64                 `json:"tax_rate"`
 		NumberOfItem        float64                 `json:"number_of_item"`
-		DepartId            int64                   `json:"depart_id"`
+		DepartId            string                  `json:"depart_id"`
 		AllocateId          int64                   `json:"allocate_id"`
 		ProjectId           int64                   `json:"project_id"`
 		PosStatus           int64                   `json:"pos_status"`
@@ -398,36 +412,46 @@ type (
 		CancelDescId        int64                   `json:"cancel_desc_id"`
 		CancelDesc          string                  `json:"cancel_desc"`
 		Subs                []NewInvoiceItemRequest `json:"subs"`
-		RecMoney            []RecMoney              `json:"rec_money"`
-		CreditCard          []CreditCard            `json:"credit_card"`
-		Chq                 []ChqIn                 `json:"chq"`
+		//RecMoney            []RecMoney              `json:"rec_money"`
+		CreditCard []CreditCard `json:"credit_card"`
+		Chq        []ChqIn      `json:"chq"`
+		BankPay    []Bankpay    `json:"bank"`
 	}
 
 	NewInvoiceItemRequest struct {
-		Id              int64   `json:"id"`
-		InvId           int64   `json:"inv_id"`
-		ItemId          int64   `json:"item_id"`
+		Id    int64 `json:"id"`
+		InvId int64 `json:"inv_id"`
+
 		ItemCode        string  `json:"item_code"`
+		Itemid          int64   `json:"item_id"`
 		ItemName        string  `json:"item_name"`
 		BarCode         string  `json:"bar_code"`
 		WhId            int64   `json:"wh_id"`
 		ShelfId         int64   `json:"shelf_id"`
 		Price           float64 `json:"price"`
-		UnitICode       int64   `json:"unit_code"`
+		UnitCode        string  `json:"unit_code"`
+		Location        string  `json:"location"`
 		Qty             float64 `json:"qty"`
 		CnQty           float64 `json:"cn_qty"`
+		DiscountWord    float64 `json:"discount_word_sub"`
+		DiscountAmount  float64 `json:"discount_amount_sub"`
+		ItemAmount      float64 `json:"amount"`
+		NetAmount       float64 `json:"net_amount"`
+		Average_cost    float64 `json:"average_cost"`
+		SumOfCost       float32 `json:"sum_of_cost"`
 		ItemDescription string  `json:"item_description"`
+		IsCancel        int64   `json:"is_cancel"`
 		IsCreditNote    int64   `json:"is_credit_note"`
 		IsDebitNote     int64   `json:"is_debit_note"`
 		PackingRate1    int64   `json:"packing_rate_1"`
 		PackingRate2    int64   `json:"packing_rate_2"`
-		SoRefNo         string  `json:"so_ref_no"`
-		AverageCost     float64 `json:"average_cost"`
-		SumOfCost       float64 `json:"sum_of_cost"`
+		RefNo           string  `json:"ref_no"`
 		RefLineNumber   int64   `json:"ref_line_number"`
 		LineNumber      int64   `json:"line_number"`
 	}
 )
+
+// search item by keywork
 
 ////// Quotation /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -438,6 +462,7 @@ func CreateQuotation(s Service) interface{} {
 		fmt.Println("p =")
 
 		for _, subs := range req.Subs {
+			fmt.Println(subs, "asdajdlskal;kas;dk;aks")
 			itemline := map_quo_sub_request(subs)
 			q.Subs = append(q.Subs, itemline)
 		}
@@ -578,6 +603,60 @@ func SearchQuoById(s Service) interface{} {
 	}
 }
 
+func SearchQuoByKeyword(s Service) interface{} {
+	return func(ctx context.Context, req *SearchByKeywordRequest) (interface{}, error) {
+		resp, err := s.SearchQueByKeyword(&SearchByKeywordTemplate{SaleCode: req.SaleCode, Keyword: req.Keyword})
+		if err != nil {
+			fmt.Println("endpoint error =", err.Error())
+			return nil, fmt.Errorf(err.Error())
+		}
+		return map[string]interface{}{
+			"data": resp,
+		}, nil
+	}
+}
+
+func ConfirmQuotation(s Service) interface{} {
+	return func(ctx context.Context, req *NewQuoRequest) (interface{}, error) {
+		resp, err := s.ConfirmQuotation(&NewQuoTemplate{Id: req.Id, AssertStatus: req.AssertStatus, IsConfirm: req.IsConfirm, IsCancel: req.IsCancel, ConfirmBy: req.ConfirmBy, ConfirmTime: req.ConfirmTime})
+		if err != nil {
+			fmt.Println("endpoint error =", err.Error())
+			return nil, fmt.Errorf(err.Error())
+		}
+		return map[string]interface{}{
+			"data": resp,
+		}, nil
+	}
+}
+
+func QuotationToSaleOrder(s Service) interface{} {
+	return func(ctx context.Context, req *SearchByIdRequest) (interface{}, error) {
+
+		resp, err := s.QuotationToSaleOrder(&SearchByIdTemplate{Id: req.Id})
+		if err != nil {
+			fmt.Println("endpoint error =", err.Error())
+			return nil, fmt.Errorf(err.Error())
+		}
+		return map[string]interface{}{
+			"data": resp,
+		}, nil
+
+	}
+}
+
+func CancelQuotation(s Service) interface{} {
+	return func(ctx context.Context, req *NewQuoRequest) (interface{}, error) {
+		resp, err := s.CancelQuotation(&NewQuoTemplate{Id: req.Id, AssertStatus: req.AssertStatus, IsConfirm: req.IsConfirm, IsCancel: req.IsCancel, CancelBy: req.CancelBy, CancelTime: req.CancelTime})
+		if err != nil {
+			fmt.Println("endpoint error =", err.Error())
+			return nil, fmt.Errorf(err.Error())
+		}
+		return map[string]interface{}{
+			"data": resp,
+		}, nil
+	}
+}
+
 //
 //////// Sale Order /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -700,6 +779,29 @@ func map_sale_sub_request(x NewSaleItemRequest) NewSaleItemTemplate {
 	}
 }
 
+func map_invoice_sub_request(x NewInvoiceItemRequest) NewInvoiceItemTemplate {
+	fmt.Println("endpoint x", x)
+	return NewInvoiceItemTemplate{
+
+		ItemCode:        x.ItemCode,
+		Itemid:          x.Itemid,
+		BarCode:         x.BarCode,
+		ItemName:        x.ItemName,
+		WhId:            x.WhId,
+		ShelfId:         x.ShelfId,
+		Qty:             x.Qty,
+		Location:        x.Location,
+		Price:           x.Price,
+		DiscountWord:    x.DiscountWord,
+		DiscountAmount:  x.DiscountAmount,
+		UnitCode:        x.UnitCode,
+		ItemAmount:      x.ItemAmount,
+		ItemDescription: x.ItemDescription,
+		PackingRate1:    x.PackingRate1,
+		LineNumber:      x.LineNumber,
+		IsCancel:        x.IsCancel,
+	}
+}
 func SearchSaleOrderById(s Service) interface{} {
 	return func(ctx context.Context, req *SearchByIdRequest) (interface{}, error) {
 		resp, err := s.SearchSaleOrderById(&SearchByIdTemplate{Id: req.Id})
@@ -713,9 +815,25 @@ func SearchSaleOrderById(s Service) interface{} {
 	}
 }
 
-func SearchDocByKeyword(s Service) interface{} {
+func SearchSaleOrderByKeyword(s Service) interface{} {
 	return func(ctx context.Context, req *SearchByKeywordRequest) (interface{}, error) {
+		resp, err := s.SearchSaleOrderByKeyword(&SearchByKeywordTemplate{SaleCode: req.SaleCode, Keyword: req.Keyword})
+		if err != nil {
+			fmt.Println("endpoint error =", err.Error())
+			return nil, fmt.Errorf(err.Error())
+		}
+		return map[string]interface{}{
+			"data": resp,
+		}, nil
+	}
+}
+
+func SearchDocByKeyword(s Service) interface{} {
+	fmt.Println("Invoicelist 222")
+	return func(ctx context.Context, req *SearchByKeywordRequest) (interface{}, error) {
+
 		resp, err := s.SearchDocByKeyword(&SearchByKeywordTemplate{SaleCode: req.SaleCode, Keyword: req.Keyword})
+		fmt.Println(resp, "")
 		if err != nil {
 			fmt.Println("endpoint error =", err.Error())
 			return nil, fmt.Errorf(err.Error())
@@ -894,6 +1012,19 @@ func map_chq_request(x ChqIn) ChqInTemplate {
 	}
 }
 
+func map_bank_request(x Bankpay) BankpayTemplate {
+	return BankpayTemplate{
+		Id:           x.Id,
+		RefId:        x.RefId,
+		BankAccount:  x.BankAccont,
+		BankName:     x.BankName,
+		BankAmount:   x.BankAmount,
+		Activestatus: x.Activestatus,
+		CreateBy:     x.CreateBy,
+		EditBy:       x.EditBy,
+	}
+}
+
 func SearchDepositById(s Service) interface{} {
 	return func(ctx context.Context, req *SearchByIdRequest) (interface{}, error) {
 		resp, err := s.SearchDepositById(&SearchByIdTemplate{Id: req.Id})
@@ -933,9 +1064,307 @@ func SearchReserveToDeposit(s Service) interface{} {
 	}
 }
 
+////// Invoice /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+func Invoicelist(s Service) interface{} {
+	return func(ctx context.Context, req *SearchByKeywordRequest) (interface{}, error) {
+		fmt.Println("invoicelist 522")
+		resp, err := s.Invoicelist(&SearchByKeywordTemplate{SaleCode: req.SaleCode, Keyword: req.Keyword})
+		if err != nil {
+			fmt.Println("endpoint error =", err.Error())
+			return nil, fmt.Errorf(err.Error())
+		}
+		return map[string]interface{}{
+			"data": resp,
+		}, nil
+	}
+}
+func CancelInvoice(s Service) interface{} {
+	return func(ctx context.Context, req *NewInvoiceRequest) (interface{}, error) {
+		resp, err := s.CancelInvoice(&NewInvoiceTemplate{Id: req.Id, DocNo: req.DocNo, IsConfirm: req.IsConfirm, IsCancel: req.IsCancel, CancelBy: req.CancelBy, CancelTime: req.CancelTime})
+		if err != nil {
+			fmt.Println("endpoint error =", err.Error())
+			return nil, fmt.Errorf(err.Error())
+		}
+		return map[string]interface{}{
+			"data": resp,
+		}, nil
+	}
+}
+
+func CreateInvoice(s Service) interface{} {
+	fmt.Println("endpoint 1")
+	return func(ctx context.Context, req *NewInvoiceRequest) (interface{}, error) {
+
+		iv := map_invoice_request(req)
+
+		for _, crds := range req.CreditCard {
+			fmt.Println(crds, "caditcard2")
+			crdline := map_creditcard_request(crds)
+			iv.CreditCard = append(iv.CreditCard, crdline)
+		}
+
+		for _, chqs := range req.Chq {
+			fmt.Println(chqs, "caditcard")
+			chqline := map_chq_request(chqs)
+			iv.Chq = append(iv.Chq, chqline)
+		}
+		for _, bnk := range req.BankPay {
+			fmt.Println(bnk, "bank")
+			bnkline := map_bank_request(bnk)
+			iv.BankPay = append(iv.BankPay, bnkline)
+		}
+		for _, subs := range req.Subs {
+
+			itemline := map_invoice_sub_request(subs)
+			iv.Subs = append(iv.Subs, itemline)
+		}
+		fmt.Println(iv.Subs, "12312423534958309285083")
+		resp, err := s.CreateInvoice(&NewInvoiceTemplate{
+			Id:                  req.Id,
+			CompanyId:           req.CompanyId,
+			BranchId:            req.BranchId,
+			DocNo:               req.DocNo,
+			TaxNo:               req.TaxNo,
+			DocDate:             req.DocDate,
+			BillType:            req.BillType,
+			ArId:                req.ArId,
+			ArCode:              req.ArCode,
+			ArName:              req.ArName,
+			ArBillAddress:       req.ArBillAddress,
+			ArTelephone:         req.ArTelephone,
+			SaleId:              req.SaleId,
+			SaleCode:            req.SaleCode,
+			SaleName:            req.SaleName,
+			TaxType:             req.TaxType,
+			TaxRate:             req.TaxRate,
+			CreditDay:           req.CreditDay,
+			DueDate:             req.DueDate,
+			DepartId:            req.DepartId,
+			AllocateId:          req.AllocateId,
+			ProjectId:           req.ProjectId,
+			MyDescription:       req.MyDescription,
+			BeforeTaxAmount:     req.BeforeTaxAmount,
+			TaxAmount:           req.TaxAmount,
+			TotalAmount:         req.TotalAmount,
+			BillBalance:         req.BillBalance,
+			IsCancel:            req.IsCancel,
+			IsConfirm:           req.IsConfirm,
+			ScgId:               req.ScgId,
+			JobNo:               req.JobNo,
+			CreateBy:            req.CreateBy,
+			CreateTime:          req.CreateTime,
+			EditBy:              req.EditBy,
+			Uuid:                req.Uuid,
+			AfterDiscountAmount: req.AfterDiscountAmount,
+			CarLicense:          req.CarLicense,
+			CashId:              req.CashId,
+			ChangeAmount:        req.ChangeAmount,
+			CouponAmount:        req.CouponAmount,
+			CancelDesc:          req.CancelDesc,
+			CancelDescId:        req.CancelDescId,
+			CouponNo:            req.CouponNo,
+			ConfirmTime:         req.ConfirmTime,
+			ConfirmBy:           req.ConfirmBy,
+			CancelBy:            req.CancelBy,
+			CancelTime:          req.CancelTime,
+			DiscountWord:        req.DiscountWord,
+			DeliveryDate:        req.DeliveryDate,
+			DeliveryDay:         req.DeliveryDay,
+			DeliveryStatus:      req.DeliveryStatus,
+			DiscountAmount:      req.DiscountAmount,
+			EditTime:            req.EditTime,
+			GlStatus:            req.GlStatus,
+			IsCreditNote:        req.IsCreditNote,
+			IsDebitNote:         req.IsDebitNote,
+			IsConditionSend:     req.IsConditionSend,
+			IsPosted:            req.IsPosted,
+			IsHold:              req.IsHold,
+			JobId:               req.JobId,
+			NetDebtAmount:       req.NetDebtAmount,
+			NumberOfItem:        req.NumberOfItem,
+			PosMachineId:        req.PosMachineId,
+			PosStatus:           req.PosStatus,
+			PeriodId:            req.PeriodId,
+			PayBillAmount:       req.PayBillAmount,
+			PayBillStatus:       req.PayBillStatus,
+			ReceiveName:         req.ReceiveName,
+			ReceiveTel:          req.ReceiveTel,
+			RedeemNo:            req.RedeemNo,
+			SumBankAmount:       req.SumBankAmount,
+			SumChqAmount:        req.SumChqAmount,
+			SumCashAmount:       req.SumCashAmount,
+			SumCreditAmount:     req.SumCreditAmount,
+			SoRefNo:             req.SoRefNo,
+			ScgNumber:           req.ScgNumber,
+			SumOfDeposit:        req.SumOfDeposit,
+			SumOnLineAmount:     req.SumOnLineAmount,
+			SumOfItemAmount:     req.SumOfItemAmount,
+			Subs:                iv.Subs,
+			//		RecMoney:            iv.RecMoney,
+			CreditCard: iv.CreditCard,
+			Chq:        iv.Chq,
+			BankPay:    iv.BankPay,
+		})
+		if err != nil {
+			fmt.Println("endpoint error =", err.Error())
+			return nil, fmt.Errorf(err.Error())
+		}
+		return map[string]interface{}{
+			"data": resp,
+		}, nil
+	}
+}
+
+func map_invoice_request(x *NewInvoiceRequest) NewInvoiceTemplate {
+	fmt.Println("endpoint3")
+	var subs []NewInvoiceItemTemplate
+	var credit_cards []CreditCardTemplate
+	var chqs []ChqInTemplate
+	var banks []BankpayTemplate
+	//	var rec_moneys []RecMoneyTemplate
+
+	return NewInvoiceTemplate{
+		Id:                  x.Id,
+		DocNo:               x.DocNo,
+		DocDate:             x.DocDate,
+		ArId:                x.ArId,
+		ArTelephone:         x.ArTelephone,
+		ArBillAddress:       x.ArBillAddress,
+		ArName:              x.ArName,
+		ArCode:              x.ArCode,
+		AllocateId:          x.AllocateId,
+		BranchId:            x.BranchId,
+		BillBalance:         x.BillBalance,
+		BillType:            x.BillType,
+		BeforeTaxAmount:     x.BeforeTaxAmount,
+		CompanyId:           x.CompanyId,
+		CreditDay:           x.CreditDay,
+		CreateTime:          x.CreateTime,
+		CreateBy:            x.CreateBy,
+		CancelTime:          x.CancelTime,
+		CancelBy:            x.CancelBy,
+		ConfirmBy:           x.ConfirmBy,
+		ConfirmTime:         x.ConfirmTime,
+		DueDate:             x.DueDate,
+		DepartId:            x.DepartId,
+		EditBy:              x.EditBy,
+		EditTime:            x.EditTime,
+		IsConfirm:           x.IsConfirm,
+		IsCancel:            x.IsCancel,
+		JobNo:               x.JobNo,
+		MyDescription:       x.MyDescription,
+		ProjectId:           x.ProjectId,
+		SaleName:            x.SaleName,
+		SaleCode:            x.SaleCode,
+		SaleId:              x.SaleId,
+		ScgId:               x.ScgId,
+		TaxNo:               x.TaxNo,
+		TotalAmount:         x.TotalAmount,
+		TaxAmount:           x.TaxAmount,
+		TaxRate:             x.TaxRate,
+		TaxType:             x.TaxType,
+		Uuid:                x.Uuid,
+		AfterDiscountAmount: x.AfterDiscountAmount,
+		CouponNo:            x.CouponNo,
+		CancelDescId:        x.CancelDescId,
+		CancelDesc:          x.CancelDesc,
+		CouponAmount:        x.CouponAmount,
+		ChangeAmount:        x.ChangeAmount,
+		CashId:              x.CashId,
+		CarLicense:          x.CarLicense,
+		DiscountAmount:      x.DiscountAmount,
+		DeliveryStatus:      x.DeliveryStatus,
+		DeliveryDay:         x.DeliveryDay,
+		DeliveryDate:        x.DeliveryDate,
+		DiscountWord:        x.DiscountWord,
+		IsHold:              x.IsHold,
+		IsPosted:            x.IsPosted,
+		IsConditionSend:     x.IsConditionSend,
+		IsDebitNote:         x.IsDebitNote,
+		IsCreditNote:        x.IsCreditNote,
+		JobId:               x.JobId,
+		NumberOfItem:        x.NumberOfItem,
+		NetDebtAmount:       x.NetDebtAmount,
+		PayBillStatus:       x.PayBillStatus,
+		PayBillAmount:       x.PayBillAmount,
+		PeriodId:            x.PeriodId,
+		PosStatus:           x.PosStatus,
+		PosMachineId:        x.PosMachineId,
+		RedeemNo:            x.RedeemNo,
+		ReceiveTel:          x.ReceiveTel,
+		ReceiveName:         x.ReceiveName,
+		SumOfItemAmount:     x.SumOfItemAmount,
+		SumOnLineAmount:     x.SumOnLineAmount,
+		SumOfDeposit:        x.SumOfDeposit,
+		ScgNumber:           x.ScgNumber,
+		SumCreditAmount:     x.SumCreditAmount,
+		SumCashAmount:       x.SumCashAmount,
+		SoRefNo:             x.SoRefNo,
+		SumBankAmount:       x.SumBankAmount,
+		SumChqAmount:        x.SumChqAmount,
+		Subs:                subs,
+		//	RecMoney:            rec_moneys,
+		CreditCard: credit_cards,
+		Chq:        chqs,
+		BankPay:    banks,
+	}
+}
+
 func SearchInvoiceById(s Service) interface{} {
 	return func(ctx context.Context, req *SearchByIdRequest) (interface{}, error) {
 		resp, err := s.SearchInvoiceById(&SearchByIdTemplate{Id: req.Id})
+		if err != nil {
+			fmt.Println("endpoint error =", err.Error())
+			return nil, fmt.Errorf(err.Error())
+		}
+		return map[string]interface{}{
+			"data": resp,
+		}, nil
+	}
+}
+
+func SearchInvoiceByKeyword(s Service) interface{} {
+	return func(ctx context.Context, req *SearchByKeywordRequest) (interface{}, error) {
+		resp, err := s.SearchInvoiceByKeyword(&SearchByKeywordTemplate{SaleCode: req.SaleCode, Keyword: req.Keyword})
+		if err != nil {
+			fmt.Println("endpoint error =", err.Error())
+			return nil, fmt.Errorf(err.Error())
+		}
+		return map[string]interface{}{
+			"data": resp,
+		}, nil
+	}
+}
+
+func SearchSaleByItem(s Service) interface{} {
+	return func(ctx context.Context, req *SearchByItemTemplate) (interface{}, error) {
+		resp, err := s.SearchSaleByItem(&SearchByItemTemplate{Name: req.Name, ItemCode: req.ItemCode, Page: req.Page})
+		if err != nil {
+			fmt.Println("endpoint error =", err.Error())
+			return nil, fmt.Errorf(err.Error())
+		}
+		return map[string]interface{}{
+			"data": resp,
+		}, nil
+	}
+}
+
+func SearchCredit(s Service) interface{} {
+	return func(ctx context.Context, req *SearchByIdRequest) (interface{}, error) {
+		resp, err := s.SearchCredit(&SearchByIdTemplate{Id: req.Id})
+		if err != nil {
+			fmt.Println("endpoint error =", err.Error())
+			return nil, fmt.Errorf(err.Error())
+		}
+		return map[string]interface{}{
+			"data": resp,
+		}, nil
+	}
+}
+
+func SearchHisByKeyword(s Service) interface{} {
+	return func(ctx context.Context, req *SearchByKeywordRequest) (interface{}, error) {
+		resp, err := s.SearchHisByKeyword(&SearchByKeywordTemplate{SaleCode: req.SaleCode, Keyword: req.Keyword})
 		if err != nil {
 			fmt.Println("endpoint error =", err.Error())
 			return nil, fmt.Errorf(err.Error())
