@@ -36,7 +36,7 @@ func MakeHandler(s Service) http.Handler {
 	})
 	mux := http.NewServeMux()
 	mux.Handle("/login", m.Handler(logIn(s)))
-	mux.Handle("/userlogin", m.Handler(userLogIn(s)))
+	mux.Handle("/user/login", m.Handler(userLogIn(s)))
 	mux.Handle("/branch", m.Handler(makeListCompany(s)))
 	mux.Handle("/machine", m.Handler(makeListMachine(s)))
 	mux.Handle("/pickup/carbrand", m.Handler(makeSearchCarBranch(s)))

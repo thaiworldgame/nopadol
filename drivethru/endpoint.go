@@ -138,14 +138,7 @@ func makeListCompany(s Service) interface{} {
 			return nil, fmt.Errorf(err.Error())
 		}
 
-		return map[string]interface{}{
-			"response": map[string]interface{}{
-				"process":     "Search Zone",
-				"processDesc": "Success",
-				"isSuccess":   true,
-			},
-			"data": resp,
-		}, nil
+		return resp, nil
 	}
 }
 
@@ -255,7 +248,7 @@ func userLogIn(s Service) interface{} {
 
 func makeShiftOpen(s Service) interface{} {
 	type request struct {
-		accessToken        string  `json:"accessToken"`
+		accessToken  string  `json:"accessToken"`
 		MachineID    int     `json:"machine_id"`
 		ChangeAmount float64 `json:"change_amount"`
 		CashierID    int     `json:"cashier_id"`
