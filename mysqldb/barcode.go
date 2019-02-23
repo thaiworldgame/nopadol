@@ -41,12 +41,13 @@ func (b *barcodeModel) getIDbyBarcode(db *sqlx.DB) (bool, int64) {
 		return false, -1
 		// ไม่มี barcode อยู่
 	}
+
 	return true, id
 }
 func (b *barcodeModel) getItemIdByItemcode(db *sqlx.DB) (int64,error){
 	var itemId int64 = -1
 	err := db.QueryRow(`select id from Item where code=?`,b.ItemCode).Scan(&itemId)
-	if itemId ==0 || itemId==-1{
+	if itemId ==0 || itemId==-1 || err != nil{
 		return -1,err
 	}
 	b.ItemID = itemId
@@ -97,8 +98,10 @@ func (b *barcodeModel) verifyRequestData(db *sqlx.DB) error {
 
 func (b *barcodeModel) save(db *sqlx.DB) (id int64, err error) {
 
-	b.getItemIdByItemcode(db)
-
+	_,err = b.getItemIdByItemcode(db)
+	if err != nil {
+		return -1 ,fmt.Errorf("error no item_id found ")
+	}
 
 	//err = b.verifyRequestData(db)
 	//if err != nil {
