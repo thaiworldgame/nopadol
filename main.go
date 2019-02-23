@@ -257,7 +257,6 @@ func main() {
 	h := auth.MakeMiddleware(authService)(mux)
 	fmt.Println("Waiting for Accept Connection : 9999")
 	http.ListenAndServe(":9999", h)
-
 }
 
 func must(err error) {
