@@ -605,7 +605,7 @@ func SearchQuoById(s Service) interface{} {
 
 func SearchQuoByKeyword(s Service) interface{} {
 	return func(ctx context.Context, req *SearchByKeywordRequest) (interface{}, error) {
-		resp, err := s.SearchQueByKeyword(&SearchByKeywordTemplate{SaleCode: req.SaleCode, Keyword:req.Keyword})
+		resp, err := s.SearchQueByKeyword(&SearchByKeywordTemplate{SaleCode: req.SaleCode, Keyword: req.Keyword})
 		if err != nil {
 			fmt.Println("endpoint error =", err.Error())
 			return nil, fmt.Errorf(err.Error())
@@ -632,7 +632,7 @@ func ConfirmQuotation(s Service) interface{} {
 func QuotationToSaleOrder(s Service) interface{} {
 	return func(ctx context.Context, req *SearchByIdRequest) (interface{}, error) {
 
-		resp, err := s.QuotationToSaleOrder(&SearchByIdTemplate{Id:req.Id})
+		resp, err := s.QuotationToSaleOrder(&SearchByIdTemplate{Id: req.Id})
 		if err != nil {
 			fmt.Println("endpoint error =", err.Error())
 			return nil, fmt.Errorf(err.Error())
@@ -817,7 +817,7 @@ func SearchSaleOrderById(s Service) interface{} {
 
 func SearchSaleOrderByKeyword(s Service) interface{} {
 	return func(ctx context.Context, req *SearchByKeywordRequest) (interface{}, error) {
-		resp, err := s.SearchSaleOrderByKeyword(&SearchByKeywordTemplate{SaleCode:req.SaleCode,Keyword:req.Keyword})
+		resp, err := s.SearchSaleOrderByKeyword(&SearchByKeywordTemplate{SaleCode: req.SaleCode, Keyword: req.Keyword})
 		if err != nil {
 			fmt.Println("endpoint error =", err.Error())
 			return nil, fmt.Errorf(err.Error())
@@ -1364,7 +1364,7 @@ func SearchHisByKeyword(s Service) interface{} {
 
 func SearchHisCustomer(s Service) interface{} {
 	return func(ctx context.Context, req *SearchHisCustomerTemplate) (interface{}, error) {
-		resp, err := s.SearchHisCustomer(&SearchHisCustomerTemplate{ArId: req.ArId})
+		resp, err := s.SearchHisCustomer(&SearchHisCustomerTemplate{ArCode: req.ArCode, Page: req.Page})
 		if err != nil {
 			fmt.Println("endpoint error =", err.Error())
 			return nil, fmt.Errorf(err.Error())

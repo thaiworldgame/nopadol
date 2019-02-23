@@ -1,14 +1,13 @@
-package config
+package mysqldb
 
-type SearchByKeywordTemplate struct {
-	Keyword string `json:"keyword"`
-}
+import (
+	"fmt"
 
-type SearchByIdTemplate struct {
-	Id int64 `json:"id"`
-}
+	"github.com/jmoiron/sqlx"
+	"github.com/mrtomyum/nopadol/sales"
+)
 
-type SettingTemplate struct {
+type Setting struct {
 	Id             int64  `json:"company_id"`
 	BranchId       int64  `json:"branch_id"`
 	TaxType        int64  `json:"tax_type"`
@@ -33,23 +32,34 @@ type SettingTemplate struct {
 	EditBy         string `json:"edit_by"`
 	EditTime       string `json:"edit_time"`
 }
+type SettingRepository struct{ db *sqlx.DB }
 
-func New(repo Repository) Service {
-	return &service{repo}
+func NewSettingRepository(db *sqlx.DB) sales.Repository {
+	return &SettingRepository{db}
 }
 
-type service struct {
-	repo Repository
-}
+func (repo *SettingRepository) SettingSys(req *sales.SearchHisCustomerTemplate) (resp interface{}, err error) {
+	var sql string
+	d := []NewSearchHisCustomerModel{}
 
-type Service interface {
-	SettingSys(req *SearchByIdTemplate) (interface{}, error)
-}
+	sql = `select distinct a.Id, ifnull(a.DocDate,'') as DocDate, ifnull(a.DocNo,'') as DocNo, 
+		a.ArId, a.ArName, a.SaleName , a.TotalAmount
+		from SaleOrder a 
+		where a.ArCode like concat(?) 
+		order by a.Id desc limit 20`
+	err = repo.db.Select(&d, sql, req.ArCode)
 
-func (s *service) SettingSys(req *SearchByIdTemplate) (interface{}, error) {
-	resp, err := s.repo.SettingSys(req)
+	fmt.Println("sql = ", sql, req.ArCode)
 	if err != nil {
-		return nil, err
+		fmt.Println("err = ", err.Error())
+		return resp, err
 	}
-	return resp, nil
+
+	dp := []sales.NewSearchHisCustomerTemplate{}
+	for _, dep := range d {
+		dpline := map_hiscustomer_template(dep)
+		dp = append(dp, dpline)
+	}
+
+	return dp, nil
 }
