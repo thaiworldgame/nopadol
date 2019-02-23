@@ -54,7 +54,7 @@ type (
 		CreateTime          string              `json:"create_time"`
 		EditBy              string              `json:"edit_by"`
 		EditTime            string              `json:"edit_time"`
-		ConfirmBy           string              `json:confirm_by`
+		ConfirmBy           string              `json:"confirm_by"`
 		ConfirmTime         string              `json:"confirm_time"`
 		CancelBy            string              `json:"cancel_by"`
 		CancelTime          string              `json:"cancel_time"`
@@ -605,7 +605,7 @@ func SearchQuoById(s Service) interface{} {
 
 func SearchQuoByKeyword(s Service) interface{} {
 	return func(ctx context.Context, req *SearchByKeywordRequest) (interface{}, error) {
-		resp, err := s.SearchQueByKeyword(&SearchByKeywordTemplate{SaleCode: req.SaleCode, Keyword:req.Keyword})
+		resp, err := s.SearchQueByKeyword(&SearchByKeywordTemplate{SaleCode: req.SaleCode, Keyword: req.Keyword})
 		if err != nil {
 			fmt.Println("endpoint error =", err.Error())
 			return nil, fmt.Errorf(err.Error())
@@ -632,7 +632,7 @@ func ConfirmQuotation(s Service) interface{} {
 func QuotationToSaleOrder(s Service) interface{} {
 	return func(ctx context.Context, req *SearchByIdRequest) (interface{}, error) {
 
-		resp, err := s.QuotationToSaleOrder(&SearchByIdTemplate{Id:req.Id})
+		resp, err := s.QuotationToSaleOrder(&SearchByIdTemplate{Id: req.Id})
 		if err != nil {
 			fmt.Println("endpoint error =", err.Error())
 			return nil, fmt.Errorf(err.Error())
@@ -817,7 +817,7 @@ func SearchSaleOrderById(s Service) interface{} {
 
 func SearchSaleOrderByKeyword(s Service) interface{} {
 	return func(ctx context.Context, req *SearchByKeywordRequest) (interface{}, error) {
-		resp, err := s.SearchSaleOrderByKeyword(&SearchByKeywordTemplate{SaleCode:req.SaleCode,Keyword:req.Keyword})
+		resp, err := s.SearchSaleOrderByKeyword(&SearchByKeywordTemplate{SaleCode: req.SaleCode, Keyword: req.Keyword})
 		if err != nil {
 			fmt.Println("endpoint error =", err.Error())
 			return nil, fmt.Errorf(err.Error())

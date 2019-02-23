@@ -48,7 +48,7 @@ type NewQuoTemplate struct {
 	CreateTime          string               `json:"create_time"`
 	EditBy              string               `json:"edit_by"`
 	EditTime            string               `json:"edit_time"`
-	ConfirmBy           string               `json:confirm_by`
+	ConfirmBy           string               `json:"confirm_by"`
 	ConfirmTime         string               `json:"confirm_time"`
 	CancelBy            string               `json:"cancel_by"`
 	CancelTime          string               `json:"cancel_time"`
@@ -157,7 +157,6 @@ type NewSaleItemTemplate struct {
 	RefLineNumber   int64   `json:"ref_line_number"`
 	IsCancel        int64   `json:"is_cancel"`
 }
- 
 
 type SearchByIdTemplate struct {
 	Id int64 `json:"id"`
@@ -460,7 +459,7 @@ type NewInvoiceItemTemplate struct {
 	ShelfId         int64   `json:"shelf_id"`
 	Price           float64 `json:"price"`
 	UnitCode        string  `json:"unit_code"`
-	Location		string	`json:"location"`
+	Location        string  `json:"location"`
 	Qty             float64 `json:"qty"`
 	CnQty           float64 `json:"cn_qty"`
 	DiscountWord    float64 `json:"discount_word_sub"`

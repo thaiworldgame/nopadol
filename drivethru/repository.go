@@ -5,6 +5,7 @@ type Repository interface {
 	LogIn(req *LoginRequest) (interface{}, error)
 	SearchListCompany() (interface{}, error)
 	SearchListMachine() (interface{}, error)
+	SearchListZone(string) (interface{}, error)
 	SearchCarBrand(string) (interface{}, error)
 
 	SearchCustomer(string) (interface{}, error)
