@@ -100,12 +100,10 @@ func (q *ListQueueModel) SearchQueueList(db *sqlx.DB, req *drivethru.ListQueueRe
 	//err := db.Select(&que, lccommand)
 	if err != nil {
 		return map[string]interface{}{
-			"response": map[string]interface{}{
-				"error":     true,
-				"message": "Queue List Doc Error = " + err.Error(),
-				"success":   false,
-				"order":nil,
-			},
+			"error":   true,
+			"message": "Queue List Doc Error = " + err.Error(),
+			"success": false,
+			"order":   nil,
 		}, nil
 	}
 
@@ -117,12 +115,10 @@ func (q *ListQueueModel) SearchQueueList(db *sqlx.DB, req *drivethru.ListQueueRe
 		err := db.Select(&qid.Item, lccommand, qid.Id, qid.QueueId, qid.UUID)
 		if err != nil {
 			return map[string]interface{}{
-				"response": map[string]interface{}{
-					"error":     true,
-					"message": "Queue List item Error = " + err.Error(),
-					"success":   false,
-					"order":nil,
-				},
+				"error":   true,
+				"message": "Queue List item Error = " + err.Error(),
+				"success": false,
+				"order":   nil,
 			}, nil
 		}
 
@@ -132,12 +128,10 @@ func (q *ListQueueModel) SearchQueueList(db *sqlx.DB, req *drivethru.ListQueueRe
 		err = db.Select(&qid.OwnerPhone, lccommand1, qid.Id, qid.QueueId, qid.UUID, qid.DocNo)
 		if err != nil {
 			return map[string]interface{}{
-				"response": map[string]interface{}{
-					"error":     true,
-					"message": "Queue List phone Error = " + err.Error(),
-					"success":   false,
-					"order":nil,
-				},
+				"error":   true,
+				"message": "Queue List phone Error = " + err.Error(),
+				"success": false,
+				"order":   nil,
 			}, nil
 		}
 
@@ -145,12 +139,10 @@ func (q *ListQueueModel) SearchQueueList(db *sqlx.DB, req *drivethru.ListQueueRe
 		err = db.Select(&qid.ReceiverPhone, lccommand2, qid.Id, qid.QueueId, qid.UUID, qid.DocNo)
 		if err != nil {
 			return map[string]interface{}{
-				"response": map[string]interface{}{
-					"error":     true,
-					"message": "Queue List phone Error = " + err.Error(),
-					"success":   false,
-					"order":nil,
-				},
+				"error":   true,
+				"message": "Queue List phone Error = " + err.Error(),
+				"success": false,
+				"order":   nil,
 			}, nil
 		}
 
@@ -158,12 +150,10 @@ func (q *ListQueueModel) SearchQueueList(db *sqlx.DB, req *drivethru.ListQueueRe
 	}
 
 	return map[string]interface{}{
-		"response": map[string]interface{}{
-			"error":       false,
-			"message": "",
-			"success":     true,
-			"order":        que_data,
-		},
+		"error":   false,
+		"message": "",
+		"success": true,
+		"order":   que_data,
 	}, nil
 }
 
