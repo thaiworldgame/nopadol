@@ -305,6 +305,15 @@ func (p *pickupModel) PickupNew(db *sqlx.DB, req *drivethru.NewPickupRequest) (i
 		}, nil
 	}
 
+	var doc_type int
+
+	doc_type, _ = strconv.Atoi(req.DocType)
+
+	if doc_type == 1 {
+		req.CarNumber = user.UserCode
+		req.CarBrand = "Basket"
+	}
+
 	if req.CarNumber == "" {
 		return map[string]interface{}{
 			"response": map[string]interface{}{
@@ -336,15 +345,6 @@ func (p *pickupModel) PickupNew(db *sqlx.DB, req *drivethru.NewPickupRequest) (i
 	}
 
 	uuid := GetAccessToken()
-
-	var doc_type int
-
-	if (len(req.CarNumber) <= 4) {
-		doc_type = 0
-	} else {
-		doc_type = 1
-	}
-
 	config := RequestConfigModel{}
 
 	config.Search(db, user.CompanyID, user.BranchID)

@@ -43,8 +43,9 @@ type (
 	}
 
 	NewPickupRequest struct {
-		CarNumber   string `json:"car_number"`
-		CarBrand    string `json:"car_brand"`
+		CarNumber   string `json:"carNumber"`
+		CarBrand    string `json:"carBrand"`
+		DocType     string `json:"doc_type"`//0 drivethru 1 pos 2 saleorder
 		AccessToken string `json:"access_token"`
 	}
 
@@ -147,7 +148,7 @@ func makeListCompany(s Service) interface{} {
 }
 
 func makeListZone(s Service) interface{} {
-	return func(ctx context.Context,req *AccessTokenRequest) (interface{}, error) {
+	return func(ctx context.Context, req *AccessTokenRequest) (interface{}, error) {
 		resp, err := s.SearchListZone(req.AccessToken)
 		if err != nil {
 			fmt.Println("endpoint error =", err.Error())
@@ -305,10 +306,10 @@ func makeShiftOpen(s Service) interface{} {
 	}
 }
 
-func pickupNew(s Service) interface{} {
+func pickupNew(s Service) interface{} {//API
 	return func(ctx context.Context, req *NewPickupRequest) (interface{}, error) {
 		fmt.Println("start endpoint pickupnew car number is => ", req.CarNumber)
-		resp, err := s.PickupNew(&NewPickupRequest{CarNumber: req.CarNumber, CarBrand: req.CarBrand, AccessToken: req.AccessToken})
+		resp, err := s.PickupNew(&NewPickupRequest{CarNumber: req.CarNumber, CarBrand: req.CarBrand, AccessToken: req.AccessToken, DocType:req.DocType})
 		if err != nil {
 			return nil, err
 		}
