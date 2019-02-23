@@ -191,7 +191,7 @@ func makeSearchCarBranch(s Service) interface{} {
 				"processDesc": "Success",
 				"isSuccess":   true,
 			},
-			"data": resp,
+			"brand": resp,
 		}, nil
 	}
 }
