@@ -305,6 +305,12 @@ func (p *productRepository) StoreBarcode(req *product.BarcodeNewRequest) (res in
 		CompanyID: req.CompanyID,
 	}
 
+	if b.UnitID ==0 {
+		u := itemUnitModel{}
+		u.unitCode = b.UnitCode
+		u.getByCode(p.db)
+		b.UnitID = u.id
+	}
 	newID, err := b.save(p.db)
 	if err != nil {
 		return nil, err
