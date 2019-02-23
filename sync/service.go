@@ -1,6 +1,6 @@
 package sync
 
-import "github.com/mrtomyum/nopadol/sales"
+//import "github.com/mrtomyum/nopadol/sales"
 
 func New(repo Repository) Service {
 	return &service{repo}
@@ -11,12 +11,13 @@ type service struct {
 }
 
 type Service interface {
-	NewQuotation() (sales.NewQuoTemplate,error)
+	GetNewQoutaion() (interface{},error)
 }
 
 
-func (s *service)NewQuotation()(sales.NewQuoTemplate,error){
-	resp,err := s.repo.GetNewQoutation()
+
+func (s *service)GetNewQoutaion()(interface{},error){
+	resp,err := s.repo.GetNewQoutaion()
 	if err != nil {
 		return nil,err
 	}
