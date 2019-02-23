@@ -34,18 +34,31 @@ type barcodeModel struct {
 	CompanyID    int            `db:"company_id"`
 }
 
-func (b *barcodeModel) checkExistByBarcode(db *sqlx.DB) (bool, int64) {
+func (b *barcodeModel) getIDbyBarcode(db *sqlx.DB) (bool, int64) {
 	var id int64 = -1
 	db.QueryRow(`select id from Barcode where bar_code=?`, b.BarCode).Scan(&id)
 	if id == -1 {
-		return false, id
+		return false, -1
 		// ไม่มี barcode อยู่
 	}
+
 	return true, id
 }
+func (b *barcodeModel) getItemIdByItemcode(db *sqlx.DB) (int64,error){
+	var itemId int64 = -1
+	err := db.QueryRow(`select id from Item where code=?`,b.ItemCode).Scan(&itemId)
+	if itemId ==0 || itemId==-1 || err != nil{
+		return -1,err
+	}
+	b.ItemID = itemId
+	return itemId,nil
+}
+
 func (b *barcodeModel) verifyRequestData(db *sqlx.DB) error {
 	// check item_id
+
 	if b.ItemID == 0 {
+
 		return fmt.Errorf("item_id is error %v ", b.ItemID)
 	}
 
@@ -85,12 +98,17 @@ func (b *barcodeModel) verifyRequestData(db *sqlx.DB) error {
 
 func (b *barcodeModel) save(db *sqlx.DB) (id int64, err error) {
 
-	err = b.verifyRequestData(db)
+	_,err = b.getItemIdByItemcode(db)
 	if err != nil {
-		return -1, err
+		return -1 ,fmt.Errorf("error no item_id found ")
 	}
 
-	ok, curID := b.checkExistByBarcode(db)
+	//err = b.verifyRequestData(db)
+	//if err != nil {
+	//	return -1, err
+	//}
+
+	ok, curID := b.getIDbyBarcode(db)
 	if ok {
 		// update
 		fmt.Println("update case")
