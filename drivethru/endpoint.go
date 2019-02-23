@@ -99,7 +99,7 @@ type (
 	}
 
 	AccessTokenRequest struct {
-		AccessToken string `json:"accessToken"`
+		AccessToken string `json:"access_token"`
 	}
 
 	BillingDoneRequest struct {
