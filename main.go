@@ -258,7 +258,6 @@ func main() {
 	h := auth.MakeMiddleware(authService)(mux)
 	fmt.Println("Waiting for Accept Connection : 9999")
 	http.ListenAndServe(":9999", h)
-
 }
 
 func must(err error) {
@@ -287,8 +286,8 @@ func apiVersionHandler(w http.ResponseWriter, r *http.Request) {
 		LastUpdate  string `json:"lastupdate"`
 	}{
 		"0.1.0 BETA",
-		"Paybox Cloud Client Service",
-		"Paybox dev team 2016",
-		"2018-04-20",
+		"ERP Cloud Client Service",
+		"ERP dev team 2019",
+		"2019-01-01",
 	})
 }

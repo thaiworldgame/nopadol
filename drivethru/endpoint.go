@@ -22,29 +22,30 @@ type (
 	}
 
 	Zone struct {
-		ZoneId   string `json:"zone_id"`
-		ZoneName string `json:"zone_name"`
+		ZoneId   string `json:"pick_zone_id"`
+		ZoneName string `json:"name"`
 	}
 
 	UserLogInRequest struct {
 		UserCode     string `json:"user_code"`
 		Password     string `json:"password"`
-		BranchId     int    `json:"branch_id"`
+		BranchId     string `json:"branch_id"`
 		ServerName   string `json:"server_name"`
 		DataBaseName string `json:"data_base_name"`
 	}
 
 	LoginRequest struct {
 		EmployeeCode string `json:"employee_code"`
-		BranchId     int    `json:"branch_id"`
+		BranchId     string `json:"branch_id"`
 		EmployeeName string `json:"employee_name"`
 		ServerName   string `json:"server_name"`
 		DatabaseName string `json:"database_name"`
 	}
 
 	NewPickupRequest struct {
-		CarNumber   string `json:"car_number"`
-		CarBrand    string `json:"car_brand"`
+		CarNumber   string `json:"carNumber"`
+		CarBrand    string `json:"carBrand"`
+		DocType     string `json:"doc_type"`//0 drivethru 1 pos 2 saleorder
 		AccessToken string `json:"access_token"`
 	}
 
@@ -98,6 +99,10 @@ type (
 		QueueId     int    `json:"queue_id"`
 	}
 
+	AccessTokenRequest struct {
+		AccessToken string `json:"access_token"`
+	}
+
 	BillingDoneRequest struct {
 		AccessToken   string        `json:"access_token"`
 		ArCode        string        `json:"ar_code"`
@@ -138,14 +143,19 @@ func makeListCompany(s Service) interface{} {
 			return nil, fmt.Errorf(err.Error())
 		}
 
-		return map[string]interface{}{
-			"response": map[string]interface{}{
-				"process":     "Search Zone",
-				"processDesc": "Success",
-				"isSuccess":   true,
-			},
-			"data": resp,
-		}, nil
+		return resp, nil
+	}
+}
+
+func makeListZone(s Service) interface{} {
+	return func(ctx context.Context, req *AccessTokenRequest) (interface{}, error) {
+		resp, err := s.SearchListZone(req.AccessToken)
+		if err != nil {
+			fmt.Println("endpoint error =", err.Error())
+			return nil, fmt.Errorf(err.Error())
+		}
+
+		return resp, nil
 	}
 }
 
@@ -182,7 +192,7 @@ func makeSearchCarBranch(s Service) interface{} {
 				"processDesc": "Success",
 				"isSuccess":   true,
 			},
-			"data": resp,
+			"brand": resp,
 		}, nil
 	}
 }
@@ -255,7 +265,7 @@ func userLogIn(s Service) interface{} {
 
 func makeShiftOpen(s Service) interface{} {
 	type request struct {
-		Token        string  `json:"token"`
+		accessToken  string  `json:"accessToken"`
 		MachineID    int     `json:"machine_id"`
 		ChangeAmount float64 `json:"change_amount"`
 		CashierID    int     `json:"cashier_id"`
@@ -267,12 +277,12 @@ func makeShiftOpen(s Service) interface{} {
 		fmt.Println("start endpoint shift open ....")
 
 		//validate request data
-		if req.Token == "" {
+		if req.accessToken == "" {
 			return nil, fmt.Errorf("access token is require..")
 		}
 
 		resp, err := s.ShiftOpen(&ShiftOpenRequest{
-			Token:        req.Token,
+			AccessToken:  req.accessToken,
 			ChangeAmount: req.ChangeAmount,
 			MachineID:    req.MachineID,
 			CashierID:    req.CashierID,
@@ -296,10 +306,10 @@ func makeShiftOpen(s Service) interface{} {
 	}
 }
 
-func pickupNew(s Service) interface{} {
+func pickupNew(s Service) interface{} {//API
 	return func(ctx context.Context, req *NewPickupRequest) (interface{}, error) {
 		fmt.Println("start endpoint pickupnew car number is => ", req.CarNumber)
-		resp, err := s.PickupNew(&NewPickupRequest{CarNumber: req.CarNumber, CarBrand: req.CarBrand, AccessToken: req.AccessToken})
+		resp, err := s.PickupNew(&NewPickupRequest{CarNumber: req.CarNumber, CarBrand: req.CarBrand, AccessToken: req.AccessToken, DocType:req.DocType})
 		if err != nil {
 			return nil, err
 		}

@@ -14,6 +14,7 @@ type Service interface {
 	UserLogIn(req *UserLogInRequest) (interface{}, error)
 	LogIn(req *LoginRequest) (interface{}, error)
 	SearchListCompany() (interface{}, error)
+	SearchListZone(string) (interface{}, error)
 	SearchListMachine() (interface{}, error)
 	SearchCarBrand(string) (interface{}, error)
 	SearchCustomer(string) (interface{}, error)
@@ -35,6 +36,16 @@ type Service interface {
 
 func (s *service) SearchListCompany() (interface{}, error) {
 	resp, err := s.repo.SearchListCompany()
+	if err != nil {
+		return nil, err
+	}
+	fmt.Println("service recive data -> ", resp)
+
+	return resp, nil
+}
+
+func (s *service) SearchListZone(access_token string) (interface{}, error) {
+	resp, err := s.repo.SearchListZone(access_token)
 	if err != nil {
 		return nil, err
 	}
