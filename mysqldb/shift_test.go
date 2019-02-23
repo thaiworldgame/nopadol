@@ -22,7 +22,7 @@ func Test_getShiftProfileByUUID(t *testing.T) {
 
 func Test_shiftOpen(t *testing.T) {
 	req := drivethru.ShiftOpenRequest{
-		Token:        "bdebe48c-44e3-44f8-a2ad-5722a905f84b",
+		AccessToken:        "bdebe48c-44e3-44f8-a2ad-5722a905f84b",
 		MachineID:    3,
 		CashierID:    1059,
 		WhID:         1,
@@ -31,7 +31,7 @@ func Test_shiftOpen(t *testing.T) {
 	testDB, err := ConnectDB("demo")
 
 	uac := UserAccess{}
-	uac.GetProfileByToken(testDB, req.Token)
+	uac.GetProfileByToken(testDB, req.AccessToken)
 
 	// init shift objects
 	sh := ShiftModel{}
