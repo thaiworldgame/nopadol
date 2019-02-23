@@ -100,11 +100,10 @@ func (q *ListQueueModel) SearchQueueList(db *sqlx.DB, req *drivethru.ListQueueRe
 	//err := db.Select(&que, lccommand)
 	if err != nil {
 		return map[string]interface{}{
-			"response": map[string]interface{}{
-				"process":     "queue list",
-				"processDesc": "Queue List Doc Error = " + err.Error(),
-				"isSuccess":   false,
-			},
+			"error":   true,
+			"message": "Queue List Doc Error = " + err.Error(),
+			"success": false,
+			"order":   nil,
 		}, nil
 	}
 
@@ -116,11 +115,10 @@ func (q *ListQueueModel) SearchQueueList(db *sqlx.DB, req *drivethru.ListQueueRe
 		err := db.Select(&qid.Item, lccommand, qid.Id, qid.QueueId, qid.UUID)
 		if err != nil {
 			return map[string]interface{}{
-				"response": map[string]interface{}{
-					"process":     "queue list item",
-					"processDesc": "Queue List item Error = " + err.Error(),
-					"isSuccess":   false,
-				},
+				"error":   true,
+				"message": "Queue List item Error = " + err.Error(),
+				"success": false,
+				"order":   nil,
 			}, nil
 		}
 
@@ -130,11 +128,10 @@ func (q *ListQueueModel) SearchQueueList(db *sqlx.DB, req *drivethru.ListQueueRe
 		err = db.Select(&qid.OwnerPhone, lccommand1, qid.Id, qid.QueueId, qid.UUID, qid.DocNo)
 		if err != nil {
 			return map[string]interface{}{
-				"response": map[string]interface{}{
-					"process":     "queue list phone",
-					"processDesc": "Queue List phone Error = " + err.Error(),
-					"isSuccess":   false,
-				},
+				"error":   true,
+				"message": "Queue List phone Error = " + err.Error(),
+				"success": false,
+				"order":   nil,
 			}, nil
 		}
 
@@ -142,18 +139,22 @@ func (q *ListQueueModel) SearchQueueList(db *sqlx.DB, req *drivethru.ListQueueRe
 		err = db.Select(&qid.ReceiverPhone, lccommand2, qid.Id, qid.QueueId, qid.UUID, qid.DocNo)
 		if err != nil {
 			return map[string]interface{}{
-				"response": map[string]interface{}{
-					"process":     "queue list phone",
-					"processDesc": "Queue List phone Error = " + err.Error(),
-					"isSuccess":   false,
-				},
+				"error":   true,
+				"message": "Queue List phone Error = " + err.Error(),
+				"success": false,
+				"order":   nil,
 			}, nil
 		}
 
 		que_data = append(que_data, qid)
 	}
 
-	return que_data, nil
+	return map[string]interface{}{
+		"error":   false,
+		"message": "",
+		"success": true,
+		"order":   que_data,
+	}, nil
 }
 
 func (q *ListQueueModel) QueueProduct(db *sqlx.DB, req *drivethru.QueueProductRequest) (interface{}, error) {
@@ -304,6 +305,15 @@ func (p *pickupModel) PickupNew(db *sqlx.DB, req *drivethru.NewPickupRequest) (i
 		}, nil
 	}
 
+	var doc_type int
+
+	doc_type, _ = strconv.Atoi(req.DocType)
+
+	if doc_type == 1 {
+		req.CarNumber = user.UserCode
+		req.CarBrand = "Basket"
+	}
+
 	if req.CarNumber == "" {
 		return map[string]interface{}{
 			"response": map[string]interface{}{
@@ -335,15 +345,6 @@ func (p *pickupModel) PickupNew(db *sqlx.DB, req *drivethru.NewPickupRequest) (i
 	}
 
 	uuid := GetAccessToken()
-
-	var doc_type int
-
-	if (len(req.CarNumber) <= 4) {
-		doc_type = 0
-	} else {
-		doc_type = 1
-	}
-
 	config := RequestConfigModel{}
 
 	config.Search(db, user.CompanyID, user.BranchID)
@@ -1703,7 +1704,7 @@ func (q *ListQueueModel) BillingDone(db *sqlx.DB, req *drivethru.BillingDoneRequ
 
 				id, _ := rs.LastInsertId()
 
-				fmt.Println("ar_invoice_id = ",int(id))
+				fmt.Println("ar_invoice_id = ", int(id))
 
 				var discount_word_sub string
 				var discount_amount_sub float64

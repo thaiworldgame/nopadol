@@ -12,6 +12,7 @@ import (
 )
 
 type UserAccess struct {
+	Id         int64  `db:"id"`
 	UserId     int64  `db:"id"`
 	UserCode   string `db:"user_code"`
 	CompanyID  int    `db:"company_id"`
@@ -20,7 +21,6 @@ type UserAccess struct {
 	ZoneID     int    `db:"zone_id"`
 	Name       string `db:"name"`
 	//BranchName string `db:"branch_name"`
-
 }
 
 //var dbname string = "demo"
@@ -37,6 +37,7 @@ type authRepository struct {
 func (repo *authRepository) GetToken(tokenID string) (*auth.Token, error) {
 	fmt.Println("start mysqldb.auth.GetToken ... with token ", tokenID)
 	var m struct {
+		ID         sql.NullInt64  `db:"id"`
 		CompanyID  sql.NullInt64  `db:"company_id"`
 		UserID     sql.NullInt64  `db:"user_id"`
 		UserCode   sql.NullString `db:"user_code"`
@@ -48,7 +49,7 @@ func (repo *authRepository) GetToken(tokenID string) (*auth.Token, error) {
 		Created    time.Time      `db:"created"`
 	}
 	//fmt.Println("start repo *authRepository.GetToken")
-	sqlcommand := "select " +
+	sqlcommand := "select b.id," +
 		"user_id," +
 		"user_code," +
 		"b.company_id," +
@@ -63,6 +64,7 @@ func (repo *authRepository) GetToken(tokenID string) (*auth.Token, error) {
 	rows := repo.db.QueryRow(sqlcommand)
 	//err := rows.Scan(
 	rows.Scan(
+		&m.ID,
 		&m.UserID,
 		&m.UserCode,
 		&m.CompanyID,
@@ -120,12 +122,12 @@ func (repo *authRepository) GetToken(tokenID string) (*auth.Token, error) {
 
 func (u *UserAccess) GetProfileByToken(db *sqlx.DB, token string) {
 
-	lcCommand := "select user_id,user_code,b.company_id,b.branch_id,b.branch_code,b.zone_id " +
+	lcCommand := "select b.id,user_id,user_code,b.company_id,b.branch_id,b.branch_code,b.zone_id " +
 		",b.name from " + dbname + ".user_access a inner join npdl.`user` b on a.user_id=b.id " +
 		" where access_token='" + token + "'"
 	//fmt.Println(lcCommand)
 	rs := db.QueryRow(lcCommand)
-	rs.Scan(&u.UserId, &u.UserCode, &u.CompanyID, &u.BranchID, &u.BranchCode, &u.ZoneID, &u.Name)
+	rs.Scan(&u.Id, &u.UserId, &u.UserCode, &u.CompanyID, &u.BranchID, &u.BranchCode, &u.ZoneID, &u.Name)
 	return
 }
 

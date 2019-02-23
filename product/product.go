@@ -51,12 +51,14 @@ type ProductNewRequest struct {
 }
 
 type BarcodeNewRequest struct {
+	ID           int64  `json:"id"`
 	ItemID       int64  `json:"item_id"`
 	ItemCode     string `json:"item_code"`
 	Barcode      string `json:"bar_code"`
 	UnitCode     string `json:"unit_code"`
 	UnitID       int64  `json:"unit_id"`
 	ActiveStatus int    `json:"active_status"`
+	CompanyID    int    `json:"company_id"`
 }
 type PackingRate struct {
 	UnitID          int64  `json:"unit_id"`
