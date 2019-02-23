@@ -22,14 +22,14 @@ type (
 	}
 
 	Zone struct {
-		ZoneId   string `json:"zone_id"`
-		ZoneName string `json:"zone_name"`
+		ZoneId   string `json:"pick_zone_id"`
+		ZoneName string `json:"name"`
 	}
 
 	UserLogInRequest struct {
 		UserCode     string `json:"user_code"`
 		Password     string `json:"password"`
-		BranchId     string    `json:"branch_id"`
+		BranchId     string `json:"branch_id"`
 		ServerName   string `json:"server_name"`
 		DataBaseName string `json:"data_base_name"`
 	}
@@ -98,6 +98,10 @@ type (
 		QueueId     int    `json:"queue_id"`
 	}
 
+	AccessTokenRequest struct {
+		AccessToken string `json:"accessToken"`
+	}
+
 	BillingDoneRequest struct {
 		AccessToken   string        `json:"access_token"`
 		ArCode        string        `json:"ar_code"`
@@ -133,6 +137,18 @@ type (
 func makeListCompany(s Service) interface{} {
 	return func(ctx context.Context) (interface{}, error) {
 		resp, err := s.SearchListCompany()
+		if err != nil {
+			fmt.Println("endpoint error =", err.Error())
+			return nil, fmt.Errorf(err.Error())
+		}
+
+		return resp, nil
+	}
+}
+
+func makeListZone(s Service) interface{} {
+	return func(ctx context.Context,req *AccessTokenRequest) (interface{}, error) {
+		resp, err := s.SearchListZone(req.AccessToken)
 		if err != nil {
 			fmt.Println("endpoint error =", err.Error())
 			return nil, fmt.Errorf(err.Error())

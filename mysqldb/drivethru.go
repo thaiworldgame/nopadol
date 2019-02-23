@@ -16,6 +16,12 @@ type BranchModel struct {
 	Name string `json:"name" db:"branch_name"`
 }
 
+type ZoneModel struct {
+	Id         int64  `json:"id" db:"id"`
+	PickZoneId string `json:"pick_zone_id" db:"pick_zone_code"`
+	Name       string `json:"name" db:"pick_zone_name"`
+}
+
 func NewDrivethruRepository(db *sqlx.DB) drivethru.Repository {
 	return &drivethruRepository{db}
 }
@@ -36,6 +42,33 @@ func (d *drivethruRepository) SearchListCompany() (interface{}, error) {
 
 	fmt.Println("mysqldb recive databranch -> ", Bms)
 	return Bms, nil
+}
+
+func (d *drivethruRepository) SearchListZone(access_token string) (interface{}, error) {
+	u := UserAccess{}
+	u.GetProfileByToken(d.db, access_token)
+	rs, err := d.db.Query("select id,pick_zone_code as pick_zone_id,pick_zone_name as name from zone where company_id = ? and branch_id = ? order by pick_zone_id",u.CompanyID, u.BranchID)
+	if err != nil {
+		fmt.Println("error query database ")
+		return nil, err
+	}
+
+	zes := []ZoneModel{}
+	z := ZoneModel{}
+	for rs.Next() {
+		rs.Scan(&z.Id, &z.PickZoneId, &z.Name)
+		zes = append(zes, z)
+	}
+
+	fmt.Println("mysqldb recive databranch -> ", zes)
+	return map[string]interface{}{
+		"response": map[string]interface{}{
+			"success":   true,
+			"error":     false,
+			"message": "",
+			"pick_zone":zes,
+		},
+	}, nil
 }
 
 func (d *drivethruRepository) SearchListMachine() (interface{}, error) {
