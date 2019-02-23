@@ -296,11 +296,16 @@ func (p *productRepository) StoreItem(req *product.ProductNewRequest) (resp inte
 
 func (p *productRepository) StoreBarcode(req *product.BarcodeNewRequest) (res interface{}, err error) {
 
+
+
+
+
 	b := barcodeModel{BarCode: req.Barcode,
 		ItemID:   req.ItemID,
 		ItemCode: req.ItemCode,
 		UnitCode: req.UnitCode,
 		UnitID:   req.UnitID,
+		ActiveStatus: req.ActiveStatus,
 	}
 
 	newID, err := b.save(p.db)
