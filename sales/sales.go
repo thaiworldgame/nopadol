@@ -169,7 +169,14 @@ type SearchByKeywordTemplate struct {
 	SaleCode string `json:"sale_code"`
 	Keyword  string `json:"keyword"`
 }
-
+type SearchByItemTemplate struct {
+	ArId     string `json:"ar_id"`
+	ArCode   string `json:"ar_code"`
+	ItemCode string `json:"item_code"`
+	Code     string `json:"code"`
+	Name     string `json:"name"`
+	Page     string `json:"page"`
+}
 type SearchDocTemplate struct {
 	Id            int64   `json:"id"`
 	DocNo         string  `json:"doc_no"`
@@ -359,11 +366,14 @@ type NewInvoiceTemplate struct {
 	Id                  int64   `json:"id"`
 	CompanyId           int64   `json:"company_id"`
 	BranchId            int64   `json:"branch_id"`
+	ItemName            string  `json:"item_name"`
+	ItemCode            string  `json:"item_code"`
 	Uuid                string  `json:"uuid"`
 	DocNo               string  `json:"doc_no"`
 	TaxNo               string  `json:"tax_no"`
 	BillType            int64   `json:"bill_type"`
 	DocDate             string  `json:"doc_date"`
+	DocType             int64   `json:"doc_type"`
 	ArId                int64   `json:"ar_id"`
 	ArCode              string  `json:"ar_code"`
 	ArName              string  `json:"ar_name"`
@@ -473,4 +483,48 @@ type NewInvoiceItemTemplate struct {
 	RefNo           string  `json:"ref_no"`
 	RefLineNumber   int64   `json:"ref_line_number"`
 	LineNumber      int64   `json:"line_number"`
+}
+
+type NewSearchItemTemplate struct {
+	Id              int64   `json:"id"`
+	DocDate         string  `json:"doc_date"`
+	DocNo           string  `json:"doc_no"`
+	ItemId          int64   `json:"item_id"`
+	ItemCode        string  `json:"item_code"`
+	ItemName        string  `json:"item_name"`
+	BarCode         string  `json:"bar_code"`
+	UnitICode       string  `json:"unit_code"`
+	WhId            int64   `json:"wh_id"`
+	ShelfId         int64   `json:"shelf_id"`
+	Price           float64 `json:"price"`
+	Qty             float64 `json:"qty"`
+	CnQty           float64 `json:"cn_qty"`
+	DiscountWord    float64 `db:"discount_word_sub"`
+	ItemDescription string  `json:"item_description"`
+	IsCreditNote    int64   `json:"is_credit_note"`
+	IsDebitNote     int64   `json:"is_debit_note"`
+	PackingRate1    int64   `json:"packing_rate_1"`
+	PackingRate2    int64   `json:"packing_rate_2"`
+	SoRefNo         string  `json:"so_ref_no"`
+	AverageCost     float64 `json:"average_cost"`
+	SumOfCost       float64 `json:"sum_of_cost"`
+	RefLineNumber   int64   `json:"ref_line_number"`
+	LineNumber      int64   `json:"line_number"`
+	ArName          string  `json:"ar_name"`
+	ArCode          string  `json:"ar_code"`
+	ArId            int64   `json:"ar_id"`
+	Name            string  `json:"name"`
+	NId             int64   `json:"Id"`
+	NDocNo          string  `json:"DocNo"`
+	NDocDate        string  `json:"DocDate"`
+	NItemId         int64   `json:"ItemId"`
+	NArId           int64   `json:"ArId"`
+	NBarCode        string  `json:"BarCode"`
+	NItemCode       string  `json:"ItemCode"`
+	NItemName       string  `json:"ItemName"`
+	NUnitCode       string  `json:"UnitCode"`
+	NQty            float64 `json:"Qty"`
+	NPrice          float64 `json:"Price"`
+	NArName         string  `json:"ArName"`
+	NDiscountWord   string  `json:"DiscountWord"`
 }

@@ -56,7 +56,6 @@ func (pr *priceModel) verifyRequestData(db *sqlx.DB) (bool, error) {
 
 	if pr.CompanyID == 0 {
 		return false, fmt.Errorf("cannot save price : company id not found ")
-
 	}
 	return true,nil
 }

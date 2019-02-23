@@ -17,18 +17,28 @@ type service struct {
 type Service interface {
 	CreateQuotation(req *NewQuoTemplate) (interface{}, error)
 	SearchQueById(req *SearchByIdTemplate) (interface{}, error)
+	SearchQueByKeyword(req *SearchByKeywordTemplate) (interface{}, error)
 	ConfirmQuotation(req *NewQuoTemplate) (interface{}, error)
+	QuotationToSaleOrder(req *SearchByIdTemplate) (interface{}, error)
 	CancelQuotation(req *NewQuoTemplate) (interface{}, error)
+
 	CreateSaleOrder(req *NewSaleTemplate) (interface{}, error)
 	SearchSaleOrderById(req *SearchByIdTemplate) (interface{}, error)
+	SearchSaleOrderByKeyword(req *SearchByKeywordTemplate) (interface{}, error)
 	SearchDocByKeyword(req *SearchByKeywordTemplate) (interface{}, error)
+
 	CreateDeposit(req *NewDepositTemplate) (interface{}, error)
 	SearchDepositById(req *SearchByIdTemplate) (interface{}, error)
 	SearchDepositByKeyword(req *SearchByKeywordTemplate) (interface{}, error)
 	SearchReserveToDeposit(req *SearchByKeywordTemplate) (interface{}, error)
+
 	CreateInvoice(req *NewInvoiceTemplate) (interface{}, error)
 	SearchInvoiceById(req *SearchByIdTemplate) (interface{}, error)
+	SearchInvoiceByKeyword(req *SearchByKeywordTemplate) (interface{}, error)
+	SearchSaleByItem(req *SearchByItemTemplate) (interface{}, error)
+	SearchCredit(req *SearchByIdTemplate) (interface{}, error)
 	Invoicelist(req *SearchByKeywordTemplate) (interface{}, error)
+	SearchHisByKeyword(req *SearchByKeywordTemplate) (interface{}, error)
 	CancelInvoice(req *NewInvoiceTemplate) (interface{}, error)
 	Searchcreditcard(req *SearchcreditcardTamplate) (interface{}, error)
 }
@@ -103,8 +113,24 @@ func (s *service) SearchQueById(req *SearchByIdTemplate) (interface{}, error) {
 	return resp, nil
 }
 
+func (s *service) SearchQueByKeyword(req *SearchByKeywordTemplate) (interface{}, error) {
+	resp, err := s.repo.SearchQuoByKeyword(req)
+	if err != nil {
+		return nil, err
+	}
+	return resp, nil
+}
+
 func (s *service) ConfirmQuotation(req *NewQuoTemplate) (interface{}, error) {
 	resp, err := s.repo.ConfirmQuotation(req)
+	if err != nil {
+		return nil, err
+	}
+	return resp, nil
+}
+
+func (s *service) QuotationToSaleOrder(req *SearchByIdTemplate) (interface{}, error) {
+	resp, err := s.repo.QuotationToSaleOrder(req)
 	if err != nil {
 		return nil, err
 	}
@@ -125,9 +151,18 @@ func (s *service) CancelInvoice(req *NewInvoiceTemplate) (interface{}, error) {
 	}
 	return resp, nil
 }
+
 func (s *service) Invoicelist(req *SearchByKeywordTemplate) (interface{}, error) {
 	fmt.Println("invoicelist 2")
 	resp, err := s.repo.SearchInvoiceByKeyword(req)
+	if err != nil {
+		return nil, err
+	}
+	return resp, nil
+}
+
+func (s *service) SearchHisByKeyword(req *SearchByKeywordTemplate) (interface{}, error) {
+	resp, err := s.repo.SearchHisByKeyword(req)
 	if err != nil {
 		return nil, err
 	}
@@ -191,6 +226,22 @@ func (s *service) CreateSaleOrder(req *NewSaleTemplate) (interface{}, error) {
 
 func (s *service) SearchSaleOrderById(req *SearchByIdTemplate) (interface{}, error) {
 	resp, err := s.repo.SearchSaleOrderById(req)
+	if err != nil {
+		return nil, err
+	}
+	return resp, nil
+}
+
+func (s *service) SearchSaleOrderByKeyword(req *SearchByKeywordTemplate) (interface{}, error) {
+	resp, err := s.repo.SearchSaleOrderByKeyword(req)
+	if err != nil {
+		return nil, err
+	}
+	return resp, nil
+}
+
+func (s *service) SearchSaleByItem(req *SearchByItemTemplate) (interface{}, error) {
+	resp, err := s.repo.SearchSaleByItem(req)
 	if err != nil {
 		return nil, err
 	}
@@ -304,6 +355,23 @@ func (s *service) CreateInvoice(req *NewInvoiceTemplate) (interface{}, error) {
 func (s *service) SearchInvoiceById(req *SearchByIdTemplate) (interface{}, error) {
 
 	resp, err := s.repo.SearchInvoiceById(req)
+	if err != nil {
+		return nil, err
+	}
+
+	return resp, nil
+}
+
+func (s *service) SearchInvoiceByKeyword(req *SearchByKeywordTemplate) (interface{}, error) {
+	resp, err := s.repo.SearchInvoiceByKeyword(req)
+	if err != nil {
+		return nil, err
+	}
+	return resp, nil
+}
+
+func (s *service) SearchCredit(req *SearchByIdTemplate) (interface{}, error) {
+	resp, err := s.repo.SearchCredit(req)
 	if err != nil {
 		return nil, err
 	}
