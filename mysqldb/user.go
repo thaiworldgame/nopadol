@@ -138,6 +138,9 @@ func (u *userLogInModel) Userlogin(db *sqlx.DB, req *drivethru.UserLogInRequest)
 		"accessDatetime": now.String(),
 		"pathPHPUpload":  "http://qserver.nopadol.com/drivethru/upload.php",
 		"pathFile":       "http://qserver.nopadol.com/drivethru/tmp/",
+		//"machine_id":,
+		//"shift_status":,
+		//"shilf_uuid":,
 		"user":           user,
 	}, nil
 }

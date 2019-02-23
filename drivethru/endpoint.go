@@ -255,7 +255,7 @@ func userLogIn(s Service) interface{} {
 
 func makeShiftOpen(s Service) interface{} {
 	type request struct {
-		Token        string  `json:"token"`
+		accessToken        string  `json:"accessToken"`
 		MachineID    int     `json:"machine_id"`
 		ChangeAmount float64 `json:"change_amount"`
 		CashierID    int     `json:"cashier_id"`
@@ -267,12 +267,12 @@ func makeShiftOpen(s Service) interface{} {
 		fmt.Println("start endpoint shift open ....")
 
 		//validate request data
-		if req.Token == "" {
+		if req.accessToken == "" {
 			return nil, fmt.Errorf("access token is require..")
 		}
 
 		resp, err := s.ShiftOpen(&ShiftOpenRequest{
-			Token:        req.Token,
+			AccessToken:  req.accessToken,
 			ChangeAmount: req.ChangeAmount,
 			MachineID:    req.MachineID,
 			CashierID:    req.CashierID,

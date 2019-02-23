@@ -237,14 +237,14 @@ func (d *drivethruRepository) ShiftOpen(req *drivethru.ShiftOpenRequest) (resp i
 	// todo : return shift_UUID
 
 	uac := UserAccess{}
-	uac.GetProfileByToken(d.db, req.Token)
+	uac.GetProfileByToken(d.db, req.AccessToken)
 
 	// init shift objects
 	sh := ShiftModel{}
 	sh.docDate.Time = time.Now()
 	sh.companyID = uac.CompanyID
 	sh.branchID = uac.BranchID
-	sh.cashierID = req.CashierID
+	sh.cashierID = int(uac.Id)
 	sh.changeAmount.Float64 = req.ChangeAmount
 	sh.openBy = uac.UserCode
 	sh.openTime.Time = time.Now()
