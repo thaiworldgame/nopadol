@@ -30,7 +30,18 @@ type Service interface {
 	SearchInvoiceById(req *SearchByIdTemplate) (interface{}, error)
 	Invoicelist(req *SearchByKeywordTemplate) (interface{}, error)
 	CancelInvoice(req *NewInvoiceTemplate) (interface{}, error)
+	Searchcreditcard(req *SearchcreditcardTamplate) (interface{}, error)
 }
+
+func (s *service) Searchcreditcard(req *SearchcreditcardTamplate) (interface{}, error){
+	fmt.Println(213)
+	resp, err := s.repo.Searchcreditcard(req)
+	if err != nil {
+		return nil, err
+	}
+	return resp, nil
+}
+
 
 func (s *service) CreateQuotation(req *NewQuoTemplate) (interface{}, error) {
 	var count_item int

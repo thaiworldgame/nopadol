@@ -167,7 +167,9 @@ type (
 	SearchByIdRequest struct {
 		Id int64 `json:"id"`
 	}
-
+	SearchcreditcardRequest struct {
+		Keyword string `json:"keyword"`
+	}
 	SearchByKeywordRequest struct {
 		ArId     int64  `json:"ar_id"`
 		SaleCode string `json:"sale_code"`
@@ -1035,6 +1037,22 @@ func Invoicelist(s Service) interface{} {
 		}, nil
 	}
 }
+
+func Searchcreditcard(s Service) interface{} {
+	fmt.Println(1)
+	return func(ctx context.Context, req *SearchcreditcardRequest) (interface{}, error) {
+		fmt.Println(2)
+		resp, err := s.Searchcreditcard(&SearchcreditcardTamplate{Keyword: req.Keyword})
+		if err != nil {
+			fmt.Println("endpoint error =", err.Error())
+			return nil, fmt.Errorf(err.Error())
+		}
+		return map[string]interface{}{
+			"data": resp,
+		}, nil
+	}
+}
+
 func CancelInvoice(s Service) interface{} {
 	return func(ctx context.Context, req *NewInvoiceRequest) (interface{}, error) {
 		resp, err := s.CancelInvoice(&NewInvoiceTemplate{Id: req.Id, DocNo: req.DocNo, IsConfirm: req.IsConfirm, IsCancel: req.IsCancel, CancelBy: req.CancelBy, CancelTime: req.CancelTime})

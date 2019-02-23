@@ -157,12 +157,13 @@ type NewSaleItemTemplate struct {
 	RefLineNumber   int64   `json:"ref_line_number"`
 	IsCancel        int64   `json:"is_cancel"`
 }
- 
 
 type SearchByIdTemplate struct {
 	Id int64 `json:"id"`
 }
-
+type SearchcreditcardTamplate struct {
+	Keyword string `json:"keyword"`
+}
 type SearchByKeywordTemplate struct {
 	ArId     int64  `json:"ar_id"`
 	SaleCode string `json:"sale_code"`
@@ -196,6 +197,10 @@ type SearchInvTemplate struct {
 	TotalAmount   float64 `json:"total_amount"`
 	IsCancel      int     `json:"is_cancel"`
 	IsConfirm     int     `json:"is_confirm"`
+}
+type CreditCardTypeTemplate struct {
+	Id			int64 `json:"id"`
+	CreditCardTypeName string `json:"creditcardtype_name"`	
 }
 type SearchIVDocTemplate struct {
 	Id            int64   `json:"id"`
@@ -450,7 +455,7 @@ type NewInvoiceItemTemplate struct {
 	ShelfId         int64   `json:"shelf_id"`
 	Price           float64 `json:"price"`
 	UnitCode        string  `json:"unit_code"`
-	Location		string	`json:"location"`
+	Location        string  `json:"location"`
 	Qty             float64 `json:"qty"`
 	CnQty           float64 `json:"cn_qty"`
 	DiscountWord    float64 `json:"discount_word_sub"`

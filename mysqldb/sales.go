@@ -433,6 +433,10 @@ type RecMoneyModel struct {
 	BankTransDate  string  `db:"bank_trans_date"`
 	LineNumber     int64   `db:"line_number"`
 }
+type CreditCardTypeModel struct {
+	Id                 int64  `db:"id"`
+	CreditcardTypeName string `db:"creditcardtype_name"`
+}
 type BankpayModel struct {
 	Id           int64   `db:"id"`
 	RefId        int64   `db:"ref_id"`
@@ -1909,7 +1913,12 @@ func map_bank_template(x BankpayModel) sales.BankpayTemplate {
 		EditBy:       x.EditBy,
 	}
 }
-
+func map_crd_template(x CreditCardTypeModel) sales.CreditCardTypeTemplate {
+	return sales.CreditCardTypeTemplate{
+		Id:                 x.Id,
+		CreditCardTypeName: x.CreditcardTypeName,
+	}
+}
 func map_deposit_crd_template(x CreditCardModel) sales.CreditCardTemplate {
 	return sales.CreditCardTemplate{
 		Amount:       x.Amount,
@@ -2074,7 +2083,27 @@ func (repo *salesRepository) CancelInvoice(req *sales.NewInvoiceTemplate) (resp 
 		"ar_code":  req.ArCode,
 	}, nil
 }
+func (repo *salesRepository) Searchcreditcard(req *sales.SearchcreditcardTamplate) (resp interface{}, err error) {
+	crd := []CreditCardTypeModel{}
+	sql := `select id,creditcardtype_name from creditcard_type`
 
+	fmt.Println(sql)
+	err = repo.db.Select(&crd, sql)
+	if err != nil {
+		fmt.Print("Error", err.Error())
+		return nil, err
+	}
+
+	ro := []sales.CreditCardTypeTemplate{}
+
+	for _, l := range crd {
+
+		roline := map_crd_template(l)
+		ro = append(ro, roline)
+	}
+
+	return ro, nil
+}
 func (repo *salesRepository) CreateInvoice(req *sales.NewInvoiceTemplate) (interface{}, error) {
 	var check_doc_exist int64
 	var check_item_strock int64
@@ -2916,5 +2945,4 @@ func (repo *salesRepository) SearchInvoiceByKeyword(req *sales.SearchByKeywordTe
 	}
 
 	return dp, nil
-
 }
