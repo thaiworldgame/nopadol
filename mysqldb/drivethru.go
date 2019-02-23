@@ -217,7 +217,7 @@ func (d *drivethruRepository) CancelQueue(req *drivethru.QueueStatusRequest) (in
 	return pickup.CancelQueue(d.db, req)
 }
 
-func getBranch(db *sqlx.DB, branch_id int) string {
+func getBranch(db *sqlx.DB, branch_id string) string {
 	var branch_code string
 
 	lccommand := `select code from branch where id = ?`

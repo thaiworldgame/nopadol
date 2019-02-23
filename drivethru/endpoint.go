@@ -29,14 +29,14 @@ type (
 	UserLogInRequest struct {
 		UserCode     string `json:"user_code"`
 		Password     string `json:"password"`
-		BranchId     int    `json:"branch_id"`
+		BranchId     string    `json:"branch_id"`
 		ServerName   string `json:"server_name"`
 		DataBaseName string `json:"data_base_name"`
 	}
 
 	LoginRequest struct {
 		EmployeeCode string `json:"employee_code"`
-		BranchId     int    `json:"branch_id"`
+		BranchId     string `json:"branch_id"`
 		EmployeeName string `json:"employee_name"`
 		ServerName   string `json:"server_name"`
 		DatabaseName string `json:"database_name"`
