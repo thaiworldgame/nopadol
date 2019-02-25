@@ -86,6 +86,15 @@ type (
 		PlateNumber string `json:"plate_number"`
 	}
 
+	PickupEditRequest struct {
+		AccessToken string `json:"access_token"`
+		CarBrand    string `json:"carBrand"`
+		QId     int    `json:"qId"`
+		Status      int    `json:"status"`
+		SaleCode    string `json:"saleCode"`
+		CarNumber string `json:"carNumber"`
+	}
+
 	QueueStatusRequest struct {
 		AccessToken               string `json:"access_token"`
 		QueueId                   int    `json:"queue_id"`
@@ -370,6 +379,18 @@ func queueProduct(s Service) interface{} {
 	return func(ctx context.Context, req *QueueProductRequest) (interface{}, error) {
 		fmt.Println("start endpoint queue product queue is => ", req.QueueId)
 		resp, err := s.QueueProduct(&QueueProductRequest{AccessToken: req.AccessToken, QueueId: req.QueueId})
+		if err != nil {
+			return nil, err
+		}
+
+		return resp, nil
+	}
+}
+
+func pickupEdit(s Service) interface{} {
+	return func(ctx context.Context, req *PickupEditRequest) (interface{}, error) {
+		fmt.Println("start endpoint list queue edit is => ", req.QId)
+		resp, err := s.PickupEdit(&PickupEditRequest{QId: req.QId, CarBrand: req.CarBrand, CarNumber: req.CarNumber, SaleCode: req.SaleCode, Status: req.Status, AccessToken: req.AccessToken})
 		if err != nil {
 			return nil, err
 		}
