@@ -1061,31 +1061,46 @@ func (q *ListQueueModel) BillingDone(db *sqlx.DB, req *drivethru.BillingDoneRequ
 	if q.Status < 2 {
 		return map[string]interface{}{
 			"response": map[string]interface{}{
-				"success": false,
-				"error":   true,
-				"message": "Queue status not billing done",
+				"success":              false,
+				"error":                true,
+				"message":              "Queue status not billing done",
+				"total_amount":         0,
+				"invoice":              nil,
+				"is_print_short_form":  0,
+				"is_print_cash_form":   0,
+				"is_print_credit_form": 0,
 			},
-			"queid": ""}, nil
+		}, nil
 	}
 
 	if q.Status == 3 {
 		return map[string]interface{}{
 			"response": map[string]interface{}{
-				"success": false,
-				"error":   true,
-				"message": "Queue is invoice",
+				"success":              false,
+				"error":                true,
+				"message":              "Queue is invoiced",
+				"total_amount":         0,
+				"invoice":              nil,
+				"is_print_short_form":  0,
+				"is_print_cash_form":   0,
+				"is_print_credit_form": 0,
 			},
-			"queid": ""}, nil
+		}, nil
 	}
 
 	if q.IsCancel == 1 {
 		return map[string]interface{}{
 			"response": map[string]interface{}{
-				"success": false,
-				"error":   true,
-				"message": "Queue is cancel",
+				"success":              false,
+				"error":                true,
+				"message":              "Queue is cancel",
+				"total_amount":         0,
+				"invoice":              nil,
+				"is_print_short_form":  0,
+				"is_print_cash_form":   0,
+				"is_print_credit_form": 0,
 			},
-			"queid": ""}, nil
+		}, nil
 	}
 
 	if q.Status == 2 {
@@ -1098,11 +1113,24 @@ func (q *ListQueueModel) BillingDone(db *sqlx.DB, req *drivethru.BillingDoneRequ
 			if item_amount != q.TotalAfterAmount {
 				return map[string]interface{}{
 					"response": map[string]interface{}{
-						"success": false,
-						"error":   true,
-						"message": "ItemAmount not equal total_amount",
+						"success":      false,
+						"error":        true,
+						"message":      "ItemAmount not equal total_amount",
+						"total_amount": item_amount,
+						"invoice": map[string]interface{}{
+							"invoice_no":     "Not get invoice no",
+							"cash_amount":    req.Cash,
+							"change_amount":  change_amount,
+							"credit_amount":  crd_amount,
+							"coupong_amount": cou_amount,
+							"deposit_amount": dep_amount,
+							"remain_amount":  sum_remain,
+						},
+						"is_print_short_form":  0,
+						"is_print_cash_form":   0,
+						"is_print_credit_form": 0,
 					},
-					"queid": ""}, nil
+				}, nil
 			}
 			/////////////////////////////////////////////////////////////////////////////////////////////////////////////
 			if len(req.CreditCard) != 0 {
@@ -1112,21 +1140,47 @@ func (q *ListQueueModel) BillingDone(db *sqlx.DB, req *drivethru.BillingDoneRequ
 					if c.Amount == 0 {
 						return map[string]interface{}{
 							"response": map[string]interface{}{
-								"success": false,
-								"error":   true,
-								"message": "coupon not have amount",
+								"success":      false,
+								"error":        true,
+								"message":      "coupon not have amount",
+								"total_amount": item_amount,
+								"invoice": map[string]interface{}{
+									"invoice_no":     "Not get invoice no",
+									"cash_amount":    req.Cash,
+									"change_amount":  change_amount,
+									"credit_amount":  crd_amount,
+									"coupong_amount": cou_amount,
+									"deposit_amount": dep_amount,
+									"remain_amount":  sum_remain,
+								},
+								"is_print_short_form":  0,
+								"is_print_cash_form":   0,
+								"is_print_credit_form": 0,
 							},
-							"queid": ""}, nil
+						}, nil
 					}
 
 					if c.CardNo == "" || c.ConfirmNo == "" || c.CreditType == "" {
 						return map[string]interface{}{
 							"response": map[string]interface{}{
-								"success": false,
-								"error":   true,
-								"message": "credit card not have cardno or confirm no or credit type",
+								"success":      false,
+								"error":        true,
+								"message":      "credit card not have cardno or confirm no or credit type",
+								"total_amount": item_amount,
+								"invoice": map[string]interface{}{
+									"invoice_no":     "Not get invoice no",
+									"cash_amount":    req.Cash,
+									"change_amount":  change_amount,
+									"credit_amount":  crd_amount,
+									"coupong_amount": cou_amount,
+									"deposit_amount": dep_amount,
+									"remain_amount":  sum_remain,
+								},
+								"is_print_short_form":  0,
+								"is_print_cash_form":   0,
+								"is_print_credit_form": 0,
 							},
-							"queid": ""}, nil
+						}, nil
 					}
 
 					var same_credit int
@@ -1147,11 +1201,24 @@ func (q *ListQueueModel) BillingDone(db *sqlx.DB, req *drivethru.BillingDoneRequ
 							if same_credit > 1 {
 								return map[string]interface{}{
 									"response": map[string]interface{}{
-										"success": false,
-										"error":   true,
-										"message": "confirm no have deplicate",
+										"success":      false,
+										"error":        true,
+										"message":      "confirm no have deplicate",
+										"total_amount": item_amount,
+										"invoice": map[string]interface{}{
+											"invoice_no":     "Not get invoice no",
+											"cash_amount":    req.Cash,
+											"change_amount":  change_amount,
+											"credit_amount":  crd_amount,
+											"coupong_amount": cou_amount,
+											"deposit_amount": dep_amount,
+											"remain_amount":  sum_remain,
+										},
+										"is_print_short_form":  0,
+										"is_print_cash_form":   0,
+										"is_print_credit_form": 0,
 									},
-									"queid": ""}, nil
+								}, nil
 							}
 						}
 					}
@@ -1161,11 +1228,24 @@ func (q *ListQueueModel) BillingDone(db *sqlx.DB, req *drivethru.BillingDoneRequ
 					if chkCrdUsed == false {
 						return map[string]interface{}{
 							"response": map[string]interface{}{
-								"success": false,
-								"error":   true,
-								"message": msg,
+								"success":      false,
+								"error":        true,
+								"message":      msg,
+								"total_amount": item_amount,
+								"invoice": map[string]interface{}{
+									"invoice_no":     "Not get invoice no",
+									"cash_amount":    req.Cash,
+									"change_amount":  change_amount,
+									"credit_amount":  crd_amount,
+									"coupong_amount": cou_amount,
+									"deposit_amount": dep_amount,
+									"remain_amount":  sum_remain,
+								},
+								"is_print_short_form":  0,
+								"is_print_cash_form":   0,
+								"is_print_credit_form": 0,
 							},
-							"queid": ""}, nil
+						}, nil
 					}
 
 					crd_amount = crd_amount + c.Amount
@@ -1190,11 +1270,24 @@ func (q *ListQueueModel) BillingDone(db *sqlx.DB, req *drivethru.BillingDoneRequ
 						if same_coupon > 1 {
 							return map[string]interface{}{
 								"response": map[string]interface{}{
-									"success": false,
-									"error":   true,
-									"message": "coupon have deplicate",
+									"success":      false,
+									"error":        true,
+									"message":      "coupon have deplicate",
+									"total_amount": item_amount,
+									"invoice": map[string]interface{}{
+										"invoice_no":     "Not get invoice no",
+										"cash_amount":    req.Cash,
+										"change_amount":  change_amount,
+										"credit_amount":  crd_amount,
+										"coupong_amount": cou_amount,
+										"deposit_amount": dep_amount,
+										"remain_amount":  sum_remain,
+									},
+									"is_print_short_form":  0,
+									"is_print_cash_form":   0,
+									"is_print_credit_form": 0,
 								},
-								"queid": ""}, nil
+							}, nil
 						}
 					}
 				}
@@ -1204,21 +1297,47 @@ func (q *ListQueueModel) BillingDone(db *sqlx.DB, req *drivethru.BillingDoneRequ
 					if p.CouponCode == "" {
 						return map[string]interface{}{
 							"response": map[string]interface{}{
-								"success": false,
-								"error":   true,
-								"message": "coupon not have code",
+								"success":      false,
+								"error":        true,
+								"message":      "coupon not have code",
+								"total_amount": item_amount,
+								"invoice": map[string]interface{}{
+									"invoice_no":     "Not get invoice no",
+									"cash_amount":    req.Cash,
+									"change_amount":  change_amount,
+									"credit_amount":  crd_amount,
+									"coupong_amount": cou_amount,
+									"deposit_amount": dep_amount,
+									"remain_amount":  sum_remain,
+								},
+								"is_print_short_form":  0,
+								"is_print_cash_form":   0,
+								"is_print_credit_form": 0,
 							},
-							"queid": ""}, nil
+						}, nil
 					}
 
 					if p.Amount == 0 {
 						return map[string]interface{}{
 							"response": map[string]interface{}{
-								"success": false,
-								"error":   true,
-								"message": "coupon not have amount",
+								"success":      false,
+								"error":        true,
+								"message":      "coupon not have amount",
+								"total_amount": item_amount,
+								"invoice": map[string]interface{}{
+									"invoice_no":     "Not get invoice no",
+									"cash_amount":    req.Cash,
+									"change_amount":  change_amount,
+									"credit_amount":  crd_amount,
+									"coupong_amount": cou_amount,
+									"deposit_amount": dep_amount,
+									"remain_amount":  sum_remain,
+								},
+								"is_print_short_form":  0,
+								"is_print_cash_form":   0,
+								"is_print_credit_form": 0,
 							},
-							"queid": ""}, nil
+						}, nil
 					}
 
 					cp := Coupon{}
@@ -1226,11 +1345,24 @@ func (q *ListQueueModel) BillingDone(db *sqlx.DB, req *drivethru.BillingDoneRequ
 					if chkCouUsed == false {
 						return map[string]interface{}{
 							"response": map[string]interface{}{
-								"success": false,
-								"error":   true,
-								"message": msg,
+								"success":      false,
+								"error":        true,
+								"message":      msg,
+								"total_amount": item_amount,
+								"invoice": map[string]interface{}{
+									"invoice_no":     "Not get invoice no",
+									"cash_amount":    req.Cash,
+									"change_amount":  change_amount,
+									"credit_amount":  crd_amount,
+									"coupong_amount": cou_amount,
+									"deposit_amount": dep_amount,
+									"remain_amount":  sum_remain,
+								},
+								"is_print_short_form":  0,
+								"is_print_cash_form":   0,
+								"is_print_credit_form": 0,
 							},
-							"queid": ""}, nil
+						}, nil
 					}
 
 					cou_amount = cou_amount + p.Amount
@@ -1254,11 +1386,24 @@ func (q *ListQueueModel) BillingDone(db *sqlx.DB, req *drivethru.BillingDoneRequ
 						if same_deposit > 1 {
 							return map[string]interface{}{
 								"response": map[string]interface{}{
-									"success": false,
-									"error":   true,
-									"message": "deposit have deplicate",
+									"success":      false,
+									"error":        true,
+									"message":      "deposit have deplicate",
+									"total_amount": item_amount,
+									"invoice": map[string]interface{}{
+										"invoice_no":     "Not get invoice no",
+										"cash_amount":    req.Cash,
+										"change_amount":  change_amount,
+										"credit_amount":  crd_amount,
+										"coupong_amount": cou_amount,
+										"deposit_amount": dep_amount,
+										"remain_amount":  sum_remain,
+									},
+									"is_print_short_form":  0,
+									"is_print_cash_form":   0,
+									"is_print_credit_form": 0,
 								},
-								"queid": ""}, nil
+							}, nil
 						}
 					}
 
@@ -1267,11 +1412,24 @@ func (q *ListQueueModel) BillingDone(db *sqlx.DB, req *drivethru.BillingDoneRequ
 					if chkDepUsed == false {
 						return map[string]interface{}{
 							"response": map[string]interface{}{
-								"success": false,
-								"error":   true,
-								"message": msg,
+								"success":      false,
+								"error":        true,
+								"message":      msg,
+								"total_amount": item_amount,
+								"invoice": map[string]interface{}{
+									"invoice_no":     "Not get invoice no",
+									"cash_amount":    req.Cash,
+									"change_amount":  change_amount,
+									"credit_amount":  crd_amount,
+									"coupong_amount": cou_amount,
+									"deposit_amount": dep_amount,
+									"remain_amount":  sum_remain,
+								},
+								"is_print_short_form":  0,
+								"is_print_cash_form":   0,
+								"is_print_credit_form": 0,
 							},
-							"queid": ""}, nil
+						}, nil
 					}
 					dep_amount = dep_amount + d.Amount
 				}
@@ -1397,11 +1555,24 @@ func (q *ListQueueModel) BillingDone(db *sqlx.DB, req *drivethru.BillingDoneRequ
 			if item_amount != q.TotalAfterAmount {
 				return map[string]interface{}{
 					"response": map[string]interface{}{
-						"success": false,
-						"error":   true,
-						"message": "ItemAmount not equal total_amount",
+						"success":      false,
+						"error":        true,
+						"message":      "ItemAmount not equal total_amount",
+						"total_amount": item_amount,
+						"invoice": map[string]interface{}{
+							"invoice_no":     "Not get invoice no",
+							"cash_amount":    req.Cash,
+							"change_amount":  change_amount,
+							"credit_amount":  crd_amount,
+							"coupong_amount": cou_amount,
+							"deposit_amount": dep_amount,
+							"remain_amount":  sum_remain,
+						},
+						"is_print_short_form":  0,
+						"is_print_cash_form":   0,
+						"is_print_credit_form": 0,
 					},
-					"queid": ""}, nil
+				}, nil
 			}
 
 			/////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1412,21 +1583,47 @@ func (q *ListQueueModel) BillingDone(db *sqlx.DB, req *drivethru.BillingDoneRequ
 					if c.Amount == 0 {
 						return map[string]interface{}{
 							"response": map[string]interface{}{
-								"success": false,
-								"error":   true,
-								"message": "coupon not have amount",
+								"success":      false,
+								"error":        true,
+								"message":      "coupon not have amount",
+								"total_amount": item_amount,
+								"invoice": map[string]interface{}{
+									"invoice_no":     "Not get invoice no",
+									"cash_amount":    req.Cash,
+									"change_amount":  change_amount,
+									"credit_amount":  crd_amount,
+									"coupong_amount": cou_amount,
+									"deposit_amount": dep_amount,
+									"remain_amount":  sum_remain,
+								},
+								"is_print_short_form":  0,
+								"is_print_cash_form":   0,
+								"is_print_credit_form": 0,
 							},
-							"queid": ""}, nil
+						}, nil
 					}
 
 					if c.CardNo == "" || c.ConfirmNo == "" || c.CreditType == "" {
 						return map[string]interface{}{
 							"response": map[string]interface{}{
-								"success": false,
-								"error":   true,
-								"message": "credit card not have cardno or confirm no or credit type",
+								"success":      false,
+								"error":        true,
+								"message":      "credit card not have cardno or confirm no or credit type",
+								"total_amount": item_amount,
+								"invoice": map[string]interface{}{
+									"invoice_no":     "Not get invoice no",
+									"cash_amount":    req.Cash,
+									"change_amount":  change_amount,
+									"credit_amount":  crd_amount,
+									"coupong_amount": cou_amount,
+									"deposit_amount": dep_amount,
+									"remain_amount":  sum_remain,
+								},
+								"is_print_short_form":  0,
+								"is_print_cash_form":   0,
+								"is_print_credit_form": 0,
 							},
-							"queid": ""}, nil
+						}, nil
 					}
 
 					var same_credit int
@@ -1447,11 +1644,24 @@ func (q *ListQueueModel) BillingDone(db *sqlx.DB, req *drivethru.BillingDoneRequ
 							if same_credit > 1 {
 								return map[string]interface{}{
 									"response": map[string]interface{}{
-										"success": false,
-										"error":   true,
-										"message": "confirm no have deplicate",
+										"success":      false,
+										"error":        true,
+										"message":      "confirm no have deplicate",
+										"total_amount": item_amount,
+										"invoice": map[string]interface{}{
+											"invoice_no":     "Not get invoice no",
+											"cash_amount":    req.Cash,
+											"change_amount":  change_amount,
+											"credit_amount":  crd_amount,
+											"coupong_amount": cou_amount,
+											"deposit_amount": dep_amount,
+											"remain_amount":  sum_remain,
+										},
+										"is_print_short_form":  0,
+										"is_print_cash_form":   0,
+										"is_print_credit_form": 0,
 									},
-									"queid": ""}, nil
+								}, nil
 							}
 						}
 					}
@@ -1461,11 +1671,24 @@ func (q *ListQueueModel) BillingDone(db *sqlx.DB, req *drivethru.BillingDoneRequ
 					if chkCrdUsed == false {
 						return map[string]interface{}{
 							"response": map[string]interface{}{
-								"success": false,
-								"error":   true,
-								"message": msg,
+								"success":      false,
+								"error":        true,
+								"message":      msg,
+								"total_amount": item_amount,
+								"invoice": map[string]interface{}{
+									"invoice_no":     "Not get invoice no",
+									"cash_amount":    req.Cash,
+									"change_amount":  change_amount,
+									"credit_amount":  crd_amount,
+									"coupong_amount": cou_amount,
+									"deposit_amount": dep_amount,
+									"remain_amount":  sum_remain,
+								},
+								"is_print_short_form":  0,
+								"is_print_cash_form":   0,
+								"is_print_credit_form": 0,
 							},
-							"queid": ""}, nil
+						}, nil
 					}
 
 					crd_amount = crd_amount + c.Amount
@@ -1490,11 +1713,24 @@ func (q *ListQueueModel) BillingDone(db *sqlx.DB, req *drivethru.BillingDoneRequ
 						if same_coupon > 1 {
 							return map[string]interface{}{
 								"response": map[string]interface{}{
-									"success": false,
-									"error":   true,
-									"message": "coupon have deplicate",
+									"success":      false,
+									"error":        true,
+									"message":      "coupon have deplicate",
+									"total_amount": item_amount,
+									"invoice": map[string]interface{}{
+										"invoice_no":     "Not get invoice no",
+										"cash_amount":    req.Cash,
+										"change_amount":  change_amount,
+										"credit_amount":  crd_amount,
+										"coupong_amount": cou_amount,
+										"deposit_amount": dep_amount,
+										"remain_amount":  sum_remain,
+									},
+									"is_print_short_form":  0,
+									"is_print_cash_form":   0,
+									"is_print_credit_form": 0,
 								},
-								"queid": ""}, nil
+							}, nil
 						}
 					}
 				}
@@ -1504,21 +1740,47 @@ func (q *ListQueueModel) BillingDone(db *sqlx.DB, req *drivethru.BillingDoneRequ
 					if p.CouponCode == "" {
 						return map[string]interface{}{
 							"response": map[string]interface{}{
-								"success": false,
-								"error":   true,
-								"message": "coupon not have code",
+								"success":      false,
+								"error":        true,
+								"message":      "coupon not have code",
+								"total_amount": item_amount,
+								"invoice": map[string]interface{}{
+									"invoice_no":     "Not get invoice no",
+									"cash_amount":    req.Cash,
+									"change_amount":  change_amount,
+									"credit_amount":  crd_amount,
+									"coupong_amount": cou_amount,
+									"deposit_amount": dep_amount,
+									"remain_amount":  sum_remain,
+								},
+								"is_print_short_form":  0,
+								"is_print_cash_form":   0,
+								"is_print_credit_form": 0,
 							},
-							"queid": ""}, nil
+						}, nil
 					}
 
 					if p.Amount == 0 {
 						return map[string]interface{}{
 							"response": map[string]interface{}{
-								"success": false,
-								"error":   true,
-								"message": "coupon not have amount",
+								"success":      false,
+								"error":        true,
+								"message":      "coupon not have amount",
+								"total_amount": item_amount,
+								"invoice": map[string]interface{}{
+									"invoice_no":     "Not get invoice no",
+									"cash_amount":    req.Cash,
+									"change_amount":  change_amount,
+									"credit_amount":  crd_amount,
+									"coupong_amount": cou_amount,
+									"deposit_amount": dep_amount,
+									"remain_amount":  sum_remain,
+								},
+								"is_print_short_form":  0,
+								"is_print_cash_form":   0,
+								"is_print_credit_form": 0,
 							},
-							"queid": ""}, nil
+						}, nil
 					}
 
 					cp := Coupon{}
@@ -1526,11 +1788,24 @@ func (q *ListQueueModel) BillingDone(db *sqlx.DB, req *drivethru.BillingDoneRequ
 					if chkCouUsed == false {
 						return map[string]interface{}{
 							"response": map[string]interface{}{
-								"success": false,
-								"error":   true,
-								"message": msg,
+								"success":      false,
+								"error":        true,
+								"message":      msg,
+								"total_amount": item_amount,
+								"invoice": map[string]interface{}{
+									"invoice_no":     "Not get invoice no",
+									"cash_amount":    req.Cash,
+									"change_amount":  change_amount,
+									"credit_amount":  crd_amount,
+									"coupong_amount": cou_amount,
+									"deposit_amount": dep_amount,
+									"remain_amount":  sum_remain,
+								},
+								"is_print_short_form":  0,
+								"is_print_cash_form":   0,
+								"is_print_credit_form": 0,
 							},
-							"queid": ""}, nil
+						}, nil
 					}
 
 					cou_amount = cou_amount + p.Amount
@@ -1553,11 +1828,24 @@ func (q *ListQueueModel) BillingDone(db *sqlx.DB, req *drivethru.BillingDoneRequ
 						if same_deposit > 1 {
 							return map[string]interface{}{
 								"response": map[string]interface{}{
-									"success": false,
-									"error":   true,
-									"message": "deposit have deplicate",
+									"success":      false,
+									"error":        true,
+									"message":      "deposit have deplicate",
+									"total_amount": item_amount,
+									"invoice": map[string]interface{}{
+										"invoice_no":     "Not get invoice no",
+										"cash_amount":    req.Cash,
+										"change_amount":  change_amount,
+										"credit_amount":  crd_amount,
+										"coupong_amount": cou_amount,
+										"deposit_amount": dep_amount,
+										"remain_amount":  sum_remain,
+									},
+									"is_print_short_form":  0,
+									"is_print_cash_form":   0,
+									"is_print_credit_form": 0,
 								},
-								"queid": ""}, nil
+							}, nil
 						}
 					}
 
@@ -1566,11 +1854,24 @@ func (q *ListQueueModel) BillingDone(db *sqlx.DB, req *drivethru.BillingDoneRequ
 					if chkDepUsed == false {
 						return map[string]interface{}{
 							"response": map[string]interface{}{
-								"success": false,
-								"error":   true,
-								"message": msg,
+								"success":      false,
+								"error":        true,
+								"message":      msg,
+								"total_amount": item_amount,
+								"invoice": map[string]interface{}{
+									"invoice_no":     "Not get invoice no",
+									"cash_amount":    req.Cash,
+									"change_amount":  change_amount,
+									"credit_amount":  crd_amount,
+									"coupong_amount": cou_amount,
+									"deposit_amount": dep_amount,
+									"remain_amount":  sum_remain,
+								},
+								"is_print_short_form":  0,
+								"is_print_cash_form":   0,
+								"is_print_credit_form": 0,
 							},
-							"queid": ""}, nil
+						}, nil
 					}
 					dep_amount = dep_amount + d.Amount
 					fmt.Println("dep_amount =", dep_amount)
