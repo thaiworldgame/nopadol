@@ -137,7 +137,8 @@ func (b *barcodeModel) save(db *sqlx.DB) (id int64, err error) {
 		unit_code,
 		active_status,
 		item_id,
-		item_code
+		item_code,
+		company_id,
 		)
 	values (?,?,?,?,?,?)`
 		rs, err := db.Exec(lcCommand,
@@ -147,6 +148,7 @@ func (b *barcodeModel) save(db *sqlx.DB) (id int64, err error) {
 			b.ActiveStatus,
 			b.ItemID,
 			b.ItemCode,
+			b.CompanyID,
 			)
 		if err != nil {
 			log.Printf("sql exec err ", err.Error())
