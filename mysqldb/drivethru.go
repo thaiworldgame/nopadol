@@ -229,6 +229,10 @@ func (d *drivethruRepository) QueueEdit(req *drivethru.QueueEditRequest) (interf
 	return QueueEdit(d.db, req)
 }
 
+func (d *drivethruRepository)PickupEdit(req *drivethru.PickupEditRequest) (interface{}, error) {
+	return PickupEdit(d.db, req)
+}
+
 func (d *drivethruRepository) QueueStatus(req *drivethru.QueueStatusRequest) (interface{}, error) {
 	pickup := ListQueueModel{}
 	return pickup.QueueStatus(d.db, req)
