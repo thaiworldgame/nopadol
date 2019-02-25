@@ -288,20 +288,20 @@ func (p *pickupModel) PickupNew(db *sqlx.DB, req *drivethru.NewPickupRequest) (i
 	if err != nil {
 		return map[string]interface{}{
 			"response": map[string]interface{}{
-				"process":     "pickup new",
+				"process":     "newPickup",
 				"processDesc": err.Error(),
 				"isSuccess":   false,
-			},
+			}, "qId": nil,
 		}, nil
 	}
 
 	if qId == 0 {
 		return map[string]interface{}{
 			"response": map[string]interface{}{
-				"process":     "pickup new",
+				"process":     "newPickup",
 				"processDesc": "Queue not gen Id",
 				"isSuccess":   false,
-			},
+			}, "qId": nil,
 		}, nil
 	}
 
@@ -317,30 +317,30 @@ func (p *pickupModel) PickupNew(db *sqlx.DB, req *drivethru.NewPickupRequest) (i
 	if req.CarNumber == "" {
 		return map[string]interface{}{
 			"response": map[string]interface{}{
-				"process":     "pickup new",
+				"process":     "newPickup",
 				"processDesc": "Queue not have car number",
 				"isSuccess":   false,
-			},
+			}, "qId": nil,
 		}, nil
 	}
 
 	if req.CarBrand == "" {
 		return map[string]interface{}{
 			"response": map[string]interface{}{
-				"process":     "pickup new",
+				"process":     "newPickup",
 				"processDesc": "Queue not have car brand",
 				"isSuccess":   false,
-			},
+			}, "qId": nil,
 		}, nil
 	}
 
 	if req.AccessToken == "" {
 		return map[string]interface{}{
 			"response": map[string]interface{}{
-				"process":     "pickup new",
+				"process":     "newPickup",
 				"processDesc": "Queue not have access_token",
 				"isSuccess":   false,
-			},
+			}, "qId": nil,
 		}, nil
 	}
 
@@ -362,11 +362,10 @@ func (p *pickupModel) PickupNew(db *sqlx.DB, req *drivethru.NewPickupRequest) (i
 		fmt.Println(err.Error())
 		return map[string]interface{}{
 			"response": map[string]interface{}{
-				"process":     "pickup new",
+				"process":     "newPickup",
 				"processDesc": "err = " + err.Error(),
 				"isSuccess":   false,
-			},
-			"queid": p.QueId,
+			}, "qId": nil,
 		}, nil
 	}
 
@@ -376,11 +375,10 @@ func (p *pickupModel) PickupNew(db *sqlx.DB, req *drivethru.NewPickupRequest) (i
 
 	return map[string]interface{}{
 		"response": map[string]interface{}{
-			"process":     "pickup new",
-			"processDesc": "successful",
+			"process":     "newPickup",
+			"processDesc": "Successful",
 			"isSuccess":   true,
-		},
-		"queid": p.QueId,
+		}, "qId": p.QueId,
 	}, nil
 }
 
@@ -390,32 +388,29 @@ func (item *QueueItem) ManagePickup(db *sqlx.DB, req *drivethru.ManagePickupRequ
 
 	if req.AccessToken == "" {
 		return map[string]interface{}{
-			"response": map[string]interface{}{
-				"success": false,
-				"error":   true,
-				"message": "Queue Not Have Access Token",
-			},
-			"queid": ""}, nil
+			"success": false,
+			"error":   true,
+			"message": "Queue Not Have Access Token",
+			"item":    nil,
+		}, nil
 	}
 
 	if req.QueueId == 0 {
 		return map[string]interface{}{
-			"response": map[string]interface{}{
-				"success": false,
-				"error":   true,
-				"message": "Queue Id Not Assign",
-			},
-			"queid": ""}, nil
+			"success": false,
+			"error":   true,
+			"message": "Queue Id Not Assign",
+			"item":    nil,
+		}, nil
 	}
 
 	if req.ItemBarcode == "" {
 		return map[string]interface{}{
-			"response": map[string]interface{}{
-				"success": false,
-				"error":   true,
-				"message": "Queue Not Have Barcode",
-			},
-			"queid": ""}, nil
+			"success": false,
+			"error":   true,
+			"message": "Queue Not Have Barcode",
+			"item":    nil,
+		}, nil
 	}
 
 	//if req.QtyBefore == 0 {
@@ -438,12 +433,11 @@ func (item *QueueItem) ManagePickup(db *sqlx.DB, req *drivethru.ManagePickupRequ
 
 	if p.ItemCode == "" {
 		return map[string]interface{}{
-			"response": map[string]interface{}{
-				"success": false,
-				"error":   true,
-				"message": "BarCode Not Have Data",
-			},
-			"queid": ""}, nil
+			"success": false,
+			"error":   true,
+			"message": "BarCode Not Have Data",
+			"item":    nil,
+		}, nil
 	}
 
 	u := UserAccess{}
@@ -465,12 +459,11 @@ func (item *QueueItem) ManagePickup(db *sqlx.DB, req *drivethru.ManagePickupRequ
 				resp, err := db.Exec(lccommand, q.Id, q.UUID, req.QueueId, q.DocDate, p.Id, p.ItemCode, p.ItemName, req.ItemBarcode, req.QtyBefore, req.QtyBefore, 0, p.SalePrice1, 0, p.UnitCode, req.QtyBefore*p.SalePrice1, 0, req.QtyBefore, req.QtyBefore, p.Rate1, q.PlateNumber, s.Id, p.AverageCost, 0, req.LineNumber, u.UserCode, now.String(), u.UserCode, now.String())
 				if err != nil {
 					return map[string]interface{}{
-						"response": map[string]interface{}{
-							"success": false,
-							"error":   true,
-							"message": err.Error(),
-						},
-						"queid": ""}, nil
+						"success": false,
+						"error":   true,
+						"message": err.Error(),
+						"item":    nil,
+					}, nil
 				}
 
 				fmt.Println(resp.LastInsertId())
@@ -482,12 +475,11 @@ func (item *QueueItem) ManagePickup(db *sqlx.DB, req *drivethru.ManagePickupRequ
 					resp, err := db.Exec(lccommand, req.QtyBefore, req.QtyBefore, req.QtyBefore*p.SalePrice1, req.QtyBefore, req.QtyBefore, q.Id, q.UUID, req.QueueId, p.ItemCode, p.UnitCode)
 					if err != nil {
 						return map[string]interface{}{
-							"response": map[string]interface{}{
-								"success": false,
-								"error":   true,
-								"message": err.Error(),
-							},
-							"queid": ""}, nil
+							"success": false,
+							"error":   true,
+							"message": err.Error(),
+							"item":    nil,
+						}, nil
 					}
 					fmt.Println(resp.LastInsertId())
 				} else {
@@ -495,12 +487,11 @@ func (item *QueueItem) ManagePickup(db *sqlx.DB, req *drivethru.ManagePickupRequ
 					resp, err := db.Exec(lccommand, u.UserCode, now.String(), q.Id, q.UUID, req.QueueId, p.ItemCode, p.UnitCode)
 					if err != nil {
 						return map[string]interface{}{
-							"response": map[string]interface{}{
-								"success": false,
-								"error":   true,
-								"message": err.Error(),
-							},
-							"queid": ""}, nil
+							"success": false,
+							"error":   true,
+							"message": err.Error(),
+							"item":    nil,
+						}, nil
 					}
 					fmt.Println(resp.LastInsertId())
 				}
@@ -511,23 +502,20 @@ func (item *QueueItem) ManagePickup(db *sqlx.DB, req *drivethru.ManagePickupRequ
 			_, err := db.Exec(lccommand, q.Id, q.UUID, req.QueueId, q.Id, q.UUID, req.QueueId, q.Id, q.UUID, req.QueueId)
 			if err != nil {
 				return map[string]interface{}{
-					"response": map[string]interface{}{
-						"success": false,
-						"error":   true,
-						"message": err.Error(),
-					},
-					"queid": ""}, nil
+					"success": false,
+					"error":   true,
+					"message": err.Error(),
+					"item":    nil,
+				}, nil
 			}
 
 			item.SearchQueueItem(db, req.QueueId, item.ItemCode, item.ItemUnitCode, req.LineNumber)
 
 			return map[string]interface{}{
-				"response": map[string]interface{}{
-					"success": true,
-					"error":   true,
-					"message": "",
-				},
-				"queid": map[string]interface{}{
+				"success": true,
+				"error":   true,
+				"message": "",
+				"item": map[string]interface{}{
 					"item_barcode":       p.BarCode,
 					"file_path":          p.PicPath1,
 					"is_cancel":          item.IsCancel,
@@ -551,22 +539,20 @@ func (item *QueueItem) ManagePickup(db *sqlx.DB, req *drivethru.ManagePickupRequ
 			}, nil
 		} else {
 			return map[string]interface{}{
-				"response": map[string]interface{}{
-					"success": false,
-					"error":   true,
-					"message": "Queue is ref used",
-				},
-				"queid": ""}, nil
+				"success": false,
+				"error":   true,
+				"message": "Queue is ref used",
+				"item":    nil,
+			}, nil
 		}
 
 	} else {
 		return map[string]interface{}{
-			"response": map[string]interface{}{
-				"success": false,
-				"error":   true,
-				"message": "Queue is cancel",
-			},
-			"queid": ""}, nil
+			"success": false,
+			"error":   true,
+			"message": "Queue is cancel",
+			"item":    nil,
+		}, nil
 	}
 
 }
@@ -583,32 +569,29 @@ func (item *QueueItem) ManageCheckOut(db *sqlx.DB, req *drivethru.ManageCheckout
 
 	if req.AccessToken == "" {
 		return map[string]interface{}{
-			"response": map[string]interface{}{
-				"success": false,
-				"error":   true,
-				"message": "Queue Not Have Access Token",
-			},
-			"queid": ""}, nil
+			"success": false,
+			"error":   true,
+			"message": "Queue Not Have Access Token",
+			"item":    nil,
+		}, nil
 	}
 
 	if req.QueueId == 0 {
 		return map[string]interface{}{
-			"response": map[string]interface{}{
-				"success": false,
-				"error":   true,
-				"message": "Queue Id Not Assign",
-			},
-			"queid": ""}, nil
+			"success": false,
+			"error":   true,
+			"message": "Queue Id Not Assign",
+			"item":    nil,
+		}, nil
 	}
 
 	if req.ItemBarcode == "" {
 		return map[string]interface{}{
-			"response": map[string]interface{}{
-				"success": false,
-				"error":   true,
-				"message": "Queue Not Have Barcode",
-			},
-			"queid": ""}, nil
+			"success": false,
+			"error":   true,
+			"message": "Queue Not Have Barcode",
+			"item":    nil,
+		}, nil
 	}
 
 	//if req.QtyAfter == 0 {

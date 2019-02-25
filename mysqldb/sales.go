@@ -974,9 +974,11 @@ func (repo *salesRepository) ConfirmQuotation(req *sales.NewQuoTemplate) (resp i
 	case req.IsConfirm == 1:
 		return nil, errors.New("เอกสารถูกอ้างอิงไปแล้ว ไม่สามารถอนุมัติได้")
 	case req.IsCancel == 1:
-		return nil, errors.New("เอกสารถูกยกเลิกไปแล้ว ไม่สามารถยกเลิกได้")
+		return nil, errors.New("เอกสารถูกยกเลิกไปแล้ว ไม่สามารถอนุมัติได้")
 	case req.AssertStatus == 0:
-		return nil, errors.New("เอกสารยังไม่ได้ตอบกลับ ไม่สามารถยกเลิกได้")
+		return nil, errors.New("เอกสารยังไม่ได้ตอบกลับ ไม่สามารถอนุมัติได้")
+		//case req.ExpireDate <= now:
+		//	return nil, errors.New("เอกสารยังไม่ได้ตอบกลับ ไม่สามารถอนุมัติได้")
 	}
 
 	sqlexist := `select count(DocNo) as check_exist from Quotation where id = ?`
@@ -1075,7 +1077,6 @@ func (repo *salesRepository) SearchQuoByKeyword(req *sales.SearchByKeywordTempla
 
 	return doc, nil
 }
-
 
 func (repo *salesRepository) SearchDocById(req *sales.SearchByIdTemplate) (resp interface{}, err error) {
 	doc := SearchDocDetailsModel{}
@@ -1254,9 +1255,8 @@ func (repo *salesRepository) QuotationToSaleOrder(req *sales.SearchByIdTemplate)
 	credit_day = int(q.CreditDay)
 	delivery_day = int(q.DeliveryDay)
 
-	due_date := now.AddDate(0, 0, credit_day).Format("2006-01-02")//strconv.Itoa(97)
-	delivery_date := now.AddDate(0,0,delivery_day).Format("2006-01-02")
-
+	due_date := now.AddDate(0, 0, credit_day).Format("2006-01-02") //strconv.Itoa(97)
+	delivery_date := now.AddDate(0, 0, delivery_day).Format("2006-01-02")
 
 	if (check_doc_exist == 0) {
 
@@ -1369,7 +1369,6 @@ func (repo *salesRepository) QuotationToSaleOrder(req *sales.SearchByIdTemplate)
 	}, nil
 }
 
-
 func map_doc_template(x SearchDocModel) sales.SearchDocTemplate {
 	return sales.SearchDocTemplate{
 		Id:            x.Id,
@@ -1432,6 +1431,14 @@ func map_quo_template(x NewQuoModel) sales.NewQuoTemplate {
 		EditTime:            x.EditTime,
 		CancelBy:            x.CancelBy,
 		CancelTime:          x.CancelTime,
+		BillStatus:          x.BillStatus,
+		BranchId:            x.BranchId,
+		CompanyId:           x.CompanyId,
+		ConfirmBy:           x.ConfirmBy,
+		ConfirmTime:         x.ConfirmTime,
+		IsCancel:            x.IsCancel,
+		IsConfirm:           x.IsConfirm,
+		JobId:               x.JobId,
 	}
 }
 
