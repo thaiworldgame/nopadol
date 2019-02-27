@@ -14,16 +14,24 @@ type itemUnitModel struct {
 
 func (u *itemUnitModel)getByCode(db *sqlx.DB)(err error){
 	//todo : get itemUnitProfile by code
-	fmt.Println("getByCode ",u.unitCode)
+	fmt.Printf("get UnitID By Code %v \n",u.unitCode)
 	lccommand := `select id from item_unit where unit_code=?`
 	err = db.QueryRow(lccommand,u.unitCode).Scan(&u.id)
-	return err
+	if err != nil {
+		fmt.Printf("error get unit_id by code ... %v",err.Error())
+		return err
+	}
+	return nil
 }
 
 func (u *itemUnitModel)getByID(db *sqlx.DB)(err error){
 	//todo : get itemUnitProfile by ID
 	lccommand := `select unit_code from item_unit where id=?`
 	err = db.QueryRow(lccommand,u.id).Scan(&u.unitCode)
-	return err
+	if err != nil {
+		fmt.Printf("error get unit_code from unit_id ... %v ",err.Error())
+		return err
+	}
+	return nil
 }
 
