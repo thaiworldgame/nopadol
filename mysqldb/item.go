@@ -207,7 +207,7 @@ func (it *itemModel) save(db *sqlx.DB) (newID int64, err error) {
 func (it *itemModel) getItemIDbyCode(db *sqlx.DB, code string) (int64, error) {
 	lccommand := `select id from Item where code=?`
 	db.QueryRow(lccommand, code).Scan(&it.Id)
-	fmt.Printf("unit id from code %s is %v \n", code, it.Id)
+	fmt.Printf("item_id from code %s is %v \n", code, it.Id)
 	return it.Id, nil
 }
 
