@@ -1,10 +1,11 @@
 package mysqldb
 
 import (
-	"github.com/mrtomyum/nopadol/companyconfig"
 	"fmt"
+
 	"github.com/jmoiron/sqlx"
-	"github.com/satori/go.uuid"
+	"github.com/mrtomyum/nopadol/companyconfig"
+	uuid "github.com/satori/go.uuid"
 )
 
 type RequestConfigModel struct {
@@ -19,7 +20,7 @@ type RequestConfigModel struct {
 	Email           string `db:"email"`
 	WebSite         string `db:"web_site"`
 	TaxRate         int    `db:"tax_rate"`
-	BranchCode      string `json:"branch_code"`
+	BranchCode      string `db:"branch_code"`
 	BranchName      string `db:"branch_name"`
 	BranchAddress   string `db:"branch_address"`
 	BranchTelephone string `db:"branch_telephone"`
