@@ -8,59 +8,59 @@ import (
 )
 
 type BCQuotation struct {
-	Id                  int64            `json:"id" db:"Id"`
-	UUID                string           `json:"uuid" db:"UUID"`
+	Id                  int64            `db:"Id" ่ json:"id"`
+	UUID                string           `db:"UUID" json:"uuid"`
 	DocNo               string           `json:"doc_no" db:"DocNo"`
-	DocDate             string           `json:"doc_date" db:"DocDate"`
-	CompanyId           int64            `json:"company_id" db:"CompanyId"`
-	BranchId            int64            `json:"branch_id" db:"BranchId"`
-	DocType             int64            `json:"doc_type" db:"DocType"`
-	ArId                int64            `json:"ar_id" db:"ArId"`
-	ArCode              string           `json:"ar_code" db:"ArCode"`
-	ArName              string           `json:"ar_name" db:"ArName"`
-	ArBillAddress       string           `json:"ar_bill_address" db:"ArBillAddress"`
-	ArTelephone         string           `json:"ar_telephone" db:"ArTelephone"`
-	SaleId              int64            `json:"sale_id" db:"SaleId"`
-	SaleCode            string           `json:"sale_code" db:"SaleCode"`
-	SaleName            string           `json:"sale_name" db:"SaleName"`
-	BillType            int64            `json:"bill_type" db:"BillType"`
-	TaxType             int64            `json:"tax_type"  db:"TaxType"`
-	TaxRate             float64          `json:"tax_rate"  db:"TaxRate"`
-	DepartId            int64            `json:"depart_id" db:"DepartId"`
-	RefNo               string           `json:"ref_no" db:"RefNo"`
-	JobId               string           `json:"job_id" db:"JobId"`
-	IsConfirm           int64            `json:"is_confirm" db:"IsConfirm"`
-	BillStatus          int64            `json:"bill_status" db:"BillStatus"`
-	Validity            int64            `json:"validity"db:"Validity"`
-	CreditDay           int64            `json:"credit_day" db:"CreditDay"`
-	DueDate             string           `json:"due_date"db:"DueDate"`
-	ExpireCredit        int64            `json:"expire_credit"db:"ExpireCredit"`
-	ExpireDate          string           `json:"expire_date"db:"ExpireDate"`
-	DeliveryDay         int64            `json:"delivery_day"db:"DeliveryDay"`
-	DeliveryDate        string           `json:"delivery_date"db:"DeliveryDate"`
-	AssertStatus        int64            `json:"assert_status"db:"AssertStatus"`
-	IsConditionSend     int64            `json:"is_condition_send"db:"IsConditionSend"`
-	MyDescription       string           `json:"my_description"db:"MyDescription"`
-	SumOfItemAmount     float64          `json:"sum_of_item_amount"db:"SumOfItemAmount"`
-	DiscountWord        string           `json:"discount_word"db:"DiscountWord"`
-	DiscountAmount      float64          `json:"discount_amount"db:"DiscountAmount"`
-	AfterDiscountAmount float64          `json:"after_discount_amount"db:"AfterDiscountAmount"`
-	BeforeTaxAmount     float64          `json:"before_tax_amount"db:"BeforeTaxAmount"`
-	TaxAmount           float64          `json:"tax_amount"db:"TaxAmount"`
-	TotalAmount         float64          `json:"total_amount"db:"TotalAmount"`
-	NetDebtAmount       float64          `json:"net_debt_amount"db:"NetDebtAmount"`
-	ProjectId           int64            `json:"project_id"db:"ProjectId"`
-	AllocateId          int64            `json:"allocate_id"db:"AllocateId"`
-	IsCancel            int64            `json:"is_cancel"db:"IsCancel"`
-	CreateBy            string           `json:"create_by"db:"CreateBy"`
-	CreateTime          string           `json:"create_time"db:"CreateTime"`
-	EditBy              string           `json:"edit_by"db:"EditBy"`
-	EditTime            string           `json:"edit_time"db:"EditTime"`
-	ConfirmBy           string           `json:"confirm_by"db:"ConfirmBy"`
-	ConfirmTime         string           `json:"confirm_time"db:"ConfirmTime"`
-	CancelBy            string           `json:"cancel_by"db:"CancelBy"`
-	CancelTime          string           `json:"cancel_time"db:"CancelTime"`
-	Subs                []BCQuotationSub `json:"subs" db:"subs"`
+	DocDate             string           `db:"DocDate" json:"doc_date"`
+	CompanyId           int64            `db:"CompanyId" json:"company_id"`
+	BranchId            int64            `db:"BranchId" json:"branch_id"`
+	DocType             int64            `db:"DocType" json:"doc_type"`
+	ArId                int64            `db:"ArId" json:"ar_id"`
+	ArCode              string           `db:"ArCode" json:"ar_code"`
+	ArName              string           `json:"ar_name" db:"ArName" `
+	ArBillAddress       string           `db:"ArBillAddress" json:"ar_bill_address"`
+	ArTelephone         string           `db:"ArTelephone" json:"ar_telephone"`
+	SaleId              int64            `db:"SaleId" json:"sale_id"`
+	SaleCode            string           `db:"SaleCode" json:"sale_code"`
+	SaleName            string           `db:"SaleName" json:"sale_name"`
+	BillType            int64            `db:"BillType"`
+	TaxType             int64            `db:"TaxType"`
+	TaxRate             float64          `db:"TaxRate"`
+	DepartId            int64            `db:"DepartId"`
+	RefNo               string           `db:"RefNo"`
+	JobId               string           `db:"JobId"`
+	IsConfirm           int64            `db:"IsConfirm"`
+	BillStatus          int64            `db:"BillStatus"`
+	Validity            int64            `db:"Validity"`
+	CreditDay           int64            `db:"CreditDay"`
+	DueDate             string           `db:"DueDate"`
+	ExpireCredit        int64            `db:"ExpireCredit"`
+	ExpireDate          string           `db:"ExpireDate"`
+	DeliveryDay         int64            `db:"DeliveryDay"`
+	DeliveryDate        string           `db:"DeliveryDate"`
+	AssertStatus        int64            `db:"AssertStatus"`
+	IsConditionSend     int64            `db:"IsConditionSend"`
+	MyDescription       string           `db:"MyDescription"`
+	SumOfItemAmount     float64          `db:"SumOfItemAmount"`
+	DiscountWord        string           `db:"DiscountWord"`
+	DiscountAmount      float64          `db:"DiscountAmount"`
+	AfterDiscountAmount float64          `db:"AfterDiscountAmount"`
+	BeforeTaxAmount     float64          `db:"BeforeTaxAmount"`
+	TaxAmount           float64          `db:"TaxAmount"`
+	TotalAmount         float64          `db:"TotalAmount"`
+	NetDebtAmount       float64          `db:"NetDebtAmount"`
+	ProjectId           int64            `db:"ProjectId"`
+	AllocateId          int64            `db:"AllocateId"`
+	IsCancel            int64            `db:"IsCancel"`
+	CreateBy            string           `db:"CreateBy"`
+	CreateTime          string           `db:"CreateTime"`
+	EditBy              string           `db:"EditBy"`
+	EditTime            string           `db:"EditTime"`
+	ConfirmBy           string           `db:"ConfirmBy"`
+	ConfirmTime         string           `db:"ConfirmTime"`
+	CancelBy            string           `db:"CancelBy"`
+	CancelTime          string           `db:"CancelTime"`
+	Subs                []BCQuotationSub `db:"subs"`
 }
 
 type BCQuotationSub struct {
@@ -92,7 +92,7 @@ func (q *BCQuotation) get(db *sqlx.DB) error {
 
 	err := rs.Scan(&q.UUID, &q.Id, &q.DocNo, &q.DocDate, &q.BillType, &q.ArCode, &q.SumOfItemAmount)
 
-	fmt.Println(q)
+	fmt.Println("Quotation Head = ",q)
 	if err != nil {
 		return err
 	}
