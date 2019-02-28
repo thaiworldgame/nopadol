@@ -53,7 +53,7 @@ func (repo *gendocnoRepository) Gen(req *gendocno.DocNoTemplate) (resp string, e
 	if err != nil {
 		return "", err
 	}
-
+	fmt.Println(d)
 	last_number1, _ = GetLastDocNo(repo.db, req.BranchId, req.TableCode, d.FormatNumber, req.BillType)
 	last_number = strconv.Itoa(last_number1)
 	fmt.Println("Last No = ", last_number)

@@ -435,7 +435,7 @@ type (
 		Location        string  `json:"location"`
 		Qty             float64 `json:"qty"`
 		CnQty           float64 `json:"cn_qty"`
-		DiscountWord    float64 `json:"discount_word_sub"`
+		DiscountWord    string  `json:"discount_word_sub"`
 		DiscountAmount  float64 `json:"discount_amount_sub"`
 		ItemAmount      float64 `json:"amount"`
 		NetAmount       float64 `json:"net_amount"`
@@ -607,7 +607,7 @@ func SearchQuoById(s Service) interface{} {
 
 func SearchQuoByKeyword(s Service) interface{} {
 	return func(ctx context.Context, req *SearchByKeywordRequest) (interface{}, error) {
-		resp, err := s.SearchQueByKeyword(&SearchByKeywordTemplate{SaleCode: req.SaleCode, Keyword:req.Keyword})
+		resp, err := s.SearchQueByKeyword(&SearchByKeywordTemplate{SaleCode: req.SaleCode, Keyword: req.Keyword})
 		if err != nil {
 			fmt.Println("endpoint error =", err.Error())
 			return nil, fmt.Errorf(err.Error())
@@ -634,7 +634,7 @@ func ConfirmQuotation(s Service) interface{} {
 func QuotationToSaleOrder(s Service) interface{} {
 	return func(ctx context.Context, req *SearchByIdRequest) (interface{}, error) {
 
-		resp, err := s.QuotationToSaleOrder(&SearchByIdTemplate{Id:req.Id})
+		resp, err := s.QuotationToSaleOrder(&SearchByIdTemplate{Id: req.Id})
 		if err != nil {
 			fmt.Println("endpoint error =", err.Error())
 			return nil, fmt.Errorf(err.Error())
@@ -819,7 +819,7 @@ func SearchSaleOrderById(s Service) interface{} {
 
 func SearchSaleOrderByKeyword(s Service) interface{} {
 	return func(ctx context.Context, req *SearchByKeywordRequest) (interface{}, error) {
-		resp, err := s.SearchSaleOrderByKeyword(&SearchByKeywordTemplate{SaleCode:req.SaleCode,Keyword:req.Keyword})
+		resp, err := s.SearchSaleOrderByKeyword(&SearchByKeywordTemplate{SaleCode: req.SaleCode, Keyword: req.Keyword})
 		if err != nil {
 			fmt.Println("endpoint error =", err.Error())
 			return nil, fmt.Errorf(err.Error())

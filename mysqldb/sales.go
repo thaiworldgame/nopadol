@@ -6,14 +6,15 @@ import (
 	"strconv"
 	"time"
 
+	"bytes"
+	"encoding/json"
+	"log"
+	"net/http"
+
 	"github.com/jmoiron/sqlx"
 	"github.com/mrtomyum/nopadol/config"
-	"github.com/mrtomyum/nopadol/sales"
 	"github.com/mrtomyum/nopadol/gendocno"
-	"encoding/json"
-	"net/http"
-	"bytes"
-	"log"
+	"github.com/mrtomyum/nopadol/sales"
 )
 
 type NewQuoModel struct {
@@ -559,7 +560,7 @@ type NewInvoiceItemModel struct {
 	UnitCode        string  `db:"unit_code"`
 	Qty             float64 `db:"qty"`
 	CnQty           float64 `db:"cn_qty"`
-	DiscountWord    float64 `db:"discount_word_sub"`
+	DiscountWord    string  `db:"discount_word_sub"`
 	DiscountAmount  float64 `db:"discount_amount_sub"`
 	ItemAmount      float64 `db:"amount"`
 	NetAmount       float64 `db:"net_amount"`
@@ -589,7 +590,7 @@ type NewSearchItemModel struct {
 	Price           float64 `db:"price"`
 	Qty             float64 `db:"qty"`
 	CnQty           float64 `db:"cn_qty"`
-	DiscountWord    float64 `db:"discount_word_sub"`
+	DiscountWord    string  `db:"discount_word_sub"`
 	ItemDescription string  `db:"item_description"`
 	IsCreditNote    int64   `db:"is_credit_note"`
 	IsDebitNote     int64   `db:"is_debit_note"`
@@ -1080,7 +1081,6 @@ func (repo *salesRepository) SearchQuoByKeyword(req *sales.SearchByKeywordTempla
 	return doc, nil
 }
 
-
 func (repo *salesRepository) SearchDocById(req *sales.SearchByIdTemplate) (resp interface{}, err error) {
 	doc := SearchDocDetailsModel{}
 
@@ -1165,7 +1165,7 @@ func (repo *salesRepository) QuotationToSaleOrder(req *sales.SearchByIdTemplate)
 	fmt.Println("DocDate = ", q.DocDate)
 
 	for _, sub_item := range q.Subs {
-		if (sub_item.Qty != 0) {
+		if sub_item.Qty != 0 {
 			count_item = count_item + 1
 
 			if sub_item.DiscountWord != "" {
@@ -1179,10 +1179,10 @@ func (repo *salesRepository) QuotationToSaleOrder(req *sales.SearchByIdTemplate)
 
 			sum_item_amount = sum_item_amount + (sub_item.Qty * (sub_item.Price - item_discount_amount_sub))
 		}
-		if (sub_item.ItemCode != "" && sub_item.Qty == 0) {
+		if sub_item.ItemCode != "" && sub_item.Qty == 0 {
 			count_item_qty = count_item_qty + 1
 		}
-		if (sub_item.ItemCode != "" && sub_item.UnitCode == "") {
+		if sub_item.ItemCode != "" && sub_item.UnitCode == "" {
 			count_item_unit = count_item_unit + 1
 		}
 	}
@@ -1258,11 +1258,10 @@ func (repo *salesRepository) QuotationToSaleOrder(req *sales.SearchByIdTemplate)
 	credit_day = int(q.CreditDay)
 	delivery_day = int(q.DeliveryDay)
 
-	due_date := now.AddDate(0, 0, credit_day).Format("2006-01-02")//strconv.Itoa(97)
-	delivery_date := now.AddDate(0,0,delivery_day).Format("2006-01-02")
+	due_date := now.AddDate(0, 0, credit_day).Format("2006-01-02") //strconv.Itoa(97)
+	delivery_date := now.AddDate(0, 0, delivery_day).Format("2006-01-02")
 
-
-	if (check_doc_exist == 0) {
+	if check_doc_exist == 0 {
 
 		q.BeforeTaxAmount, q.TaxAmount, q.TotalAmount = config.CalcTaxItem(q.TaxType, q.TaxRate, q.AfterDiscountAmount)
 
@@ -1372,7 +1371,6 @@ func (repo *salesRepository) QuotationToSaleOrder(req *sales.SearchByIdTemplate)
 		"doc_date": doc_date,
 	}, nil
 }
-
 
 func map_doc_template(x SearchDocModel) sales.SearchDocTemplate {
 	return sales.SearchDocTemplate{
@@ -3376,7 +3374,7 @@ func (repo *salesRepository) SearchInvoiceByKeyword(req *sales.SearchByKeywordTe
 	sql = `select a.id,a.doc_no,a.doc_date,a.doc_type,a.ar_code,a.ar_name,a.sale_code,a.sale_name,ifnull(a.my_description,'') as my_description,
 		a.total_amount,a.is_cancel,a.is_confirm 
 		from ar_invoice a 
-		where a.is_cancel = 0 and doc_type = 0`
+		where doc_type = 0`
 	err = repo.db.Select(&d, sql)
 
 	fmt.Println("sql = ", sql, req.Keyword)
