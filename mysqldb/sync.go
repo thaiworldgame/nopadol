@@ -40,7 +40,7 @@ func NewSyncRepository(db *sqlx.DB) sync.Repository {
 	return &syncRepository{db}
 }
 
-func (s *syncRepository) GetNewQoutaion() (resp interface{}, err error) {
+func (s *syncRepository) GetNewQuotaion() (resp interface{}, err error) {
 	sync := syncLogs{}
 	resp, err = sync.getWaitQuotation(s.db)
 	if err != nil {

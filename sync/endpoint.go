@@ -4,7 +4,7 @@ import "context"
 
 func NewQuotation(s Service) interface{}{
 	return func(ctx context.Context)(interface{}, error){
-		resp,err := s.GetNewQoutaion()
+		resp,err := s.GetNewQuotaion()
 		if err != nil {
 			return nil,err
 		}

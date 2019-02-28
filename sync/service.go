@@ -11,13 +11,13 @@ type service struct {
 }
 
 type Service interface {
-	GetNewQoutaion() (interface{},error)
+	GetNewQuotaion() (interface{},error)
 }
 
 
 
-func (s *service)GetNewQoutaion()(interface{},error){
-	resp,err := s.repo.GetNewQoutaion()
+func (s *service)GetNewQuotaion()(interface{},error){
+	resp,err := s.repo.GetNewQuotaion()
 	if err != nil {
 		return nil,err
 	}

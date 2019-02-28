@@ -1347,7 +1347,7 @@ func (repo *salesRepository) QuotationToSaleOrder(req *sales.SearchByIdTemplate)
 			0,
 			0,
 			"",
-			sub.QuoId,
+			q.Id,
 			sub.IsCancel,
 			sub.PackingRate1,
 			0,

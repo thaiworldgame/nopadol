@@ -8,21 +8,21 @@ import (
 )
 
 type BCQuotation struct {
-	Id                  int64            `db:"Id"`
-	UUID                string           `db:"UUID"`
-	DocNo               string           `db:"DocNo"`
-	DocDate             string           `db:"DocDate"`
-	CompanyId           int64            `db:"CompanyId"`
-	BranchId            int64            `db:"BranchId"`
-	DocType             int64            `db:"DocType"`
-	ArId                int64            `db:"ArId"`
-	ArCode              string           `db:"ArCode"`
-	ArName              string           `db:"ArName"`
-	ArBillAddress       string           `db:"ArBillAddress"`
-	ArTelephone         string           `db:"ArTelephone"`
-	SaleId              int64            `db:"SaleId"`
-	SaleCode            string           `db:"SaleCode"`
-	SaleName            string           `db:"SaleName"`
+	Id                  int64            `db:"Id" ่ json:"id"`
+	UUID                string           `db:"UUID" json:"uuid"`
+	DocNo               string           `json:"doc_no" db:"DocNo"`
+	DocDate             string           `db:"DocDate" json:"doc_date"`
+	CompanyId           int64            `db:"CompanyId" json:"company_id"`
+	BranchId            int64            `db:"BranchId" json:"branch_id"`
+	DocType             int64            `db:"DocType" json:"doc_type"`
+	ArId                int64            `db:"ArId" json:"ar_id"`
+	ArCode              string           `db:"ArCode" json:"ar_code"`
+	ArName              string           `json:"ar_name" db:"ArName" `
+	ArBillAddress       string           `db:"ArBillAddress" json:"ar_bill_address"`
+	ArTelephone         string           `db:"ArTelephone" json:"ar_telephone"`
+	SaleId              int64            `db:"SaleId" json:"sale_id"`
+	SaleCode            string           `db:"SaleCode" json:"sale_code"`
+	SaleName            string           `db:"SaleName" json:"sale_name"`
 	BillType            int64            `db:"BillType"`
 	TaxType             int64            `db:"TaxType"`
 	TaxRate             float64          `db:"TaxRate"`
@@ -92,7 +92,7 @@ func (q *BCQuotation) get(db *sqlx.DB) error {
 
 	err := rs.Scan(&q.UUID, &q.Id, &q.DocNo, &q.DocDate, &q.BillType, &q.ArCode, &q.SumOfItemAmount)
 
-	fmt.Println(q)
+	fmt.Println("Quotation Head = ",q)
 	if err != nil {
 		return err
 	}
