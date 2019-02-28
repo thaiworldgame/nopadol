@@ -1,19 +1,19 @@
 package mysqldb
 
 import (
+	"bytes"
+	"encoding/json"
 	"errors"
 	"fmt"
+	"log"
+	"net/http"
 	"strconv"
 	"time"
 
 	"github.com/jmoiron/sqlx"
 	"github.com/mrtomyum/nopadol/config"
-	"github.com/mrtomyum/nopadol/sales"
 	"github.com/mrtomyum/nopadol/gendocno"
-	"encoding/json"
-	"net/http"
-	"bytes"
-	"log"
+	"github.com/mrtomyum/nopadol/sales"
 )
 
 type NewQuoModel struct {
@@ -627,7 +627,8 @@ func (repo *salesRepository) CreateQuotation(req *sales.NewQuoTemplate) (resp in
 	var count_item_unit int
 	var sum_item_amount float64
 	var uuid string
-
+	var credit_balance float64
+	var check_credit_status int64
 	def := config.Default{}
 	def = config.LoadDefaultData("config/config.json")
 
@@ -680,6 +681,44 @@ func (repo *salesRepository) CreateQuotation(req *sales.NewQuoTemplate) (resp in
 	}
 
 	fmt.Println("check_doc_exist", check_doc_exist)
+
+	//CheckCredit
+	credit_status := `select BillType as credit_status from Quotation where id = ?`
+	fmt.Println("DocNo Id", req.Id)
+	err = repo.db.Get(&check_credit_status, credit_status, req.Id)
+	if err != nil {
+		fmt.Println("Error = ", err.Error())
+		return nil, err
+	}
+	fmt.Println("check_credit_status", check_credit_status)
+
+	req.BeforeTaxAmount, req.TaxAmount, req.TotalAmount = config.CalcTaxItem(req.TaxType, req.TaxRate, req.AfterDiscountAmount)
+	credit_sql := `select sum(debt_limit - (debt_amount+?)) as check_balance 
+	from Customer
+	where id = ?`
+	err = repo.db.Get(&credit_balance, credit_sql, req.TotalAmount, req.Id)
+	fmt.Println("This Value =", req.TotalAmount)
+	fmt.Println("credit_sql = ", req.ArCode)
+	fmt.Println("credit_sql = ", credit_sql)
+	if err != nil {
+		fmt.Println("Error credit_sql = ", err.Error())
+		return nil, err
+	}
+
+	if check_credit_status == 2 {
+		if credit_balance > 0 {
+			fmt.Println("credit enough")
+		} else {
+			ins_credit := `update Quotation set holding_status=1 where DocNo=? `
+			_, err := repo.db.Exec(ins_credit, req.DocNo)
+			fmt.Println("ins_credit =", ins_credit)
+			fmt.Println("This Value =", req.DocNo)
+			if err != nil {
+				return "", err
+			}
+			fmt.Println("credit not enough")
+		}
+	}
 
 	if check_doc_exist == 0 {
 		//API Call Get API
@@ -963,7 +1002,8 @@ func (repo *salesRepository) CancelQuotation(req *sales.NewQuoTemplate) (resp in
 
 func (repo *salesRepository) ConfirmQuotation(req *sales.NewQuoTemplate) (resp interface{}, err error) {
 	var check_doc_exist int64
-
+	var credit_balance float64
+	var check_credit_status int64
 	now := time.Now()
 
 	req.ConfirmTime = now.String()
@@ -990,6 +1030,43 @@ func (repo *salesRepository) ConfirmQuotation(req *sales.NewQuoTemplate) (resp i
 	}
 
 	fmt.Println("check_doc_exist", check_doc_exist)
+	//CheckCredit
+	credit_status := `select BillType as credit_status from Quotation where id = ?`
+	fmt.Println("DocNo Id", req.Id)
+	err = repo.db.Get(&check_credit_status, credit_status, req.Id)
+	if err != nil {
+		fmt.Println("Error = ", err.Error())
+		return nil, err
+	}
+	fmt.Println("check_credit_status", check_credit_status)
+
+	req.BeforeTaxAmount, req.TaxAmount, req.TotalAmount = config.CalcTaxItem(req.TaxType, req.TaxRate, req.AfterDiscountAmount)
+	credit_sql := `select sum(debt_limit - (debt_amount+?)) as check_balance 
+	from Customer
+	where id = ?`
+	err = repo.db.Get(&credit_balance, credit_sql, req.TotalAmount, req.Id)
+	fmt.Println("This Value =", req.TotalAmount)
+	fmt.Println("credit_sql = ", req.ArCode)
+	fmt.Println("credit_sql = ", credit_sql)
+	if err != nil {
+		fmt.Println("Error credit_sql = ", err.Error())
+		return nil, err
+	}
+
+	if check_credit_status == 2 {
+		if credit_balance > 0 {
+			fmt.Println("credit enough")
+		} else {
+			ins_credit := `update Quotation set holding_status=1 where DocNo=? `
+			_, err := repo.db.Exec(ins_credit, req.DocNo)
+			fmt.Println("ins_credit =", ins_credit)
+			fmt.Println("This Value =", req.DocNo)
+			if err != nil {
+				return "", err
+			}
+			fmt.Println("credit not enough")
+		}
+	}
 
 	if check_doc_exist != 0 {
 		fmt.Println("Confirm")
@@ -1167,6 +1244,7 @@ func (repo *salesRepository) QuotationToSaleOrder(req *sales.SearchByIdTemplate)
 
 	for _, sub_item := range qt_resp.Subs {
 		if (sub_item.Qty != 0) {
+
 			count_item = count_item + 1
 
 			if sub_item.DiscountWord != "" {
@@ -1180,10 +1258,10 @@ func (repo *salesRepository) QuotationToSaleOrder(req *sales.SearchByIdTemplate)
 
 			sum_item_amount = sum_item_amount + (sub_item.Qty * (sub_item.Price - item_discount_amount_sub))
 		}
-		if (sub_item.ItemCode != "" && sub_item.Qty == 0) {
+		if sub_item.ItemCode != "" && sub_item.Qty == 0 {
 			count_item_qty = count_item_qty + 1
 		}
-		if (sub_item.ItemCode != "" && sub_item.UnitCode == "") {
+		if sub_item.ItemCode != "" && sub_item.UnitCode == "" {
 			count_item_unit = count_item_unit + 1
 		}
 	}
@@ -1267,7 +1345,7 @@ func (repo *salesRepository) QuotationToSaleOrder(req *sales.SearchByIdTemplate)
 	due_date := now.AddDate(0, 0, credit_day).Format("2006-01-02") //strconv.Itoa(97)
 	delivery_date := now.AddDate(0, 0, delivery_day).Format("2006-01-02")
 
-	if (check_doc_exist == 0) {
+	if check_doc_exist == 0 {
 
 		q.BeforeTaxAmount, q.TaxAmount, q.TotalAmount = config.CalcTaxItem(q.TaxType, q.TaxRate, q.AfterDiscountAmount)
 
@@ -1383,7 +1461,7 @@ func (repo *salesRepository) QuotationToSaleOrder(req *sales.SearchByIdTemplate)
 	fmt.Println(rs)
 
 	return map[string]interface{}{
-		"id" : so_id,
+		"id":       so_id,
 		"doc_no":   doc_no,
 		"doc_date": doc_date,
 	}, nil
@@ -1493,6 +1571,7 @@ func (repo *salesRepository) CreateSaleOrder(req *sales.NewSaleTemplate) (resp i
 	var item_discount_amount_sub float64
 	var credit_balance float64
 	var uuid string
+	var check_credit_status int64
 
 	def := config.Default{}
 	def = config.LoadDefaultData("config/config.json")
@@ -1553,11 +1632,20 @@ func (repo *salesRepository) CreateSaleOrder(req *sales.NewSaleTemplate) (resp i
 		return nil, err
 	}
 	//CheckCredit
+	credit_status := `select BillType as credit_status from SaleOrder where id = ?`
+	fmt.Println("DocNo Id", req.Id)
+	err = repo.db.Get(&check_credit_status, credit_status, req.Id)
+	if err != nil {
+		fmt.Println("Error = ", err.Error())
+		return nil, err
+	}
+	fmt.Println("check_credit_status", check_credit_status)
+
 	req.BeforeTaxAmount, req.TaxAmount, req.TotalAmount = config.CalcTaxItem(req.TaxType, req.TaxRate, req.AfterDiscountAmount)
 	credit_sql := `select sum(debt_limit - (debt_amount+?)) as check_balance 
 	from Customer
-	where code = ?`
-	err = repo.db.Get(&credit_balance, credit_sql, req.TotalAmount, req.ArCode)
+	where id = ?`
+	err = repo.db.Get(&credit_balance, credit_sql, req.TotalAmount, req.Id)
 	fmt.Println("This Value =", req.TotalAmount)
 	fmt.Println("credit_sql = ", req.ArCode)
 	fmt.Println("credit_sql = ", credit_sql)
@@ -1566,22 +1654,22 @@ func (repo *salesRepository) CreateSaleOrder(req *sales.NewSaleTemplate) (resp i
 		return nil, err
 	}
 
-	if check_doc_exist == 0 {
-		//Insert Credit
+	if check_credit_status == 2 {
 		if credit_balance > 0 {
-			req.BeforeTaxAmount, req.TaxAmount, req.TotalAmount = config.CalcTaxItem(req.TaxType, req.TaxRate, req.AfterDiscountAmount)
 			fmt.Println("credit enough")
-			ins_credit := `update Customer set debt_amount=debt_amount+? where code=? `
-			_, err := repo.db.Exec(ins_credit, req.TotalAmount, req.ArCode)
+		} else {
+			ins_credit := `update SaleOrder set holding_status=1 where DocNo=? `
+			_, err := repo.db.Exec(ins_credit, req.DocNo)
 			fmt.Println("ins_credit =", ins_credit)
-			fmt.Println("This Value =", req.TotalAmount)
+			fmt.Println("This Value =", req.DocNo)
 			if err != nil {
 				return "", err
 			}
-		} else {
 			fmt.Println("credit not enough")
 		}
+	}
 
+	if check_doc_exist == 0 {
 		req.BeforeTaxAmount, req.TaxAmount, req.TotalAmount = config.CalcTaxItem(req.TaxType, req.TaxRate, req.AfterDiscountAmount)
 
 		uuid = GetAccessToken()
@@ -1650,20 +1738,6 @@ func (repo *salesRepository) CreateSaleOrder(req *sales.NewSaleTemplate) (resp i
 			return nil, errors.New("เอกสารโดนอ้างนำไปใช้งานแล้ว")
 		case req.IsCancel == 1:
 			return nil, errors.New("เอกสารถุกยกเลิกไปแล้ว")
-		}
-		//Update Credit
-		if credit_balance > 0 {
-			req.BeforeTaxAmount, req.TaxAmount, req.TotalAmount = config.CalcTaxItem(req.TaxType, req.TaxRate, req.AfterDiscountAmount)
-			fmt.Println("credit enough")
-			ins_credit := `update Customer set debt_amount=debt_amount+? where code=? `
-			_, err := repo.db.Exec(ins_credit, req.TotalAmount, req.ArCode)
-			fmt.Println("ins_credit =", ins_credit)
-			fmt.Println("This Value =", req.TotalAmount)
-			if err != nil {
-				return "", err
-			}
-		} else {
-			fmt.Println("credit not enough")
 		}
 
 		fmt.Println("Update")
@@ -3447,26 +3521,25 @@ func (repo *salesRepository) SearchSaleByItem(req *sales.SearchByItemTemplate) (
 	if req.Name == "" && req.ItemCode == "" {
 		fmt.Println("No Data")
 	} else {
-		/*	sql = `select a.id, ifnull(a.doc_no,'') as doc_no, ifnull(a.doc_date,'') as doc_date, a.item_id, a.ar_id,
+		switch {
+		case req.Page == "invoice":
+			/*sql = `select a.id, ifnull(a.doc_no,'') as doc_no, ifnull(a.doc_date,'') as doc_date, a.item_id, a.ar_id,
 			ifnull(a.bar_code,'') as bar_code, ifnull(a.item_code,'') as item_code, ifnull(a.item_name,'') as item_name,
 			a.unit_code, a.qty, a.cn_qty, a.price, a.ar_id,
 			b.id, b.name
 			from ar_invoice_sub a left join Customer b on a.ar_id = b.id
 			where b.name like concat(?) and a.item_code like concat(?)
-			order by a.id desc limit 20`
-			err = repo.db.Select(&d, sql, req.Name, req.ItemCode)*/
-		switch {
-		case req.Page == "invoice":
-			sql = `select a.id, ifnull(a.doc_no,'') as doc_no, ifnull(a.doc_date,'') as doc_date, a.item_id, a.ar_id,  
-			ifnull(a.bar_code,'') as bar_code, ifnull(a.item_code,'') as item_code, ifnull(a.item_name,'') as item_name, 
-			a.unit_code, a.qty, a.cn_qty, a.price, a.ar_id,
-			b.id, b.name
-			from ar_invoice_sub a left join Customer b on a.ar_id = b.id
-			where b.name like concat(?) and a.item_code like concat(?) 
-			order by a.id desc limit 20`
+			order by a.id desc limit 20`*/
+
+			sql = `select a.id, ifnull(a.doc_date,'') as doc_date, ifnull(a.doc_no,'') as doc_no,
+			a.ar_id, a.ar_name,
+			b.unit_code, b.qty, b.price, ifnull(b.item_code,'') as item_code, b.ar_id, ifnull(b.item_name,'') as item_name,b.ar_id, ifnull(b.discount_word_sub,'') as discount_word_sub
+			from ar_invoice a left join ar_invoice_sub b on a.ar_id = b.ar_id
+			where a.ar_name like concat(?) and b.item_code like concat(?)
+			order by a.Id desc limit 20`
 			err = repo.db.Select(&d, sql, req.Name, req.ItemCode)
 		case req.Page == "quotation":
-			sql = `select distinct a.Id, ifnull(a.DocDate,'') as DocDate, ifnull(a.DocNo,'') as DocNo, 
+			sql = `select a.Id, ifnull(a.DocDate,'') as DocDate, ifnull(a.DocNo,'') as DocNo, 
 			a.ArId, a.ArName,
 			b.UnitCode, b.Qty, b.Price, ifnull(b.ItemCode,'') as ItemCode, b.ArId, ifnull(b.ItemName,'') as ItemName,b.ArId, ifnull(b.DiscountWord,'') as DiscountWord
 			from Quotation a left join QuotationSub b on a.ArId = b.ArId
@@ -3474,7 +3547,7 @@ func (repo *salesRepository) SearchSaleByItem(req *sales.SearchByItemTemplate) (
 			order by a.Id desc limit 20`
 			err = repo.db.Select(&d, sql, req.Name, req.ItemCode)
 		case req.Page == "saleorder":
-			sql = `select distinct a.Id, ifnull(a.DocDate,'') as DocDate, ifnull(a.DocNo,'') as DocNo, 
+			sql = `select a.Id, ifnull(a.DocDate,'') as DocDate, ifnull(a.DocNo,'') as DocNo, 
 			a.ArId, a.ArName,
 			b.UnitCode, b.Qty, b.Price, ifnull(b.ItemCode,'') as ItemCode, b.ArId, ifnull(b.ItemName,'') as ItemName,b.ArId, ifnull(b.DiscountWord,'') as DiscountWord
 			from SaleOrder a left join SaleOrderSub b on a.ArId = b.ArId
@@ -3496,26 +3569,6 @@ func (repo *salesRepository) SearchSaleByItem(req *sales.SearchByItemTemplate) (
 	}
 
 	return dp, nil
-}
-
-func (repo *salesRepository) SearchCredit(req *sales.SearchByIdTemplate) (resp interface{}, err error) {
-
-	i := NewInvoiceModel{}
-
-	sql := `select a.id, a.code, a.name, a.debt_amount, a.debt_limit , a.active_status, a.create_by
-	from Customer 
-	where a.id=?`
-	err = repo.db.Get(&i, sql, req.Id)
-	fmt.Println("sql = ", sql)
-	if err != nil {
-		fmt.Println("err = ", err.Error())
-		return resp, err
-	}
-
-	inv_resp := map_invoice_template(i)
-
-	//fmt.Println("id,code,name", i.id,i.code,i.name)
-	return inv_resp, nil
 }
 
 /*func (repo *salesRepository) CheckCredit(req *sales.NewSaleTemplate) (resp interface{}, err error) {
@@ -3583,7 +3636,70 @@ func (repo *salesRepository) SearchHisByKeyword(req *sales.SearchByKeywordTempla
 		dpline := map_doc_invoic_template(dep)
 		dp = append(dp, dpline)
 	}
+	return dp, nil
+}
+
+func map_hiscustomer_template(x NewSearchHisCustomerModel) sales.NewSearchHisCustomerTemplate {
+	return sales.NewSearchHisCustomerTemplate{
+		Id:           x.Id,
+		DocDate:      x.DocDate,
+		DocNo:        x.DocNo,
+		ArName:       x.ArName,
+		ArCode:       x.ArCode,
+		ArId:         x.ArId,
+		SaleName:     x.SaleName,
+		TotalAmount:  x.TotalAmount,
+		NId:          x.NId,
+		NDocNo:       x.NDocNo,
+		NDocDate:     x.NDocDate,
+		NArId:        x.NArId,
+		NArName:      x.NArName,
+		NSaleName:    x.NSaleName,
+		NTotalAmount: x.NTotalAmount,
+	}
+
+}
+
+type NewSearchHisCustomerModel struct {
+	Id           int64  `db:"id"`
+	DocDate      string `db:"doc_date"`
+	DocNo        string `db:"doc_no"`
+	ArName       string `db:"ar_name"`
+	ArCode       string `db:"ar_code"`
+	ArId         int64  `db:"ar_id"`
+	SaleName     string `db:"sale_name"`
+	TotalAmount  int64  `db:"total_amount"`
+	NId          int64  `db:"Id"`
+	NDocNo       string `db:"DocNo"`
+	NDocDate     string `db:"DocDate"`
+	NArId        int64  `db:"ArId"`
+	NArName      string `db:"ArName"`
+	NSaleName    string `db:"SaleName"`
+	NTotalAmount int64  `db:"TotalAmount"`
+}
+
+func (repo *salesRepository) SearchHisCustomer(req *sales.SearchHisCustomerTemplate) (resp interface{}, err error) {
+	var sql string
+	d := []NewSearchHisCustomerModel{}
+
+	sql = `select a.Id, ifnull(a.DocDate,'') as DocDate, ifnull(a.DocNo,'') as DocNo, 
+		a.ArId, a.ArName, a.SaleName , a.TotalAmount 
+		from SaleOrder a 
+		where a.ArCode like concat(?) 
+		order by a.Id desc limit 20`
+	err = repo.db.Select(&d, sql, req.ArCode)
+
+	fmt.Println("sql = ", sql, req.ArCode)
+	if err != nil {
+		fmt.Println("err = ", err.Error())
+		return resp, err
+	}
+
+	dp := []sales.NewSearchHisCustomerTemplate{}
+	for _, dep := range d {
+		dpline := map_hiscustomer_template(dep)
+		dp = append(dp, dpline)
+	}
 
 	return dp, nil
-
 }
