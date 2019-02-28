@@ -64,24 +64,24 @@ type BCQuotation struct {
 }
 
 type BCQuotationSub struct {
-	Id              int64   `db:"Id"`
-	QuoUUID         string  `db:"QuoUUID"`
-	QuoId           int64   `db:"QuoId"`
-	ItemId          int64   `db:"ItemId"`
-	ItemCode        string  `db:"ItemCode"`
-	BarCode         string  `db:"BarCode"`
-	ItemName        string  `db:"ItemName"`
-	Qty             float64 `db:"Qty"`
-	RemainQty       float64 `db:"RemainQty"`
-	Price           float64 `db:"Price"`
-	DiscountWord    string  `db:"DiscountWord"`
-	DiscountAmount  float64 `db:"DiscountAmount"`
-	UnitCode        string  `db:"UnitCode"`
-	ItemAmount      float64 `db:"ItemAmount"`
-	ItemDescription string  `db:"ItemDescription"`
-	PackingRate1    float64 `db:"PackingRate1"`
-	IsCancel        int64   `db:"IsCancel"`
-	LineNumber      int     `db:"LineNumber"`
+	Id              int64   `json:"id"db:"Id"`
+	QuoUUID         string  `json:"quo_uuid"db:"QuoUUID"`
+	QuoId           int64   `json:"quo_id"db:"QuoId"`
+	ItemId          int64   `json:"item_id"db:"ItemId"`
+	ItemCode        string  `json:"item_code"db:"ItemCode"`
+	BarCode         string  `json:"bar_code"db:"BarCode"`
+	ItemName        string  `json:"item_name"db:"ItemName"`
+	Qty             float64 `json:"qty"db:"Qty"`
+	RemainQty       float64 `json:"remain_qty"db:"RemainQty"`
+	Price           float64 `json:"price"db:"Price"`
+	DiscountWord    string  `json:"discount_word"db:"DiscountWord"`
+	DiscountAmount  float64 `json:"discount_amount"db:"DiscountAmount"`
+	UnitCode        string  `json:"unit_code"db:"UnitCode"`
+	ItemAmount      float64 `json:"item_amount"db:"ItemAmount"`
+	ItemDescription string  `json:"item_description"db:"ItemDescription"`
+	PackingRate1    float64 `json:"packing_rate_1"db:"PackingRate1"`
+	IsCancel        int64   `json:"is_cancel"db:"IsCancel"`
+	LineNumber      int     `json:"line_number"db:"LineNumber"`
 }
 
 func (q *BCQuotation) get(db *sqlx.DB) error {

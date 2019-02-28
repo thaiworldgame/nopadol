@@ -31,7 +31,7 @@ type syncLogs struct {
 
 type BcQuotaionSend struct {
 	BCQuotation
-	LogUuid string
+	LogUuid string `json:"log_uuid"`
 }
 
 type syncRepository struct{ db *sqlx.DB }
@@ -56,7 +56,7 @@ func (sl *syncLogs) getWaitQuotation(db *sqlx.DB) (resp []BcQuotaionSend, err er
 	sync := syncLogs{}
 
 	qt := BcQuotaionSend{}
-	Qts := []BcQuotaionSend{}
+	qts := []BcQuotaionSend{}
 	//qtsub := []BCQuotationSub{}
 
 	rs, err := db.Queryx(sql)
@@ -75,12 +75,12 @@ func (sl *syncLogs) getWaitQuotation(db *sqlx.DB) (resp []BcQuotaionSend, err er
 		qt.DocNo = sync.value
 
 		qt.get(db)
-		Qts = append(Qts, qt)
+		qts = append(qts, qt)
 
 		//syncs = append(syncs, sync)
 	}
 	//fmt.Print("sync object : ", syncs )
-	return Qts, nil
+	return qts, nil
 
 }
 
