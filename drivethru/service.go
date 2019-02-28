@@ -25,6 +25,7 @@ type Service interface {
 	ManagePickup(req *ManagePickupRequest) (interface{}, error)
 	ManageCheckout(req *ManageCheckoutRequest) (interface{}, error)
 	ListQueue(req *ListQueueRequest) (interface{}, error)
+	PickupEdit(req *PickupEditRequest) (interface{}, error)
 	QueueEdit(req *QueueEditRequest) (interface{}, error)
 	QueueStatus(req *QueueStatusRequest) (interface{}, error)
 	QueueProduct(req *QueueProductRequest) (interface{}, error)
@@ -158,6 +159,16 @@ func (s *service) ManageCheckout(req *ManageCheckoutRequest) (interface{}, error
 
 func (s *service) ListQueue(req *ListQueueRequest) (interface{}, error) {
 	resp, err := s.repo.ListQueue(req)
+	if err != nil {
+		fmt.Println("error service level ", err.Error())
+		return nil, err
+	}
+	fmt.Println("service List Queue data -> ", resp)
+	return resp, nil
+}
+
+func (s *service) PickupEdit(req *PickupEditRequest) (interface{}, error) {
+	resp, err := s.repo.PickupEdit(req)
 	if err != nil {
 		fmt.Println("error service level ", err.Error())
 		return nil, err
