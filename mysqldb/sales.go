@@ -1347,7 +1347,7 @@ func (repo *salesRepository) QuotationToSaleOrder(req *sales.SearchByIdTemplate)
 			0,
 			0,
 			"",
-			q.Id,
+			req.Id,
 			sub.IsCancel,
 			sub.PackingRate1,
 			0,
@@ -1360,10 +1360,16 @@ func (repo *salesRepository) QuotationToSaleOrder(req *sales.SearchByIdTemplate)
 			return "Insert SaleOrder Not Success", err
 		}
 
-		//sql := `update Quotation set IsConfirm = 1 `
+		sql_confirm := `update Quotation set BillStatus = 1 where id = ?`
+		rs, err := repo.db.Exec(sql_confirm, req.Id)
+		if err != nil {
+			fmt.Println(err.Error())
+		}
+		fmt.Println(rs)
 	}
 
 	return map[string]interface{}{
+		"id" : so_id,
 		"doc_no":   doc_no,
 		"doc_date": doc_date,
 	}, nil
