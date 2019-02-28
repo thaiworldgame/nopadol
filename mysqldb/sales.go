@@ -628,7 +628,7 @@ func (repo *salesRepository) CreateQuotation(req *sales.NewQuoTemplate) (resp in
 	var sum_item_amount float64
 	var uuid string
 	var credit_balance float64
-
+	var check_credit_status int64
 	def := config.Default{}
 	def = config.LoadDefaultData("config/config.json")
 
@@ -683,11 +683,20 @@ func (repo *salesRepository) CreateQuotation(req *sales.NewQuoTemplate) (resp in
 	fmt.Println("check_doc_exist", check_doc_exist)
 
 	//CheckCredit
+	credit_status := `select BillType as credit_status from Quotation where id = ?`
+	fmt.Println("DocNo Id", req.Id)
+	err = repo.db.Get(&check_credit_status, credit_status, req.Id)
+	if err != nil {
+		fmt.Println("Error = ", err.Error())
+		return nil, err
+	}
+	fmt.Println("check_credit_status", check_credit_status)
+
 	req.BeforeTaxAmount, req.TaxAmount, req.TotalAmount = config.CalcTaxItem(req.TaxType, req.TaxRate, req.AfterDiscountAmount)
 	credit_sql := `select sum(debt_limit - (debt_amount+?)) as check_balance 
 	from Customer
-	where code = ?`
-	err = repo.db.Get(&credit_balance, credit_sql, req.TotalAmount, req.ArCode)
+	where id = ?`
+	err = repo.db.Get(&credit_balance, credit_sql, req.TotalAmount, req.Id)
 	fmt.Println("This Value =", req.TotalAmount)
 	fmt.Println("credit_sql = ", req.ArCode)
 	fmt.Println("credit_sql = ", credit_sql)
@@ -696,7 +705,7 @@ func (repo *salesRepository) CreateQuotation(req *sales.NewQuoTemplate) (resp in
 		return nil, err
 	}
 
-	if check_doc_exist == 0 {
+	if check_credit_status == 2 {
 		if credit_balance > 0 {
 			fmt.Println("credit enough")
 		} else {
@@ -704,12 +713,14 @@ func (repo *salesRepository) CreateQuotation(req *sales.NewQuoTemplate) (resp in
 			_, err := repo.db.Exec(ins_credit, req.DocNo)
 			fmt.Println("ins_credit =", ins_credit)
 			fmt.Println("This Value =", req.DocNo)
-
 			if err != nil {
 				return "", err
 			}
 			fmt.Println("credit not enough")
 		}
+	}
+
+	if check_doc_exist == 0 {
 		//API Call Get API
 		//url := "http://localhost:8081/gendocno/v1/gen?table_code=QT&bill_type=0"
 		//reqs, err := http.NewRequest("POST", url, nil)
@@ -866,20 +877,6 @@ func (repo *salesRepository) CreateQuotation(req *sales.NewQuoTemplate) (resp in
 			return nil, errors.New("เอกสารถุกยกเลิกไปแล้ว")
 		}
 
-		if credit_balance > 0 {
-			fmt.Println("credit enough")
-		} else {
-			ins_credit := `update Quotation set holding_status=1 where DocNo=? `
-			_, err := repo.db.Exec(ins_credit, req.DocNo)
-			fmt.Println("ins_credit =", ins_credit)
-			fmt.Println("This Value =", req.DocNo)
-
-			if err != nil {
-				return "", err
-			}
-			fmt.Println("credit not enough")
-		}
-
 		req.EditBy = req.CreateBy
 
 		req.BeforeTaxAmount, req.TaxAmount, req.TotalAmount = config.CalcTaxItem(req.TaxType, req.TaxRate, req.AfterDiscountAmount)
@@ -1005,7 +1002,8 @@ func (repo *salesRepository) CancelQuotation(req *sales.NewQuoTemplate) (resp in
 
 func (repo *salesRepository) ConfirmQuotation(req *sales.NewQuoTemplate) (resp interface{}, err error) {
 	var check_doc_exist int64
-
+	var credit_balance float64
+	var check_credit_status int64
 	now := time.Now()
 
 	req.ConfirmTime = now.String()
@@ -1030,6 +1028,43 @@ func (repo *salesRepository) ConfirmQuotation(req *sales.NewQuoTemplate) (resp i
 	}
 
 	fmt.Println("check_doc_exist", check_doc_exist)
+	//CheckCredit
+	credit_status := `select BillType as credit_status from Quotation where id = ?`
+	fmt.Println("DocNo Id", req.Id)
+	err = repo.db.Get(&check_credit_status, credit_status, req.Id)
+	if err != nil {
+		fmt.Println("Error = ", err.Error())
+		return nil, err
+	}
+	fmt.Println("check_credit_status", check_credit_status)
+
+	req.BeforeTaxAmount, req.TaxAmount, req.TotalAmount = config.CalcTaxItem(req.TaxType, req.TaxRate, req.AfterDiscountAmount)
+	credit_sql := `select sum(debt_limit - (debt_amount+?)) as check_balance 
+	from Customer
+	where id = ?`
+	err = repo.db.Get(&credit_balance, credit_sql, req.TotalAmount, req.Id)
+	fmt.Println("This Value =", req.TotalAmount)
+	fmt.Println("credit_sql = ", req.ArCode)
+	fmt.Println("credit_sql = ", credit_sql)
+	if err != nil {
+		fmt.Println("Error credit_sql = ", err.Error())
+		return nil, err
+	}
+
+	if check_credit_status == 2 {
+		if credit_balance > 0 {
+			fmt.Println("credit enough")
+		} else {
+			ins_credit := `update Quotation set holding_status=1 where DocNo=? `
+			_, err := repo.db.Exec(ins_credit, req.DocNo)
+			fmt.Println("ins_credit =", ins_credit)
+			fmt.Println("This Value =", req.DocNo)
+			if err != nil {
+				return "", err
+			}
+			fmt.Println("credit not enough")
+		}
+	}
 
 	if check_doc_exist != 0 {
 		fmt.Println("Confirm")
@@ -1505,6 +1540,7 @@ func (repo *salesRepository) CreateSaleOrder(req *sales.NewSaleTemplate) (resp i
 	var item_discount_amount_sub float64
 	var credit_balance float64
 	var uuid string
+	var check_credit_status int64
 
 	def := config.Default{}
 	def = config.LoadDefaultData("config/config.json")
@@ -1565,11 +1601,20 @@ func (repo *salesRepository) CreateSaleOrder(req *sales.NewSaleTemplate) (resp i
 		return nil, err
 	}
 	//CheckCredit
+	credit_status := `select BillType as credit_status from SaleOrder where id = ?`
+	fmt.Println("DocNo Id", req.Id)
+	err = repo.db.Get(&check_credit_status, credit_status, req.Id)
+	if err != nil {
+		fmt.Println("Error = ", err.Error())
+		return nil, err
+	}
+	fmt.Println("check_credit_status", check_credit_status)
+
 	req.BeforeTaxAmount, req.TaxAmount, req.TotalAmount = config.CalcTaxItem(req.TaxType, req.TaxRate, req.AfterDiscountAmount)
 	credit_sql := `select sum(debt_limit - (debt_amount+?)) as check_balance 
 	from Customer
-	where code = ?`
-	err = repo.db.Get(&credit_balance, credit_sql, req.TotalAmount, req.ArCode)
+	where id = ?`
+	err = repo.db.Get(&credit_balance, credit_sql, req.TotalAmount, req.Id)
 	fmt.Println("This Value =", req.TotalAmount)
 	fmt.Println("credit_sql = ", req.ArCode)
 	fmt.Println("credit_sql = ", credit_sql)
@@ -1578,8 +1623,7 @@ func (repo *salesRepository) CreateSaleOrder(req *sales.NewSaleTemplate) (resp i
 		return nil, err
 	}
 
-	if check_doc_exist == 0 {
-		//Insert Credit
+	if check_credit_status == 2 {
 		if credit_balance > 0 {
 			fmt.Println("credit enough")
 		} else {
@@ -1587,13 +1631,14 @@ func (repo *salesRepository) CreateSaleOrder(req *sales.NewSaleTemplate) (resp i
 			_, err := repo.db.Exec(ins_credit, req.DocNo)
 			fmt.Println("ins_credit =", ins_credit)
 			fmt.Println("This Value =", req.DocNo)
-
 			if err != nil {
 				return "", err
 			}
 			fmt.Println("credit not enough")
 		}
+	}
 
+	if check_doc_exist == 0 {
 		req.BeforeTaxAmount, req.TaxAmount, req.TotalAmount = config.CalcTaxItem(req.TaxType, req.TaxRate, req.AfterDiscountAmount)
 
 		uuid = GetAccessToken()
@@ -1662,20 +1707,6 @@ func (repo *salesRepository) CreateSaleOrder(req *sales.NewSaleTemplate) (resp i
 			return nil, errors.New("เอกสารโดนอ้างนำไปใช้งานแล้ว")
 		case req.IsCancel == 1:
 			return nil, errors.New("เอกสารถุกยกเลิกไปแล้ว")
-		}
-		//Update Credit
-		if credit_balance > 0 {
-			fmt.Println("credit enough")
-		} else {
-			ins_credit := `update SaleOrder set holding_status=1 where DocNo=? `
-			_, err := repo.db.Exec(ins_credit, req.DocNo)
-			fmt.Println("ins_credit =", ins_credit)
-			fmt.Println("This Value =", req.DocNo)
-
-			if err != nil {
-				return "", err
-			}
-			fmt.Println("credit not enough")
 		}
 
 		fmt.Println("Update")
@@ -3461,16 +3492,23 @@ func (repo *salesRepository) SearchSaleByItem(req *sales.SearchByItemTemplate) (
 	} else {
 		switch {
 		case req.Page == "invoice":
-			sql = `select a.id, ifnull(a.doc_no,'') as doc_no, ifnull(a.doc_date,'') as doc_date, a.item_id, a.ar_id,  
-			ifnull(a.bar_code,'') as bar_code, ifnull(a.item_code,'') as item_code, ifnull(a.item_name,'') as item_name, 
+			/*sql = `select a.id, ifnull(a.doc_no,'') as doc_no, ifnull(a.doc_date,'') as doc_date, a.item_id, a.ar_id,
+			ifnull(a.bar_code,'') as bar_code, ifnull(a.item_code,'') as item_code, ifnull(a.item_name,'') as item_name,
 			a.unit_code, a.qty, a.cn_qty, a.price, a.ar_id,
 			b.id, b.name
 			from ar_invoice_sub a left join Customer b on a.ar_id = b.id
-			where b.name like concat(?) and a.item_code like concat(?) 
-			order by a.id desc limit 20`
+			where b.name like concat(?) and a.item_code like concat(?)
+			order by a.id desc limit 20`*/
+
+			sql = `select a.id, ifnull(a.doc_date,'') as doc_date, ifnull(a.doc_no,'') as doc_no,
+			a.ar_id, a.ar_name,
+			b.unit_code, b.qty, b.price, ifnull(b.item_code,'') as item_code, b.ar_id, ifnull(b.item_name,'') as item_name,b.ar_id, ifnull(b.discount_word_sub,'') as discount_word_sub
+			from ar_invoice a left join ar_invoice_sub b on a.ar_id = b.ar_id
+			where a.ar_name like concat(?) and b.item_code like concat(?)
+			order by a.Id desc limit 20`
 			err = repo.db.Select(&d, sql, req.Name, req.ItemCode)
 		case req.Page == "quotation":
-			sql = `select distinct a.Id, ifnull(a.DocDate,'') as DocDate, ifnull(a.DocNo,'') as DocNo, 
+			sql = `select a.Id, ifnull(a.DocDate,'') as DocDate, ifnull(a.DocNo,'') as DocNo, 
 			a.ArId, a.ArName,
 			b.UnitCode, b.Qty, b.Price, ifnull(b.ItemCode,'') as ItemCode, b.ArId, ifnull(b.ItemName,'') as ItemName,b.ArId, ifnull(b.DiscountWord,'') as DiscountWord
 			from Quotation a left join QuotationSub b on a.ArId = b.ArId
@@ -3478,7 +3516,7 @@ func (repo *salesRepository) SearchSaleByItem(req *sales.SearchByItemTemplate) (
 			order by a.Id desc limit 20`
 			err = repo.db.Select(&d, sql, req.Name, req.ItemCode)
 		case req.Page == "saleorder":
-			sql = `select distinct a.Id, ifnull(a.DocDate,'') as DocDate, ifnull(a.DocNo,'') as DocNo, 
+			sql = `select a.Id, ifnull(a.DocDate,'') as DocDate, ifnull(a.DocNo,'') as DocNo, 
 			a.ArId, a.ArName,
 			b.UnitCode, b.Qty, b.Price, ifnull(b.ItemCode,'') as ItemCode, b.ArId, ifnull(b.ItemName,'') as ItemName,b.ArId, ifnull(b.DiscountWord,'') as DiscountWord
 			from SaleOrder a left join SaleOrderSub b on a.ArId = b.ArId
@@ -3613,8 +3651,8 @@ func (repo *salesRepository) SearchHisCustomer(req *sales.SearchHisCustomerTempl
 	var sql string
 	d := []NewSearchHisCustomerModel{}
 
-	sql = `select distinct a.Id, ifnull(a.DocDate,'') as DocDate, ifnull(a.DocNo,'') as DocNo, 
-		a.ArId, a.ArName, a.SaleName , a.TotalAmount
+	sql = `select a.Id, ifnull(a.DocDate,'') as DocDate, ifnull(a.DocNo,'') as DocNo, 
+		a.ArId, a.ArName, a.SaleName , a.TotalAmount 
 		from SaleOrder a 
 		where a.ArCode like concat(?) 
 		order by a.Id desc limit 20`

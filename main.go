@@ -32,6 +32,7 @@ import (
 	"encoding/json"
 	"flag"
 
+	configurationservice "github.com/mrtomyum/nopadol/configuration"
 	drivethruservice "github.com/mrtomyum/nopadol/drivethru"
 
 	//auth "github.com/mrtomyum/nopadol/auth"
@@ -232,6 +233,9 @@ func main() {
 	authRepo := mysqldb.NewAuthRepository(mysql_np)
 	// create services
 	authService, err := auth.NewService(authRepo)
+
+	configurationRepo := mysqldb.NewSettingRepository(mysql_np)
+	configurationService := configurationservice.New(configurationRepo)
 	must(err)
 
 	mux := http.NewServeMux()
@@ -253,6 +257,7 @@ func main() {
 
 	//mux.Handle("/p9/",http.StripPrefix("/p9/v1", p9service.MakeHandler(p9Service)))
 	//mux.Handle("/pointofsale/",http.StripPrefix("/pointofsale/v1", pointofsaleservice.MakeHandler(pointofsaleService)))
+	mux.Handle("/settingconfig/", http.StripPrefix("/settingconfig/v1", configurationservice.MakeHandler(configurationService)))
 
 	h := auth.MakeMiddleware(authService)(mux)
 	fmt.Println("Waiting for Accept Connection : 9999")
