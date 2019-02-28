@@ -1014,9 +1014,11 @@ func (repo *salesRepository) ConfirmQuotation(req *sales.NewQuoTemplate) (resp i
 	case req.IsConfirm == 1:
 		return nil, errors.New("เอกสารถูกอ้างอิงไปแล้ว ไม่สามารถอนุมัติได้")
 	case req.IsCancel == 1:
-		return nil, errors.New("เอกสารถูกยกเลิกไปแล้ว ไม่สามารถยกเลิกได้")
+		return nil, errors.New("เอกสารถูกยกเลิกไปแล้ว ไม่สามารถอนุมัติได้")
 	case req.AssertStatus == 0:
-		return nil, errors.New("เอกสารยังไม่ได้ตอบกลับ ไม่สามารถยกเลิกได้")
+		return nil, errors.New("เอกสารยังไม่ได้ตอบกลับ ไม่สามารถอนุมัติได้")
+		//case req.ExpireDate <= now:
+		//	return nil, errors.New("เอกสารยังไม่ได้ตอบกลับ ไม่สามารถอนุมัติได้")
 	}
 
 	sqlexist := `select count(DocNo) as check_exist from Quotation where id = ?`
@@ -1095,7 +1097,7 @@ func (repo *salesRepository) SearchQuoById(req *sales.SearchByIdTemplate) (resp 
 
 	q := NewQuoModel{}
 
-	sql := `select a.Id,a.DocNo,a.DocDate,a.DocType,a.Validity,a.BillType,a.ArId,a.ArCode,a.ArName,a.SaleId,a.SaleCode,a.SaleName,ifnull(a.DepartId,0) as DepartId,ifnull(a.RefNo,'') as RefNo,ifnull(a.JobId,'') as JobId,a.TaxType,a.IsConfirm,a.BillStatus,a.CreditDay,ifnull(a.DueDate,'') as DueDate,a.ExpireCredit,ifnull(a.ExpireDate,'') as ExpireDate,a.DeliveryDay,ifnull(a.DeliveryDate,'') as DeliveryDate,a.AssertStatus,a.IsConditionSend,ifnull(a.MyDescription,'') as MyDescription,a.SumOfItemAmount,ifnull(a.DiscountWord,'') as DiscountWord,a.DiscountAmount,a.AfterDiscountAmount,a.BeforeTaxAmount,a.TaxAmount,a.TotalAmount,a.NetDebtAmount,a.TaxRate,a.ProjectId,a.AllocateId,a.IsCancel,ifnull(a.CreateBy,'') as CreateBy,ifnull(a.CreateTime,'') as CreateTime,ifnull(a.EditBy,'') as EditBy,ifnull(a.EditTime,'') as EditTime,ifnull(a.CancelBy,'') as CancelBy,ifnull(a.CancelTime,'') as CancelTime,ifnull(b.address,'') as ArBillAddress,ifnull(b.telephone,'') as ArTelephone 
+	sql := `select a.Id,a.DocNo,a.DocDate,a.DocType,a.Validity,a.BillType,a.ArId,a.ArCode,a.ArName,a.SaleId,a.SaleCode,a.SaleName,ifnull(a.DepartId,0) as DepartId,ifnull(a.RefNo,'') as RefNo,ifnull(a.JobId,'') as JobId,a.TaxType,a.IsConfirm,a.BillStatus,a.CreditDay,ifnull(a.DueDate,'') as DueDate,a.ExpireCredit,ifnull(a.ExpireDate,'') as ExpireDate,a.DeliveryDay,ifnull(a.DeliveryDate,'') as DeliveryDate,a.AssertStatus,a.IsConditionSend,ifnull(a.MyDescription,'') as MyDescription,a.SumOfItemAmount,ifnull(a.DiscountWord,'') as DiscountWord,a.DiscountAmount,a.AfterDiscountAmount,a.BeforeTaxAmount,a.TaxAmount,a.TotalAmount,a.NetDebtAmount,a.TaxRate,a.ProjectId,a.AllocateId,a.IsCancel,ifnull(a.CreateBy,'') as CreateBy,ifnull(a.CreateTime,'') as CreateTime,ifnull(a.EditBy,'') as EditBy,ifnull(a.EditTime,'') as EditTime,ifnull(a.CancelBy,'') as CancelBy,ifnull(a.CancelTime,'') as CancelTime,ifnull(b.address,'') as ArBillAddress,ifnull(b.telephone,'') as ArTelephone ,ifnull(a.ConfirmBy,'') as ConfirmBy,ifnull(a.ConfirmTime,'') as ConfirmTime 
 	from Quotation a left join Customer b on a.ArId = b.id  
 	where a.Id = ?`
 	err = repo.db.Get(&q, sql, req.Id)
@@ -1422,7 +1424,7 @@ func (repo *salesRepository) QuotationToSaleOrder(req *sales.SearchByIdTemplate)
 			0,
 			0,
 			"",
-			sub.QuoId,
+			req.Id,
 			sub.IsCancel,
 			sub.PackingRate1,
 			0,
@@ -1435,10 +1437,16 @@ func (repo *salesRepository) QuotationToSaleOrder(req *sales.SearchByIdTemplate)
 			return "Insert SaleOrder Not Success", err
 		}
 
-		//sql := `update Quotation set IsConfirm = 1 `
+		sql_confirm := `update Quotation set BillStatus = 1 where id = ?`
+		rs, err := repo.db.Exec(sql_confirm, req.Id)
+		if err != nil {
+			fmt.Println(err.Error())
+		}
+		fmt.Println(rs)
 	}
 
 	return map[string]interface{}{
+		"id":       so_id,
 		"doc_no":   doc_no,
 		"doc_date": doc_date,
 	}, nil
@@ -1506,6 +1514,14 @@ func map_quo_template(x NewQuoModel) sales.NewQuoTemplate {
 		EditTime:            x.EditTime,
 		CancelBy:            x.CancelBy,
 		CancelTime:          x.CancelTime,
+		BillStatus:          x.BillStatus,
+		BranchId:            x.BranchId,
+		CompanyId:           x.CompanyId,
+		ConfirmBy:           x.ConfirmBy,
+		ConfirmTime:         x.ConfirmTime,
+		IsCancel:            x.IsCancel,
+		IsConfirm:           x.IsConfirm,
+		JobId:               x.JobId,
 	}
 }
 

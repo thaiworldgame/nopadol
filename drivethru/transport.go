@@ -49,6 +49,7 @@ func MakeHandler(s Service) http.Handler {
 	mux.Handle("/checkout/manage_product", m.Handler(manageCheckout(s)))
 	mux.Handle("/pickup/delete", m.Handler(cancelQueue(s)))
 	mux.Handle("/list_queue", m.Handler(makeSearchListQueue(s)))
+	mux.Handle("/pickup/edit", m.Handler(pickupEdit(s)))
 
 	mux.Handle("/queue/edit", m.Handler(queueEdit(s)))
 	mux.Handle("/queue/status", m.Handler(queueStatus(s)))

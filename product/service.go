@@ -1,5 +1,7 @@
 package product
 
+import "fmt"
+
 func New(repo Repository) Service {
 	return &service{repo}
 }
@@ -52,17 +54,28 @@ func (s *service) SearchByKeyword(req *SearchByKeywordTemplate) (interface{}, er
 }
 
 func (s *service) StoreItem(req *ProductNewRequest) (interface{}, error) {
-	return s.repo.StoreItem(req)
+	resp,err := s.repo.StoreItem(req)
+	if err != nil {
+		return nil,err
+	}
+	return resp,nil
 }
 
 func (s *service) StoreBarcode(req *BarcodeNewRequest) (interface{}, error) {
-	return s.repo.StoreBarcode(req)
-
-	//return nil,nil
+	resp,err  := s.repo.StoreBarcode(req)
+	if err != nil {
+		return nil,err
+	}
+	return resp,nil
 }
 
 func (s *service) StorePrice(req *PriceTemplate) (interface{}, error) {
-	return s.repo.StorePrice(req)
+	fmt.Println("start service storePrice")
+	resp,err := s.repo.StorePrice(req)
+	if err != nil {
+		return nil,err
+	}
+	return resp,nil
 	//return nil,nil
 }
 
