@@ -5,6 +5,7 @@ type Repository interface {
 	LogIn(req *LoginRequest) (interface{}, error)
 	SearchListCompany() (interface{}, error)
 	SearchListMachine() (interface{}, error)
+	SearchListZone(string) (interface{}, error)
 	SearchCarBrand(string) (interface{}, error)
 
 	SearchCustomer(string) (interface{}, error)
@@ -14,6 +15,7 @@ type Repository interface {
 	ManagePickup(req *ManagePickupRequest) (interface{}, error)
 	ManageCheckout(req *ManageCheckoutRequest) (interface{}, error)
 	ListQueue(req *ListQueueRequest) (interface{}, error)
+	PickupEdit(req *PickupEditRequest) (interface{}, error)
 	QueueEdit(req *QueueEditRequest) (interface{}, error)
 	QueueStatus(req *QueueStatusRequest) (interface{}, error)
 	QueueProduct(req *QueueProductRequest) (interface{}, error)

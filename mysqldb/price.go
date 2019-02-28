@@ -29,8 +29,8 @@ func (pr *priceModel) checkExitsByItemcodeUnitcodeSaletype(db *sqlx.DB) (id int6
 	pr.UnitCode = u.unitCode
 	rs := db.QueryRow(`select id
 		from Price
-		where item_id=? and unit_code=? and sale_type = ? limit 1 `,
-		pr.ItemId, pr.UnitCode, pr.SaleType)
+		where item_code=? and unit_code=? and sale_type = ? limit 1 `,
+		pr.ItemCode, pr.UnitCode, pr.SaleType)
 	rs.Scan(&id)
 
 	fmt.Printf("check price_id = %v  from item_id %v , unit_code %v, sale_type %v \n",
@@ -39,8 +39,8 @@ func (pr *priceModel) checkExitsByItemcodeUnitcodeSaletype(db *sqlx.DB) (id int6
 	if id == -1 {
 		return -1, false
 	}
-
-	fmt.Printf(" price is exists with itemcode : %v,unitcode : %v ,saletype : %v \n\n", pr.ItemCode, u.unitCode, pr.SaleType)
+	pr.Id = id
+	fmt.Printf(" price is id : %v \n\n", pr.Id)
 	return id, true
 }
 func (pr *priceModel) verifyRequestData(db *sqlx.DB) (bool, error) {
@@ -60,13 +60,13 @@ func (pr *priceModel) verifyRequestData(db *sqlx.DB) (bool, error) {
 	return true,nil
 }
 
-func (pr *priceModel) save(db *sqlx.DB) (newID int64, err error) {
+func (pr *priceModel) save(db *sqlx.DB) (result interface{}, err error) {
 	//check req data
 	fmt.Println("start price save ", pr)
 	ok,err := pr.verifyRequestData(db)
 	if err != nil {
 		log.Printf(" error verify data is not ready: data -> %v", pr)
-		return -1, fmt.Errorf(err.Error())
+		return nil, fmt.Errorf(err.Error())
 	}
 
 	// todo : check exists item_code+unit_code+sale_type
@@ -79,11 +79,15 @@ func (pr *priceModel) save(db *sqlx.DB) (newID int64, err error) {
 		fmt.Printf("case update  \n")
 		_, err := db.Exec(`update Price set sale_price_1 = ? , sale_price_2 = ? where id = ?`,
 			pr.SalePrice1, pr.SalePrice2, curID)
+
 		if err != nil {
 			log.Printf("update state sql command %v", err.Error())
-			return -1, err
+			return nil, err
 		}
+
+		fmt.Printf("update price id %v ",curID)
 		pr.Id = curID
+
 	} else {
 		//	case insert
 		fmt.Printf("case insert \n")
@@ -96,9 +100,7 @@ func (pr *priceModel) save(db *sqlx.DB) (newID int64, err error) {
 		sale_price_2,
 		unit_id,
 		company_id
-		) VALUES(?,?,?,?,?,?,?)
-	 ON DUPLICATE KEY UPDATE
-	 sale_price_1=?,sale_price_2=?`
+		) VALUES(?,?,?,?,?,?,?)`
 
 		rs, err := db.Exec(lcCommand,
 			pr.ItemCode,
@@ -108,22 +110,22 @@ func (pr *priceModel) save(db *sqlx.DB) (newID int64, err error) {
 			pr.SalePrice2,
 			pr.UnitID,
 			pr.CompanyID,
-			pr.SalePrice1,
-			pr.SalePrice2,
 		)
 
 		if err != nil {
 			log.Printf("sql command %v", err.Error())
-			return -1, err
+			return nil, err
 		}
-		newID, err = rs.LastInsertId()
+		newID, err := rs.LastInsertId()
 		if err != nil {
 			log.Printf("error insert new price ", err.Error())
-			return -1, err
+			return nil, err
 		}
 
 		pr.Id = newID
 	}
 
-	return newID, nil
+	return map[string]interface{}{
+		"result":"sucess",
+	}, nil
 }

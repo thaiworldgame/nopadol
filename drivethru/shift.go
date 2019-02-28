@@ -3,7 +3,7 @@ package drivethru
 import "time"
 
 type ShiftOpenRequest struct {
-	Token        string    `json:"uuid"`
+	AccessToken  string    `json:"accessToken"`
 	MachineID    int       `json:"machine_id"`
 	CashierID    int       `json:"cashier_id"`
 	ChangeAmount float64   `json:"change_amount"`

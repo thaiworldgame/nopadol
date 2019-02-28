@@ -14,6 +14,7 @@ type Service interface {
 	UserLogIn(req *UserLogInRequest) (interface{}, error)
 	LogIn(req *LoginRequest) (interface{}, error)
 	SearchListCompany() (interface{}, error)
+	SearchListZone(string) (interface{}, error)
 	SearchListMachine() (interface{}, error)
 	SearchCarBrand(string) (interface{}, error)
 	SearchCustomer(string) (interface{}, error)
@@ -24,6 +25,7 @@ type Service interface {
 	ManagePickup(req *ManagePickupRequest) (interface{}, error)
 	ManageCheckout(req *ManageCheckoutRequest) (interface{}, error)
 	ListQueue(req *ListQueueRequest) (interface{}, error)
+	PickupEdit(req *PickupEditRequest) (interface{}, error)
 	QueueEdit(req *QueueEditRequest) (interface{}, error)
 	QueueStatus(req *QueueStatusRequest) (interface{}, error)
 	QueueProduct(req *QueueProductRequest) (interface{}, error)
@@ -35,6 +37,16 @@ type Service interface {
 
 func (s *service) SearchListCompany() (interface{}, error) {
 	resp, err := s.repo.SearchListCompany()
+	if err != nil {
+		return nil, err
+	}
+	fmt.Println("service recive data -> ", resp)
+
+	return resp, nil
+}
+
+func (s *service) SearchListZone(access_token string) (interface{}, error) {
+	resp, err := s.repo.SearchListZone(access_token)
 	if err != nil {
 		return nil, err
 	}
@@ -147,6 +159,16 @@ func (s *service) ManageCheckout(req *ManageCheckoutRequest) (interface{}, error
 
 func (s *service) ListQueue(req *ListQueueRequest) (interface{}, error) {
 	resp, err := s.repo.ListQueue(req)
+	if err != nil {
+		fmt.Println("error service level ", err.Error())
+		return nil, err
+	}
+	fmt.Println("service List Queue data -> ", resp)
+	return resp, nil
+}
+
+func (s *service) PickupEdit(req *PickupEditRequest) (interface{}, error) {
+	resp, err := s.repo.PickupEdit(req)
 	if err != nil {
 		fmt.Println("error service level ", err.Error())
 		return nil, err

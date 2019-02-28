@@ -48,7 +48,7 @@ type NewQuoTemplate struct {
 	CreateTime          string               `json:"create_time"`
 	EditBy              string               `json:"edit_by"`
 	EditTime            string               `json:"edit_time"`
-	ConfirmBy           string               `json:confirm_by`
+	ConfirmBy           string               `json:"confirm_by"`
 	ConfirmTime         string               `json:"confirm_time"`
 	CancelBy            string               `json:"cancel_by"`
 	CancelTime          string               `json:"cancel_time"`
@@ -77,6 +77,7 @@ type NewQuoItemTemplate struct {
 
 type NewSaleTemplate struct {
 	Id                  int64                 `json:"id"`
+	Uuid                string                `json:"uuid"`
 	DocNo               string                `json:"doc_no"`
 	DocDate             string                `json:"doc_date"`
 	CompanyId           int64                 `json:"company_id"`
@@ -177,6 +178,7 @@ type SearchByItemTemplate struct {
 	Name     string `json:"name"`
 	Page     string `json:"page"`
 }
+
 type SearchDocTemplate struct {
 	Id            int64   `json:"id"`
 	DocNo         string  `json:"doc_no"`
@@ -527,4 +529,31 @@ type NewSearchItemTemplate struct {
 	NPrice          float64 `json:"Price"`
 	NArName         string  `json:"ArName"`
 	NDiscountWord   string  `json:"DiscountWord"`
+}
+
+type SearchHisCustomerTemplate struct {
+	ArId     string `json:"ar_id"`
+	ArCode   string `json:"ar_code"`
+	ItemCode string `json:"item_code"`
+	Code     string `json:"code"`
+	Name     string `json:"name"`
+	Page     string `json:"page"`
+}
+
+type NewSearchHisCustomerTemplate struct {
+	Id           int64  `json:"id"`
+	DocDate      string `json:"doc_date"`
+	DocNo        string `json:"doc_no"`
+	ArName       string `json:"ar_name"`
+	ArCode       string `json:"ar_code"`
+	ArId         int64  `json:"ar_id"`
+	SaleName     string `json:"sale_name"`
+	TotalAmount  int64  `json:"total_amount"`
+	NId          int64  `json:"Id"`
+	NDocNo       string `json:"DocNo"`
+	NDocDate     string `json:"DocDate"`
+	NArId        int64  `json:"ArId"`
+	NArName      string `json:"ArName"`
+	NSaleName    string `json:"SaleName"`
+	NTotalAmount int64  `json:"TotalAmount"`
 }
