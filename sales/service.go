@@ -43,7 +43,7 @@ type Service interface {
 	SearchHisCustomer(req *SearchHisCustomerTemplate) (interface{}, error)
 }
 
-func (s *service) Searchcreditcard(req *SearchcreditcardTamplate) (interface{}, error){
+func (s *service) Searchcreditcard(req *SearchcreditcardTamplate) (interface{}, error) {
 	fmt.Println(213)
 	resp, err := s.repo.Searchcreditcard(req)
 	if err != nil {
@@ -51,7 +51,6 @@ func (s *service) Searchcreditcard(req *SearchcreditcardTamplate) (interface{}, 
 	}
 	return resp, nil
 }
-
 
 func (s *service) CreateQuotation(req *NewQuoTemplate) (interface{}, error) {
 	var count_item int
@@ -333,6 +332,8 @@ func (s *service) CreateInvoice(req *NewInvoiceTemplate) (interface{}, error) {
 
 	sum_pay_all = req.SumCashAmount + req.SumCreditAmount + req.SumChqAmount + req.SumBankAmount + req.SumOfDeposit + req.CouponAmount
 	switch {
+	case req.DocNo == "ไม่มีข้อมูล":
+		return nil, errors.New("เอกสารไม่ได้ระบุ รหัส")
 	case req.ArId == 0:
 		return nil, errors.New("เอกสารไม่ได้ระบุ ลูกค้า")
 	case req.TotalAmount == 0:
