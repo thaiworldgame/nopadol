@@ -3666,13 +3666,22 @@ type NewSearchHisCustomerModel struct {
 func (repo *salesRepository) SearchHisCustomer(req *sales.SearchHisCustomerTemplate) (resp interface{}, err error) {
 	var sql string
 	d := []NewSearchHisCustomerModel{}
-
-	sql = `select a.Id, ifnull(a.DocDate,'') as DocDate, ifnull(a.DocNo,'') as DocNo, 
+	switch {
+	case req.Page == "invoice":
+		sql = `select a.id, ifnull(a.doc_date,'') as doc_date, ifnull(a.doc_no,'') as doc_no, 
+		a.ar_id, a.ar_name, a.sale_name , a.total_amount 
+		from ar_invoice a 
+		where a.ar_code like concat(?) 
+		order by a.id desc limit 20`
+		err = repo.db.Select(&d, sql, req.ArCode)
+	case req.Page == "quotation" || req.Page == "saleorder":
+		sql = `select a.Id, ifnull(a.DocDate,'') as DocDate, ifnull(a.DocNo,'') as DocNo, 
 		a.ArId, a.ArName, a.SaleName , a.TotalAmount 
 		from SaleOrder a 
 		where a.ArCode like concat(?) 
 		order by a.Id desc limit 20`
-	err = repo.db.Select(&d, sql, req.ArCode)
+		err = repo.db.Select(&d, sql, req.ArCode)
+	}
 
 	fmt.Println("sql = ", sql, req.ArCode)
 	if err != nil {
