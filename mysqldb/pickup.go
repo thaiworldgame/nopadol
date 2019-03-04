@@ -165,12 +165,10 @@ func (q *ListQueueModel) QueueProduct(db *sqlx.DB, req *drivethru.QueueProductRe
 	err := db.Get(&que, lccommand, req.QueueId)
 	if err != nil {
 		return map[string]interface{}{
-			"response": map[string]interface{}{
 				"error":   true,
 				"message": "Queue List Doc Error = " + err.Error(),
 				"success": false,
 				"queue":   nil,
-			},
 		}, nil
 	}
 
@@ -178,12 +176,10 @@ func (q *ListQueueModel) QueueProduct(db *sqlx.DB, req *drivethru.QueueProductRe
 	err = db.Select(&que.Item, lccommand1, que.Id, que.QueueId, que.UUID)
 	if err != nil {
 		return map[string]interface{}{
-			"response": map[string]interface{}{
 				"error":   true,
 				"message": "Queue List item Error = " + err.Error(),
 				"success": false,
 				"queue":   nil,
-			},
 		}, nil
 	}
 
@@ -191,12 +187,10 @@ func (q *ListQueueModel) QueueProduct(db *sqlx.DB, req *drivethru.QueueProductRe
 	err = db.Select(&que.OwnerPhone, lccommand2, que.Id, que.QueueId, que.UUID, que.DocNo)
 	if err != nil {
 		return map[string]interface{}{
-			"response": map[string]interface{}{
 				"error":   true,
 				"message": "Queue List phone Error = " + err.Error(),
 				"success": false,
 				"queue":   nil,
-			},
 		}, nil
 	}
 
@@ -204,33 +198,27 @@ func (q *ListQueueModel) QueueProduct(db *sqlx.DB, req *drivethru.QueueProductRe
 	err = db.Select(&que.ReceiverPhone, lccommand3, que.Id, que.QueueId, que.UUID, que.DocNo)
 	if err != nil {
 		return map[string]interface{}{
-			"response": map[string]interface{}{
 				"error":   true,
 				"message": "Queue List phone Error = " + err.Error(),
 				"success": false,
 				"queue":   nil,
-			},
 		}, nil
 	}
 
 	return map[string]interface{}{
-		"response": map[string]interface{}{
 			"error":   false,
 			"message": "",
 			"success": true,
 			"queue":   que,
-		},
 	}, nil
 }
 
 func (q *ListQueueModel) QueueDetails(db *sqlx.DB, que_id int, access_token string) (interface{}, error) {
 	if que_id == 0 {
 		return map[string]interface{}{
-			"response": map[string]interface{}{
 				"process":     "queue list",
 				"processDesc": "Queue Id = 0",
 				"isSuccess":   false,
-			},
 		}, nil
 	}
 
@@ -238,11 +226,9 @@ func (q *ListQueueModel) QueueDetails(db *sqlx.DB, que_id int, access_token stri
 	err := db.Get(&q, lccommand, que_id)
 	if err != nil {
 		return map[string]interface{}{
-			"response": map[string]interface{}{
 				"process":     "queue list",
 				"processDesc": "Queue List Doc Error = " + err.Error(),
 				"isSuccess":   false,
-			},
 		}, nil
 	}
 
@@ -250,11 +236,9 @@ func (q *ListQueueModel) QueueDetails(db *sqlx.DB, que_id int, access_token stri
 	err = db.Select(&q.Item, lccommand1, q.Id, q.QueueId, q.UUID)
 	if err != nil {
 		return map[string]interface{}{
-			"response": map[string]interface{}{
 				"process":     "queue list item",
 				"processDesc": "Queue List item Error = " + err.Error(),
 				"isSuccess":   false,
-			},
 		}, nil
 	}
 
@@ -262,11 +246,9 @@ func (q *ListQueueModel) QueueDetails(db *sqlx.DB, que_id int, access_token stri
 	err = db.Select(&q.OwnerPhone, lccommand2, q.Id, q.QueueId, q.UUID, q.DocNo)
 	if err != nil {
 		return map[string]interface{}{
-			"response": map[string]interface{}{
 				"process":     "queue list phone",
 				"processDesc": "Queue List phone Error = " + err.Error(),
 				"isSuccess":   false,
-			},
 		}, nil
 	}
 
@@ -274,11 +256,9 @@ func (q *ListQueueModel) QueueDetails(db *sqlx.DB, que_id int, access_token stri
 	err = db.Select(&q.ReceiverPhone, lccommand3, q.Id, q.QueueId, q.UUID, q.DocNo)
 	if err != nil {
 		return map[string]interface{}{
-			"response": map[string]interface{}{
 				"process":     "queue list phone",
 				"processDesc": "Queue List phone Error = " + err.Error(),
 				"isSuccess":   false,
-			},
 		}, nil
 	}
 
