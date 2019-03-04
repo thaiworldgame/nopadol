@@ -205,6 +205,22 @@ func (q *ListQueueModel) QueueProduct(db *sqlx.DB, req *drivethru.QueueProductRe
 		}, nil
 	}
 
+	if que.Item == nil {
+		que.Item = []QueueItem{}
+	}
+
+	if que.OwnerPhone == nil {
+		que.OwnerPhone = []OwnerPhoneModel{}
+	}
+
+	if que.ReceiverPhone == nil {
+		que.ReceiverPhone = []OwnerPhoneModel{}
+	}
+
+	if que.StatusForSaleorderHistory == nil {
+		que.StatusForSaleorderHistory = []QueueStatusHistoryModel{}
+	}
+
 	return map[string]interface{}{
 			"error":   false,
 			"message": "",
