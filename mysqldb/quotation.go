@@ -3,8 +3,6 @@ package mysqldb
 import (
 	"fmt"
 	"github.com/jmoiron/sqlx"
-	"log"
-	"strconv"
 )
 
 type BCQuotation struct {
@@ -89,9 +87,9 @@ type BCQuotationSub struct {
 
 func (q *BCQuotation) get(db *sqlx.DB) error {
 	fmt.Println("QueDocNo = ", q.DocNo)
-	sql := `select a.Id,a.CompanyId,a.BranchId,a.DocNo,a.DocDate,a.DocType,a.Validity,a.BillType,a.ArId,a.ArCode,a.ArName,a.SaleId,a.SaleCode,a.SaleName,ifnull(a.DepartId,0) as DepartId,ifnull(a.RefNo,'') as RefNo,ifnull(a.JobId,'') as JobId,a.TaxType,a.IsConfirm,a.BillStatus,a.CreditDay,ifnull(a.DueDate,'') as DueDate,a.ExpireCredit,ifnull(a.ExpireDate,'') as ExpireDate,a.DeliveryDay,ifnull(a.DeliveryDate,'') as DeliveryDate,a.AssertStatus,a.IsConditionSend,ifnull(a.MyDescription,'') as MyDescription,a.SumOfItemAmount,ifnull(a.DiscountWord,'') as DiscountWord,a.DiscountAmount,a.AfterDiscountAmount,a.BeforeTaxAmount,a.TaxAmount,a.TotalAmount,a.NetDebtAmount,a.TaxRate,a.ProjectId,a.AllocateId,a.IsCancel,ifnull(a.CreateBy,'') as CreateBy,ifnull(a.CreateTime,'') as CreateTime,ifnull(a.EditBy,'') as EditBy,ifnull(a.EditTime,'') as EditTime,ifnull(a.CancelBy,'') as CancelBy,ifnull(a.CancelTime,'') as CancelTime,ifnull(b.address,'') as ArBillAddress,ifnull(b.telephone,'') as ArTelephone from Quotation a left join Customer b on a.ArId = b.id  left join Department c on a.DepartId = c.Id left join Project d on a.ProjectId = d.Id left join Allocate e on a.AllocateId = e.id  where a.DocNo = ?`
+	sql := `select a.Id,a.CompanyId,a.BranchId,a.DocNo,a.DocDate,a.DocType,a.Validity,a.BillType,a.ArId,a.ArCode,a.ArName,a.SaleId,a.SaleCode,a.SaleName,ifnull(a.DepartId,0) as DepartId,ifnull(c.code,'') as DepartCode,ifnull(a.RefNo,'') as RefNo,ifnull(a.JobId,'') as JobId,a.TaxType,a.IsConfirm,a.BillStatus,a.CreditDay,ifnull(a.DueDate,'') as DueDate,a.ExpireCredit,ifnull(a.ExpireDate,'') as ExpireDate,a.DeliveryDay,ifnull(a.DeliveryDate,'') as DeliveryDate,a.AssertStatus,a.IsConditionSend,ifnull(a.MyDescription,'') as MyDescription,a.SumOfItemAmount,ifnull(a.DiscountWord,'') as DiscountWord,a.DiscountAmount,a.AfterDiscountAmount,a.BeforeTaxAmount,a.TaxAmount,a.TotalAmount,a.NetDebtAmount,a.TaxRate,a.ProjectId,ifnull(d.code,'') as ProjectCode,a.AllocateId,ifnull(e.code,'') as AllocateCode,a.IsCancel,ifnull(a.CreateBy,'') as CreateBy,ifnull(a.CreateTime,'') as CreateTime,ifnull(a.EditBy,'') as EditBy,ifnull(a.EditTime,'') as EditTime,ifnull(a.CancelBy,'') as CancelBy,ifnull(a.CancelTime,'') as CancelTime,ifnull(b.address,'') as ArBillAddress,ifnull(b.telephone,'') as ArTelephone from Quotation a left join Customer b on a.ArId = b.id  left join Department c on a.DepartId = c.Id left join Project d on a.ProjectId = d.Id left join Allocate e on a.AllocateId = e.id   where a.DocNo = ?`
 	rs := db.QueryRow(sql, q.DocNo)
-	err := rs.Scan(&q.Id, &q.CompanyId, &q.BranchId, &q.DocNo, &q.DocDate, &q.DocType, &q.Validity, &q.BillType, &q.ArId, &q.ArCode, &q.ArName, &q.SaleId, &q.SaleCode, &q.SaleName, &q.DepartId, &q.RefNo, &q.JobId, &q.TaxType, &q.IsConfirm, &q.BillStatus, &q.CreditDay, &q.DueDate, &q.ExpireCredit, &q.ExpireDate, &q.DeliveryDay, &q.DeliveryDate, &q.AssertStatus, &q.IsConditionSend, &q.MyDescription, &q.SumOfItemAmount, &q.DiscountWord, &q.DiscountAmount, &q.AfterDiscountAmount, &q.BeforeTaxAmount, &q.TaxAmount, &q.TotalAmount, &q.NetDebtAmount, &q.TaxRate, &q.ProjectId, &q.AllocateId, &q.IsCancel, &q.CreateBy, &q.CreateTime, &q.EditBy, &q.EditTime, &q.CancelBy, &q.CancelTime, &q.ArBillAddress, &q.ArTelephone)
+	err := rs.Scan(&q.Id, &q.CompanyId, &q.BranchId, &q.DocNo, &q.DocDate, &q.DocType, &q.Validity, &q.BillType, &q.ArId, &q.ArCode, &q.ArName, &q.SaleId, &q.SaleCode, &q.SaleName, &q.DepartId, &q.DepartCode, &q.RefNo, &q.JobId, &q.TaxType, &q.IsConfirm, &q.BillStatus, &q.CreditDay, &q.DueDate, &q.ExpireCredit, &q.ExpireDate, &q.DeliveryDay, &q.DeliveryDate, &q.AssertStatus, &q.IsConditionSend, &q.MyDescription, &q.SumOfItemAmount, &q.DiscountWord, &q.DiscountAmount, &q.AfterDiscountAmount, &q.BeforeTaxAmount, &q.TaxAmount, &q.TotalAmount, &q.NetDebtAmount, &q.TaxRate, &q.ProjectId, &q.ProjectCode, &q.AllocateId, &q.AllocateCode, &q.IsCancel, &q.CreateBy, &q.CreateTime, &q.EditBy, &q.EditTime, &q.CancelBy, &q.CancelTime, &q.ArBillAddress, &q.ArTelephone)
 	if err != nil {
 		fmt.Println("err = ", err.Error())
 		return err
@@ -107,28 +105,28 @@ func (q *BCQuotation) get(db *sqlx.DB) error {
 	return nil
 }
 
-func (qs *BCQuotationSub) getSub(db *sqlx.DB) (resp []BCQuotationSub, err error) {
-	strID := string(qs.QuoId)
-	fmt.Println("strID = ", strID)
-	sql := "select ItemCode,ItemName,Qty,Price,ItemAmount,UnitCode from QuotationSub where QuoId =" + strconv.FormatInt(qs.QuoId, 10) + ""
-
-	fmt.Println("get qtsub query --> ", sql)
-	x := BCQuotationSub{}
-
-	rs, err := db.Query(sql)
-
-	if err != nil {
-		return nil, err
-	}
-
-	for rs.Next() {
-		err = rs.Scan(&x.ItemCode, &x.ItemName, &x.Qty, &x.Price, &x.ItemAmount, &x.UnitCode)
-		if err != nil {
-			log.Fatalf("error rs.scan obj %v", err.Error())
-		}
-		fmt.Println("\n fetch sub---> ", x)
-		resp = append(resp, x)
-	}
-
-	return resp, nil
-}
+//func (qs *BCQuotationSub) getSub(db *sqlx.DB) (resp []BCQuotationSub, err error) {
+//	strID := string(qs.QuoId)
+//	fmt.Println("strID = ", strID)
+//	sql := "select ItemCode,ItemName,Qty,Price,ItemAmount,UnitCode from QuotationSub where QuoId =" + strconv.FormatInt(qs.QuoId, 10) + ""
+//
+//	fmt.Println("get qtsub query --> ", sql)
+//	x := BCQuotationSub{}
+//
+//	rs, err := db.Query(sql)
+//
+//	if err != nil {
+//		return nil, err
+//	}
+//
+//	for rs.Next() {
+//		err = rs.Scan(&x.ItemCode, &x.ItemName, &x.Qty, &x.Price, &x.ItemAmount, &x.UnitCode)
+//		if err != nil {
+//			log.Fatalf("error rs.scan obj %v", err.Error())
+//		}
+//		fmt.Println("\n fetch sub---> ", x)
+//		resp = append(resp, x)
+//	}
+//
+//	return resp, nil
+//}

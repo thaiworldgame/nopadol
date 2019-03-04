@@ -12,9 +12,8 @@ type service struct {
 
 type Service interface {
 	GetNewQuotaion() (interface{},error)
+	ConfirmTransfer(Log) (interface{},error)
 }
-
-
 
 func (s *service)GetNewQuotaion()(interface{},error){
 	resp,err := s.repo.GetNewQuotaion()
@@ -22,4 +21,12 @@ func (s *service)GetNewQuotaion()(interface{},error){
 		return nil,err
 	}
 	return resp,nil
+}
+
+func (s *service)ConfirmTransfer(req Log)(interface{}, error){
+	resp, err := s.repo.ConfirmTransfer(req)
+	if err != nil {
+		return nil, err
+	}
+	return resp, nil
 }

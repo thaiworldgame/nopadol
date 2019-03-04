@@ -62,12 +62,10 @@ func (d *drivethruRepository) SearchListZone(access_token string) (interface{}, 
 
 	fmt.Println("mysqldb recive databranch -> ", zes)
 	return map[string]interface{}{
-		"response": map[string]interface{}{
 			"success":   true,
 			"error":     false,
 			"message": "",
 			"pick_zone":zes,
-		},
 	}, nil
 }
 
