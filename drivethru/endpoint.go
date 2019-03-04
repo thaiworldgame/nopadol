@@ -238,11 +238,9 @@ func makeItemSearch(s Service) interface{} {
 			return nil, err
 		}
 		return map[string]interface{}{
-			"response": map[string]interface{}{
 				"success": true,
 				"error":   false,
 				"message": "",
-			},
 			"item": resp,
 		}, nil
 	}
