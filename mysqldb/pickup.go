@@ -66,7 +66,7 @@ type QueueStatusHistoryModel struct {
 
 type QueueItem struct {
 	Id               int     `json:"id" db:"id"`
-	ItemBarCode      string  `json:"item_bar_code" db:"item_bar_code"`
+	ItemBarCode      string  `json:"item_barcode" db:"item_bar_code"`
 	FilePath         string  `json:"file_path" db:"file_path"`
 	IsCancel         int     `json:"is_cancel" db:"is_cancel"`
 	IsCheck          int     `json:"is_check" db:"is_check"`
