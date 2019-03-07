@@ -252,7 +252,7 @@ func (d *drivethruRepository) BillingDone(req *drivethru.BillingDoneRequest) (in
 	return pickup.BillingDone(d.db, req)
 }
 
-func (d *drivethruRepository) CancelQueue(req *drivethru.QueueStatusRequest) (interface{}, error) {
+func (d *drivethruRepository) CancelQueue(req *drivethru.PickupCancelRequest) (interface{}, error) {
 	pickup := ListQueueModel{}
 
 	return pickup.CancelQueue(d.db, req)

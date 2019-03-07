@@ -2196,10 +2196,10 @@ func (q *ListQueueModel) BillingDone(db *sqlx.DB, req *drivethru.BillingDoneRequ
 	}, nil
 }
 
-func (q *ListQueueModel) CancelQueue(db *sqlx.DB, req *drivethru.QueueStatusRequest) (interface{}, error) {
+func (q *ListQueueModel) CancelQueue(db *sqlx.DB, req *drivethru.PickupCancelRequest) (interface{}, error) {
 
-	if (req.QueueId != 0) {
-		q.Search(db, req.QueueId)
+	if (req.QId != 0) {
+		q.Search(db, req.QId)
 
 		if (q.IsCancel == 0) {
 			u := UserAccess{}
@@ -2207,7 +2207,7 @@ func (q *ListQueueModel) CancelQueue(db *sqlx.DB, req *drivethru.QueueStatusRequ
 
 			if (q.Status != 2) {
 				lccommand := "update basket set status = 0,pick_status=4,is_cancel=1,cancel_desc=?,cancel_by = ?,cancel_time= CURRENT_TIMESTAMP() where que_id = ? and company_id = ? and branch_id = ? and uuid = ? and doc_date = curdate()";
-				_, err := db.Exec(lccommand, req.CancelRemark, u.UserCode, req.QueueId, u.CompanyID, u.BranchID, q.UUID)
+				_, err := db.Exec(lccommand, req.CancelRemark, u.UserCode, req.QId, u.CompanyID, u.BranchID, q.UUID)
 				if err != nil {
 					return map[string]interface{}{
 						"success": false,
