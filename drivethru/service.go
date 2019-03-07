@@ -21,7 +21,7 @@ type Service interface {
 	SearchItem(string) (interface{}, error)
 
 	PickupNew(req *NewPickupRequest) (interface{}, error)
-	CancelQueue(req *QueueStatusRequest) (interface{}, error)
+	CancelQueue(req *PickupCancelRequest) (interface{}, error)
 	ManagePickup(req *ManagePickupRequest) (interface{}, error)
 	ManageCheckout(req *ManageCheckoutRequest) (interface{}, error)
 	ListQueue(req *ListQueueRequest) (interface{}, error)
@@ -137,7 +137,7 @@ func (s *service) ManagePickup(req *ManagePickupRequest) (interface{}, error) {
 	return resp, nil
 }
 
-func (s *service) CancelQueue(req *QueueStatusRequest) (interface{}, error) {
+func (s *service) CancelQueue(req *PickupCancelRequest) (interface{}, error) {
 	resp, err := s.repo.CancelQueue(req)
 	if err != nil {
 		fmt.Println("error service level ", err.Error())
