@@ -33,9 +33,16 @@ type RequestSettingTemplate struct {
 }
 
 type SearchByIdRequestTemplate struct {
-	Id int64 `json:"id"`
+	Id         int64 `json:"id"`
+	TypeStatus int64 `json:"type_status"`
 }
 
 type SearchByKeywordRequestTemplate struct {
 	Keyword string `json:"keyword"`
+}
+
+type RequestNoteTemplate struct {
+	Id         int64  `json:"id"`
+	TextNote   string `json:"text_note"`
+	TypeStatus int64  `json:"type_status"`
 }

@@ -162,7 +162,9 @@ type NewSaleItemTemplate struct {
 type SearchByIdTemplate struct {
 	Id int64 `json:"id"`
 }
-
+type SearchcreditcardTamplate struct {
+	Keyword string `json:"keyword"`
+}
 type SearchByKeywordTemplate struct {
 	ArId     int64  `json:"ar_id"`
 	SaleCode string `json:"sale_code"`
@@ -204,6 +206,10 @@ type SearchInvTemplate struct {
 	TotalAmount   float64 `json:"total_amount"`
 	IsCancel      int     `json:"is_cancel"`
 	IsConfirm     int     `json:"is_confirm"`
+}
+type CreditCardTypeTemplate struct {
+	Id                 int64  `json:"id"`
+	CreditCardTypeName string `json:"creditcardtype_name"`
 }
 type SearchIVDocTemplate struct {
 	Id            int64   `json:"id"`
@@ -464,7 +470,7 @@ type NewInvoiceItemTemplate struct {
 	Location        string  `json:"location"`
 	Qty             float64 `json:"qty"`
 	CnQty           float64 `json:"cn_qty"`
-	DiscountWord    float64 `json:"discount_word_sub"`
+	DiscountWord    string  `json:"discount_word_sub"`
 	DiscountAmount  float64 `json:"discount_amount_sub"`
 	ItemAmount      float64 `json:"amount"`
 	NetAmount       float64 `json:"net_amount"`
@@ -495,7 +501,7 @@ type NewSearchItemTemplate struct {
 	Price           float64 `json:"price"`
 	Qty             float64 `json:"qty"`
 	CnQty           float64 `json:"cn_qty"`
-	DiscountWord    float64 `json:"discount_word_sub"`
+	DiscountWord    string  `json:"discount_word_sub"`
 	ItemDescription string  `json:"item_description"`
 	IsCreditNote    int64   `json:"is_credit_note"`
 	IsDebitNote     int64   `json:"is_debit_note"`
@@ -535,19 +541,19 @@ type SearchHisCustomerTemplate struct {
 }
 
 type NewSearchHisCustomerTemplate struct {
-	Id           int64  `json:"id"`
-	DocDate      string `json:"doc_date"`
-	DocNo        string `json:"doc_no"`
-	ArName       string `json:"ar_name"`
-	ArCode       string `json:"ar_code"`
-	ArId         int64  `json:"ar_id"`
-	SaleName     string `json:"sale_name"`
-	TotalAmount  int64  `json:"total_amount"`
-	NId          int64  `json:"Id"`
-	NDocNo       string `json:"DocNo"`
-	NDocDate     string `json:"DocDate"`
-	NArId        int64  `json:"ArId"`
-	NArName      string `json:"ArName"`
-	NSaleName    string `json:"SaleName"`
-	NTotalAmount int64  `json:"TotalAmount"`
+	Id           int64   `json:"id"`
+	DocDate      string  `json:"doc_date"`
+	DocNo        string  `json:"doc_no"`
+	ArName       string  `json:"ar_name"`
+	ArCode       string  `json:"ar_code"`
+	ArId         int64   `json:"ar_id"`
+	SaleName     string  `json:"sale_name"`
+	TotalAmount  float64 `json:"total_amount"`
+	NId          int64   `json:"Id"`
+	NDocNo       string  `json:"DocNo"`
+	NDocDate     string  `json:"DocDate"`
+	NArId        int64   `json:"ArId"`
+	NArName      string  `json:"ArName"`
+	NSaleName    string  `json:"SaleName"`
+	NTotalAmount int64   `json:"TotalAmount"`
 }

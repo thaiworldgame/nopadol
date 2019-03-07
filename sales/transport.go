@@ -50,6 +50,7 @@ func MakeHandler(s Service) http.Handler {
 	mux.Handle("/inv/list", m.Handler(Invoicelist(s)))
 	mux.Handle("/his/search/keyword", m.Handler(SearchHisByKeyword(s)))
 	mux.Handle("/inv/cancel", m.Handler(CancelInvoice(s)))
+	mux.Handle("/search/creditcard", m.Handler(Searchcreditcard(s)))
 	mux.Handle("/search/hiscustomer", m.Handler(SearchHisCustomer(s)))
 
 	return mustLogin()(mux)

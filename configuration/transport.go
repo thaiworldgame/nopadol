@@ -31,6 +31,7 @@ func MakeHandler(s Service) http.Handler {
 	mux.Handle("/config/new", m.Handler(ConfigSetting(s)))
 	mux.Handle("/config/search/id", m.Handler(SearchSettingById(s)))
 	mux.Handle("/config/search/keyword", m.Handler(SearchSettingByKeyword(s)))
+	mux.Handle("/note", m.Handler(SearchNote(s)))
 	return mustLogin()(mux)
 }
 
