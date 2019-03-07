@@ -627,8 +627,6 @@ func (repo *salesRepository) CreateQuotation(req *sales.NewQuoTemplate) (resp in
 	var count_item_unit int
 	var sum_item_amount float64
 	var uuid string
-	var credit_balance float64
-	var check_credit_status int64
 	def := config.Default{}
 	def = config.LoadDefaultData("config/config.json")
 
@@ -681,44 +679,6 @@ func (repo *salesRepository) CreateQuotation(req *sales.NewQuoTemplate) (resp in
 	}
 
 	fmt.Println("check_doc_exist", check_doc_exist)
-
-	//CheckCredit
-	credit_status := `select BillType as credit_status from Quotation where id = ?`
-	fmt.Println("DocNo Id", req.Id)
-	err = repo.db.Get(&check_credit_status, credit_status, req.Id)
-	if err != nil {
-		fmt.Println("Error = ", err.Error())
-		return nil, err
-	}
-	fmt.Println("check_credit_status", check_credit_status)
-
-	req.BeforeTaxAmount, req.TaxAmount, req.TotalAmount = config.CalcTaxItem(req.TaxType, req.TaxRate, req.AfterDiscountAmount)
-	credit_sql := `select sum(debt_limit - (debt_amount+?)) as check_balance 
-	from Customer
-	where id = ?`
-	err = repo.db.Get(&credit_balance, credit_sql, req.TotalAmount, req.Id)
-	fmt.Println("This Value =", req.TotalAmount)
-	fmt.Println("credit_sql = ", req.ArCode)
-	fmt.Println("credit_sql = ", credit_sql)
-	if err != nil {
-		fmt.Println("Error credit_sql = ", err.Error())
-		return nil, err
-	}
-
-	if check_credit_status == 2 {
-		if credit_balance > 0 {
-			fmt.Println("credit enough")
-		} else {
-			ins_credit := `update Quotation set holding_status=1 where DocNo=? `
-			_, err := repo.db.Exec(ins_credit, req.DocNo)
-			fmt.Println("ins_credit =", ins_credit)
-			fmt.Println("This Value =", req.DocNo)
-			if err != nil {
-				return "", err
-			}
-			fmt.Println("credit not enough")
-		}
-	}
 
 	if check_doc_exist == 0 {
 		//API Call Get API
@@ -1002,8 +962,6 @@ func (repo *salesRepository) CancelQuotation(req *sales.NewQuoTemplate) (resp in
 
 func (repo *salesRepository) ConfirmQuotation(req *sales.NewQuoTemplate) (resp interface{}, err error) {
 	var check_doc_exist int64
-	var credit_balance float64
-	var check_credit_status int64
 	now := time.Now()
 
 	req.ConfirmTime = now.String()
@@ -1030,44 +988,6 @@ func (repo *salesRepository) ConfirmQuotation(req *sales.NewQuoTemplate) (resp i
 	}
 
 	fmt.Println("check_doc_exist", check_doc_exist)
-	//CheckCredit
-	credit_status := `select BillType as credit_status from Quotation where id = ?`
-	fmt.Println("DocNo Id", req.Id)
-	err = repo.db.Get(&check_credit_status, credit_status, req.Id)
-	if err != nil {
-		fmt.Println("Error = ", err.Error())
-		return nil, err
-	}
-	fmt.Println("check_credit_status", check_credit_status)
-
-	req.BeforeTaxAmount, req.TaxAmount, req.TotalAmount = config.CalcTaxItem(req.TaxType, req.TaxRate, req.AfterDiscountAmount)
-	credit_sql := `select sum(debt_limit - (debt_amount+?)) as check_balance 
-	from Customer
-	where id = ?`
-	err = repo.db.Get(&credit_balance, credit_sql, req.TotalAmount, req.Id)
-	fmt.Println("This Value =", req.TotalAmount)
-	fmt.Println("credit_sql = ", req.ArCode)
-	fmt.Println("credit_sql = ", credit_sql)
-	if err != nil {
-		fmt.Println("Error credit_sql = ", err.Error())
-		return nil, err
-	}
-
-	if check_credit_status == 2 {
-		if credit_balance > 0 {
-			fmt.Println("credit enough")
-		} else {
-			ins_credit := `update Quotation set holding_status=1 where DocNo=? `
-			_, err := repo.db.Exec(ins_credit, req.DocNo)
-			fmt.Println("ins_credit =", ins_credit)
-			fmt.Println("This Value =", req.DocNo)
-			if err != nil {
-				return "", err
-			}
-			fmt.Println("credit not enough")
-		}
-	}
-
 	if check_doc_exist != 0 {
 		fmt.Println("Confirm")
 
@@ -1195,7 +1115,6 @@ func (repo *salesRepository) QuotationToSaleOrder(req *sales.SearchByIdTemplate)
 	var uuid string
 	var so_id int64
 
-
 	def := config.Default{}
 	def = config.LoadDefaultData("config/config.json")
 
@@ -1228,11 +1147,10 @@ func (repo *salesRepository) QuotationToSaleOrder(req *sales.SearchByIdTemplate)
 	}
 
 	for _, sub := range subs {
-		fmt.Println("sub = ",subs[0].ItemName)
+		fmt.Println("sub = ", subs[0].ItemName)
 		subline := map_quo_subs_template(sub)
 		qt_resp.Subs = append(qt_resp.Subs, subline)
 	}
-
 
 	if qt_resp.DocDate == "" {
 		qt_resp.DocDate = doc_date
@@ -1243,7 +1161,7 @@ func (repo *salesRepository) QuotationToSaleOrder(req *sales.SearchByIdTemplate)
 	fmt.Println("DocDate = ", q.DocDate)
 
 	for _, sub_item := range qt_resp.Subs {
-		if (sub_item.Qty != 0) {
+		if sub_item.Qty != 0 {
 
 			count_item = count_item + 1
 
@@ -1569,9 +1487,8 @@ func (repo *salesRepository) CreateSaleOrder(req *sales.NewSaleTemplate) (resp i
 	var count_item_unit int
 	var sum_item_amount float64
 	var item_discount_amount_sub float64
-	var credit_balance float64
+	var credit_balance int64
 	var uuid string
-	var check_credit_status int64
 
 	def := config.Default{}
 	def = config.LoadDefaultData("config/config.json")
@@ -1632,33 +1549,22 @@ func (repo *salesRepository) CreateSaleOrder(req *sales.NewSaleTemplate) (resp i
 		return nil, err
 	}
 	//CheckCredit
-	credit_status := `select BillType as credit_status from SaleOrder where id = ?`
-	fmt.Println("DocNo Id", req.Id)
-	err = repo.db.Get(&check_credit_status, credit_status, req.Id)
-	if err != nil {
-		fmt.Println("Error = ", err.Error())
-		return nil, err
-	}
-	fmt.Println("check_credit_status", check_credit_status)
+	fmt.Println("BillType = ", req.BillType)
+	if req.BillType == 1 {
+		req.BeforeTaxAmount, req.TaxAmount, req.TotalAmount = config.CalcTaxItem(req.TaxType, req.TaxRate, req.AfterDiscountAmount)
+		check_balance := `select sum(debt_limit - (debt_amount+?)) as check_credit from Customer where code = ?`
+		err = repo.db.Get(&credit_balance, check_balance, req.TotalAmount, req.ArCode)
+		fmt.Println("This Value =", req.TotalAmount)
+		fmt.Println("ArCode = ", req.ArCode)
+		fmt.Println("check_balance = ", check_balance)
+		if err != nil {
+			return "", err
+		}
 
-	req.BeforeTaxAmount, req.TaxAmount, req.TotalAmount = config.CalcTaxItem(req.TaxType, req.TaxRate, req.AfterDiscountAmount)
-	credit_sql := `select sum(debt_limit - (debt_amount+?)) as check_balance 
-	from Customer
-	where id = ?`
-	err = repo.db.Get(&credit_balance, credit_sql, req.TotalAmount, req.Id)
-	fmt.Println("This Value =", req.TotalAmount)
-	fmt.Println("credit_sql = ", req.ArCode)
-	fmt.Println("credit_sql = ", credit_sql)
-	if err != nil {
-		fmt.Println("Error credit_sql = ", err.Error())
-		return nil, err
-	}
-
-	if check_credit_status == 2 {
 		if credit_balance > 0 {
 			fmt.Println("credit enough")
 		} else {
-			ins_credit := `update SaleOrder set holding_status=1 where DocNo=? `
+			ins_credit := `update SaleOrder set HoldingStatus=1 where DocNo=? `
 			_, err := repo.db.Exec(ins_credit, req.DocNo)
 			fmt.Println("ins_credit =", ins_credit)
 			fmt.Println("This Value =", req.DocNo)
@@ -3571,42 +3477,6 @@ func (repo *salesRepository) SearchSaleByItem(req *sales.SearchByItemTemplate) (
 	return dp, nil
 }
 
-/*func (repo *salesRepository) CheckCredit(req *sales.NewSaleTemplate) (resp interface{}, err error) {
-	var credit_balance float64
-
-	//CheckCredit
-	req.BeforeTaxAmount, req.TaxAmount, req.TotalAmount = config.CalcTaxItem(req.TaxType, req.TaxRate, req.AfterDiscountAmount)
-	credit_sql := `select sum(debt_limit - (debt_amount+?)) as check_balance
-	from Customer
-	where code = ?`
-	err = repo.db.Get(&credit_balance, credit_sql, req.TotalAmount, req.ArCode)
-	fmt.Println("This Value =", req.TotalAmount)
-	fmt.Println("credit_sql = ", req.ArCode)
-	fmt.Println("credit_sql = ", credit_sql)
-	if err != nil {
-		fmt.Println("Error credit_sql = ", err.Error())
-		return nil, err
-	}
-
-	if credit_balance > 0 {
-		req.BeforeTaxAmount, req.TaxAmount, req.TotalAmount = config.CalcTaxItem(req.TaxType, req.TaxRate, req.AfterDiscountAmount)
-		fmt.Println("credit enough")
-		ins_credit := `update Customer set debt_amount=debt_amount+? where code=? `
-		_, err := repo.db.Exec(ins_credit, req.TotalAmount, req.ArCode)
-		fmt.Println("ins_credit =", ins_credit)
-		fmt.Println("This Value =", req.TotalAmount)
-		if err != nil {
-			return "", err
-		}
-	} else {
-		fmt.Println("credit not enough")
-	}
-	return map[string]interface{}{
-		"doc_no":   req.DocNo,
-		"doc_date": req.DocDate,
-	}, nil
-}*/
-
 func (repo *salesRepository) SearchHisByKeyword(req *sales.SearchByKeywordTemplate) (resp interface{}, err error) {
 	var sql string
 	d := []SearchInvModel{}
@@ -3661,21 +3531,21 @@ func map_hiscustomer_template(x NewSearchHisCustomerModel) sales.NewSearchHisCus
 }
 
 type NewSearchHisCustomerModel struct {
-	Id           int64  `db:"id"`
-	DocDate      string `db:"doc_date"`
-	DocNo        string `db:"doc_no"`
-	ArName       string `db:"ar_name"`
-	ArCode       string `db:"ar_code"`
-	ArId         int64  `db:"ar_id"`
-	SaleName     string `db:"sale_name"`
-	TotalAmount  int64  `db:"total_amount"`
-	NId          int64  `db:"Id"`
-	NDocNo       string `db:"DocNo"`
-	NDocDate     string `db:"DocDate"`
-	NArId        int64  `db:"ArId"`
-	NArName      string `db:"ArName"`
-	NSaleName    string `db:"SaleName"`
-	NTotalAmount int64  `db:"TotalAmount"`
+	Id           int64   `db:"id"`
+	DocDate      string  `db:"doc_date"`
+	DocNo        string  `db:"doc_no"`
+	ArName       string  `db:"ar_name"`
+	ArCode       string  `db:"ar_code"`
+	ArId         int64   `db:"ar_id"`
+	SaleName     string  `db:"sale_name"`
+	TotalAmount  float64 `db:"total_amount"`
+	NId          int64   `db:"Id"`
+	NDocNo       string  `db:"DocNo"`
+	NDocDate     string  `db:"DocDate"`
+	NArId        int64   `db:"ArId"`
+	NArName      string  `db:"ArName"`
+	NSaleName    string  `db:"SaleName"`
+	NTotalAmount int64   `db:"TotalAmount"`
 }
 
 func (repo *salesRepository) SearchHisCustomer(req *sales.SearchHisCustomerTemplate) (resp interface{}, err error) {

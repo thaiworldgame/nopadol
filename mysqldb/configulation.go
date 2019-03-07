@@ -40,6 +40,12 @@ type RequestSettingModel struct {
 	CompanyName    string `db:"company_name"`
 }
 
+type RequestNoteModel struct {
+	Id         int64  `db:"id"`
+	TextNote   string `db:"text_note"`
+	TypeStatus int64  `db:"type_status"`
+}
+
 type SettingRepository struct{ db *sqlx.DB }
 
 func NewSettingRepository(db *sqlx.DB) configuration.Repository {
@@ -291,6 +297,37 @@ func (repo *configRepository) SearchSettingByKeyword(req *configuration.SearchBy
 
 	for _, dep := range d {
 		dpline := map_setting_template(dep)
+		dp = append(dp, dpline)
+	}
+	return dp, nil
+}
+
+func map_note_template(x RequestNoteModel) configuration.RequestNoteTemplate {
+	return configuration.RequestNoteTemplate{
+		Id:         x.Id,
+		TextNote:   x.TextNote,
+		TypeStatus: x.TypeStatus,
+	}
+}
+
+func (repo *configRepository) SearchNote(req *configuration.SearchByIdRequestTemplate) (resp interface{}, err error) {
+	var sql string
+	d := []RequestNoteModel{}
+
+	sql = `select  a.id, a.text_note
+		from note a 
+		where type_status = ?`
+
+	err = repo.db.Select(&d, sql, req.TypeStatus)
+	if err != nil {
+		fmt.Println("err = ", err.Error())
+		return nil, fmt.Errorf(err.Error())
+	}
+
+	dp := []configuration.RequestNoteTemplate{}
+
+	for _, dep := range d {
+		dpline := map_note_template(dep)
 		dp = append(dp, dpline)
 	}
 	return dp, nil
