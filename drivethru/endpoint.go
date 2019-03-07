@@ -118,6 +118,11 @@ type (
 		AccessToken string `json:"access_token"`
 	}
 
+	UserRequest struct {
+		AccessToken string `json:"access_token"`
+		Keyword     string `json:"keyword"`
+	}
+
 	BillingDoneRequest struct {
 		AccessToken   string        `json:"access_token"`
 		ArCode        string        `json:"ar_code"`
@@ -153,6 +158,18 @@ type (
 func makeListCompany(s Service) interface{} {
 	return func(ctx context.Context) (interface{}, error) {
 		resp, err := s.SearchListCompany()
+		if err != nil {
+			fmt.Println("endpoint error =", err.Error())
+			return nil, fmt.Errorf(err.Error())
+		}
+
+		return resp, nil
+	}
+}
+
+func makeListUser(s Service) interface{} {
+	return func(ctx context.Context, req *UserRequest) (interface{}, error) {
+		resp, err := s.SearchListUser(&UserRequest{AccessToken:req.AccessToken, Keyword:req.Keyword})
 		if err != nil {
 			fmt.Println("endpoint error =", err.Error())
 			return nil, fmt.Errorf(err.Error())

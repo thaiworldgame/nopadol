@@ -19,6 +19,7 @@ type Service interface {
 	SearchCarBrand(string) (interface{}, error)
 	SearchCustomer(string) (interface{}, error)
 	SearchItem(string) (interface{}, error)
+	SearchListUser(req *UserRequest) (interface{}, error)
 
 	PickupNew(req *NewPickupRequest) (interface{}, error)
 	CancelQueue(req *PickupCancelRequest) (interface{}, error)
@@ -114,6 +115,16 @@ func (s *service) UserLogIn(req *UserLogInRequest) (interface{}, error) {
 		return nil, err
 	}
 	fmt.Println("service UserLogIn data -> ", resp)
+	return resp, nil
+}
+
+func (s *service) SearchListUser(req *UserRequest) (interface{}, error) {
+	resp, err := s.repo.SearchListUser(req)
+	if err != nil {
+		fmt.Println("error service level ", err.Error())
+		return nil, err
+	}
+	fmt.Println("service List Queue data -> ", resp)
 	return resp, nil
 }
 

@@ -209,6 +209,11 @@ func (d *drivethruRepository) UserLogIn(req *drivethru.UserLogInRequest) (interf
 	return user.Userlogin(d.db, req)
 }
 
+func (d *drivethruRepository) SearchListUser(req *drivethru.UserRequest) (interface{}, error) {
+	user := userLogInModel{}
+	return user.SearchListUser(d.db, req)
+}
+
 func (d *drivethruRepository) PickupNew(req *drivethru.NewPickupRequest) (interface{}, error) {
 	pickup := pickupModel{}
 	return pickup.PickupNew(d.db, req)
