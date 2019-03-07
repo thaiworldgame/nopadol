@@ -1195,7 +1195,6 @@ func (repo *salesRepository) QuotationToSaleOrder(req *sales.SearchByIdTemplate)
 	var uuid string
 	var so_id int64
 
-
 	def := config.Default{}
 	def = config.LoadDefaultData("config/config.json")
 
@@ -1228,11 +1227,10 @@ func (repo *salesRepository) QuotationToSaleOrder(req *sales.SearchByIdTemplate)
 	}
 
 	for _, sub := range subs {
-		fmt.Println("sub = ",subs[0].ItemName)
+		fmt.Println("sub = ", subs[0].ItemName)
 		subline := map_quo_subs_template(sub)
 		qt_resp.Subs = append(qt_resp.Subs, subline)
 	}
-
 
 	if qt_resp.DocDate == "" {
 		qt_resp.DocDate = doc_date
@@ -1243,7 +1241,7 @@ func (repo *salesRepository) QuotationToSaleOrder(req *sales.SearchByIdTemplate)
 	fmt.Println("DocDate = ", q.DocDate)
 
 	for _, sub_item := range qt_resp.Subs {
-		if (sub_item.Qty != 0) {
+		if sub_item.Qty != 0 {
 
 			count_item = count_item + 1
 
