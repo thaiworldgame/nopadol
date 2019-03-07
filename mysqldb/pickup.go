@@ -820,22 +820,20 @@ func QueueEdit(db *sqlx.DB, req *drivethru.QueueEditRequest) (interface{}, error
 
 	if req.AccessToken == "" {
 		return map[string]interface{}{
-			"response": map[string]interface{}{
-				"success": false,
-				"error":   true,
-				"message": "Queue Not Have Access Token",
-			},
-			"queid": ""}, nil
+			"success": false,
+			"error":   true,
+			"message": "Queue Not Have Access Token",
+			"queid":   nil,
+		}, nil
 	}
 
 	if req.QueueId == 0 {
 		return map[string]interface{}{
-			"response": map[string]interface{}{
-				"success": false,
-				"error":   true,
-				"message": "Queue Id Not Assign",
-			},
-			"queid": ""}, nil
+			"success": false,
+			"error":   true,
+			"message": "Queue Id Not Assign",
+			"queid":   nil,
+		}, nil
 	}
 
 	u := UserAccess{}
@@ -846,43 +844,39 @@ func QueueEdit(db *sqlx.DB, req *drivethru.QueueEditRequest) (interface{}, error
 
 	if q.Status >= 2 {
 		return map[string]interface{}{
-			"response": map[string]interface{}{
-				"success": false,
-				"error":   true,
-				"message": "Queue can not edit",
-			},
-			"queid": ""}, nil
+			"success": false,
+			"error":   true,
+			"message": "Queue can not edit",
+			"queid":   nil,
+		}, nil
 	}
 
 	if q.IsCancel == 1 {
 		return map[string]interface{}{
-			"response": map[string]interface{}{
-				"success": false,
-				"error":   true,
-				"message": "Queue is cancel",
-			},
-			"queid": ""}, nil
+			"success": false,
+			"error":   true,
+			"message": "Queue is cancel",
+			"queid":   nil,
+		}, nil
 	}
 
 	lccommand := `update basket set car_brand = ?, ref_number = ?, sale_id = ?, status = ?, edit_by = ?, edit_time = ? where que_id = ? and doc_date = CURDATE()`
 	_, err := db.Exec(lccommand, req.CarBrand, req.PlateNumber, u.UserId, req.Status, u.UserCode, now.String(), req.QueueId)
 	if err != nil {
 		return map[string]interface{}{
-			"response": map[string]interface{}{
-				"success": false,
-				"error":   true,
-				"message": err.Error(),
-			},
-			"queid": ""}, nil
+			"success": false,
+			"error":   true,
+			"message": err.Error(),
+			"queid":   nil,
+		}, nil
 	}
 
 	return map[string]interface{}{
-		"response": map[string]interface{}{
-			"success": true,
-			"error":   false,
-			"message": "",
-		},
-		"queid": ""}, nil
+		"success": true,
+		"error":   false,
+		"message": "",
+		"queid":   nil,
+	}, nil
 }
 
 func (q *ListQueueModel) QueueStatus(db *sqlx.DB, req *drivethru.QueueStatusRequest) (interface{}, error) {
