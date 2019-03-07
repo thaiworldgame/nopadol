@@ -62,12 +62,10 @@ func (d *drivethruRepository) SearchListZone(access_token string) (interface{}, 
 
 	fmt.Println("mysqldb recive databranch -> ", zes)
 	return map[string]interface{}{
-		"response": map[string]interface{}{
 			"success":   true,
 			"error":     false,
 			"message": "",
 			"pick_zone":zes,
-		},
 	}, nil
 }
 
@@ -161,16 +159,16 @@ func (d *drivethruRepository) SearchCustomer(keyword string) (interface{}, error
 func (d *drivethruRepository) SearchItem(keyword string) (interface{}, error) {
 	fmt.Println("mysql recived param keyword -> ", keyword)
 	type itemModel struct {
-		ItemBarcode   string  `json:"item_barcode"`
-		ItemCode      string  `json:"item_code"`
-		ItemName      string  `json:"item_name"`
-		ItemCategory  string  `json:"item_category"`
-		ItemPrice     float64 `json:"item_price"`
-		ItemPrice2    float64 `json:"item_price_2"`
-		ItemUnitCode  string  `json:"item_unit_code"`
-		ItemRemark    string  `json:"item_remark"`
-		ItemShortName string  `json:"item_short_name"`
-		ItemFilePath  string  `json:"item_file_path"`
+		ItemBarcode   string  `json:"item_barcode" db:"bar_code"`
+		ItemCode      string  `json:"item_code" db:"item_code"`
+		ItemName      string  `json:"item_name" db:"item_name"`
+		ItemCategory  string  `json:"item_category" db:"item_category"`
+		ItemPrice     float64 `json:"item_price" db:"price"`
+		ItemPrice2    float64 `json:"item_price_2" db:"price2"`
+		ItemUnitCode  string  `json:"item_unit_code" db:"unit_code"`
+		ItemRemark    string  `json:"item_remark" db:"item_remark"`
+		ItemShortName string  `json:"item_short_name" db:"short_name"`
+		ItemFilePath  string  `json:"item_file_path" db:"item_file_path"`
 	}
 	lccommand := "select 	a.bar_code ," +
 		"a.item_code," +
@@ -186,10 +184,16 @@ func (d *drivethruRepository) SearchItem(keyword string) (interface{}, error) {
 		"left join npdl.Price c on b.code = c.item_code and a.unit_code = c.unit_code " +
 		" where a.bar_code='" + keyword + "' limit 1 "
 	fmt.Println(lccommand)
-	rs := d.db.QueryRow(lccommand)
-	it := itemModel{}
-	rs.Scan(&it.ItemBarcode, &it.ItemCode, &it.ItemUnitCode, &it.ItemPrice, &it.ItemPrice2,
-		&it.ItemName, &it.ItemShortName, &it.ItemCategory, &it.ItemRemark, &it.ItemFilePath)
+	//rs := d.db.QueryRow(lccommand)
+	it := []*itemModel{}
+
+	err := d.db.Select(&it,lccommand)
+	if err != nil {
+		return nil, err
+	}
+
+	//rs.Scan(&it.ItemBarcode, &it.ItemCode, &it.ItemUnitCode, &it.ItemPrice, &it.ItemPrice2,
+	//	&it.ItemName, &it.ItemShortName, &it.ItemCategory, &it.ItemRemark, &it.ItemFilePath)
 
 	fmt.Println("before mysql return -> ", it)
 	return it, nil

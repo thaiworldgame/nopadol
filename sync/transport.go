@@ -27,7 +27,7 @@ func MakeHandler(s Service) http.Handler {
 	})
 	mux := http.NewServeMux()
 	mux.Handle("/quotation/new", m.Handler(NewQuotation(s)))
-	mux.Handle("/done", m.Handler(makeDone(s)))
+	mux.Handle("/done", m.Handler(confirmTransfer(s)))
 
 	return mustLogin()(mux)
 

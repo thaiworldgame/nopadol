@@ -37,6 +37,13 @@ type RequestSettingModel struct {
 	Address        string `db:"address"`
 	Telephone      string `db:"telephone"`
 	Fax            string `db:"fax"`
+	CompanyName    string `db:"company_name"`
+}
+
+type RequestNoteModel struct {
+	Id         int64  `db:"id"`
+	TextNote   string `db:"text_note"`
+	TypeStatus int64  `db:"type_status"`
 }
 
 type SettingRepository struct{ db *sqlx.DB }
@@ -53,7 +60,7 @@ func (repo *configRepository) ConfigSetting(req *configuration.RequestSettingTem
 	req.CreateTime = now.String()
 	req.EditTime = now.String()
 
-	sqlexist := `select id as check_exist from configuration where id = ?`
+	sqlexist := `select count(id) as check_exist from configuration where id = ?`
 	fmt.Println("Id = ", req.Id)
 	err = repo.db.Get(&check_id_exist, sqlexist, req.Id)
 	if err != nil {
@@ -209,6 +216,7 @@ func map_setting_template(x RequestSettingModel) configuration.RequestSettingTem
 		Address:        x.Address,
 		Telephone:      x.Telephone,
 		Fax:            x.Fax,
+		CompanyName:    x.CompanyName,
 	}
 }
 
@@ -262,4 +270,65 @@ func (repo *configRepository) SearchSettingById(req *configuration.SearchByIdReq
 		"fax":               config_resp.Fax,
 	}, nil
 
+}
+
+func (repo *configRepository) SearchSettingByKeyword(req *configuration.SearchByKeywordRequestTemplate) (resp interface{}, err error) {
+	var sql string
+	d := []RequestSettingModel{}
+	if req.Keyword == "" {
+		sql = `select  a.id, a.company_id, a.branch_id, a.tax_rate, 
+		b.company_id,b.branch_name, b.address, b.telephone,b.fax, c.company_name
+		from configuration a left join branch b on a.branch_id = b.id left join company c on a.company_id = c.id `
+		err = repo.db.Select(&d, sql)
+	} else {
+		sql = `select  a.id, a.company_id, a.branch_id, a.tax_rate, 
+		b.company_id,b.branch_name, b.address, b.telephone,b.fax, c.company_name
+		from configuration a left join branch b on a.branch_id = b.id left join company c on a.company_id = c.id 
+		where a.id = ? or b.company_id = ? or b.branch_name`
+		err = repo.db.Select(&d, sql, req.Keyword, req.Keyword, req.Keyword)
+	}
+	fmt.Println("sql = ", sql, req.Keyword)
+	if err != nil {
+		fmt.Println("errsss = ", err.Error())
+		return resp, err
+	}
+
+	dp := []configuration.RequestSettingTemplate{}
+
+	for _, dep := range d {
+		dpline := map_setting_template(dep)
+		dp = append(dp, dpline)
+	}
+	return dp, nil
+}
+
+func map_note_template(x RequestNoteModel) configuration.RequestNoteTemplate {
+	return configuration.RequestNoteTemplate{
+		Id:         x.Id,
+		TextNote:   x.TextNote,
+		TypeStatus: x.TypeStatus,
+	}
+}
+
+func (repo *configRepository) SearchNote(req *configuration.SearchByIdRequestTemplate) (resp interface{}, err error) {
+	var sql string
+	d := []RequestNoteModel{}
+
+	sql = `select  a.id, a.text_note
+		from note a 
+		where type_status = ?`
+
+	err = repo.db.Select(&d, sql, req.TypeStatus)
+	if err != nil {
+		fmt.Println("err = ", err.Error())
+		return nil, fmt.Errorf(err.Error())
+	}
+
+	dp := []configuration.RequestNoteTemplate{}
+
+	for _, dep := range d {
+		dpline := map_note_template(dep)
+		dp = append(dp, dpline)
+	}
+	return dp, nil
 }

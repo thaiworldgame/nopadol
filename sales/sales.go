@@ -541,19 +541,19 @@ type SearchHisCustomerTemplate struct {
 }
 
 type NewSearchHisCustomerTemplate struct {
-	Id           int64  `json:"id"`
-	DocDate      string `json:"doc_date"`
-	DocNo        string `json:"doc_no"`
-	ArName       string `json:"ar_name"`
-	ArCode       string `json:"ar_code"`
-	ArId         int64  `json:"ar_id"`
-	SaleName     string `json:"sale_name"`
-	TotalAmount  int64  `json:"total_amount"`
-	NId          int64  `json:"Id"`
-	NDocNo       string `json:"DocNo"`
-	NDocDate     string `json:"DocDate"`
-	NArId        int64  `json:"ArId"`
-	NArName      string `json:"ArName"`
-	NSaleName    string `json:"SaleName"`
-	NTotalAmount int64  `json:"TotalAmount"`
+	Id           int64   `json:"id"`
+	DocDate      string  `json:"doc_date"`
+	DocNo        string  `json:"doc_no"`
+	ArName       string  `json:"ar_name"`
+	ArCode       string  `json:"ar_code"`
+	ArId         int64   `json:"ar_id"`
+	SaleName     string  `json:"sale_name"`
+	TotalAmount  float64 `json:"total_amount"`
+	NId          int64   `json:"Id"`
+	NDocNo       string  `json:"DocNo"`
+	NDocDate     string  `json:"DocDate"`
+	NArId        int64   `json:"ArId"`
+	NArName      string  `json:"ArName"`
+	NSaleName    string  `json:"SaleName"`
+	NTotalAmount int64   `json:"TotalAmount"`
 }

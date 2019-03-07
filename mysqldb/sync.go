@@ -29,6 +29,10 @@ type syncLogs struct {
 	value       string `db:"value"`
 }
 
+//type Logs struct {
+//	uuid string `db:"uid"`
+//}
+
 type BcQuotaionSend struct {
 	BCQuotation
 	LogUuid string `json:"log_uuid"`
@@ -49,15 +53,29 @@ func (s *syncRepository) GetNewQuotaion() (resp interface{}, err error) {
 	return resp, nil
 }
 
+func (s *syncRepository) ConfirmTransfer(req sync.Log) (status interface{}, err error) {
+	fmt.Println("sync.Logs = ",req)
+
+	//for _, l := range req.LogsUUID {
+		fmt.Println("uuid : ",req.LogUUID)
+		sql := `update npdl.sync_logs set send_status = 1 where uuid = ?`
+		_, err = s.db.Exec(sql, req.LogUUID)
+		if err != nil {
+			fmt.Println(err.Error())
+		}
+	//}
+	return map[string]interface{}{
+		"status": "success",
+	}, nil
+}
+
 func (sl *syncLogs) getWaitQuotation(db *sqlx.DB) (resp []BcQuotaionSend, err error) {
-	sql := `select id,uuid,type,table_name,key_field,value from npdl.sync_logs
-	where   send_status=0 and table_name='Quotation' `
+	sql := `select id,uuid,type,table_name,key_field,value from npdl.sync_logs where   send_status=0 and table_name='Quotation' `
 	fmt.Println(sql)
 	sync := syncLogs{}
 
 	qt := BcQuotaionSend{}
 	qts := []BcQuotaionSend{}
-	//qtsub := []BCQuotationSub{}
 
 	rs, err := db.Queryx(sql)
 	if err != nil {
@@ -70,79 +88,12 @@ func (sl *syncLogs) getWaitQuotation(db *sqlx.DB) (resp []BcQuotaionSend, err er
 		if err != nil {
 			return nil, err
 		}
-		//fmt.Println(sync)
+
 		qt.LogUuid = sync.uuid
 		qt.DocNo = sync.value
 
 		qt.get(db)
 		qts = append(qts, qt)
-
-		//syncs = append(syncs, sync)
 	}
-	//fmt.Print("sync object : ", syncs )
 	return qts, nil
-
 }
-
-//func (sync *syncLogs) GetNewQuotation(db *sqlx.DB) (xs []BCQuotation, err error) {
-//
-//	syncList, err := sync.getWaitingQuotation(db, "Quotation")
-//	if err != nil {
-//		return nil, err
-//	}
-//
-//	if len(syncList) == 0 {
-//		return nil, nil
-//	}
-//
-//	var y []BCQuotation
-//	//var xx BCQuotation
-//	if err != nil {
-//		return nil, err
-//	}
-//
-//	//todo : generate quotation /sub data
-//	// todo : return quotation /sub
-//
-//	//for _, v := range syncList {
-//	//	x := BCQuotation{}
-//	//	sql := "select code,name1,defstkunitcode,stocktype from " + v. + " where " + v.keyField + "= '" + v.value + "'"
-//	//	fmt.Println(sql)
-//	//	rs := db.QueryRow(sql)
-//	//	if err != nil {
-//	//		fmt.Println("error query select ar")
-//	//		return nil, err
-//	//	}
-//	//	rs.Scan(&x.Code, &x.Name, &x.DefStkUnitCode, &x.StockType)
-//	//	xx.UID = v.Uid
-//	//	xx.NewItem = x
-//	//	y = append(y, xx)
-//	//	//fmt.Println("xx :", x)
-//	//}
-//
-//	return y, err
-//}
-
-//func (syn *syncLogs) getWaitingItem(db *sqlx.DB, moduleType string) ([]syncLogs, error) {
-//	sql := `select id,convert(nvarchar(50),uid) as uid,type,tablename,roworder,action,key_field,value
-//	 	from sync_logs
-//	 	where   send_status=0
-//	 		and type='item' `
-//	sync := syncLogs{}
-//	syncs := []syncLogs{}
-//	rs, err := db.Queryx(sql)
-//	if err != nil {
-//		return nil, err
-//	}
-//
-//	for rs.Next() {
-//		err = rs.Scan(&sync.Id, &sync.Uid, &sync.ModuleType, &sync.TableName, &sync.roworder, &sync.action, &sync.keyField, &sync.value)
-//		if err != nil {
-//			return nil, err
-//		}
-//		//fmt.Println(sync)
-//		syncs = append(syncs, sync)
-//	}
-//	//fmt.Print("sync object : ", syncs )
-//	return syncs, nil
-//}

@@ -35,14 +35,21 @@ type (
 		Address        string `json:"address"`
 		Telephone      string `json:"telephone"`
 		Fax            string `json:"fax"`
+		CompanyName    string `json:"company_name"`
 	}
 
 	SearchByIdRequest struct {
-		Id int64 `json:"id"`
+		Id         int64 `json:"id"`
+		TypeStatus int64 `json:"type_status"`
 	}
 
 	SearchByKeywordRequest struct {
 		Keyword string `json:"keyword"`
+	}
+	RequestNote struct {
+		Id         int64  `json:"id"`
+		TextNote   string `json:"text_note"`
+		TypeStatus int64  `json:"type_status"`
 	}
 )
 
@@ -90,9 +97,33 @@ func ConfigSetting(s Service) interface{} {
 
 func SearchSettingById(s Service) interface{} {
 	return func(ctx context.Context, req *SearchByIdRequest) (interface{}, error) {
-		resp, err := s.SearchSettingById(&SearchByIdRequestTemplate{
-			Id: req.Id,
-		})
+		resp, err := s.SearchSettingById(&SearchByIdRequestTemplate{Id: req.Id})
+		if err != nil {
+			fmt.Println("endpoint error =", err.Error())
+			return nil, fmt.Errorf(err.Error())
+		}
+		return map[string]interface{}{
+			"data": resp,
+		}, nil
+	}
+}
+
+func SearchSettingByKeyword(s Service) interface{} {
+	return func(ctx context.Context, req *SearchByKeywordRequest) (interface{}, error) {
+		resp, err := s.SearchSettingByKeyword(&SearchByKeywordRequestTemplate{Keyword: req.Keyword})
+		if err != nil {
+			fmt.Println("endpoint error =", err.Error())
+			return nil, fmt.Errorf(err.Error())
+		}
+		return map[string]interface{}{
+			"data": resp,
+		}, nil
+	}
+}
+
+func SearchNote(s Service) interface{} {
+	return func(ctx context.Context, req *RequestNote) (interface{}, error) {
+		resp, err := s.SearchNote(&SearchByIdRequestTemplate{TypeStatus: req.TypeStatus})
 		if err != nil {
 			fmt.Println("endpoint error =", err.Error())
 			return nil, fmt.Errorf(err.Error())
