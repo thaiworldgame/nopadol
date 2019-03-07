@@ -935,7 +935,7 @@ func (q *ListQueueModel) QueueStatus(db *sqlx.DB, req *drivethru.QueueStatusRequ
 		}
 
 		lccommand1 := `insert basket_status(uuid, basket_id, que_id, doc_no, status, create_time) values(?, ?, ?, ?, ?, ?)`
-		_, err = db.Exec(lccommand1, q.UUID, req.QueueId, q.DocNo, req.StatusForSaleorderCurrent, now.String())
+		_, err = db.Exec(lccommand1, q.UUID, q.Id, req.QueueId, q.DocNo, req.StatusForSaleorderCurrent, now.String())
 		if err != nil {
 			return map[string]interface{}{
 				"success": false,

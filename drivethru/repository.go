@@ -7,6 +7,7 @@ type Repository interface {
 	SearchListMachine() (interface{}, error)
 	SearchListZone(string) (interface{}, error)
 	SearchCarBrand(string) (interface{}, error)
+	SearchListUser(req *UserRequest) (interface{}, error)
 
 	SearchCustomer(string) (interface{}, error)
 	SearchItem(string) (interface{}, error)
