@@ -823,7 +823,7 @@ func QueueEdit(db *sqlx.DB, req *drivethru.QueueEditRequest) (interface{}, error
 			"success": false,
 			"error":   true,
 			"message": "Queue Not Have Access Token",
-			"queid":   "",
+			"queid":   nil,
 		}, nil
 	}
 
@@ -832,7 +832,7 @@ func QueueEdit(db *sqlx.DB, req *drivethru.QueueEditRequest) (interface{}, error
 			"success": false,
 			"error":   true,
 			"message": "Queue Id Not Assign",
-			"queid":   "",
+			"queid":   nil,
 		}, nil
 	}
 
@@ -847,7 +847,7 @@ func QueueEdit(db *sqlx.DB, req *drivethru.QueueEditRequest) (interface{}, error
 			"success": false,
 			"error":   true,
 			"message": "Queue can not edit",
-			"queid":   "",
+			"queid":   nil,
 		}, nil
 	}
 
@@ -856,7 +856,7 @@ func QueueEdit(db *sqlx.DB, req *drivethru.QueueEditRequest) (interface{}, error
 			"success": false,
 			"error":   true,
 			"message": "Queue is cancel",
-			"queid":   "",
+			"queid":   nil,
 		}, nil
 	}
 
@@ -867,7 +867,7 @@ func QueueEdit(db *sqlx.DB, req *drivethru.QueueEditRequest) (interface{}, error
 			"success": false,
 			"error":   true,
 			"message": err.Error(),
-			"queid":   "",
+			"queid":   nil,
 		}, nil
 	}
 
@@ -875,7 +875,7 @@ func QueueEdit(db *sqlx.DB, req *drivethru.QueueEditRequest) (interface{}, error
 		"success": true,
 		"error":   false,
 		"message": "",
-		"queid":   "",
+		"queid":   nil,
 	}, nil
 }
 
