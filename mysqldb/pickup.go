@@ -146,6 +146,22 @@ func (q *ListQueueModel) SearchQueueList(db *sqlx.DB, req *drivethru.ListQueueRe
 			}, nil
 		}
 
+		if qid.Item == nil {
+			qid.Item = []QueueItem{}
+		}
+
+		if qid.OwnerPhone == nil {
+			qid.OwnerPhone = []OwnerPhoneModel{}
+		}
+
+		if qid.ReceiverPhone == nil {
+			qid.ReceiverPhone = []OwnerPhoneModel{}
+		}
+
+		if qid.StatusForSaleorderHistory == nil {
+			qid.StatusForSaleorderHistory = []QueueStatusHistoryModel{}
+		}
+
 		que_data = append(que_data, qid)
 	}
 
@@ -2194,22 +2210,18 @@ func (q *ListQueueModel) CancelQueue(db *sqlx.DB, req *drivethru.QueueStatusRequ
 				_, err := db.Exec(lccommand, req.CancelRemark, u.UserCode, req.QueueId, u.CompanyID, u.BranchID, q.UUID)
 				if err != nil {
 					return map[string]interface{}{
-						"response": map[string]interface{}{
-							"success": false,
-							"error":   true,
-							"message": err.Error(),
-						},
+						"success": false,
+						"error":   true,
+						"message": err.Error(),
 					}, nil
 				}
 			}
 		}
 	}
 	return map[string]interface{}{
-		"response": map[string]interface{}{
-			"success": true,
-			"error":   false,
-			"message": "",
-		},
+		"success": true,
+		"error":   false,
+		"message": "",
 	}, nil
 }
 
