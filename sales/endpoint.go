@@ -1098,7 +1098,8 @@ func Searchcreditcard(s Service) interface{} {
 
 func CancelInvoice(s Service) interface{} {
 	return func(ctx context.Context, req *NewInvoiceRequest) (interface{}, error) {
-		resp, err := s.CancelInvoice(&NewInvoiceTemplate{Id: req.Id, DocNo: req.DocNo, IsConfirm: req.IsConfirm, IsCancel: req.IsCancel, CancelBy: req.CancelBy, CancelTime: req.CancelTime})
+		fmt.Print(req)
+		resp, err := s.CancelInvoice(&NewInvoiceTemplate{Id: req.Id, DocNo: req.DocNo, ArCode: req.ArCode, IsConfirm: req.IsConfirm, IsCancel: req.IsCancel, CancelBy: req.CancelBy, CancelTime: req.CancelTime, SumOfDeposit: req.SumOfDeposit})
 		if err != nil {
 			fmt.Println("endpoint error =", err.Error())
 			return nil, fmt.Errorf(err.Error())
@@ -1114,7 +1115,7 @@ func CreateInvoice(s Service) interface{} {
 	return func(ctx context.Context, req *NewInvoiceRequest) (interface{}, error) {
 
 		iv := map_invoice_request(req)
-
+		fmt.Println("somof =", req.SumOfDeposit)
 		for _, crds := range req.CreditCard {
 			fmt.Println(crds, "caditcard2")
 			crdline := map_creditcard_request(crds)
