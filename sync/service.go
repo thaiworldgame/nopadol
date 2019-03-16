@@ -11,15 +11,22 @@ type service struct {
 }
 
 type Service interface {
-	GetNewQoutaion() (interface{},error)
+	GetNewQuotaion() (interface{},error)
+	ConfirmTransfer(Log) (interface{},error)
 }
 
-
-
-func (s *service)GetNewQoutaion()(interface{},error){
-	resp,err := s.repo.GetNewQoutaion()
+func (s *service)GetNewQuotaion()(interface{},error){
+	resp,err := s.repo.GetNewQuotaion()
 	if err != nil {
 		return nil,err
 	}
 	return resp,nil
+}
+
+func (s *service)ConfirmTransfer(req Log)(interface{}, error){
+	resp, err := s.repo.ConfirmTransfer(req)
+	if err != nil {
+		return nil, err
+	}
+	return resp, nil
 }

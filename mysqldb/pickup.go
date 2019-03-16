@@ -66,7 +66,7 @@ type QueueStatusHistoryModel struct {
 
 type QueueItem struct {
 	Id               int     `json:"id" db:"id"`
-	ItemBarCode      string  `json:"item_bar_code" db:"item_bar_code"`
+	ItemBarCode      string  `json:"item_barcode" db:"item_bar_code"`
 	FilePath         string  `json:"file_path" db:"file_path"`
 	IsCancel         int     `json:"is_cancel" db:"is_cancel"`
 	IsCheck          int     `json:"is_check" db:"is_check"`
@@ -146,6 +146,22 @@ func (q *ListQueueModel) SearchQueueList(db *sqlx.DB, req *drivethru.ListQueueRe
 			}, nil
 		}
 
+		if qid.Item == nil {
+			qid.Item = []QueueItem{}
+		}
+
+		if qid.OwnerPhone == nil {
+			qid.OwnerPhone = []OwnerPhoneModel{}
+		}
+
+		if qid.ReceiverPhone == nil {
+			qid.ReceiverPhone = []OwnerPhoneModel{}
+		}
+
+		if qid.StatusForSaleorderHistory == nil {
+			qid.StatusForSaleorderHistory = []QueueStatusHistoryModel{}
+		}
+
 		que_data = append(que_data, qid)
 	}
 
@@ -165,12 +181,10 @@ func (q *ListQueueModel) QueueProduct(db *sqlx.DB, req *drivethru.QueueProductRe
 	err := db.Get(&que, lccommand, req.QueueId)
 	if err != nil {
 		return map[string]interface{}{
-			"response": map[string]interface{}{
-				"error":   true,
-				"message": "Queue List Doc Error = " + err.Error(),
-				"success": false,
-				"queue":   nil,
-			},
+			"error":   true,
+			"message": "Queue List Doc Error = " + err.Error(),
+			"success": false,
+			"queue":   nil,
 		}, nil
 	}
 
@@ -178,12 +192,10 @@ func (q *ListQueueModel) QueueProduct(db *sqlx.DB, req *drivethru.QueueProductRe
 	err = db.Select(&que.Item, lccommand1, que.Id, que.QueueId, que.UUID)
 	if err != nil {
 		return map[string]interface{}{
-			"response": map[string]interface{}{
-				"error":   true,
-				"message": "Queue List item Error = " + err.Error(),
-				"success": false,
-				"queue":   nil,
-			},
+			"error":   true,
+			"message": "Queue List item Error = " + err.Error(),
+			"success": false,
+			"queue":   nil,
 		}, nil
 	}
 
@@ -191,12 +203,10 @@ func (q *ListQueueModel) QueueProduct(db *sqlx.DB, req *drivethru.QueueProductRe
 	err = db.Select(&que.OwnerPhone, lccommand2, que.Id, que.QueueId, que.UUID, que.DocNo)
 	if err != nil {
 		return map[string]interface{}{
-			"response": map[string]interface{}{
-				"error":   true,
-				"message": "Queue List phone Error = " + err.Error(),
-				"success": false,
-				"queue":   nil,
-			},
+			"error":   true,
+			"message": "Queue List phone Error = " + err.Error(),
+			"success": false,
+			"queue":   nil,
 		}, nil
 	}
 
@@ -204,33 +214,43 @@ func (q *ListQueueModel) QueueProduct(db *sqlx.DB, req *drivethru.QueueProductRe
 	err = db.Select(&que.ReceiverPhone, lccommand3, que.Id, que.QueueId, que.UUID, que.DocNo)
 	if err != nil {
 		return map[string]interface{}{
-			"response": map[string]interface{}{
-				"error":   true,
-				"message": "Queue List phone Error = " + err.Error(),
-				"success": false,
-				"queue":   nil,
-			},
+			"error":   true,
+			"message": "Queue List phone Error = " + err.Error(),
+			"success": false,
+			"queue":   nil,
 		}, nil
 	}
 
+	if que.Item == nil {
+		que.Item = []QueueItem{}
+	}
+
+	if que.OwnerPhone == nil {
+		que.OwnerPhone = []OwnerPhoneModel{}
+	}
+
+	if que.ReceiverPhone == nil {
+		que.ReceiverPhone = []OwnerPhoneModel{}
+	}
+
+	if que.StatusForSaleorderHistory == nil {
+		que.StatusForSaleorderHistory = []QueueStatusHistoryModel{}
+	}
+
 	return map[string]interface{}{
-		"response": map[string]interface{}{
-			"error":   false,
-			"message": "",
-			"success": true,
-			"queue":   que,
-		},
+		"error":   false,
+		"message": "",
+		"success": true,
+		"queue":   que,
 	}, nil
 }
 
 func (q *ListQueueModel) QueueDetails(db *sqlx.DB, que_id int, access_token string) (interface{}, error) {
 	if que_id == 0 {
 		return map[string]interface{}{
-			"response": map[string]interface{}{
-				"process":     "queue list",
-				"processDesc": "Queue Id = 0",
-				"isSuccess":   false,
-			},
+			"process":     "queue list",
+			"processDesc": "Queue Id = 0",
+			"isSuccess":   false,
 		}, nil
 	}
 
@@ -238,11 +258,9 @@ func (q *ListQueueModel) QueueDetails(db *sqlx.DB, que_id int, access_token stri
 	err := db.Get(&q, lccommand, que_id)
 	if err != nil {
 		return map[string]interface{}{
-			"response": map[string]interface{}{
-				"process":     "queue list",
-				"processDesc": "Queue List Doc Error = " + err.Error(),
-				"isSuccess":   false,
-			},
+			"process":     "queue list",
+			"processDesc": "Queue List Doc Error = " + err.Error(),
+			"isSuccess":   false,
 		}, nil
 	}
 
@@ -250,11 +268,9 @@ func (q *ListQueueModel) QueueDetails(db *sqlx.DB, que_id int, access_token stri
 	err = db.Select(&q.Item, lccommand1, q.Id, q.QueueId, q.UUID)
 	if err != nil {
 		return map[string]interface{}{
-			"response": map[string]interface{}{
-				"process":     "queue list item",
-				"processDesc": "Queue List item Error = " + err.Error(),
-				"isSuccess":   false,
-			},
+			"process":     "queue list item",
+			"processDesc": "Queue List item Error = " + err.Error(),
+			"isSuccess":   false,
 		}, nil
 	}
 
@@ -262,11 +278,9 @@ func (q *ListQueueModel) QueueDetails(db *sqlx.DB, que_id int, access_token stri
 	err = db.Select(&q.OwnerPhone, lccommand2, q.Id, q.QueueId, q.UUID, q.DocNo)
 	if err != nil {
 		return map[string]interface{}{
-			"response": map[string]interface{}{
-				"process":     "queue list phone",
-				"processDesc": "Queue List phone Error = " + err.Error(),
-				"isSuccess":   false,
-			},
+			"process":     "queue list phone",
+			"processDesc": "Queue List phone Error = " + err.Error(),
+			"isSuccess":   false,
 		}, nil
 	}
 
@@ -274,11 +288,9 @@ func (q *ListQueueModel) QueueDetails(db *sqlx.DB, que_id int, access_token stri
 	err = db.Select(&q.ReceiverPhone, lccommand3, q.Id, q.QueueId, q.UUID, q.DocNo)
 	if err != nil {
 		return map[string]interface{}{
-			"response": map[string]interface{}{
-				"process":     "queue list phone",
-				"processDesc": "Queue List phone Error = " + err.Error(),
-				"isSuccess":   false,
-			},
+			"process":     "queue list phone",
+			"processDesc": "Queue List phone Error = " + err.Error(),
+			"isSuccess":   false,
 		}, nil
 	}
 
@@ -521,32 +533,30 @@ func (item *QueueItem) ManagePickup(db *sqlx.DB, req *drivethru.ManagePickupRequ
 			}
 
 			item.SearchQueueItem(db, req.QueueId, item.ItemCode, item.ItemUnitCode, req.LineNumber)
-
 			return map[string]interface{}{
 				"success": true,
 				"error":   true,
 				"message": "",
-				"item": map[string]interface{}{
-					"item_barcode":       p.BarCode,
-					"file_path":          p.PicPath1,
-					"is_cancel":          item.IsCancel,
-					"is_check":           item.IsCheck,
-					"item_code":          p.ItemCode,
-					"item_name":          p.ItemName,
-					"pickup_staff_name":  s.SaleName,
-					"sale_code":          s.SaleCode + "/" + s.SaleName,
-					"item_price":         p.SalePrice1,
-					"qty_after":          req.QtyBefore,
-					"qty_before":         item.QtyBefore,
-					"qty_load":           item.QtyAfter,
-					"total_price_after":  item.TotalPriceAfter,
-					"total_price_before": p.SalePrice1 * req.QtyBefore,
-					"item_unit_code":     p.UnitCode,
-					"request_qty":        item.RequestQty,
-					"item_qty":           req.QtyBefore,
-					"pick_zone_id":       item.PickZoneId,
-					"line_number":        req.LineNumber,
-				},
+				"item": []QueueItem{{
+					ItemBarCode:      p.BarCode,
+					FilePath:         p.PicPath1,
+					IsCancel:         item.IsCancel,
+					IsCheck:          item.IsCheck,
+					ItemCode:         p.ItemCode,
+					ItemName:         p.ItemName,
+					PickupStaffName:  s.SaleName,
+					SaleCode:         s.SaleCode + "/" + s.SaleName,
+					ItemPrice:        p.SalePrice1,
+					QtyBefore:        req.QtyBefore,
+					QtyAfter:         item.QtyAfter,
+					QtyLoad:          item.QtyAfter,
+					TotalPriceAfter:  item.TotalPriceAfter,
+					TotalPriceBefore: p.SalePrice1 * req.QtyBefore,
+					ItemUnitCode:     p.UnitCode,
+					RequestQty:       item.RequestQty,
+					ItemQty:          req.QtyBefore,
+					PickZoneId:       item.PickZoneId,
+					LineNumber:       req.LineNumber,}},
 			}, nil
 		} else {
 			return map[string]interface{}{
@@ -698,27 +708,27 @@ func (item *QueueItem) ManageCheckOut(db *sqlx.DB, req *drivethru.ManageCheckout
 				"success": true,
 				"error":   true,
 				"message": "",
-				"item": map[string]interface{}{
-					"item_barcode":       p.BarCode,
-					"file_path":          p.PicPath1,
-					"is_cancel":          item.IsCancel,
-					"is_check":           item.IsCheck,
-					"item_code":          p.ItemCode,
-					"item_name":          p.ItemName,
-					"pickup_staff_name":  s.SaleName,
-					"sale_code":          s.SaleCode + "/" + s.SaleName,
-					"item_price":         p.SalePrice1,
-					"qty_after":          req.QtyAfter,
-					"qty_before":         item.QtyBefore,
-					"qty_load":           item.QtyAfter,
-					"total_price_after":  item.TotalPriceAfter,
-					"total_price_before": p.SalePrice1 * req.QtyAfter,
-					"item_unit_code":     p.UnitCode,
-					"request_qty":        item.RequestQty,
-					"item_qty":           req.QtyAfter,
-					"pick_zone_id":       item.PickZoneId,
-					"line_number":        req.LineNumber,
-				},
+				"item": []QueueItem{{
+					ItemBarCode:      p.BarCode,
+					FilePath:         p.PicPath1,
+					IsCancel:         item.IsCancel,
+					IsCheck:          item.IsCheck,
+					ItemCode:         p.ItemCode,
+					ItemName:         p.ItemName,
+					PickupStaffName:  s.SaleName,
+					SaleCode:         s.SaleCode + "/" + s.SaleName,
+					ItemPrice:        p.SalePrice1,
+					QtyAfter:         req.QtyAfter,
+					QtyBefore:        item.QtyBefore,
+					QtyLoad:          item.QtyAfter,
+					TotalPriceAfter:  item.TotalPriceAfter,
+					TotalPriceBefore: p.SalePrice1 * req.QtyAfter,
+					ItemUnitCode:     p.UnitCode,
+					RequestQty:       item.RequestQty,
+					ItemQty:          req.QtyAfter,
+					PickZoneId:       item.PickZoneId,
+					LineNumber:       req.LineNumber,
+				}},
 
 				//"queid": map[string]interface{}{
 				//	"item_barcode":       p.BarCode,
@@ -826,22 +836,20 @@ func QueueEdit(db *sqlx.DB, req *drivethru.QueueEditRequest) (interface{}, error
 
 	if req.AccessToken == "" {
 		return map[string]interface{}{
-			"response": map[string]interface{}{
-				"success": false,
-				"error":   true,
-				"message": "Queue Not Have Access Token",
-			},
-			"queid": ""}, nil
+			"success": false,
+			"error":   true,
+			"message": "Queue Not Have Access Token",
+			"queid":   nil,
+		}, nil
 	}
 
 	if req.QueueId == 0 {
 		return map[string]interface{}{
-			"response": map[string]interface{}{
-				"success": false,
-				"error":   true,
-				"message": "Queue Id Not Assign",
-			},
-			"queid": ""}, nil
+			"success": false,
+			"error":   true,
+			"message": "Queue Id Not Assign",
+			"queid":   nil,
+		}, nil
 	}
 
 	u := UserAccess{}
@@ -852,43 +860,39 @@ func QueueEdit(db *sqlx.DB, req *drivethru.QueueEditRequest) (interface{}, error
 
 	if q.Status >= 2 {
 		return map[string]interface{}{
-			"response": map[string]interface{}{
-				"success": false,
-				"error":   true,
-				"message": "Queue can not edit",
-			},
-			"queid": ""}, nil
+			"success": false,
+			"error":   true,
+			"message": "Queue can not edit",
+			"queid":   nil,
+		}, nil
 	}
 
 	if q.IsCancel == 1 {
 		return map[string]interface{}{
-			"response": map[string]interface{}{
-				"success": false,
-				"error":   true,
-				"message": "Queue is cancel",
-			},
-			"queid": ""}, nil
+			"success": false,
+			"error":   true,
+			"message": "Queue is cancel",
+			"queid":   nil,
+		}, nil
 	}
 
 	lccommand := `update basket set car_brand = ?, ref_number = ?, sale_id = ?, status = ?, edit_by = ?, edit_time = ? where que_id = ? and doc_date = CURDATE()`
 	_, err := db.Exec(lccommand, req.CarBrand, req.PlateNumber, u.UserId, req.Status, u.UserCode, now.String(), req.QueueId)
 	if err != nil {
 		return map[string]interface{}{
-			"response": map[string]interface{}{
-				"success": false,
-				"error":   true,
-				"message": err.Error(),
-			},
-			"queid": ""}, nil
+			"success": false,
+			"error":   true,
+			"message": err.Error(),
+			"queid":   nil,
+		}, nil
 	}
 
 	return map[string]interface{}{
-		"response": map[string]interface{}{
-			"success": true,
-			"error":   false,
-			"message": "",
-		},
-		"queid": ""}, nil
+		"success": true,
+		"error":   false,
+		"message": "",
+		"queid":   nil,
+	}, nil
 }
 
 func (q *ListQueueModel) QueueStatus(db *sqlx.DB, req *drivethru.QueueStatusRequest) (interface{}, error) {
@@ -931,7 +935,7 @@ func (q *ListQueueModel) QueueStatus(db *sqlx.DB, req *drivethru.QueueStatusRequ
 		}
 
 		lccommand1 := `insert basket_status(uuid, basket_id, que_id, doc_no, status, create_time) values(?, ?, ?, ?, ?, ?)`
-		_, err = db.Exec(lccommand1, q.UUID, req.QueueId, q.DocNo, req.StatusForSaleorderCurrent, now.String())
+		_, err = db.Exec(lccommand1, q.UUID, q.Id, req.QueueId, q.DocNo, req.StatusForSaleorderCurrent, now.String())
 		if err != nil {
 			return map[string]interface{}{
 				"success": false,
@@ -2192,10 +2196,10 @@ func (q *ListQueueModel) BillingDone(db *sqlx.DB, req *drivethru.BillingDoneRequ
 	}, nil
 }
 
-func (q *ListQueueModel) CancelQueue(db *sqlx.DB, req *drivethru.QueueStatusRequest) (interface{}, error) {
+func (q *ListQueueModel) CancelQueue(db *sqlx.DB, req *drivethru.PickupCancelRequest) (interface{}, error) {
 
-	if (req.QueueId != 0) {
-		q.Search(db, req.QueueId)
+	if (req.QId != 0) {
+		q.Search(db, req.QId)
 
 		if (q.IsCancel == 0) {
 			u := UserAccess{}
@@ -2203,25 +2207,21 @@ func (q *ListQueueModel) CancelQueue(db *sqlx.DB, req *drivethru.QueueStatusRequ
 
 			if (q.Status != 2) {
 				lccommand := "update basket set status = 0,pick_status=4,is_cancel=1,cancel_desc=?,cancel_by = ?,cancel_time= CURRENT_TIMESTAMP() where que_id = ? and company_id = ? and branch_id = ? and uuid = ? and doc_date = curdate()";
-				_, err := db.Exec(lccommand, req.CancelRemark, u.UserCode, req.QueueId, u.CompanyID, u.BranchID, q.UUID)
+				_, err := db.Exec(lccommand, req.CancelRemark, u.UserCode, req.QId, u.CompanyID, u.BranchID, q.UUID)
 				if err != nil {
 					return map[string]interface{}{
-						"response": map[string]interface{}{
-							"success": false,
-							"error":   true,
-							"message": err.Error(),
-						},
+						"success": false,
+						"error":   true,
+						"message": err.Error(),
 					}, nil
 				}
 			}
 		}
 	}
 	return map[string]interface{}{
-		"response": map[string]interface{}{
-			"success": true,
-			"error":   false,
-			"message": "",
-		},
+		"success": true,
+		"error":   false,
+		"message": "",
 	}, nil
 }
 

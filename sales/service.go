@@ -36,10 +36,20 @@ type Service interface {
 	SearchInvoiceById(req *SearchByIdTemplate) (interface{}, error)
 	SearchInvoiceByKeyword(req *SearchByKeywordTemplate) (interface{}, error)
 	SearchSaleByItem(req *SearchByItemTemplate) (interface{}, error)
-	SearchCredit(req *SearchByIdTemplate) (interface{}, error)
 	Invoicelist(req *SearchByKeywordTemplate) (interface{}, error)
 	SearchHisByKeyword(req *SearchByKeywordTemplate) (interface{}, error)
 	CancelInvoice(req *NewInvoiceTemplate) (interface{}, error)
+	Searchcreditcard(req *SearchcreditcardTamplate) (interface{}, error)
+	SearchHisCustomer(req *SearchHisCustomerTemplate) (interface{}, error)
+}
+
+func (s *service) Searchcreditcard(req *SearchcreditcardTamplate) (interface{}, error) {
+	fmt.Println(213)
+	resp, err := s.repo.Searchcreditcard(req)
+	if err != nil {
+		return nil, err
+	}
+	return resp, nil
 }
 
 func (s *service) CreateQuotation(req *NewQuoTemplate) (interface{}, error) {
@@ -322,6 +332,8 @@ func (s *service) CreateInvoice(req *NewInvoiceTemplate) (interface{}, error) {
 
 	sum_pay_all = req.SumCashAmount + req.SumCreditAmount + req.SumChqAmount + req.SumBankAmount + req.SumOfDeposit + req.CouponAmount
 	switch {
+	case req.DocNo == "ไม่มีข้อมูล":
+		return nil, errors.New("เอกสารไม่ได้ระบุ รหัส")
 	case req.ArId == 0:
 		return nil, errors.New("เอกสารไม่ได้ระบุ ลูกค้า")
 	case req.TotalAmount == 0:
@@ -333,7 +345,7 @@ func (s *service) CreateInvoice(req *NewInvoiceTemplate) (interface{}, error) {
 	case req.BillType == 0 && sum_pay_all != req.TotalAmount:
 		return nil, errors.New("ยอดชำระไม่เท่ากับมูลค่าเอกสาร")
 	}
-
+	
 	resp, err := s.repo.CreateInvoice(req)
 	if err != nil {
 		return nil, err
@@ -359,11 +371,10 @@ func (s *service) SearchInvoiceByKeyword(req *SearchByKeywordTemplate) (interfac
 	return resp, nil
 }
 
-func (s *service) SearchCredit(req *SearchByIdTemplate) (interface{}, error) {
-	resp, err := s.repo.SearchCredit(req)
+func (s *service) SearchHisCustomer(req *SearchHisCustomerTemplate) (interface{}, error) {
+	resp, err := s.repo.SearchHisCustomer(req)
 	if err != nil {
 		return nil, err
 	}
-
 	return resp, nil
 }

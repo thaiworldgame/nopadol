@@ -1,9 +1,10 @@
-package sync
+package configuration
 
 import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+
 	"github.com/acoshift/hrpc"
 )
 
@@ -25,12 +26,13 @@ func MakeHandler(s Service) http.Handler {
 		ResponseEncoder: responseEncoder,
 		ErrorEncoder:    errorEncoder,
 	})
+
 	mux := http.NewServeMux()
-	mux.Handle("/quotation/new", m.Handler(NewQuotation(s)))
-	mux.Handle("/done", m.Handler(confirmTransfer(s)))
-
+	mux.Handle("/config/new", m.Handler(ConfigSetting(s)))
+	mux.Handle("/config/search/id", m.Handler(SearchSettingById(s)))
+	mux.Handle("/config/search/keyword", m.Handler(SearchSettingByKeyword(s)))
+	mux.Handle("/note", m.Handler(SearchNote(s)))
 	return mustLogin()(mux)
-
 }
 
 func mustLogin() func(http.Handler) http.Handler {
@@ -74,7 +76,30 @@ func errorEncoder(w http.ResponseWriter, r *http.Request, err error) {
 
 	fmt.Println("Error Encode = ", err.Error())
 	switch err.Error() {
-
+	case StatusNotFound.Error():
+		status = http.StatusOK
+	case ArCodeNull.Error():
+		status = http.StatusOK
+	case NotHaveItem.Error():
+		status = http.StatusOK
+	case NotHavePayMoney.Error():
+		status = http.StatusOK
+	case NotHaveSumOfItem.Error():
+		status = http.StatusOK
+	case ItemNotHaveQty.Error():
+		status = http.StatusOK
+	case ItemNotHaveUnit.Error():
+		status = http.StatusOK
+	case MoneyOverTotalAmount.Error():
+		status = http.StatusOK
+	case MoneyLessThanTotalAmount.Error():
+		status = http.StatusOK
+	case PosNotHaveDate.Error():
+		status = http.StatusOK
+	case PosNotHaveChqData.Error():
+		status = http.StatusOK
+	case PosNotHaveCreditCardData.Error():
+		status = http.StatusOK
 	default:
 		status = http.StatusOK
 	}

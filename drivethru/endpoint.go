@@ -45,7 +45,7 @@ type (
 	NewPickupRequest struct {
 		CarNumber   string `json:"carNumber"`
 		CarBrand    string `json:"carBrand"`
-		DocType     string `json:"doc_type"`//0 drivethru 1 pos 2 saleorder
+		DocType     string `json:"doc_type"` //0 drivethru 1 pos 2 saleorder
 		AccessToken string `json:"access_token"`
 	}
 
@@ -89,10 +89,10 @@ type (
 	PickupEditRequest struct {
 		AccessToken string `json:"access_token"`
 		CarBrand    string `json:"carBrand"`
-		QId     int    `json:"qId"`
+		QId         int    `json:"qId"`
 		Status      int    `json:"status"`
 		SaleCode    string `json:"saleCode"`
-		CarNumber string `json:"carNumber"`
+		CarNumber   string `json:"carNumber"`
 	}
 
 	QueueStatusRequest struct {
@@ -103,6 +103,12 @@ type (
 		CancelRemark              string `json:"cancel_remark"`
 	}
 
+	PickupCancelRequest struct {
+		AccessToken  string `json:"access_token"`
+		QId          int    `json:"qid"`
+		CancelRemark string `json:"cancel_remark"`
+	}
+
 	QueueProductRequest struct {
 		AccessToken string `json:"access_token"`
 		QueueId     int    `json:"queue_id"`
@@ -110,6 +116,11 @@ type (
 
 	AccessTokenRequest struct {
 		AccessToken string `json:"access_token"`
+	}
+
+	UserRequest struct {
+		AccessToken string `json:"access_token"`
+		Keyword     string `json:"keyword"`
 	}
 
 	BillingDoneRequest struct {
@@ -147,6 +158,18 @@ type (
 func makeListCompany(s Service) interface{} {
 	return func(ctx context.Context) (interface{}, error) {
 		resp, err := s.SearchListCompany()
+		if err != nil {
+			fmt.Println("endpoint error =", err.Error())
+			return nil, fmt.Errorf(err.Error())
+		}
+
+		return resp, nil
+	}
+}
+
+func makeListUser(s Service) interface{} {
+	return func(ctx context.Context, req *UserRequest) (interface{}, error) {
+		resp, err := s.SearchListUser(&UserRequest{AccessToken:req.AccessToken, Keyword:req.Keyword})
 		if err != nil {
 			fmt.Println("endpoint error =", err.Error())
 			return nil, fmt.Errorf(err.Error())
@@ -238,12 +261,10 @@ func makeItemSearch(s Service) interface{} {
 			return nil, err
 		}
 		return map[string]interface{}{
-			"response": map[string]interface{}{
-				"success": true,
-				"error":   false,
-				"message": "",
-			},
-			"item": resp,
+			"success": true,
+			"error":   false,
+			"message": "",
+			"item":    resp,
 		}, nil
 	}
 }
@@ -315,10 +336,10 @@ func makeShiftOpen(s Service) interface{} {
 	}
 }
 
-func pickupNew(s Service) interface{} {//API
+func pickupNew(s Service) interface{} { //API
 	return func(ctx context.Context, req *NewPickupRequest) (interface{}, error) {
 		fmt.Println("start endpoint pickupnew car number is => ", req.CarNumber)
-		resp, err := s.PickupNew(&NewPickupRequest{CarNumber: req.CarNumber, CarBrand: req.CarBrand, AccessToken: req.AccessToken, DocType:req.DocType})
+		resp, err := s.PickupNew(&NewPickupRequest{CarNumber: req.CarNumber, CarBrand: req.CarBrand, AccessToken: req.AccessToken, DocType: req.DocType})
 		if err != nil {
 			return nil, err
 		}
@@ -340,9 +361,9 @@ func managePickup(s Service) interface{} {
 }
 
 func cancelQueue(s Service) interface{} {
-	return func(ctx context.Context, req *QueueStatusRequest) (interface{}, error) {
-		fmt.Println("start endpoint mange pickup que id is => ", req.QueueId)
-		resp, err := s.CancelQueue(&QueueStatusRequest{AccessToken: req.AccessToken, QueueId: req.QueueId, CancelRemark: req.CancelRemark, IsLoad: req.IsLoad, StatusForSaleorderCurrent: req.StatusForSaleorderCurrent})
+	return func(ctx context.Context, req *PickupCancelRequest) (interface{}, error) {
+		fmt.Println("start endpoint mange pickup que id is => ", req.QId)
+		resp, err := s.CancelQueue(&PickupCancelRequest{AccessToken: req.AccessToken, QId: req.QId, CancelRemark: req.CancelRemark})
 		if err != nil {
 			return nil, err
 		}
