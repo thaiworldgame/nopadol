@@ -131,7 +131,6 @@ func MakeNewProduct(s Service) interface{} {
 	//	RatePerBaseUnit int    `json:"rate_per_base_unit"`
 	//}
 	type requestNewItem struct {
-
 		Code         string  `json:"code"`
 		Name         string  `json:"name"`
 		UnitCode     string  `json:"unit_code"`
