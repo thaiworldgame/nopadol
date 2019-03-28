@@ -60,7 +60,7 @@ func (m *Machine) SearchMachineNo(db *sqlx.DB, company_id int, branch_id int, ac
 	//	fmt.Println("machine error = ",err.Error())
 	//}
 
-	fmt.Println("Machine No =", m.MachineNo)
+	fmt.Println("WHCode =", m.WHCode)
 
 	return
 }
@@ -99,6 +99,8 @@ func (sh *ShiftModel) Open(db *sqlx.DB) (newuid string, err error) {
 	if sh.CashierIsOpenShift(db) > 0 {
 		return "", fmt.Errorf(" This Cashier is already open another shift ")
 	}
+
+	fmt.Println("WH_ID = ",sh.whID)
 
 	// insert new shift
 	lcCommand := `insert into shift (

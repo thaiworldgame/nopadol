@@ -169,7 +169,7 @@ func makeListCompany(s Service) interface{} {
 
 func makeListUser(s Service) interface{} {
 	return func(ctx context.Context, req *UserRequest) (interface{}, error) {
-		resp, err := s.SearchListUser(&UserRequest{AccessToken:req.AccessToken, Keyword:req.Keyword})
+		resp, err := s.SearchListUser(&UserRequest{AccessToken: req.AccessToken, Keyword: req.Keyword})
 		if err != nil {
 			fmt.Println("endpoint error =", err.Error())
 			return nil, fmt.Errorf(err.Error())
@@ -294,25 +294,26 @@ func userLogIn(s Service) interface{} {
 }
 
 func makeShiftOpen(s Service) interface{} {
-	type request struct {
-		accessToken  string  `json:"accessToken"`
-		MachineID    int     `json:"machine_id"`
-		ChangeAmount float64 `json:"change_amount"`
-		CashierID    int     `json:"cashier_id"`
-		WhID         int     `json:"wh_id"`
-		Remark       string  `json:"remark"`
-	}
+	//type request struct {
+	//	accessToken  string  `json:"accessToken"`
+	//	MachineID    int     `json:"machine_id"`
+	//	ChangeAmount float64 `json:"change_amount"`
+	//	CashierID    int     `json:"cashier_id"`
+	//	WhID         int     `json:"wh_id"`
+	//	Remark       string  `json:"remark"`
+	//}
 	//maybe : use token to get user to open shift ?
-	return func(ctx context.Context, req *request) (interface{}, error) {
+	return func(ctx context.Context, req *ShiftOpenRequest) (interface{}, error) {
 		fmt.Println("start endpoint shift open ....")
 
+		fmt.Println("WH = ", req.WhID)
 		//validate request data
-		if req.accessToken == "" {
+		if req.AccessToken == "" {
 			return nil, fmt.Errorf("access token is require..")
 		}
 
 		resp, err := s.ShiftOpen(&ShiftOpenRequest{
-			AccessToken:  req.accessToken,
+			AccessToken:  req.AccessToken,
 			ChangeAmount: req.ChangeAmount,
 			MachineID:    req.MachineID,
 			CashierID:    req.CashierID,
