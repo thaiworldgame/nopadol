@@ -117,7 +117,7 @@ func (pd *productRepository) SearchByKeyword(req *product.SearchByKeywordTemplat
 
 	fmt.Println("keyword = ", req.Keyword)
 
-	sql := `select distinct rs.id,rs.code as item_code,rs.item_name,ifnull(b.rate1,1)*ifnull(rs.average_cost,0) as average_cost,ifnull(pic_path1,'') as pic_path_1,'' as bar_code,ifnull(c.sale_price_1,0) as sale_price_1,ifnull(sale_price_2,0) as sale_price_2,ifnull(b.unit_code,'') as unit_code,ifnull(b.rate1,1) as rate_1, ifnull(stock_type,0) as stock_type, ifnull((select sum(qty)  as qty from StockLocation where item_code = rs.code),0) as stk_qty  from (select * from Item where code like concat(?,'%') or item_name like  concat(?,'%') order by code limit 20) as rs left join ItemRate b on rs.code = b.item_code left join Price c on rs.code = c.item_code and b.unit_code = c.unit_code `
+	sql := `select distinct rs.id,rs.code as item_code,rs.item_name,ifnull(b.rate1,1)*ifnull(rs.average_cost,0) as average_cost,ifnull(pic_path1,'') as pic_path_1,'' as bar_code,ifnull(c.sale_price_1,0) as sale_price_1,ifnull(sale_price_2,0) as sale_price_2,ifnull(b.unit_code,'') as unit_code,ifnull(b.rate1,1) as rate_1, ifnull(stock_type,0) as stock_type, ifnull((select sum(qty)  as qty from StockLocation where item_code = rs.code),0) as stk_qty  from (select * from Item where code like concat(?,'%') or item_name like  concat(?,'%') order by code limit 100) as rs left join ItemRate b on rs.code = b.item_code left join Price c on rs.code = c.item_code and b.unit_code = c.unit_code `
 	err = pd.db.Select(&products, sql, req.Keyword, req.Keyword)
 	if err != nil {
 		fmt.Println("error = ", err.Error())
@@ -144,6 +144,7 @@ func (pd *productRepository) SearchByKeyword(req *product.SearchByKeywordTemplat
 
 		product = append(product, pdtline)
 	}
+	fmt.Println(product)
 
 	return product, nil
 }
@@ -316,7 +317,7 @@ func (p *productRepository) StoreBarcode(req *product.BarcodeNewRequest) (res in
 		UnitCode: req.UnitCode,
 		UnitID: req.UnitID,
 		ActiveStatus: req.ActiveStatus,
-		CompanyID: req.CompanyID,
+		CompanyID:    req.CompanyID,
 	}
 
 	if b.UnitID == 0 {

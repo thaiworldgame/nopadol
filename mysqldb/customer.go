@@ -131,29 +131,17 @@ func (c *CustomerModel) getIdByCode(db *sqlx.DB, code string) (int64, error) {
 func (c *CustomerModel) save(db *sqlx.DB) (interface{}, error) {
 	var curID int64
 	fmt.Println("start customer.save ,  ",c)
+	curID , err := c.getIdByCode(db,c.Code)
+	if err != nil {
+		return nil,err
+	}
 	//validate id if empty -> insert
 	switch {
-	//case c.Id == 0 && c.Code != "":
-	//	{
-	//		x, err := c.getIdByCode(db, c.Code)
-	//		if err != nil || x == 0 {
-	//			return nil, fmt.Errorf("error not found code ", c.Code)
-	//		}
-	//		curID = x
-	//	}
-	case c.Code == "":
-		{
-			return nil, fmt.Errorf("error no Code data")
-		}
-	}
-
-	// insert
-	if curID == 0 {
-		//new customer case
+	case curID ==0 : {
 		sql := `insert into Customer (code,name,address,telephone,bill_credit,
 						active_status,create_by,create_time)
 		values (?,?,?,?,?,?,?,?)`
-
+		fmt.Println(sql)
 		rs, err := db.Exec(sql, c.Code, c.Name, c.Address, c.Telephone, c.BillCredit, 0, c.CreateBy, c.CreateTime)
 
 		if err != nil {
@@ -164,33 +152,38 @@ func (c *CustomerModel) save(db *sqlx.DB) (interface{}, error) {
 			return nil, err
 		}
 		return newID, nil
+
 	}
-	// update
-	if curID != 0 {
-		//new customer case
-		sql := `update customer
+	case curID != 0:
+		{
+			//new customer case
+				sql := `update Customer
 			set 	code = ?,
 				name=?,
 				address=?,
 				telephone=?,
 				bill_credit=?,
 				active_status=?,
-				update_by=?,
-				update_time=?
+				edit_by=?,
+				edit_time=?
 			where id = ?`
+			fmt.Println(sql)
 
-		rs, err := db.Exec(sql, c.Code, c.Name, c.Address,
-			c.Telephone, c.BillCredit, 0,
-			c.CreateBy, c.CreateTime)
+				rs, err := db.Exec(sql, c.Code, c.Name, c.Address,
+					c.Telephone, c.BillCredit, 0,
+					c.CreateBy, c.CreateTime,curID)
 
-		if err != nil {
-			return nil, err
+				if err != nil {
+					return nil, err
+				}
+				rowCount, err := rs.RowsAffected()
+				if err != nil {
+					return nil, err
+				}
+				return rowCount, nil
 		}
-		rowCount, err := rs.RowsAffected()
-		if err != nil {
-			return nil, err
-		}
-		return rowCount, nil
 	}
+
+	// update
 	return nil, nil
 }

@@ -4,6 +4,7 @@ type Service interface {
 	ConfigSetting(req *RequestSettingTemplate) (interface{}, error)
 	SearchSettingById(req *SearchByIdRequestTemplate) (interface{}, error)
 	SearchSettingByKeyword(req *SearchByKeywordRequestTemplate) (interface{}, error)
+	SearchNote(req *SearchByIdRequestTemplate) (interface{}, error)
 }
 
 func New(repo Repository) Service {
@@ -34,6 +35,15 @@ func (s *service) SearchSettingById(req *SearchByIdRequestTemplate) (interface{}
 
 func (s *service) SearchSettingByKeyword(req *SearchByKeywordRequestTemplate) (interface{}, error) {
 	resp, err := s.repo.SearchSettingByKeyword(req)
+	if err != nil {
+		return nil, err
+	}
+
+	return resp, nil
+}
+
+func (s *service) SearchNote(req *SearchByIdRequestTemplate) (interface{}, error) {
+	resp, err := s.repo.SearchNote(req)
 	if err != nil {
 		return nil, err
 	}
