@@ -287,8 +287,8 @@ func (p *productRepository) StoreItem(req *product.ProductNewRequest) (resp inte
 	//	}
 	//}
 	return map[string]interface{}{
-		"result" : "success",
-		"new_id" : newItemID,
+		"result": "success",
+		"new_id": newItemID,
 	}, nil
 
 	// todo : insert to Barcode table
@@ -297,15 +297,15 @@ func (p *productRepository) StoreItem(req *product.ProductNewRequest) (resp inte
 func (p *productRepository) StoreBarcode(req *product.BarcodeNewRequest) (res interface{}, err error) {
 
 	b := barcodeModel{BarCode: req.Barcode,
-		ItemID:   req.ItemID,
-		ItemCode: req.ItemCode,
-		UnitCode: req.UnitCode,
-		UnitID:   req.UnitID,
+		ItemID:       req.ItemID,
+		ItemCode:     req.ItemCode,
+		UnitCode:     req.UnitCode,
+		UnitID:       req.UnitID,
 		ActiveStatus: req.ActiveStatus,
-		CompanyID: req.CompanyID,
+		CompanyID:    req.CompanyID,
 	}
 
-	if b.UnitID ==0 {
+	if b.UnitID == 0 {
 		u := itemUnitModel{}
 		u.unitCode = b.UnitCode
 		u.getByCode(p.db)
@@ -320,11 +320,10 @@ func (p *productRepository) StoreBarcode(req *product.BarcodeNewRequest) (res in
 
 func (p *productRepository) StorePrice(req *product.PriceTemplate) (interface{}, error) {
 
-	fmt.Println("start store price in mysql package req: ",req)
+	fmt.Println("start store price in mysql package req: ", req)
 	item := itemModel{Code: req.ItemCode}
 
-
-	itemID, err := item.getItemIDbyCode(p.db,req.ItemCode)
+	itemID, err := item.getItemIDbyCode(p.db, req.ItemCode)
 	if err != nil {
 		return nil, err
 	}
@@ -332,16 +331,15 @@ func (p *productRepository) StorePrice(req *product.PriceTemplate) (interface{},
 	//unit.getByID(p.db)
 	unit.getByCode(p.db)
 
-	if req.UnitCode =="" {
+	if req.UnitCode == "" {
 		return nil, fmt.Errorf("unitcode is empty")
 	}
 
-
 	pr := priceModel{
-		ItemId:     itemID,
-		ItemCode:   req.ItemCode,
-		UnitID:     unit.id,
-		UnitCode:   req.UnitCode,
+		ItemId:   itemID,
+		ItemCode: req.ItemCode,
+		UnitID:   unit.id,
+		UnitCode: req.UnitCode,
 
 		SalePrice1: req.SalePrice1,
 		SalePrice2: req.SalePrice2,

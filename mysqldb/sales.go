@@ -3429,32 +3429,22 @@ func (repo *salesRepository) SearchSaleByItem(req *sales.SearchByItemTemplate) (
 	} else {
 		switch {
 		case req.Page == "invoice":
-			/*sql = `select a.id, ifnull(a.doc_no,'') as doc_no, ifnull(a.doc_date,'') as doc_date, a.item_id, a.ar_id,
-			ifnull(a.bar_code,'') as bar_code, ifnull(a.item_code,'') as item_code, ifnull(a.item_name,'') as item_name,
-			a.unit_code, a.qty, a.cn_qty, a.price, a.ar_id,
-			b.id, b.name
-			from ar_invoice_sub a left join Customer b on a.ar_id = b.id
-			where b.name like concat(?) and a.item_code like concat(?)
-			order by a.id desc limit 20`*/
 
-			sql = `select a.id, ifnull(a.doc_date,'') as doc_date, ifnull(a.doc_no,'') as doc_no,
-			a.ar_id, a.ar_name,
+			sql = `select a.id, ifnull(a.doc_date,'') as doc_date, ifnull(a.doc_no,'') as doc_no,a.ar_id, a.ar_name,
 			b.unit_code, b.qty, b.price, ifnull(b.item_code,'') as item_code, b.ar_id, ifnull(b.item_name,'') as item_name,b.ar_id, ifnull(b.discount_word_sub,'') as discount_word_sub
 			from ar_invoice a left join ar_invoice_sub b on a.ar_id = b.ar_id
 			where a.ar_name like concat(?) and b.item_code like concat(?)
 			order by a.Id desc limit 20`
 			err = repo.db.Select(&d, sql, req.Name, req.ItemCode)
 		case req.Page == "quotation":
-			sql = `select a.Id, ifnull(a.DocDate,'') as DocDate, ifnull(a.DocNo,'') as DocNo, 
-			a.ArId, a.ArName,
+			sql = `select a.Id, ifnull(a.DocDate,'') as DocDate, ifnull(a.DocNo,'') as DocNo, a.ArId, a.ArName,
 			b.UnitCode, b.Qty, b.Price, ifnull(b.ItemCode,'') as ItemCode, b.ArId, ifnull(b.ItemName,'') as ItemName,b.ArId, ifnull(b.DiscountWord,'') as DiscountWord
 			from Quotation a left join QuotationSub b on a.ArId = b.ArId
 			where a.ArName like concat(?) and b.ItemCode like concat(?) 
 			order by a.Id desc limit 20`
 			err = repo.db.Select(&d, sql, req.Name, req.ItemCode)
 		case req.Page == "saleorder":
-			sql = `select a.Id, ifnull(a.DocDate,'') as DocDate, ifnull(a.DocNo,'') as DocNo, 
-			a.ArId, a.ArName,
+			sql = `select a.Id, ifnull(a.DocDate,'') as DocDate, ifnull(a.DocNo,'') as DocNo, a.ArId, a.ArName,
 			b.UnitCode, b.Qty, b.Price, ifnull(b.ItemCode,'') as ItemCode, b.ArId, ifnull(b.ItemName,'') as ItemName,b.ArId, ifnull(b.DiscountWord,'') as DiscountWord
 			from SaleOrder a left join SaleOrderSub b on a.ArId = b.ArId
 			where a.ArName like concat(?) and b.ItemCode like concat(?) 
@@ -3481,14 +3471,12 @@ func (repo *salesRepository) SearchHisByKeyword(req *sales.SearchByKeywordTempla
 	var sql string
 	d := []SearchInvModel{}
 	if req.Keyword == "" {
-		sql = `select a.id, a.doc_no,a.doc_date, a.doc_type ,a.ar_code,a.ar_name,a.sale_code,
-		a.sale_name, ifnull(a.my_description,'') as my_description,a.total_amount, a.is_cancel,a.is_confirm 
+		sql = `select a.id, a.doc_no,a.doc_date, a.doc_type ,a.ar_code,a.ar_name,a.sale_code,a.sale_name, ifnull(a.my_description,'') as my_description,a.total_amount, a.is_cancel,a.is_confirm 
 		from ar_invoice a
 		order by a.id desc limit 30`
 		err = repo.db.Select(&d, sql)
 	} else {
-		sql = `select a.id, a.doc_no,a.doc_date, a.doc_type ,a.ar_code,a.ar_name,a.sale_code,
-		a.sale_name, ifnull(a.my_description,'') as my_description,a.total_amount, a.is_cancel,a.is_confirm 
+		sql = `select a.id, a.doc_no,a.doc_date, a.doc_type ,a.ar_code,a.ar_name,a.sale_code,a.sale_name, ifnull(a.my_description,'') as my_description,a.total_amount, a.is_cancel,a.is_confirm 
 		from ar_invoice a
 		where a.doc_no like  concat(?,'%') or a.ar_code like  concat(?,'%') or a.ar_name like  concat(?,'%') 
 		order by a.id desc limit 30`
@@ -3553,15 +3541,13 @@ func (repo *salesRepository) SearchHisCustomer(req *sales.SearchHisCustomerTempl
 	d := []NewSearchHisCustomerModel{}
 	switch {
 	case req.Page == "invoice":
-		sql = `select a.id, ifnull(a.doc_date,'') as doc_date, ifnull(a.doc_no,'') as doc_no, 
-		a.ar_id, a.ar_name, a.sale_name , a.total_amount 
+		sql = `select a.id, ifnull(a.doc_date,'') as doc_date, ifnull(a.doc_no,'') as doc_no, a.ar_id, a.ar_name, a.sale_name , a.total_amount 
 		from ar_invoice a 
 		where a.ar_code like concat(?) 
 		order by a.id desc limit 20`
 		err = repo.db.Select(&d, sql, req.ArCode)
 	case req.Page == "quotation" || req.Page == "saleorder":
-		sql = `select a.Id, ifnull(a.DocDate,'') as DocDate, ifnull(a.DocNo,'') as DocNo, 
-		a.ArId, a.ArName, a.SaleName , a.TotalAmount 
+		sql = `select a.Id, ifnull(a.DocDate,'') as DocDate, ifnull(a.DocNo,'') as DocNo, a.ArId, a.ArName, a.SaleName , a.TotalAmount 
 		from SaleOrder a 
 		where a.ArCode like concat(?) 
 		order by a.Id desc limit 20`

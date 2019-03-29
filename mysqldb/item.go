@@ -2,11 +2,12 @@ package mysqldb
 
 import (
 	"fmt"
+	"log"
+	"time"
+
 	"github.com/go-sql-driver/mysql"
 	"github.com/jmoiron/sqlx"
 	"github.com/mrtomyum/nopadol/product"
-	"log"
-	"time"
 )
 
 const (
@@ -143,7 +144,7 @@ func (it *itemModel) save(db *sqlx.DB) (newID int64, err error) {
 			stock_qty=?,
 			active_status=?
 			where id = ?`,
-			it.Name, it.ShortName, it.PicPath1, it.PicPath2, it.CompanyID, it.StockType, it.StockQty,it.ActiveStatus, id)
+			it.Name, it.ShortName, it.PicPath1, it.PicPath2, it.CompanyID, it.StockType, it.StockQty, it.ActiveStatus, id)
 		if err != nil {
 			log.Println("error update item %v", err.Error())
 			return -1, err
