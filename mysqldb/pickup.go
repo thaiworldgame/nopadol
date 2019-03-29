@@ -652,8 +652,8 @@ func (item *QueueItem) ManageCheckOut(db *sqlx.DB, req *drivethru.ManageCheckout
 		if q.Status < 2 {
 			if item_exist == 0 {
 				fmt.Println("Insert")
-				lccommand := `insert basket_sub(basket_id, uuid, que_id, doc_date, item_id, item_code, item_name ,bar_code, checkout_qty, price, unit_id, unit_code, checkout_amount, qty, rate1, ref_no, sale_id, average_cost, delivery_order_id , line_number, checkout_by, checkout_time, zone_id) values(?, ?, ?, ?, ?, ?, ?, ? ,?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ? , ?, ?, ?)`
-				resp, err := db.Exec(lccommand, q.Id, q.UUID, req.QueueId, q.DocDate, p.Id, p.ItemCode, p.ItemName, req.ItemBarcode, req.QtyAfter, p.SalePrice1, 0, p.UnitCode, req.QtyAfter*p.SalePrice1, req.QtyAfter, p.Rate1, q.PlateNumber, s.Id, p.AverageCost, 0, req.LineNumber, u.UserCode, now.String(), p.PickZoneId)
+				lccommand := `insert basket_sub(basket_id, uuid, que_id, doc_date, item_id, item_code, item_name ,bar_code, checkout_qty, price, unit_id, unit_code, checkout_amount, qty, rate1, ref_no, sale_id, average_cost, delivery_order_id , line_number, checkout_by, checkout_time, zone_id,is_check_out) values(?, ?, ?, ?, ?, ?, ?, ? ,?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ? , ?, ?, ?,?)`
+				resp, err := db.Exec(lccommand, q.Id, q.UUID, req.QueueId, q.DocDate, p.Id, p.ItemCode, p.ItemName, req.ItemBarcode, req.QtyAfter, p.SalePrice1, 0, p.UnitCode, req.QtyAfter*p.SalePrice1, req.QtyAfter, p.Rate1, q.PlateNumber, s.Id, p.AverageCost, 0, req.LineNumber, u.UserCode, now.String(), p.PickZoneId,1)
 				if err != nil {
 					return map[string]interface{}{
 						"success": false,
@@ -668,7 +668,7 @@ func (item *QueueItem) ManageCheckOut(db *sqlx.DB, req *drivethru.ManageCheckout
 				fmt.Println("Update")
 				fmt.Println("UUID =", q.UUID, q.Id, req.QueueId, p.ItemCode, p.UnitCode, req.QtyAfter)
 				if req.IsCancel == 0 {
-					lccommand := `update basket_sub set checkout_qty=?, checkout_amount=?, qty=?, remain_qty=pick_qty - ?, zone_id=? where basket_id = ? and uuid = ? and que_id = ? and item_code = ? and unit_code = ? and doc_date = CURDATE() `
+					lccommand := `update basket_sub set checkout_qty=?, checkout_amount=?, qty=?, remain_qty=pick_qty - ?, zone_id=?, is_check_out = 1 where basket_id = ? and uuid = ? and que_id = ? and item_code = ? and unit_code = ? and doc_date = CURDATE() `
 					resp, err := db.Exec(lccommand, req.QtyAfter, req.QtyAfter*p.SalePrice1, req.QtyAfter, req.QtyAfter, p.PickZoneId, q.Id, q.UUID, req.QueueId, p.ItemCode, p.UnitCode)
 					if err != nil {
 						return map[string]interface{}{
