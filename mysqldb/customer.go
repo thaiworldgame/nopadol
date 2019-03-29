@@ -2,9 +2,10 @@ package mysqldb
 
 import (
 	"fmt"
+	"time"
+
 	"github.com/jmoiron/sqlx"
 	"github.com/mrtomyum/nopadol/customer"
-	"time"
 )
 
 type CustomerModel struct {
@@ -121,76 +122,74 @@ func (cr *customerRepository) StoreCustomer(req *customer.CustomerTemplate) (res
 }
 
 func (c *CustomerModel) getIdByCode(db *sqlx.DB, code string) (int64, error) {
-	sql := `select id from Customer where code=?`
+	sql := "select id from Customer where code='" + code + "'"
+	fmt.Println(sql)
 	var curID int64
-	err := db.QueryRow(sql, code).Scan(&curID)
-
-	return curID, err
+	err := db.QueryRow(sql).Scan(&curID)
+	if err != nil {
+		fmt.Printf("error ,,,, %s \n", err.Error())
+		return -1, err
+	}
+	return curID, nil
 }
 
 func (c *CustomerModel) save(db *sqlx.DB) (interface{}, error) {
 	var curID int64
-	fmt.Println("start customer.save ,  ",c)
+	fmt.Println("start customer.save ,  ", c)
+	curID, err := c.getIdByCode(db, c.Code)
+	if err != nil {
+		return nil, err
+	}
 	//validate id if empty -> insert
 	switch {
-	//case c.Id == 0 && c.Code != "":
-	//	{
-	//		x, err := c.getIdByCode(db, c.Code)
-	//		if err != nil || x == 0 {
-	//			return nil, fmt.Errorf("error not found code ", c.Code)
-	//		}
-	//		curID = x
-	//	}
-	case c.Code == "":
+	case curID == 0:
 		{
-			return nil, fmt.Errorf("error no Code data")
-		}
-	}
-
-	// insert
-	if curID == 0 {
-		//new customer case
-		sql := `insert into Customer (code,name,address,telephone,bill_credit,
+			sql := `insert into Customer (code,name,address,telephone,bill_credit,
 						active_status,create_by,create_time)
 		values (?,?,?,?,?,?,?,?)`
+			fmt.Println(sql)
+			rs, err := db.Exec(sql, c.Code, c.Name, c.Address, c.Telephone, c.BillCredit, 0, c.CreateBy, c.CreateTime)
 
-		rs, err := db.Exec(sql, c.Code, c.Name, c.Address, c.Telephone, c.BillCredit, 0, c.CreateBy, c.CreateTime)
+			if err != nil {
+				return nil, err
+			}
+			newID, err := rs.LastInsertId()
+			if err != nil {
+				return nil, err
+			}
+			return newID, nil
 
-		if err != nil {
-			return nil, err
 		}
-		newID, err := rs.LastInsertId()
-		if err != nil {
-			return nil, err
-		}
-		return newID, nil
-	}
-	// update
-	if curID != 0 {
-		//new customer case
-		sql := `update customer
+	case curID != 0:
+		{
+			//new customer case
+			sql := `update Customer
 			set 	code = ?,
 				name=?,
 				address=?,
 				telephone=?,
 				bill_credit=?,
 				active_status=?,
-				update_by=?,
-				update_time=?
+				edit_by=?,
+				edit_time=?
 			where id = ?`
+			fmt.Println(sql)
 
-		rs, err := db.Exec(sql, c.Code, c.Name, c.Address,
-			c.Telephone, c.BillCredit, 0,
-			c.CreateBy, c.CreateTime)
+			rs, err := db.Exec(sql, c.Code, c.Name, c.Address,
+				c.Telephone, c.BillCredit, 0,
+				c.CreateBy, c.CreateTime, curID)
 
-		if err != nil {
-			return nil, err
+			if err != nil {
+				return nil, err
+			}
+			rowCount, err := rs.RowsAffected()
+			if err != nil {
+				return nil, err
+			}
+			return rowCount, nil
 		}
-		rowCount, err := rs.RowsAffected()
-		if err != nil {
-			return nil, err
-		}
-		return rowCount, nil
 	}
+
+	// update
 	return nil, nil
 }

@@ -21,6 +21,7 @@ type ProductModel struct {
 	StkQty      float64      `db:"stk_qty"`
 	StockType   int64        `db:"stock_type"`
 	AverageCost float64      `db:"average_cost"`
+	PickZoneId  string       `db:"pick_zone_id"`
 	StkLocation []StockModel `db:stk_location`
 	CompanyID   int          `db:"company_id"`
 }
@@ -116,7 +117,7 @@ func (pd *productRepository) SearchByKeyword(req *product.SearchByKeywordTemplat
 
 	fmt.Println("keyword = ", req.Keyword)
 
-	sql := `select distinct rs.id,rs.code as item_code,rs.item_name,ifnull(b.rate1,1)*ifnull(rs.average_cost,0) as average_cost,ifnull(pic_path1,'') as pic_path_1,'' as bar_code,ifnull(c.sale_price_1,0) as sale_price_1,ifnull(sale_price_2,0) as sale_price_2,ifnull(b.unit_code,'') as unit_code,ifnull(b.rate1,1) as rate_1, ifnull(stock_type,0) as stock_type, ifnull((select sum(qty)  as qty from StockLocation where item_code = rs.code),0) as stk_qty  from (select * from Item where code like concat(?,'%') or item_name like  concat(?,'%') order by code limit 20) as rs left join ItemRate b on rs.code = b.item_code left join Price c on rs.code = c.item_code and b.unit_code = c.unit_code `
+	sql := `select distinct rs.id,rs.code as item_code,rs.item_name,ifnull(b.rate1,1)*ifnull(rs.average_cost,0) as average_cost,ifnull(pic_path1,'') as pic_path_1,'' as bar_code,ifnull(c.sale_price_1,0) as sale_price_1,ifnull(sale_price_2,0) as sale_price_2,ifnull(b.unit_code,'') as unit_code,ifnull(b.rate1,1) as rate_1, ifnull(stock_type,0) as stock_type, ifnull((select sum(qty)  as qty from StockLocation where item_code = rs.code),0) as stk_qty  from (select * from Item where code like concat(?,'%') or item_name like  concat(?,'%') order by code limit 100) as rs left join ItemRate b on rs.code = b.item_code left join Price c on rs.code = c.item_code and b.unit_code = c.unit_code `
 	err = pd.db.Select(&products, sql, req.Keyword, req.Keyword)
 	if err != nil {
 		fmt.Println("error = ", err.Error())
@@ -143,6 +144,7 @@ func (pd *productRepository) SearchByKeyword(req *product.SearchByKeywordTemplat
 
 		product = append(product, pdtline)
 	}
+	fmt.Println(product)
 
 	return product, nil
 }
@@ -205,10 +207,23 @@ func map_product_template(x ProductModel) product.ProductTemplate {
 	}
 }
 
-func (p *ProductModel) SearchByBarcode(db *sqlx.DB, bar_code string) {
-	lccommand := `select distinct a.id,a.code as item_code,a.item_name,ifnull(a.pic_path1,'') as pic_path_1,b.bar_code,b.unit_code,c.sale_price_1,c.sale_price_2, ifnull(d.rate1,1) as rate_1,ifnull(a.stock_type,0) as stock_type,ifnull((select sum(qty)  as qty from StockLocation where item_code = a.code),0) as stk_qty,ifnull(d.rate1,1)*ifnull(a.average_cost,0) as average_cost from Item a inner join Barcode b on a.code = b.item_code inner join Price c on a.code = c.item_code and b.unit_code = c.unit_code left join ItemRate d on a.code = d.item_code and c.unit_code = d.unit_code where b.bar_code = ? `
-	rs := db.QueryRow(lccommand, bar_code)
-	rs.Scan(&p.Id, &p.ItemCode, &p.ItemName, &p.PicPath1, &p.BarCode, &p.UnitCode, &p.SalePrice1, &p.SalePrice2, &p.Rate1, p.StockType, &p.StkQty, &p.AverageCost)
+func (p *ProductModel) SearchByBarcode(db *sqlx.DB, access_token string, bar_code string) {
+	u := UserAccess{}
+	u.GetProfileByToken(db, access_token)
+
+	fmt.Println("user = ", u.CompanyID, u.BranchID)
+
+	m := Machine{}
+	m.SearchMachineNo(db, u.CompanyID, u.BranchID, access_token)
+	fmt.Println("machine = ", m.WHCode, bar_code)
+
+	lccommand := `select distinct a.id,a.code as item_code,a.item_name,ifnull(a.pic_path1,'') as pic_path_1,b.bar_code,b.unit_code,c.sale_price_1,c.sale_price_2, ifnull(d.rate1,1) as rate_1,ifnull(a.stock_type,0) as stock_type,ifnull((select sum(qty)  as stk_qty from StockLocation where item_code = a.code),0) as stk_qty,ifnull(d.rate1,1)*ifnull(a.average_cost,0) as average_cost, ifnull(e.zone_id,'A') as pick_zone_id from Item a inner join Barcode b on a.code = b.item_code inner join Price c on a.code = c.item_code and b.unit_code = c.unit_code left join ItemRate d on a.code = d.item_code and c.unit_code = d.unit_code left join item_pick_zone e on a.code = e.item_code and b.unit_code = e.unit_code and e.wh_code = ? where b.bar_code = ?`
+	fmt.Println(lccommand, m.WHCode, bar_code)
+	rs := db.QueryRow(lccommand, m.WHCode, bar_code)
+	rs.Scan(&p.Id, &p.ItemCode, &p.ItemName, &p.PicPath1, &p.BarCode, &p.UnitCode, &p.SalePrice1, &p.SalePrice2, &p.Rate1, &p.StockType, &p.StkQty, &p.AverageCost, &p.PickZoneId)
+
+	fmt.Println("Zone Id =", p.PickZoneId)
+
 	return
 }
 

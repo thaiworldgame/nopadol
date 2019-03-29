@@ -12,21 +12,21 @@ type userLogInModel struct {
 	Code             string `json:"code"`
 	Name             string `json:"name"`
 	Password         string `json:"password"`
-	ImageFileName    string `json:"image_filename"`
+	ImageFileName    string `json:"image_filename" db:"image_filename"`
 	Role             int    `json:"role"`
-	ActiveStatus     int    `json:"activeStatus"`
-	IsConfirm        int    `json:"isConfirm"`
-	CreatorCode      string `json:"creatorCode"`
-	CreateDateTime   string `json:"createdateTime"`
-	LastEditorCode   string `json:"lasteditorCode"`
-	LastEditDateTime string `json:"lasteditdateTime"`
-	BranchCode       string `json:"branchCode"`
+	ActiveStatus     int    `json:"activeStatus" db:"activesTatus"`
+	IsConfirm        int    `json:"isConfirm" db:"isConfirm"`
+	CreatorCode      string `json:"creatorCode" db:"creatorCode"`
+	CreateDateTime   string `json:"createdateTime" db:"createdateTime"`
+	LastEditorCode   string `json:"lasteditorCode" db:"lasteditorCode"`
+	LastEditDateTime string `json:"lasteditdateTime" db:"lasteditdateTime"`
+	BranchCode       string `json:"branchCode" db:"branchCode"`
 	Remark           string `json:"remark"`
-	LoginZone        string `json:"loginZone"`
-	CompanyId        int    `json:"company_id"`
-	BranchId         int    `json:"branch_id"`
-	SaleId           int    `json:"sale_id"`
-	SaleCode         string `json:"sale_code"`
+	LoginZone        string `json:"loginZone" db:"loginZone"`
+	CompanyId        int    `json:"company_id" db:"company_id"`
+	BranchId         int    `json:"branch_id" db:"branch_id"`
+	SaleId           int    `json:"sale_id" db:"sale_id"`
+	SaleCode         string `json:"sale_code" db:"sale_code"`
 }
 
 type loginModel struct {
@@ -141,7 +141,7 @@ func (u *userLogInModel) Userlogin(db *sqlx.DB, req *drivethru.UserLogInRequest)
 		//"machine_id":,
 		//"shift_status":,
 		//"shilf_uuid":,
-		"user":           user,
+		"user": user,
 	}, nil
 }
 
@@ -239,6 +239,51 @@ func (u *userLogInModel) login(db *sqlx.DB, req *drivethru.LoginRequest) (interf
 	return map[string]interface{}{
 		"response": map[string]interface{}{
 			"process":     "login",
+			"processDesc": "successful",
+			"isSuccess":   true,
+		},
+		"accessToken":    uuid,
+		"accessDatetime": now.String(),
+		"pathPHPUpload":  "http://qserver.nopadol.com/drivethru/upload.php",
+		"pathFile":       "http://qserver.nopadol.com/drivethru/tmp/",
+		"user":           user,
+	}, nil
+}
+
+func (u *userLogInModel) SearchListUser(db *sqlx.DB, req *drivethru.UserRequest) (interface{}, error) {
+	var uuid string
+
+	now := time.Now()
+	//DocDate := now.AddDate(0, 0, 0).Format("2006-01-02")
+
+	now.String()
+	//branch_code := getBranch(db, req.BranchId)
+
+	usr := UserAccess{}
+	usr.GetProfileByToken(db, req.AccessToken)
+
+	user := []*userLogInModel{}
+
+	lccommand := `select id,code,name,ifnull(pwd,'') as password,ifnull(image_path,'') as image_filename,role,active_status as activesTatus,is_confirm as isConfirm,ifnull(create_by,'') as creatorCode,ifnull(create_time,'') as createdateTime,ifnull(edit_by,'') as lasteditorCode,ifnull(edit_time,'') as lasteditdateTime,ifnull(branch_code,'') as branchCode,'' as remark,ifnull(zone_id,'') as loginZone,ifnull(company_id,1) as company_id,ifnull(branch_id,1) as branch_id from user where code = ?  and branch_code = ? and company_id = ? order by code`
+	fmt.Println(lccommand, req.Keyword, usr.BranchID, usr.CompanyID)
+
+	err := db.Select(&user, lccommand, req.Keyword, usr.BranchCode, usr.CompanyID)
+	//err := rs.Scan(&user.Id, &user.Code, &user.Name, &user.Password, &user.ImageFileName, &user.Role, &user.ActiveStatus, &user.IsConfirm, &user.CreatorCode, &user.CreateDateTime, &user.LastEditorCode, &user.LastEditDateTime, &user.BranchCode, &user.Remark, &user.LoginZone, &user.CompanyId, &user.BranchId)
+	if err != nil {
+		fmt.Println("error = ", err.Error())
+		return map[string]interface{}{
+			"response": map[string]interface{}{
+				"process":     "search user",
+				"processDesc": err.Error(),
+				"isSuccess":   false,
+			},
+		}, nil
+	}
+	fmt.Println("before mysql return -> ", user)
+
+	return map[string]interface{}{
+		"response": map[string]interface{}{
+			"process":     "search user",
 			"processDesc": "successful",
 			"isSuccess":   true,
 		},

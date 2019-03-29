@@ -209,6 +209,11 @@ func (d *drivethruRepository) UserLogIn(req *drivethru.UserLogInRequest) (interf
 	return user.Userlogin(d.db, req)
 }
 
+func (d *drivethruRepository) SearchListUser(req *drivethru.UserRequest) (interface{}, error) {
+	user := userLogInModel{}
+	return user.SearchListUser(d.db, req)
+}
+
 func (d *drivethruRepository) PickupNew(req *drivethru.NewPickupRequest) (interface{}, error) {
 	pickup := pickupModel{}
 	return pickup.PickupNew(d.db, req)
@@ -252,7 +257,7 @@ func (d *drivethruRepository) BillingDone(req *drivethru.BillingDoneRequest) (in
 	return pickup.BillingDone(d.db, req)
 }
 
-func (d *drivethruRepository) CancelQueue(req *drivethru.QueueStatusRequest) (interface{}, error) {
+func (d *drivethruRepository) CancelQueue(req *drivethru.PickupCancelRequest) (interface{}, error) {
 	pickup := ListQueueModel{}
 
 	return pickup.CancelQueue(d.db, req)

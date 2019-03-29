@@ -24,5 +24,6 @@ type Repository interface {
 	SearchSaleByItem(req *SearchByItemTemplate) (interface{}, error)
 	SearchHisByKeyword(req *SearchByKeywordTemplate) (interface{}, error)
 	CancelInvoice(req *NewInvoiceTemplate) (interface{}, error)
+	Searchcreditcard(req *SearchcreditcardTamplate) (interface{}, error)
 	SearchHisCustomer(req *SearchHisCustomerTemplate) (interface{}, error)
 }

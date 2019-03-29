@@ -37,7 +37,7 @@ func SearchById(s Service) interface{} {
 			return nil, fmt.Errorf(err.Error())
 		}
 		return map[string]interface{}{
-			"data": resp,
+			"member": resp,
 		}, nil
 	}
 }
@@ -50,7 +50,7 @@ func SearchByKeyword(s Service) interface{} {
 			return nil, fmt.Errorf(err.Error())
 		}
 		return map[string]interface{}{
-			"data": resp,
+			"member": resp,
 		}, nil
 	}
 }
@@ -87,7 +87,7 @@ func makeNewCustomer(s Service) interface{} {
 			return nil, fmt.Errorf(err.Error())
 		}
 		return map[string]interface{}{
-			"data": resp,
+			"member": resp,
 		}, nil
 	}
 }
@@ -121,7 +121,7 @@ func makeUpdateCustomer(s Service) interface{} {
 			return nil, fmt.Errorf(err.Error())
 		}
 		return map[string]interface{}{
-			"data": resp,
+			"member": resp,
 		}, nil
 	}
 }

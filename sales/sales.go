@@ -162,7 +162,9 @@ type NewSaleItemTemplate struct {
 type SearchByIdTemplate struct {
 	Id int64 `json:"id"`
 }
-
+type SearchcreditcardTamplate struct {
+	Keyword string `json:"keyword"`
+}
 type SearchByKeywordTemplate struct {
 	ArId     int64  `json:"ar_id"`
 	SaleCode string `json:"sale_code"`
@@ -204,6 +206,10 @@ type SearchInvTemplate struct {
 	TotalAmount   float64 `json:"total_amount"`
 	IsCancel      int     `json:"is_cancel"`
 	IsConfirm     int     `json:"is_confirm"`
+}
+type CreditCardTypeTemplate struct {
+	Id                 int64  `json:"id"`
+	CreditCardTypeName string `json:"creditcardtype_name"`
 }
 type SearchIVDocTemplate struct {
 	Id            int64   `json:"id"`
@@ -464,7 +470,7 @@ type NewInvoiceItemTemplate struct {
 	Location        string  `json:"location"`
 	Qty             float64 `json:"qty"`
 	CnQty           float64 `json:"cn_qty"`
-	DiscountWord    float64 `json:"discount_word_sub"`
+	DiscountWord    string  `json:"discount_word_sub"`
 	DiscountAmount  float64 `json:"discount_amount_sub"`
 	ItemAmount      float64 `json:"amount"`
 	NetAmount       float64 `json:"net_amount"`
@@ -495,7 +501,7 @@ type NewSearchItemTemplate struct {
 	Price           float64 `json:"price"`
 	Qty             float64 `json:"qty"`
 	CnQty           float64 `json:"cn_qty"`
-	DiscountWord    float64 `json:"discount_word_sub"`
+	DiscountWord    string  `json:"discount_word_sub"`
 	ItemDescription string  `json:"item_description"`
 	IsCreditNote    int64   `json:"is_credit_note"`
 	IsDebitNote     int64   `json:"is_debit_note"`
