@@ -900,6 +900,141 @@ func QueueEdit(db *sqlx.DB, req *drivethru.QueueEditRequest) (interface{}, error
 	}, nil
 }
 
+func EditCustomerQueue(db *sqlx.DB, req *drivethru.QueueEditCustomer) (interface{}, error) {
+	now := time.Now()
+	fmt.Println("yyyy-mm-dd date format : ", now.AddDate(0, 0, 0).Format("2006-01-02"))
+
+	if req.AccessToken == "" {
+		return map[string]interface{}{
+			"success": false,
+			"error":   true,
+			"message": "Queue Not Have Access Token",
+			"queid":   nil,
+		}, nil
+	}
+
+	if req.QueueId == 0 {
+		return map[string]interface{}{
+			"success": false,
+			"error":   true,
+			"message": "Queue Id Not Assign",
+			"queid":   nil,
+		}, nil
+	}
+
+	u := UserAccess{}
+	u.GetProfileByToken(db, req.AccessToken)
+
+	q := ListQueueModel{}
+	q.Search(db, req.QueueId)
+
+	if q.Status >= 2 {
+		return map[string]interface{}{
+			"success": false,
+			"error":   true,
+			"message": "Queue can not edit",
+			"queid":   nil,
+		}, nil
+	}
+
+	if q.IsCancel == 1 {
+		return map[string]interface{}{
+			"success": false,
+			"error":   true,
+			"message": "Queue is cancel",
+			"queid":   nil,
+		}, nil
+	}
+
+	cust := CustomerModel{}
+
+	ar_id, err := cust.getIdByCode(db, req.CustomerCode)
+	if err != nil {
+		fmt.Println(err.Error())
+	}
+
+	lccommand := `update basket set ar_id = ?, edit_by = ?, edit_time = ? where que_id = ? and doc_date = CURDATE()`
+	_, err = db.Exec(lccommand, ar_id, u.UserCode, now.String(), req.QueueId)
+	if err != nil {
+		return map[string]interface{}{
+			"success": false,
+			"error":   true,
+			"message": err.Error(),
+			"queid":   nil,
+		}, nil
+	}
+
+	que := ListQueueModel{}
+
+	fmt.Println("Q", req.QueueId)
+	lccommand4 := `select a.id, que_id as queue_id, car_brand, ref_number as plate_number,uuid, doc_date, number_of_item, a.create_time as time_created, status, a.is_cancel, ifnull(b.code,'') as ar_code, ifnull(b.name,'') as ar_name, ifnull(c.SaleName,'') as sale_name, ifnull(c.SaleCode,'') as sale_code, doc_no, doc_type as source, '' as receiver_name, pickup_time as pickup_datetime, total_amount, 0 as is_loaded, 0 as status_for_saleorder_current, ifnull(sum_item_amount,0) as total_before_amount, ifnull(total_amount,0) as total_after_amount, '' as otp_password, 0 as bill_type, '' as cancel_remark, '' as who_cancel, '' as sale_order from basket a left join Customer b on a.ar_id = b.id left join Sale c on a.sale_id = c.id where que_id = ? and doc_date = CURDATE() order by id`
+	err = db.Get(&que, lccommand4, req.QueueId)
+	if err != nil {
+		return map[string]interface{}{
+			"error":   true,
+			"message": "Queue List Doc Error = " + err.Error(),
+			"success": false,
+			"queue":   nil,
+		}, nil
+	}
+
+	lccommand1 := `select id, item_id, item_code, item_name ,bar_code as item_bar_code, request_qty, pick_qty as qty_before, checkout_qty as qty_after, price as item_price, unit_code as item_unit_code, pick_amount as total_price_before, checkout_amount as total_price_after, rate1, '' as sale_code, average_cost, line_number, ifnull(zone_id,'A') as pick_zone_id,is_check_out as is_check from basket_sub where basket_id = ? and que_id = ? and uuid = ? and doc_date = CURDATE() order by line_number`
+	err = db.Select(&que.Item, lccommand1, que.Id, que.QueueId, que.UUID)
+	if err != nil {
+		return map[string]interface{}{
+			"error":   true,
+			"message": "Queue List item Error = " + err.Error(),
+			"success": false,
+			"queue":   nil,
+		}, nil
+	}
+
+	lccommand2 := `select phone_no from owner_phone where basket_id = ? and que_id = ? and uuid = ? and doc_no = ?  order by id`
+	err = db.Select(&que.OwnerPhone, lccommand2, que.Id, que.QueueId, que.UUID, que.DocNo)
+	if err != nil {
+		return map[string]interface{}{
+			"error":   true,
+			"message": "Queue List phone Error = " + err.Error(),
+			"success": false,
+			"queue":   nil,
+		}, nil
+	}
+
+	lccommand3 := `select phone_no from order_trust_phone where basket_id = ? and que_id = ? and uuid = ? and doc_no = ?  order by id`
+	err = db.Select(&que.ReceiverPhone, lccommand3, que.Id, que.QueueId, que.UUID, que.DocNo)
+	if err != nil {
+		return map[string]interface{}{
+			"error":   true,
+			"message": "Queue List phone Error = " + err.Error(),
+			"success": false,
+			"queue":   nil,
+		}, nil
+	}
+
+	if que.Item == nil {
+		que.Item = []QueueItem{}
+	}
+
+	if que.OwnerPhone == nil {
+		que.OwnerPhone = []OwnerPhoneModel{}
+	}
+
+	if que.ReceiverPhone == nil {
+		que.ReceiverPhone = []OwnerPhoneModel{}
+	}
+
+	if que.StatusForSaleorderHistory == nil {
+		que.StatusForSaleorderHistory = []QueueStatusHistoryModel{}
+	}
+
+	return map[string]interface{}{
+		"success": true,
+		"error":   false,
+		"message": "",
+		"queue":   que,
+	}, nil
+}
+
 func (q *ListQueueModel) QueueStatus(db *sqlx.DB, req *drivethru.QueueStatusRequest) (interface{}, error) {
 	now := time.Now()
 	fmt.Println("yyyy-mm-dd date format : ", now.AddDate(0, 0, 0).Format("2006-01-02"))
