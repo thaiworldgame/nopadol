@@ -2,11 +2,12 @@ package drivethru
 
 import (
 	"encoding/json"
-	"fmt"
-	"github.com/acoshift/hrpc"
-	"net/http"
-	"github.com/mrtomyum/nopadol/auth"
 	"errors"
+	"fmt"
+	"net/http"
+
+	"github.com/acoshift/hrpc"
+	"github.com/mrtomyum/nopadol/auth"
 )
 
 type errorResponse struct {
@@ -28,13 +29,22 @@ func enableCors(w *http.ResponseWriter) {
 }
 
 func MakeHandler(s Service) http.Handler {
-	m := hrpc.New(hrpc.Config{
-		Validate:        true,
-		RequestDecoder:  requestDecoder,
-		ResponseEncoder: responseEncoder,
-		ErrorEncoder:    errorEncoder,
-	})
+	// m := hrpc.New(hrpc.Config{
+	// 	Validate:        true,
+	// 	RequestDecoder:  requestDecoder,
+	// 	ResponseEncoder: responseEncoder,
+	// 	ErrorEncoder:    errorEncoder,
+	// })
+	// mux := http.NewServeMux()
+
+	m := hrpc.Manager{
+		Validate:     true,
+		Decoder:      requestDecoder,
+		Encoder:      responseEncoder,
+		ErrorEncoder: errorEncoder,
+	}
 	mux := http.NewServeMux()
+
 	mux.Handle("/login", m.Handler(logIn(s)))
 	mux.Handle("/user/login", m.Handler(userLogIn(s)))
 	mux.Handle("/user/search", m.Handler(makeListUser(s)))
