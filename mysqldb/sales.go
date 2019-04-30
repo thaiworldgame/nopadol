@@ -3059,7 +3059,7 @@ func (repo *salesRepository) CreateInvoice(req *sales.NewInvoiceTemplate) (inter
 		}
 	}
 
-	sql_del_bnk := `delete from bank where doc_no = ? and ref_id=? and company_id=? and branch_id=?`
+	sql_del_bnk := `delete from bank_transfer where doc_no = ? and ref_id=? and company_id=? and branch_id=?`
 	_, err = repo.db.Exec(sql_del_bnk, req.DocNo, req.Id, req.CompanyId, req.BranchId)
 	if err != nil {
 		fmt.Println("sql_del = ", err.Error())
@@ -3069,7 +3069,7 @@ func (repo *salesRepository) CreateInvoice(req *sales.NewInvoiceTemplate) (inter
 		for _, bnk := range req.BankPay {
 			//fmt.Println("UUID Chq= ", req.Uuid, req.Id, req.CompanyId, req.BranchId, chq.ChqNumber)
 
-			sql_del := `delete from bank where doc_no = ? and ref_id=? and company_id=? and branch_id=? and bank_account =? `
+			sql_del := `delete from bank_transfer where doc_no = ? and ref_id=? and company_id=? and branch_id=? and bank_account =? `
 			chq_del, _ := repo.db.Exec(sql_del, req.DocNo, req.Id, req.CompanyId, req.BranchId, bnk.BankAccount)
 			fmt.Println(chq_del)
 			if err != nil {
@@ -3081,7 +3081,7 @@ func (repo *salesRepository) CreateInvoice(req *sales.NewInvoiceTemplate) (inter
 
 		for _, bnk := range req.BankPay {
 			fmt.Println(bnk, "insert")
-			sql_chq := `insert into bank (company_id,branch_id,uuid,ref_id,doc_no,doc_date,bank_account,bank_name,bank_amount,create_by,create_time) values(?,?,?,?,?,?,?,?,?,?,?)`
+			sql_chq := `insert into bank_transfer (company_id,branch_id,uuid,ref_id,doc_no,doc_date,bank_account,bank_name,bank_amount,create_by,create_time) values(?,?,?,?,?,?,?,?,?,?,?)`
 			bnks, err := repo.db.Exec(sql_chq, req.CompanyId, req.BranchId, req.Uuid, req.Id, req.DocNo, req.DocDate, bnk.BankAccount, bnk.BankName, bnk.BankAmount, req.CreateBy, req.CreateTime)
 			if err != nil {
 				return nil, err
@@ -3261,7 +3261,7 @@ func (repo *salesRepository) SearchInvoiceById(req *sales.SearchByIdTemplate) (r
 	sql_crd := `select id, ref_id, credit_card_no, credit_type, confirm_no, amount, charge_amount, ifnull(description,'') as description, bank_id, bank_branch_id,receive_date,due_date,book_id from credit_card where company_id = ? and branch_id = ? and ref_id=?`
 	err = repo.db.Select(&crds, sql_crd, i.CompanyId, i.BranchId, req.Id)
 	if err != nil {
-		fmt.Println("err sub= ", err.Error())
+		fmt.Println("err sub=1 ", err.Error())
 		return resp, err
 	}
 
@@ -3274,7 +3274,7 @@ func (repo *salesRepository) SearchInvoiceById(req *sales.SearchByIdTemplate) (r
 	sql_chq := `select id,ref_id,chq_number,bank_id,bank_branch_id,receive_date,due_date,book_id,chq_status,chq_amount,chq_balance,description from chq_in where company_id = ? and branch_id = ? and ref_id = ? `
 	err = repo.db.Select(&chqs, sql_chq, i.CompanyId, i.BranchId, i.Id)
 	if err != nil {
-		fmt.Println("err sub= ", err.Error())
+		fmt.Println("err sub=2 ", err.Error())
 		return resp, err
 	}
 
@@ -3283,10 +3283,10 @@ func (repo *salesRepository) SearchInvoiceById(req *sales.SearchByIdTemplate) (r
 		inv_resp.Chq = append(inv_resp.Chq, chq_line)
 	}
 	bnks := []BankpayModel{}
-	sql_bnk := `select id,ref_id,bank_account,bank_name,bank_amount,create_by,create_time from bank where company_id = ? and branch_id = ? and ref_id = ?`
+	sql_bnk := `select id,ref_id,bank_account,bank_name,bank_amount,create_by,create_time from bank_transfer where company_id = ? and branch_id = ? and ref_id = ?`
 	err = repo.db.Select(&bnks, sql_bnk, i.CompanyId, i.BranchId, i.Id)
 	if err != nil {
-		fmt.Println("err sub= ", err.Error())
+		fmt.Println("err sub=3 ", err.Error())
 		return resp, err
 	}
 	for _, bnk := range bnks {

@@ -1,20 +1,23 @@
 package main
 
 import (
+	"database/sql"
 	"fmt"
 	"log"
 	"net/http"
 
 	_ "github.com/go-sql-driver/mysql"
 	//_ "github.com/denisenkom/go-mssqldb"
+	//"github.com/mrtomyum/nopadol/delivery"
 	"github.com/mrtomyum/nopadol/mysqldb"
+	"github.com/mrtomyum/nopadol/postgres"
 
 	//"github.com/mrtomyum/nopadol/postgres"
 	//"github.com/mrtomyum/nopadol/sqldb"
 	//"database/sql"
 	"github.com/jmoiron/sqlx"
 	//
-	//"github.com/mrtomyum/nopadol/delivery"
+	"github.com/mrtomyum/nopadol/delivery"
 	//
 	customerservice "github.com/mrtomyum/nopadol/customer"
 	employeeservice "github.com/mrtomyum/nopadol/employee"
@@ -174,18 +177,18 @@ func main() {
 	//defer sess.Close() // Remember to close the database session.
 	// Postgresql  Connect
 
-	//pgConn := fmt.Sprintf("dbname=%s user=%s password=%s host=%s port=%s sslmode=%s",
-	//	pgDbName, pgDbUser, pgDbPass, pgDbHost, pgDbPort, pgSSLMode)
+	pgConn := fmt.Sprintf("dbname=%s user=%s password=%s host=%s port=%s sslmode=%s",
+		pgDbName, pgDbUser, pgDbPass, pgDbHost, pgDbPort, pgSSLMode)
 	//
 	//fmt.Println(pgConn)
 	//
-	//pgDb, err := sql.Open("postgres", pgConn)
-	//must(err)
-	//defer pgDb.Close()
+	pgDb, err := sql.Open("postgres", pgConn)
+	must(err)
+	defer pgDb.Close()
 
 	// doRepo
-	//doRepo := postgres.NewDeliveryRepository(pgDb)
-	//doService := delivery.NewService(doRepo)
+	doRepo := postgres.NewDeliveryRepository(pgDb)
+	doService := delivery.NewService(doRepo)
 
 	// init customer
 	customerRepo := mysqldb.NewCustomerRepository(mysql_np)
@@ -248,7 +251,7 @@ func main() {
 	mux.HandleFunc("/", healthCheckHandler)
 	mux.HandleFunc("/version", apiVersionHandler)
 
-	//mux.Handle("/delivery/", http.StripPrefix("/delivery", delivery.MakeHandler(doService)))
+	mux.Handle("/delivery/", http.StripPrefix("/delivery", delivery.MakeHandler(doService)))
 	mux.Handle("/customer/", http.StripPrefix("/customer/v1", customerservice.MakeHandler(customerService)))
 	mux.Handle("/employee/", http.StripPrefix("/employee/v1", employeeservice.MakeHandler(employeeService)))
 	mux.Handle("/product/", http.StripPrefix("/product/v1", productservice.MakeHandler(productService)))
