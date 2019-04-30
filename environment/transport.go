@@ -1,10 +1,11 @@
 package environment
 
 import (
-	"net/http"
-	"github.com/acoshift/hrpc"
 	"encoding/json"
 	"fmt"
+	"net/http"
+
+	"github.com/acoshift/hrpc"
 )
 
 type errorResponse struct {
@@ -19,14 +20,22 @@ func enableCors(w *http.ResponseWriter) {
 }
 
 func MakeHandler(s Service) http.Handler {
-	m := hrpc.New(hrpc.Config{
-		Validate:        true,
-		RequestDecoder:  requestDecoder,
-		ResponseEncoder: responseEncoder,
-		ErrorEncoder:    errorEncoder,
-	})
+	// m := hrpc.New(hrpc.Config{
+	// 	Validate:        true,
+	// 	RequestDecoder:  requestDecoder,
+	// 	ResponseEncoder: responseEncoder,
+	// 	ErrorEncoder:    errorEncoder,
+	// })
+	// mux := http.NewServeMux()
 
+	m := hrpc.Manager{
+		Validate:     true,
+		Decoder:      requestDecoder,
+		Encoder:      responseEncoder,
+		ErrorEncoder: errorEncoder,
+	}
 	mux := http.NewServeMux()
+
 	mux.Handle("/department/search/id", m.Handler(SearchDepartmentById(s)))
 	mux.Handle("/department/search/keyword", m.Handler(SearchDepartmentByKeyword(s)))
 	mux.Handle("/project/search/id", m.Handler(SearchProjectById(s)))

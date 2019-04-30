@@ -1393,3 +1393,60 @@ func SearchHisCustomer(s Service) interface{} {
 		}, nil
 	}
 }
+
+func FindBankNpEndpoint(s Service) interface{} {
+	type response struct {
+		Response string      `json:"response"`
+		Message  string      `json:"message"`
+		Data     []BankModel `json:"data"`
+	}
+
+	return func(ctx context.Context) (*response, error) {
+		resp, err := s.FindBankNpService()
+		if err != nil {
+			return &response{Response: "faild", Message: err.Error()}, err
+		}
+		if len(resp) == 0 {
+			return &response{Response: "faild", Message: "No Data in fild"}, err
+		}
+		return &response{Response: "success", Data: resp}, nil
+	}
+}
+
+func FindBankBookNpEndpoint(s Service) interface{} {
+	type response struct {
+		Response string          `json:"response"`
+		Message  string          `json:"message"`
+		Data     []BankBookModel `json:"data"`
+	}
+
+	return func(ctx context.Context) (*response, error) {
+		resp, err := s.FindBankBookNpSerivce()
+		if err != nil {
+			return &response{Response: "faild", Message: err.Error()}, err
+		}
+		if len(resp) == 0 {
+			return &response{Response: "faild", Message: "No Data in fild"}, err
+		}
+		return &response{Response: "success", Data: resp}, nil
+	}
+}
+
+func FindBankBranchEndpoint(s Service) interface{} {
+	type response struct {
+		Response string            `json:"response"`
+		Message  string            `json:"message"`
+		Data     []BankBranchModel `json:"data"`
+	}
+
+	return func(ctx context.Context) (*response, error) {
+		resp, err := s.FindBankBranchSerivce()
+		if err != nil {
+			return &response{Response: "faild", Message: err.Error()}, err
+		}
+		if len(resp) == 0 {
+			return &response{Response: "faild", Message: "No Data in fild"}, err
+		}
+		return &response{Response: "success", Data: resp}, nil
+	}
+}

@@ -1,10 +1,11 @@
 package customer
 
 import (
-	"net/http"
-	"fmt"
-	"github.com/acoshift/hrpc"
 	"encoding/json"
+	"fmt"
+	"net/http"
+
+	"github.com/acoshift/hrpc"
 )
 
 //type httpError struct {
@@ -25,14 +26,22 @@ func enableCors(w *http.ResponseWriter) {
 
 // MakeHandler creates new vending  handler
 func MakeHandler(s Service) http.Handler {
-	m := hrpc.New(hrpc.Config{
-		Validate:        true,
-		RequestDecoder:  requestDecoder,
-		ResponseEncoder: responseEncoder,
-		ErrorEncoder:    errorEncoder,
-	})
+	// m := hrpc.New(hrpc.Config{
+	// 	Validate:        true,
+	// 	RequestDecoder:  requestDecoder,
+	// 	ResponseEncoder: responseEncoder,
+	// 	ErrorEncoder:    errorEncoder,
+	// })
+	// mux := http.NewServeMux()
 
+	m := hrpc.Manager{
+		Validate:     true,
+		Decoder:      requestDecoder,
+		Encoder:      responseEncoder,
+		ErrorEncoder: errorEncoder,
+	}
 	mux := http.NewServeMux()
+
 	mux.Handle("/search/id", m.Handler(SearchById(s)))
 	mux.Handle("/search/keyword", m.Handler(SearchByKeyword(s)))
 
@@ -128,5 +137,3 @@ func errorEncoder(w http.ResponseWriter, r *http.Request, err error) {
 //
 //	return mux
 //}
-
-
