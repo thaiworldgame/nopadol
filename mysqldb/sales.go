@@ -1767,11 +1767,11 @@ func (repo *salesRepository) SearchSaleOrderByKeyword(req *sales.SearchByKeyword
 	if req.Keyword == "" {
 		sql := `select a.Id,a.DocNo,a.DocDate, case when a.DocType = 0 then 'RO' else 'SO' end as Module,a.ArCode,a.ArName,a.SaleCode,a.SaleName,ifnull(a.MyDescription,'') as MyDescription,a.TotalAmount, a.IsCancel, a.IsConfirm from SaleOrder a Where a.SaleCode = ? order by Id desc limit 30`
 		err = repo.db.Select(&d, sql, req.SaleCode)
-		fmt.Println("sale order sql empty = ",sql)
+		fmt.Println("sale order sql empty = ", sql)
 	} else {
 		sql := `select a.Id,a.DocNo,a.DocDate, case when a.DocType = 0 then 'RO' else 'SO' end as Module,a.ArCode,a.ArName,a.SaleCode,a.SaleName,ifnull(a.MyDescription,'') as MyDescription,a.TotalAmount, a.IsCancel, a.IsConfirm from SaleOrder a Where (a.DocNo like CONCAT("%",?,"%") or a.ArCode like CONCAT("%",?,"%") or a.ArName like CONCAT("%",?,"%") or a.SaleCode like CONCAT("%",?,"%") or a.SaleName like CONCAT("%",?,"%")) order by Id desc limit 30`
 		err = repo.db.Select(&d, sql, req.Keyword, req.Keyword, req.Keyword, req.Keyword, req.Keyword)
-		fmt.Println("sale order sql = ",sql)
+		fmt.Println("sale order sql = ", sql)
 	}
 
 	//sql := `select a.Id,a.DocNo,a.DocDate, case 'QT' as Module,a.ArCode,a.ArName,a.SaleCode,a.SaleName,ifnull(a.MyDescription,'') as MyDescription,a.TotalAmount, a.IsCancel, a.IsConfirm from Quotation a where a.SaleCode = ? and (a.DocNo like CONCAT("%",?,"%") or a.ArCode like CONCAT("%",?,"%") or a.ArName like CONCAT("%",?,"%") or a.SaleCode like CONCAT("%",?,"%") or a.SaleName like CONCAT("%",?,"%")) order by Id desc limit 30`
@@ -2443,7 +2443,7 @@ func (repo *salesRepository) CancelInvoice(req *sales.NewInvoiceTemplate) (resp 
 			fmt.Println("Error = ", err.Error())
 			return nil, err
 		}
-		fmt.Println("Cancel" ,req.SumOfDeposit)
+		fmt.Println("Cancel", req.SumOfDeposit)
 		updatedep := `update Customer_copy1 set debt_amount = debt_amount-? where code = ?`
 		_, err = repo.db.Exec(updatedep, req.SumOfDeposit, req.ArCode)
 		if err != nil {
@@ -3059,7 +3059,7 @@ func (repo *salesRepository) CreateInvoice(req *sales.NewInvoiceTemplate) (inter
 		}
 	}
 
-	sql_del_bnk := `delete from bank where doc_no = ? and ref_id=? and company_id=? and branch_id=?`
+	sql_del_bnk := `delete from bank_transfer where doc_no = ? and ref_id=? and company_id=? and branch_id=?`
 	_, err = repo.db.Exec(sql_del_bnk, req.DocNo, req.Id, req.CompanyId, req.BranchId)
 	if err != nil {
 		fmt.Println("sql_del = ", err.Error())
@@ -3069,7 +3069,7 @@ func (repo *salesRepository) CreateInvoice(req *sales.NewInvoiceTemplate) (inter
 		for _, bnk := range req.BankPay {
 			//fmt.Println("UUID Chq= ", req.Uuid, req.Id, req.CompanyId, req.BranchId, chq.ChqNumber)
 
-			sql_del := `delete from bank where doc_no = ? and ref_id=? and company_id=? and branch_id=? and bank_account =? `
+			sql_del := `delete from bank_transfer where doc_no = ? and ref_id=? and company_id=? and branch_id=? and bank_account =? `
 			chq_del, _ := repo.db.Exec(sql_del, req.DocNo, req.Id, req.CompanyId, req.BranchId, bnk.BankAccount)
 			fmt.Println(chq_del)
 			if err != nil {
@@ -3081,7 +3081,7 @@ func (repo *salesRepository) CreateInvoice(req *sales.NewInvoiceTemplate) (inter
 
 		for _, bnk := range req.BankPay {
 			fmt.Println(bnk, "insert")
-			sql_chq := `insert into bank (company_id,branch_id,uuid,ref_id,doc_no,doc_date,bank_account,bank_name,bank_amount,create_by,create_time) values(?,?,?,?,?,?,?,?,?,?,?)`
+			sql_chq := `insert into bank_transfer (company_id,branch_id,uuid,ref_id,doc_no,doc_date,bank_account,bank_name,bank_amount,create_by,create_time) values(?,?,?,?,?,?,?,?,?,?,?)`
 			bnks, err := repo.db.Exec(sql_chq, req.CompanyId, req.BranchId, req.Uuid, req.Id, req.DocNo, req.DocDate, bnk.BankAccount, bnk.BankName, bnk.BankAmount, req.CreateBy, req.CreateTime)
 			if err != nil {
 				return nil, err
@@ -3283,7 +3283,7 @@ func (repo *salesRepository) SearchInvoiceById(req *sales.SearchByIdTemplate) (r
 		inv_resp.Chq = append(inv_resp.Chq, chq_line)
 	}
 	bnks := []BankpayModel{}
-	sql_bnk := `select id,ref_id,bank_account,bank_name,bank_amount,create_by,create_time from bank where company_id = ? and branch_id = ? and ref_id = ?`
+	sql_bnk := `select id,ref_id,bank_account,bank_name,bank_amount,create_by,create_time from bank_transfer where company_id = ? and branch_id = ? and ref_id = ?`
 	err = repo.db.Select(&bnks, sql_bnk, i.CompanyId, i.BranchId, i.Id)
 	if err != nil {
 		fmt.Println("err sub= ", err.Error())
