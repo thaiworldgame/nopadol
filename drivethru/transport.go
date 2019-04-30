@@ -2,11 +2,12 @@ package drivethru
 
 import (
 	"encoding/json"
-	"fmt"
-	"github.com/acoshift/hrpc"
-	"net/http"
-	"github.com/mrtomyum/nopadol/auth"
 	"errors"
+	"fmt"
+	"net/http"
+
+	"github.com/acoshift/hrpc"
+	"github.com/mrtomyum/nopadol/auth"
 )
 
 type errorResponse struct {

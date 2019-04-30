@@ -1,10 +1,11 @@
 package employee
 
 import (
-	"net/http"
-	"github.com/acoshift/hrpc"
 	"encoding/json"
 	"fmt"
+	"net/http"
+
+	"github.com/acoshift/hrpc"
 )
 
 type errorResponse struct {
