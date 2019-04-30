@@ -1,10 +1,11 @@
 package print
 
 import (
-	"net/http"
-	"github.com/acoshift/hrpc"
 	"encoding/json"
 	"fmt"
+	"net/http"
+
+	"github.com/acoshift/hrpc"
 )
 
 type errorResponse struct {
@@ -18,16 +19,25 @@ func enableCors(w *http.ResponseWriter) {
 	(*w).Header().Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
 }
 
-func MakeHandler(s Service) http.Handler{
-	m := hrpc.New(hrpc.Config{
-		Validate:true,
-		RequestDecoder:requestDecoder,
-		ResponseEncoder:responseEncoder,
+func MakeHandler(s Service) http.Handler {
+	// m := hrpc.New(hrpc.Config{
+	// 	Validate:        true,
+	// 	RequestDecoder:  requestDecoder,
+	// 	ResponseEncoder: responseEncoder,
+	// 	ErrorEncoder:    errorEncoder,
+	// })
+	// mux := http.NewServeMux()
+
+	m := hrpc.Manager{
+		Validate:     true,
+		Decoder:      requestDecoder,
+		Encoder:      responseEncoder,
 		ErrorEncoder: errorEncoder,
-	})
+	}
 	mux := http.NewServeMux()
-	mux.Handle("/posslip",m.Handler(PosSlip(s)))
-	mux.Handle("/posdrivethruslip",m.Handler(PosDriveThruSlip(s)))
+
+	mux.Handle("/posslip", m.Handler(PosSlip(s)))
+	mux.Handle("/posdrivethruslip", m.Handler(PosDriveThruSlip(s)))
 
 	return mustLogin()(mux)
 }
