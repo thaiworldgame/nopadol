@@ -26,4 +26,8 @@ type Repository interface {
 	CancelInvoice(req *NewInvoiceTemplate) (interface{}, error)
 	Searchcreditcard(req *SearchcreditcardTamplate) (interface{}, error)
 	SearchHisCustomer(req *SearchHisCustomerTemplate) (interface{}, error)
+
+	FindBankNpRepo() ([]BankModel, error)
+	FindBankBookRepo() ([]BankBookModel, error)
+	FindBankBranchRepo() ([]BankBranchModel,error)
 }

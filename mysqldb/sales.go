@@ -1767,11 +1767,11 @@ func (repo *salesRepository) SearchSaleOrderByKeyword(req *sales.SearchByKeyword
 	if req.Keyword == "" {
 		sql := `select a.Id,a.DocNo,a.DocDate, case when a.DocType = 0 then 'RO' else 'SO' end as Module,a.ArCode,a.ArName,a.SaleCode,a.SaleName,ifnull(a.MyDescription,'') as MyDescription,a.TotalAmount, a.IsCancel, a.IsConfirm from SaleOrder a Where a.SaleCode = ? order by Id desc limit 30`
 		err = repo.db.Select(&d, sql, req.SaleCode)
-		fmt.Println("sale order sql empty = ",sql)
+		fmt.Println("sale order sql empty = ", sql)
 	} else {
 		sql := `select a.Id,a.DocNo,a.DocDate, case when a.DocType = 0 then 'RO' else 'SO' end as Module,a.ArCode,a.ArName,a.SaleCode,a.SaleName,ifnull(a.MyDescription,'') as MyDescription,a.TotalAmount, a.IsCancel, a.IsConfirm from SaleOrder a Where (a.DocNo like CONCAT("%",?,"%") or a.ArCode like CONCAT("%",?,"%") or a.ArName like CONCAT("%",?,"%") or a.SaleCode like CONCAT("%",?,"%") or a.SaleName like CONCAT("%",?,"%")) order by Id desc limit 30`
 		err = repo.db.Select(&d, sql, req.Keyword, req.Keyword, req.Keyword, req.Keyword, req.Keyword)
-		fmt.Println("sale order sql = ",sql)
+		fmt.Println("sale order sql = ", sql)
 	}
 
 	//sql := `select a.Id,a.DocNo,a.DocDate, case 'QT' as Module,a.ArCode,a.ArName,a.SaleCode,a.SaleName,ifnull(a.MyDescription,'') as MyDescription,a.TotalAmount, a.IsCancel, a.IsConfirm from Quotation a where a.SaleCode = ? and (a.DocNo like CONCAT("%",?,"%") or a.ArCode like CONCAT("%",?,"%") or a.ArName like CONCAT("%",?,"%") or a.SaleCode like CONCAT("%",?,"%") or a.SaleName like CONCAT("%",?,"%")) order by Id desc limit 30`
@@ -2443,7 +2443,7 @@ func (repo *salesRepository) CancelInvoice(req *sales.NewInvoiceTemplate) (resp 
 			fmt.Println("Error = ", err.Error())
 			return nil, err
 		}
-		fmt.Println("Cancel" ,req.SumOfDeposit)
+		fmt.Println("Cancel", req.SumOfDeposit)
 		updatedep := `update Customer_copy1 set debt_amount = debt_amount-? where code = ?`
 		_, err = repo.db.Exec(updatedep, req.SumOfDeposit, req.ArCode)
 		if err != nil {
