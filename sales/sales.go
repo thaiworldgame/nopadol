@@ -589,3 +589,12 @@ type NewSearchHisCustomerTemplate struct {
 	NSaleName    string  `json:"SaleName"`
 	NTotalAmount int64   `json:"TotalAmount"`
 }
+
+type FineDepartmentModel struct {
+	Id           int64  `json:"id" db:"id"`
+	CompanyId    int64  `json:"company_id" db:"company_id"`
+	BranchId     int64  `json:"branch_id" db:"branch_id""`
+	Code         string `json:"code" db:"code	"`
+	Name         string `json:"name" db:"name"`
+	ActiveStatus int64  `json:"active_status" db:"active_status"`
+}

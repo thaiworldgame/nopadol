@@ -1450,3 +1450,18 @@ func FindBankBranchEndpoint(s Service) interface{} {
 		return &response{Response: "success", Data: resp}, nil
 	}
 }
+
+func FineDepartment(s Service) interface{} {
+	type response struct {
+		Response string                `json:"response"`
+		Message  string                `json:"message"`
+		Data     []FineDepartmentModel `json:"data"`
+	}
+	return func(ctx context.Context) (*response, error) {
+		resp, err := s.FineFineDepartmentService()
+		if err != nil {
+			return &response{Response: "fail", Message: err.Error()}, err
+		}
+		return &response{Response: "success", Data: resp}, nil
+	}
+}
