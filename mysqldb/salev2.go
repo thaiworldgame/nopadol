@@ -75,3 +75,26 @@ func (repo *salesRepository) FindBankBranchRepo() ([]sales.BankBranchModel, erro
 
 	return Bank, nil
 }
+
+func (repo *salesRepository) FineDepartmentRepo() ([]sales.FineDepartmentModel, error) {
+
+	sql := `select id, company_id, branch_id, code, name, active_status
+	from Department`
+
+	Cp := []sales.FineDepartmentModel{}
+	sqls, err := repo.db.Query(sql)
+	if err != nil {
+		return nil, err
+	}
+	for sqls.Next() {
+		Cps := sales.FineDepartmentModel{}
+		err = sqls.Scan(&Cps.Id, &Cps.CompanyId,
+			&Cps.BranchId, &Cps.Code, &Cps.Name,
+			&Cps.ActiveStatus)
+		if err != nil {
+			return nil, err
+		}
+		Cp = append(Cp, Cps)
+	}
+	return Cp, nil
+}
