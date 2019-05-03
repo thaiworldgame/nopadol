@@ -6,6 +6,7 @@ import (
 	"github.com/mrtomyum/nopadol/drivethru"
 
 	"time"
+	"strconv"
 )
 
 type drivethruRepository struct{ db *sqlx.DB }
@@ -312,7 +313,8 @@ func (d *drivethruRepository) ShiftOpen(req *drivethru.ShiftOpenRequest) (resp i
 	sh.Remark = req.Remark
 
 	mc := Machine{}
-	mc.SearchMachineId(d.db, uac.CompanyID, uac.BranchID, req.MachineID)
+	machine_id, err := strconv.Atoi(req.MachineID)
+	mc.SearchMachineId(d.db, uac.CompanyID, uac.BranchID, machine_id)
 	fmt.Println("mc.MachineNo", mc.MachineNo)
 	sh.MachineNo = mc.MachineNo
 	sh.WhID = mc.DefWhId
