@@ -2380,7 +2380,7 @@ func (q *ListQueueModel) PosList(db *sqlx.DB, req *drivethru.AccessTokenRequest)
 		return nil, err
 	}
 	type machineModel struct {
-		id          int64  `json:"id"`
+		Id          int64  `json:"id"`
 		CompanyID   int64  `json:"company_id" `
 		BranchID    int64  `json:"branch_id"`
 		MachineNo   string `json:"machine_no"`
@@ -2392,12 +2392,12 @@ func (q *ListQueueModel) PosList(db *sqlx.DB, req *drivethru.AccessTokenRequest)
 	Mcs := []machineModel{}
 	mc := machineModel{}
 	for rs.Next() {
-		rs.Scan(&mc.id, &mc.CompanyID, &mc.BranchID, &mc.MachineNo, &mc.MachineCode, &mc.DefWhID, &mc.DefShelfID, &mc.IsOpen)
+		rs.Scan(&mc.Id, &mc.CompanyID, &mc.BranchID, &mc.MachineNo, &mc.MachineCode, &mc.DefWhID, &mc.DefShelfID, &mc.IsOpen)
 		Mcs = append(Mcs, mc)
 	}
 
-	fmt.Println("mysqldb recive databranch -> ", Mcs)
-	return Mcs, nil
+	//fmt.Println("mysqldb recive databranch -> ", Mcs)
+	//return Mcs, nil
 
 	return map[string]interface{}{
 		"error":   false,
