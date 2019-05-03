@@ -95,6 +95,8 @@ func (q *BCQuotation) getQTByDocNo(db *sqlx.DB) error {
 		return err
 	}
 
+	fmt.Println("Quotation DocDate = ",q.DocDate)
+
 	sql_sub := `select a.Id,a.QuoId,a.ItemId,a.ItemCode,a.ItemName,a.Qty,a.RemainQty,a.Price,ifnull(a.DiscountWord,'') as DiscountWord,DiscountAmount,ifnull(a.UnitCode,'') as UnitCode,ifnull(a.BarCode,'') as BarCode,ifnull(a.ItemDescription,'') as ItemDescription,a.ItemAmount,a.PackingRate1,a.LineNumber,a.IsCancel from QuotationSub a  where QuoId = ? order by a.linenumber`
 	err = db.Select(&q.Subs, sql_sub, q.Id)
 	if err != nil {

@@ -19,12 +19,12 @@ func enableCors(w *http.ResponseWriter) {
 }
 
 func MakeHandler(s Service) http.Handler {
-	m := hrpc.New(hrpc.Config{
-		Validate:        true,
-		RequestDecoder:  requestDecoder,
-		ResponseEncoder: responseEncoder,
-		ErrorEncoder:    errorEncoder,
-	})
+	m := hrpc.Manager{
+		Validate:     true,
+		Decoder:      requestDecoder,
+		Encoder:      responseEncoder,
+		ErrorEncoder: errorEncoder,
+	}
 	mux := http.NewServeMux()
 	mux.Handle("/basket/new", m.Handler(Create(s)))
 	mux.Handle("/basket/pickup",m.Handler(ManageBasket(s)))

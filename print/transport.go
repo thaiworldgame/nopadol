@@ -19,12 +19,12 @@ func enableCors(w *http.ResponseWriter) {
 }
 
 func MakeHandler(s Service) http.Handler{
-	m := hrpc.New(hrpc.Config{
-		Validate:true,
-		RequestDecoder:requestDecoder,
-		ResponseEncoder:responseEncoder,
+	m := hrpc.Manager{
+		Validate:     true,
+		Decoder:      requestDecoder,
+		Encoder:      responseEncoder,
 		ErrorEncoder: errorEncoder,
-	})
+	}
 	mux := http.NewServeMux()
 	mux.Handle("/posslip",m.Handler(PosSlip(s)))
 	mux.Handle("/posdrivethruslip",m.Handler(PosDriveThruSlip(s)))

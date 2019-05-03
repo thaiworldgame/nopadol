@@ -22,6 +22,8 @@ type Repository interface {
 	QueueStatus(req *QueueStatusRequest) (interface{}, error)
 	QueueProduct(req *QueueProductRequest) (interface{}, error)
 	BillingDone(req *BillingDoneRequest) (interface{}, error)
+	PosList(req *AccessTokenRequest) (interface{}, error)
+	PosCancel(req *QueueProductRequest) (interface{}, error)
 	//ShiftOpen(string,float64,string)(interface{},error)
 
 	ShiftOpen(*ShiftOpenRequest) (interface{}, error)

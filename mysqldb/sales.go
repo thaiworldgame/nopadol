@@ -3068,7 +3068,6 @@ func (repo *salesRepository) CreateInvoice(req *sales.NewInvoiceTemplate) (inter
 	if len(req.BankPay) != 0 {
 		for _, bnk := range req.BankPay {
 			//fmt.Println("UUID Chq= ", req.Uuid, req.Id, req.CompanyId, req.BranchId, chq.ChqNumber)
-
 			sql_del := `delete from bank where doc_no = ? and ref_id=? and company_id=? and branch_id=? and bank_account =? `
 			chq_del, _ := repo.db.Exec(sql_del, req.DocNo, req.Id, req.CompanyId, req.BranchId, bnk.BankAccount)
 			fmt.Println(chq_del)

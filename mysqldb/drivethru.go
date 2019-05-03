@@ -267,6 +267,18 @@ func (d *drivethruRepository) CancelQueue(req *drivethru.PickupCancelRequest) (i
 	return pickup.CancelQueue(d.db, req)
 }
 
+func (d *drivethruRepository) PosCancel(req *drivethru.QueueProductRequest) (interface{}, error) {
+	pickup := ListQueueModel{}
+
+	return pickup.PosCancel(d.db, req)
+}
+
+func (d *drivethruRepository) PosList(req *drivethru.AccessTokenRequest) (interface{}, error) {
+	pickup := ListQueueModel{}
+
+	return pickup.PosList(d.db, req)
+}
+
 func getBranch(db *sqlx.DB, branch_id string) string {
 	var branch_code string
 

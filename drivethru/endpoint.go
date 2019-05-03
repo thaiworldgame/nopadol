@@ -119,6 +119,11 @@ type (
 		QueueId     int    `json:"queue_id"`
 	}
 
+	PosRequest struct {
+		AccessToken string `json:"access_token"`
+		PosNo     int    `json:"pos_no"`
+	}
+
 	AccessTokenRequest struct {
 		AccessToken string `json:"access_token"`
 	}
@@ -460,6 +465,30 @@ func queueStatus(s Service) interface{} {
 func billingDone(s Service) interface{} {
 	return func(ctx context.Context, req *BillingDoneRequest) (interface{}, error) {
 		resp, err := s.BillingDone(&BillingDoneRequest{QueueId: req.QueueId, Confirm: req.Confirm, ArCode: req.ArCode, AccessToken: req.AccessToken, CouponCode: req.CouponCode, Cash: req.Cash, CreditCard: req.CreditCard, DepositAmount: req.DepositAmount})
+		if err != nil {
+			return nil, err
+		}
+
+		return resp, nil
+	}
+}
+
+
+func posList(s Service) interface{} {
+	return func(ctx context.Context, req *AccessTokenRequest) (interface{}, error) {
+		resp, err := s.PosList(&AccessTokenRequest{AccessToken: req.AccessToken})
+		if err != nil {
+			return nil, err
+		}
+
+		return resp, nil
+	}
+}
+
+
+func posCancel(s Service) interface{} {
+	return func(ctx context.Context, req *QueueProductRequest) (interface{}, error) {
+		resp, err := s.PosCancel(&QueueProductRequest{AccessToken: req.AccessToken, QueueId:req.QueueId})
 		if err != nil {
 			return nil, err
 		}
