@@ -85,7 +85,7 @@ type BCQuotationSub struct {
 	LineNumber      int     `json:"line_number"db:"LineNumber"`
 }
 
-func (q *BCQuotation) getByDocNo(db *sqlx.DB) error {
+func (q *BCQuotation) getQTByDocNo(db *sqlx.DB) error {
 	fmt.Println("QueDocNo = ", q.DocNo)
 	sql := `select a.Id,a.CompanyId,a.BranchId,a.DocNo,a.DocDate,a.DocType,a.Validity,a.BillType,a.ArId,a.ArCode,a.ArName,a.SaleId,a.SaleCode,a.SaleName,ifnull(a.DepartId,0) as DepartId,ifnull(c.code,'') as DepartCode,ifnull(a.RefNo,'') as RefNo,ifnull(a.JobId,'') as JobId,a.TaxType,a.IsConfirm,a.BillStatus,a.CreditDay,ifnull(a.DueDate,'') as DueDate,a.ExpireCredit,ifnull(a.ExpireDate,'') as ExpireDate,a.DeliveryDay,ifnull(a.DeliveryDate,'') as DeliveryDate,a.AssertStatus,a.IsConditionSend,ifnull(a.MyDescription,'') as MyDescription,a.SumOfItemAmount,ifnull(a.DiscountWord,'') as DiscountWord,a.DiscountAmount,a.AfterDiscountAmount,a.BeforeTaxAmount,a.TaxAmount,a.TotalAmount,a.NetDebtAmount,a.TaxRate,a.ProjectId,ifnull(d.code,'') as ProjectCode,a.AllocateId,ifnull(e.code,'') as AllocateCode,a.IsCancel,ifnull(a.CreateBy,'') as CreateBy,ifnull(a.CreateTime,'') as CreateTime,ifnull(a.EditBy,'') as EditBy,ifnull(a.EditTime,'') as EditTime,ifnull(a.CancelBy,'') as CancelBy,ifnull(a.CancelTime,'') as CancelTime,ifnull(b.address,'') as ArBillAddress,ifnull(b.telephone,'') as ArTelephone from Quotation a left join Customer b on a.ArId = b.id  left join Department c on a.DepartId = c.Id left join Project d on a.ProjectId = d.Id left join Allocate e on a.AllocateId = e.id   where a.DocNo = ?`
 	rs := db.QueryRow(sql, q.DocNo)
@@ -94,6 +94,8 @@ func (q *BCQuotation) getByDocNo(db *sqlx.DB) error {
 		fmt.Println("err = ", err.Error())
 		return err
 	}
+
+	fmt.Println("Quotation DocDate = ",q.DocDate)
 
 	sql_sub := `select a.Id,a.QuoId,a.ItemId,a.ItemCode,a.ItemName,a.Qty,a.RemainQty,a.Price,ifnull(a.DiscountWord,'') as DiscountWord,DiscountAmount,ifnull(a.UnitCode,'') as UnitCode,ifnull(a.BarCode,'') as BarCode,ifnull(a.ItemDescription,'') as ItemDescription,a.ItemAmount,a.PackingRate1,a.LineNumber,a.IsCancel from QuotationSub a  where QuoId = ? order by a.linenumber`
 	err = db.Select(&q.Subs, sql_sub, q.Id)

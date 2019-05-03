@@ -29,14 +29,6 @@ func enableCors(w *http.ResponseWriter) {
 }
 
 func MakeHandler(s Service) http.Handler {
-	// m := hrpc.New(hrpc.Config{
-	// 	Validate:        true,
-	// 	RequestDecoder:  requestDecoder,
-	// 	ResponseEncoder: responseEncoder,
-	// 	ErrorEncoder:    errorEncoder,
-	// })
-	// mux := http.NewServeMux()
-
 	m := hrpc.Manager{
 		Validate:     true,
 		Decoder:      requestDecoder,
@@ -53,6 +45,7 @@ func MakeHandler(s Service) http.Handler {
 	mux.Handle("/machine", m.Handler(makeListMachine(s)))
 	mux.Handle("/pickup/carbrand", m.Handler(makeSearchCarBranch(s)))
 	mux.Handle("/customer/search", m.Handler(makeSearchCustomer(s)))
+	mux.Handle("/order/customer/update",m.Handler(editCustomerQueue(s)))
 	mux.Handle("/item/search", m.Handler(makeItemSearch(s)))
 
 	mux.Handle("/order/new", m.Handler(pickupNew(s)))
@@ -66,6 +59,8 @@ func MakeHandler(s Service) http.Handler {
 	mux.Handle("/queue/status", m.Handler(queueStatus(s)))
 	mux.Handle("/queue/product", m.Handler(queueProduct(s)))
 	mux.Handle("/billing/done", m.Handler(billingDone(s)))
+	mux.Handle("/pos/cancel", m.Handler(posCancel(s)))
+	mux.Handle("/pos/list", m.Handler(posList(s)))
 
 	//mux.Handle("/pickup/new",m.Handler(pickupNew(s)))
 
