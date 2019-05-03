@@ -8,17 +8,17 @@ import (
 
 	"github.com/jmoiron/sqlx"
 	"github.com/mrtomyum/nopadol/auth"
-	uuid "github.com/satori/go.uuid"
+	"github.com/satori/go.uuid"
 )
 
 type UserAccess struct {
-	Id         int64  `db:"id"`
-	UserId     int64  `db:"id"`
+	Id         int  `db:"id"`
+	UserId     int  `db:"user_id"`
 	UserCode   string `db:"user_code"`
 	CompanyID  int    `db:"company_id"`
 	BranchID   int    `db:"branch_id`
 	BranchCode string `db:"branch_code"`
-	ZoneID     int    `db:"zone_id"`
+	ZoneID     string    `db:"zone_id"`
 	Name       string `db:"name"`
 	//BranchName string `db:"branch_name"`
 }
@@ -122,12 +122,15 @@ func (repo *authRepository) GetToken(tokenID string) (*auth.Token, error) {
 
 func (u *UserAccess) GetProfileByToken(db *sqlx.DB, token string) {
 
-	lcCommand := "select b.id,user_id,user_code,b.company_id,b.branch_id,b.branch_code,b.zone_id " +
-		",b.name from " + dbname + ".user_access a inner join npdl.`user` b on a.user_id=b.id " +
-		" where access_token='" + token + "'"
-	//fmt.Println(lcCommand)
-	rs := db.QueryRow(lcCommand)
-	rs.Scan(&u.Id, &u.UserId, &u.UserCode, &u.CompanyID, &u.BranchID, &u.BranchCode, &u.ZoneID, &u.Name)
+	lcCommand := "select b.id,user_id,user_code,b.company_id,b.branch_id,b.branch_code,b.zone_id ,ifnull(b.name,'') as name from user_access a inner join npdl.user b on a.user_id=b.id where access_token= ?"
+	fmt.Println("user sql = ", lcCommand)
+	rs := db.QueryRow(lcCommand, token)
+	err := rs.Scan(&u.Id, &u.UserId, &u.UserCode, &u.CompanyID, &u.BranchID, &u.BranchCode, &u.ZoneID, &u.Name)
+	if err != nil {
+		fmt.Println(err.Error())
+	}
+	fmt.Println("Cashier Name = ", u.UserCode, u.CompanyID, u.BranchCode, u.Name)
+
 	return
 }
 

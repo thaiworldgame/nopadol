@@ -142,6 +142,8 @@ func (c *CustomerModel) save(db *sqlx.DB) (interface{}, error) {
 	}
 	//validate id if empty -> insert
 	switch {
+
+	//new customer case
 	case curID == 0:
 		{
 			sql := `insert into Customer (code,name,address,telephone,bill_credit,
@@ -160,18 +162,13 @@ func (c *CustomerModel) save(db *sqlx.DB) (interface{}, error) {
 			return newID, nil
 
 		}
+	// existing customer just edit record
 	case curID != 0:
 		{
 			//new customer case
 			sql := `update Customer
-			set 	code = ?,
-				name=?,
-				address=?,
-				telephone=?,
-				bill_credit=?,
-				active_status=?,
-				edit_by=?,
-				edit_time=?
+			set 	code = ?,name=?,address=?,telephone=?,bill_credit=?,
+				active_status=?,edit_by=?,edit_time=?
 			where id = ?`
 			fmt.Println(sql)
 
@@ -191,5 +188,6 @@ func (c *CustomerModel) save(db *sqlx.DB) (interface{}, error) {
 	}
 
 	// update
-	return nil, nil
+	return "sucess", nil
+
 }

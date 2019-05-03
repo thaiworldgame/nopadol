@@ -5,6 +5,8 @@ import (
 	//"fmt"
 	"fmt"
 	"github.com/mrtomyum/nopadol/sync"
+	//"encoding/json"
+	//"bytes"
 )
 
 type BcItem struct {
@@ -29,12 +31,13 @@ type syncLogs struct {
 	value       string `db:"value"`
 }
 
-//type Logs struct {
-//	uuid string `db:"uid"`
-//}
-
 type BcQuotaionSend struct {
 	BCQuotation
+	LogUuid string `json:"log_uuid"`
+}
+
+type BcSaleOrderSend struct {
+	BCSaleOrder
 	LogUuid string `json:"log_uuid"`
 }
 
@@ -51,22 +54,6 @@ func (s *syncRepository) GetNewQuotaion() (resp interface{}, err error) {
 		return resp, err
 	}
 	return resp, nil
-}
-
-func (s *syncRepository) ConfirmTransfer(req sync.Log) (status interface{}, err error) {
-	fmt.Println("sync.Logs = ", req)
-
-	//for _, l := range req.LogsUUID {
-	fmt.Println("uuid : ", req.LogUUID)
-	sql := `update npdl.sync_logs set send_status = 1 where uuid = ?`
-	_, err = s.db.Exec(sql, req.LogUUID)
-	if err != nil {
-		fmt.Println(err.Error())
-	}
-	//}
-	return map[string]interface{}{
-		"status": "success",
-	}, nil
 }
 
 func (sl *syncLogs) getWaitQuotation(db *sqlx.DB) (resp []BcQuotaionSend, err error) {
@@ -91,8 +78,63 @@ func (sl *syncLogs) getWaitQuotation(db *sqlx.DB) (resp []BcQuotaionSend, err er
 		qt.LogUuid = sync.uuid
 		qt.DocNo = sync.value
 
-		qt.getByDocNo(db)
+		qt.getQTByDocNo(db)
 		qts = append(qts, qt)
 	}
 	return qts, nil
 }
+
+func (sl *syncLogs) getWaitSaleOrder(db *sqlx.DB) (resp []BcSaleOrderSend, err error) {
+	sql := `select id,uuid,type,table_name,key_field,value from npdl.sync_logs where send_status=0 and table_name='SaleOrder' `
+	fmt.Println(sql)
+	sync := syncLogs{}
+
+	so := BcSaleOrderSend{}
+	sos := []BcSaleOrderSend{}
+
+	rs, err := db.Queryx(sql)
+	if err != nil {
+		return nil, err
+	}
+
+	for rs.Next() {
+		err = rs.Scan(&sync.id, &sync.uuid, &sync.module_type, &sync.table_name, &sync.key_field, &sync.value)
+		if err != nil {
+			return nil, err
+		}
+
+		so.LogUuid = sync.uuid
+		so.DocNo = sync.value
+
+		so.getSOByDocNo(db)
+		sos = append(sos, so)
+	}
+	return sos, nil
+}
+
+func (s *syncRepository) GetNewSaleOrder() (resp interface{}, err error) {
+	sync := syncLogs{}
+	resp, err = sync.getWaitSaleOrder(s.db)
+	if err != nil {
+		return resp, err
+	}
+	return resp, nil
+}
+
+func (s *syncRepository) ConfirmTransfer(req *sync.Logs) (status interface{}, err error) {
+	fmt.Println("sync.Logs = ", req)
+
+	for _, l := range req.LogsUUID {
+		fmt.Println("l=", l.LogUUID)
+		sql := `update npdl.sync_logs set send_status = 1 where uuid = ?`
+		_, err = s.db.Exec(sql, l.LogUUID)
+		if err != nil {
+			fmt.Println(err.Error())
+		}
+	}
+
+	return map[string]interface{}{
+		"status": "success",
+	}, nil
+}
+
