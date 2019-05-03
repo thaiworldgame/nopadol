@@ -2299,85 +2299,111 @@ func (q *ListQueueModel) CancelQueue(db *sqlx.DB, req *drivethru.PickupCancelReq
 }
 
 func (q *ListQueueModel) PosList(db *sqlx.DB, req *drivethru.AccessTokenRequest) (interface{}, error) {
-	que := []ListQueueModel{}
-	que_data := []ListQueueModel{}
+	//que := []ListQueueModel{}
+	//que_data := []ListQueueModel{}
+	//
+	////lccommand := `select id, que_id as queue_id, car_brand, ref_number as plate_number,uuid, doc_date, number_of_item, create_time as time_created, status, is_cancel, '' as ar_code, '' as ar_name, '' as sale_name, '' as sale_code, doc_no, doc_type as source, '' as receiver_name, pickup_time as pickup_datetime, total_amount, 0 as is_loaded, 0 as status_for_saleorder_current, ifnull(sum_item_amount,0) as total_before_amount, ifnull(total_amount,0) as total_after_amount, '' as otp_password, 0 as bill_type, '' as cancel_remark, '' as who_cancel, '' as sale_order from basket where doc_date = CURRENT_DATE order by id`
+	//lccommand := `call USP_DT_SearchListQue(?, ?, ?, ?, ?, ?)`
+	//err := db.Select(&que, lccommand, req.AccessToken)
+	////err := db.Select(&que, lccommand)
+	//if err != nil {
+	//	return map[string]interface{}{
+	//		"error":   true,
+	//		"message": "Queue List Doc Error = " + err.Error(),
+	//		"success": false,
+	//		"order":   nil,
+	//	}, nil
+	//}
+	//
+	//for _, qid := range que {
+	//
+	//	fmt.Println("que item = ", qid.Id, qid.QueueId, qid.UUID)
+	//
+	//	lccommand := `select id, item_id, item_code, item_name ,bar_code as item_bar_code, request_qty, pick_qty as qty_before, checkout_qty as qty_after, price as item_price, unit_code as item_unit_code, pick_amount as total_price_before, checkout_amount as total_price_after, rate1, '' as sale_code, average_cost, line_number, ifnull(zone_id,'A') as pick_zone_id,is_check_out as is_check from basket_sub where basket_id = ? and que_id = ? and uuid = ? and doc_date = CURDATE() order by line_number`
+	//	err := db.Select(&qid.Item, lccommand, qid.Id, qid.QueueId, qid.UUID)
+	//	if err != nil {
+	//		return map[string]interface{}{
+	//			"error":   true,
+	//			"message": "Queue List item Error = " + err.Error(),
+	//			"success": false,
+	//			"order":   nil,
+	//		}, nil
+	//	}
+	//
+	//	//fmt.Println("ItemCode = ", qid.Item[0].ItemCode)
+	//
+	//	lccommand1 := `select phone_no from owner_phone where basket_id = ? and que_id = ? and uuid = ? and doc_no = ?  order by id`
+	//	err = db.Select(&qid.OwnerPhone, lccommand1, qid.Id, qid.QueueId, qid.UUID, qid.DocNo)
+	//	if err != nil {
+	//		return map[string]interface{}{
+	//			"error":   true,
+	//			"message": "Queue List phone Error = " + err.Error(),
+	//			"success": false,
+	//			"order":   nil,
+	//		}, nil
+	//	}
+	//
+	//	lccommand2 := `select phone_no from order_trust_phone where basket_id = ? and que_id = ? and uuid = ? and doc_no = ?  order by id`
+	//	err = db.Select(&qid.ReceiverPhone, lccommand2, qid.Id, qid.QueueId, qid.UUID, qid.DocNo)
+	//	if err != nil {
+	//		return map[string]interface{}{
+	//			"error":   true,
+	//			"message": "Queue List phone Error = " + err.Error(),
+	//			"success": false,
+	//			"order":   nil,
+	//		}, nil
+	//	}
+	//
+	//	if qid.Item == nil {
+	//		qid.Item = []QueueItem{}
+	//	}
+	//
+	//	if qid.OwnerPhone == nil {
+	//		qid.OwnerPhone = []OwnerPhoneModel{}
+	//	}
+	//
+	//	if qid.ReceiverPhone == nil {
+	//		qid.ReceiverPhone = []OwnerPhoneModel{}
+	//	}
+	//
+	//	if qid.StatusForSaleorderHistory == nil {
+	//		qid.StatusForSaleorderHistory = []QueueStatusHistoryModel{}
+	//	}
+	//
+	//	que_data = append(que_data, qid)
+	//}
 
-	//lccommand := `select id, que_id as queue_id, car_brand, ref_number as plate_number,uuid, doc_date, number_of_item, create_time as time_created, status, is_cancel, '' as ar_code, '' as ar_name, '' as sale_name, '' as sale_code, doc_no, doc_type as source, '' as receiver_name, pickup_time as pickup_datetime, total_amount, 0 as is_loaded, 0 as status_for_saleorder_current, ifnull(sum_item_amount,0) as total_before_amount, ifnull(total_amount,0) as total_after_amount, '' as otp_password, 0 as bill_type, '' as cancel_remark, '' as who_cancel, '' as sale_order from basket where doc_date = CURRENT_DATE order by id`
-	lccommand := `call USP_DT_SearchListQue(?, ?, ?, ?, ?, ?)`
-	err := db.Select(&que, lccommand, req.AccessToken)
-	//err := db.Select(&que, lccommand)
+	rs, err := db.Query("select id,company_id,branch_id,machine_no,machine_code,def_wh_id,def_shelf_id" +
+		",is_open from npdl.pos_machine")
 	if err != nil {
-		return map[string]interface{}{
-			"error":   true,
-			"message": "Queue List Doc Error = " + err.Error(),
-			"success": false,
-			"order":   nil,
-		}, nil
+		fmt.Println("error query database ")
+		return nil, err
+	}
+	type machineModel struct {
+		id          int64  `json:"id"`
+		CompanyID   int64  `json:"company_id" `
+		BranchID    int64  `json:"branch_id"`
+		MachineNo   string `json:"machine_no"`
+		MachineCode string `json:"machine_code"`
+		DefWhID     int64  `json:"def_wh_id"`
+		DefShelfID  int64  `json:"def_shelf_id"`
+		IsOpen      int    `json:"is_open"`
+	}
+	Mcs := []machineModel{}
+	mc := machineModel{}
+	for rs.Next() {
+		rs.Scan(&mc.id, &mc.CompanyID, &mc.BranchID, &mc.MachineNo, &mc.MachineCode, &mc.DefWhID, &mc.DefShelfID, &mc.IsOpen)
+		Mcs = append(Mcs, mc)
 	}
 
-	for _, qid := range que {
-
-		fmt.Println("que item = ", qid.Id, qid.QueueId, qid.UUID)
-
-		lccommand := `select id, item_id, item_code, item_name ,bar_code as item_bar_code, request_qty, pick_qty as qty_before, checkout_qty as qty_after, price as item_price, unit_code as item_unit_code, pick_amount as total_price_before, checkout_amount as total_price_after, rate1, '' as sale_code, average_cost, line_number, ifnull(zone_id,'A') as pick_zone_id,is_check_out as is_check from basket_sub where basket_id = ? and que_id = ? and uuid = ? and doc_date = CURDATE() order by line_number`
-		err := db.Select(&qid.Item, lccommand, qid.Id, qid.QueueId, qid.UUID)
-		if err != nil {
-			return map[string]interface{}{
-				"error":   true,
-				"message": "Queue List item Error = " + err.Error(),
-				"success": false,
-				"order":   nil,
-			}, nil
-		}
-
-		//fmt.Println("ItemCode = ", qid.Item[0].ItemCode)
-
-		lccommand1 := `select phone_no from owner_phone where basket_id = ? and que_id = ? and uuid = ? and doc_no = ?  order by id`
-		err = db.Select(&qid.OwnerPhone, lccommand1, qid.Id, qid.QueueId, qid.UUID, qid.DocNo)
-		if err != nil {
-			return map[string]interface{}{
-				"error":   true,
-				"message": "Queue List phone Error = " + err.Error(),
-				"success": false,
-				"order":   nil,
-			}, nil
-		}
-
-		lccommand2 := `select phone_no from order_trust_phone where basket_id = ? and que_id = ? and uuid = ? and doc_no = ?  order by id`
-		err = db.Select(&qid.ReceiverPhone, lccommand2, qid.Id, qid.QueueId, qid.UUID, qid.DocNo)
-		if err != nil {
-			return map[string]interface{}{
-				"error":   true,
-				"message": "Queue List phone Error = " + err.Error(),
-				"success": false,
-				"order":   nil,
-			}, nil
-		}
-
-		if qid.Item == nil {
-			qid.Item = []QueueItem{}
-		}
-
-		if qid.OwnerPhone == nil {
-			qid.OwnerPhone = []OwnerPhoneModel{}
-		}
-
-		if qid.ReceiverPhone == nil {
-			qid.ReceiverPhone = []OwnerPhoneModel{}
-		}
-
-		if qid.StatusForSaleorderHistory == nil {
-			qid.StatusForSaleorderHistory = []QueueStatusHistoryModel{}
-		}
-
-		que_data = append(que_data, qid)
-	}
+	fmt.Println("mysqldb recive databranch -> ", Mcs)
+	return Mcs, nil
 
 	return map[string]interface{}{
 		"error":   false,
 		"message": "",
 		"success": true,
-		"order":   que_data,
+		"machine":   Mcs,
 	}, nil
 }
 
