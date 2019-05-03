@@ -2396,8 +2396,8 @@ func (q *ListQueueModel) PosList(db *sqlx.DB, req *drivethru.AccessTokenRequest)
 		Mcs = append(Mcs, mc)
 	}
 
-	fmt.Println("mysqldb recive databranch -> ", Mcs)
-	return Mcs, nil
+	//fmt.Println("mysqldb recive databranch -> ", Mcs)
+	//return Mcs, nil
 
 	return map[string]interface{}{
 		"error":   false,
