@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+
 	"github.com/acoshift/hrpc"
 )
 
@@ -19,6 +20,7 @@ func enableCors(w *http.ResponseWriter) {
 }
 
 func MakeHandler(s Service) http.Handler {
+
 	m := hrpc.Manager{
 		Validate:     true,
 		Decoder:      requestDecoder,
@@ -26,6 +28,7 @@ func MakeHandler(s Service) http.Handler {
 		ErrorEncoder: errorEncoder,
 	}
 	mux := http.NewServeMux()
+
 	mux.Handle("/quotation/new", m.Handler(NewQuotation(s)))
 	mux.Handle("/saleorder/new", m.Handler(NewSaleOrder(s)))
 	mux.Handle("/done", m.Handler(ConfirmTransfer(s)))

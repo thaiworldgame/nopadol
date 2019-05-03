@@ -4,12 +4,14 @@ import (
 	"encoding/json"
 	"errors"
 	"net/http"
+
 	"github.com/acoshift/hrpc"
 )
 
 var (
 	errMethodNotAllowed = errors.New("delivery : method not allowed")
-	errForbidden = errors.New("delivery : forbidden")
+	errForbidden        = errors.New("delivery : forbidden")
+	errBadRequest       = errors.New("Sale: bad request body")
 )
 
 func enableCors(w *http.ResponseWriter) {
@@ -25,14 +27,22 @@ type errorResponse struct {
 
 // MakeHandler creates new vending  handler
 func MakeHandler(s Service) http.Handler {
-	m := hrpc.New(hrpc.Config{
-		Validate:        true,
-		RequestDecoder:  requestDecoder,
-		ResponseEncoder: responseEncoder,
-		ErrorEncoder:    errorEncoder,
-	})
+	// m := hrpc.New(hrpc.Config{
+	// 	Validate:        true,
+	// 	RequestDecoder:  requestDecoder,
+	// 	ResponseEncoder: responseEncoder,
+	// 	ErrorEncoder:    errorEncoder,
+	// })
+	// mux := http.NewServeMux()
 
+	m := hrpc.Manager{
+		Validate:     true,
+		Decoder:      requestDecoder,
+		Encoder:      responseEncoder,
+		ErrorEncoder: errorEncoder,
+	}
 	mux := http.NewServeMux()
+
 	mux.Handle("/report", m.Handler(makeReportDoData(s)))
 	return mustLogin()(mux)
 }

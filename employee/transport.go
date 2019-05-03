@@ -1,10 +1,11 @@
 package employee
 
 import (
-	"net/http"
-	"github.com/acoshift/hrpc"
 	"encoding/json"
 	"fmt"
+	"net/http"
+
+	"github.com/acoshift/hrpc"
 )
 
 type errorResponse struct {
@@ -21,6 +22,7 @@ func enableCors(w *http.ResponseWriter) {
 
 // MakeHandler creates new vending  handler
 func MakeHandler(s Service) http.Handler {
+
 	m := hrpc.Manager{
 		Validate:     true,
 		Decoder:      requestDecoder,
@@ -29,6 +31,7 @@ func MakeHandler(s Service) http.Handler {
 	}
 
 	mux := http.NewServeMux()
+
 	mux.Handle("/search/id", m.Handler(SearchById(s)))
 	mux.Handle("/search/keyword", m.Handler(SearchByKeyword(s)))
 	return mustLogin()(mux)

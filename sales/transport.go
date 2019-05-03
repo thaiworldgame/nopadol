@@ -27,12 +27,13 @@ func MakeHandler(s Service) http.Handler {
 		ErrorEncoder: errorEncoder,
 	}
 	mux := http.NewServeMux()
+
 	mux.Handle("/quo/new", m.Handler(CreateQuotation(s)))
 	mux.Handle("/quo/search/id", m.Handler(SearchQuoById(s)))
 	mux.Handle("/quo/search/keyword", m.Handler(SearchQuoByKeyword(s)))
 	mux.Handle("/quo/confirm", m.Handler(ConfirmQuotation(s)))
 	mux.Handle("/quo/cancel", m.Handler(CancelQuotation(s)))
-	mux.Handle("/quo/gen/saleorder",m.Handler(QuotationToSaleOrder(s)))
+	mux.Handle("/quo/gen/saleorder", m.Handler(QuotationToSaleOrder(s)))
 
 	mux.Handle("/sale/new", m.Handler(CreateSaleOrder(s)))
 	mux.Handle("/sale/search/id", m.Handler(SearchSaleOrderById(s)))

@@ -2,11 +2,12 @@ package drivethru
 
 import (
 	"encoding/json"
-	"fmt"
-	"github.com/acoshift/hrpc"
-	"net/http"
-	"github.com/mrtomyum/nopadol/auth"
 	"errors"
+	"fmt"
+	"net/http"
+
+	"github.com/acoshift/hrpc"
+	"github.com/mrtomyum/nopadol/auth"
 )
 
 type errorResponse struct {
@@ -35,6 +36,7 @@ func MakeHandler(s Service) http.Handler {
 		ErrorEncoder: errorEncoder,
 	}
 	mux := http.NewServeMux()
+
 	mux.Handle("/login", m.Handler(logIn(s)))
 	mux.Handle("/user/login", m.Handler(userLogIn(s)))
 	mux.Handle("/user/search", m.Handler(makeListUser(s)))

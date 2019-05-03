@@ -373,7 +373,7 @@ func (s *service) CreateInvoice(req *NewInvoiceTemplate) (interface{}, error) {
 	case req.BillType == 0 && sum_pay_all != req.TotalAmount:
 		return nil, errors.New("ยอดชำระไม่เท่ากับมูลค่าเอกสาร")
 	}
-	
+
 	resp, err := s.repo.CreateInvoice(req)
 	if err != nil {
 		return nil, err

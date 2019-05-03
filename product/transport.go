@@ -21,6 +21,7 @@ func enableCors(w *http.ResponseWriter) {
 }
 
 func MakeHandler(s Service) http.Handler {
+
 	m := hrpc.Manager{
 		Validate:     true,
 		Decoder:      requestDecoder,
@@ -29,6 +30,7 @@ func MakeHandler(s Service) http.Handler {
 	}
 
 	mux := http.NewServeMux()
+
 	mux.Handle("/search/barcode", m.Handler(SearchByBarcode(s)))
 	mux.Handle("/search/itemcode", m.Handler(SearchByItemCode(s)))
 	mux.Handle("/search/itemstock", m.Handler(SearchByItemStockLocation(s)))

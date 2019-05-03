@@ -27,6 +27,7 @@ func MakeHandler(s Service) http.Handler {
 		ErrorEncoder: errorEncoder,
 	}
 	mux := http.NewServeMux()
+
 	mux.Handle("/gen", m.Handler(Gen(s)))
 	return mustLogin()(mux)
 }
