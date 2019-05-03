@@ -55,6 +55,38 @@ type NewQuoTemplate struct {
 	Subs                []NewQuoItemTemplate `json:"subs"`
 }
 
+type BankModel struct {
+	Id           int64  `json:"id" db:"id"`
+	CompanyId    int64  `json:"company_id" db:"company_id"`
+	BranchId     int64  `json:"branch_id" db:"branch_id""`
+	Code         string `json:"code" db:"code"`
+	Name         string `json:"name" db:"name"`
+	ActiveStatus int64  `json:"active_status" db:"active_status"`
+}
+type BankBookModel struct {
+	Id            int64   `json:"id" db:"id"`
+	CompanyId     int64   `json:"company_id" db:"company_id"`
+	BranchId      int64   `json:"branch_id" db:"branch_id""`
+	BookNo        string  `json:"book_no" db:"book_no"`
+	Name          string  `json:"name" db:"name"`
+	AccountType   string  `json:"account_type" db:"account_type"`
+	BankCode      string  `json:"bank_code" db:"bank_code"`
+	BranchCode    string  `json:"branch_code" db:"branch_code"`
+	AccountCode   string  `json:"account_code" db:"account_code"`
+	BalanceAmount float64 `json:"balance_amount" db:"balance_amount"`
+	ActiveStatus  int64   `json:"active_status" db:"active_status"`
+}
+
+type BankBranchModel struct {
+	Id             int64  `json:"id" db:"id"`
+	CompanyId      int64  `json:"company_id" db:"company_id"`
+	BranchId       int64  `json:"branch_id" db:"branch_id""`
+	BankBranchCode string `json:"bank_branch_code" db:"bank_branch_code"`
+	BankBranchName string `json:"bank_branch_name" db:"bank_branch_name"`
+
+	ActiveStatus int64 `json:"active_status" db:"active_status"`
+}
+
 type NewQuoItemTemplate struct {
 	Id              int64   `json:"id"`
 	QuoId           int64   `json:"quo_id"`

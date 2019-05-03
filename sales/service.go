@@ -41,6 +41,34 @@ type Service interface {
 	CancelInvoice(req *NewInvoiceTemplate) (interface{}, error)
 	Searchcreditcard(req *SearchcreditcardTamplate) (interface{}, error)
 	SearchHisCustomer(req *SearchHisCustomerTemplate) (interface{}, error)
+
+	FindBankNpService() ([]BankModel, error)
+	FindBankBookNpSerivce() ([]BankBookModel, error)
+	FindBankBranchSerivce() ([]BankBranchModel,error)
+}
+
+func (s *service) FindBankBranchSerivce() ([]BankBranchModel,error) {
+	resp, err := s.repo.FindBankBranchRepo()
+	if err != nil {
+		return nil, err
+	}
+	return resp, nil
+}
+
+func (s *service) FindBankBookNpSerivce() ([]BankBookModel, error) {
+	resp, err := s.repo.FindBankBookRepo()
+	if err != nil {
+		return nil, err
+	}
+	return resp, nil
+}
+
+func (s *service) FindBankNpService() ([]BankModel, error) {
+	resp, err := s.repo.FindBankNpRepo()
+	if err != nil {
+		return nil, err
+	}
+	return resp, nil
 }
 
 func (s *service) Searchcreditcard(req *SearchcreditcardTamplate) (interface{}, error) {

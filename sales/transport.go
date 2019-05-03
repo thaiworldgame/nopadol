@@ -53,6 +53,9 @@ func MakeHandler(s Service) http.Handler {
 	mux.Handle("/search/creditcard", m.Handler(Searchcreditcard(s)))
 	mux.Handle("/search/hiscustomer", m.Handler(SearchHisCustomer(s)))
 
+	mux.Handle("/find/banknp", m.Handler(FindBankNpEndpoint(s)))
+	mux.Handle("/find/bankbooknp",m.Handler(FindBankBookNpEndpoint(s)))
+	mux.Handle("/find/bankbranch",m.Handler(FindBankBranchEndpoint(s)))
 	return mustLogin()(mux)
 
 }
