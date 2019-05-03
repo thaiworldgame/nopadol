@@ -12,30 +12,30 @@ const (
 )
 
 type ShiftModel struct {
-	Id                 int64   `json:"id" db:"id"`
-	DocDate            string  `json:"doc_date" db:"doc_date"`
-	CompanyID          int     `json:"company_id" db:"company_id"`
-	BranchID           int     `json:"branch_id" db:"branch_id"`
-	MachineID          int     `json:"machine_id" db:"machine_id"`
-	MachineNo          string  `json:"machine_no" db:"machine_no"`
-	CashierID          int     `json:"cashier_id" db:"cashier_id"`
-	CashierName        string  `json:"cashier_name" db:"cashier_name"`
-	ChangeAmount       float64 `json:"change_amount" db:"change_amount"`
-	WhID               int     `json:"wh_id" db:"wh_id"`
-	Status             int     `json:"status" db:"status"`
-	ShiftUUid          string  `json:"shift_uuid" db:"shift_uid"`
-	Remark             string  `json:"remark" db:"remark"`
-	OpenBy             string  `json:"open_by" db:"open_by"`
-	OpenTime           string  `json:"open_time" db:"open_time"`
-	EditBy             string  `json:"edit_by" db:"edit_by"`
-	EditTime           string  `json:"edit_time" db:"edit_time"`
-	CloseTime          string  `json:"close_time" db:"close_time"`
-	CloseBy            string  `json:"close_by" db:"close_by"`
-	SumOfCashAmount    float64 `json:"sum_of_cash_amount" db:"sum_of_cash_amount"`
-	SumOfCreditAmount  float64 `json:"sum_of_credit_amount" db:"sum_of_credit_amount"`
-	SumOfBankAmount    float64 `json:"sum_of_bank_amount" db:"sum_of_bank_amount"`
-	SumOfCouponAmount  float64 `json:"sum_of_coupon_amount" db:"sum_of_coupon_amount"`
-	SumOfDepositAmount float64 `json:"sum_of_deposit_amount" db:"sum_of_deposit_amount"`
+	Id                 int64  `json:"id" db:"id"`
+	DocDate            string `json:"doc_date" db:"doc_date"`
+	CompanyID          int    `json:"company_id" db:"company_id"`
+	BranchID           int    `json:"branch_id" db:"branch_id"`
+	MachineID          string `json:"machine_id" db:"machine_id"`
+	MachineNo          string `json:"machine_no" db:"machine_no"`
+	CashierID          int    `json:"cashier_id" db:"cashier_id"`
+	CashierName        string `json:"cashier_name" db:"cashier_name"`
+	ChangeAmount       string `json:"change_amount" db:"change_amount"`
+	WhID               int    `json:"wh_id" db:"wh_id"`
+	Status             int    `json:"status" db:"status"`
+	ShiftUUid          string `json:"shift_uuid" db:"shift_uid"`
+	Remark             string `json:"remark" db:"remark"`
+	OpenBy             string `json:"open_by" db:"open_by"`
+	OpenTime           string `json:"open_time" db:"open_time"`
+	EditBy             string `json:"edit_by" db:"edit_by"`
+	EditTime           string `json:"edit_time" db:"edit_time"`
+	CloseTime          string `json:"close_time" db:"close_time"`
+	CloseBy            string `json:"close_by" db:"close_by"`
+	SumOfCashAmount    string `json:"sum_of_cash_amount" db:"sum_of_cash_amount"`
+	SumOfCreditAmount  string `json:"sum_of_credit_amount" db:"sum_of_credit_amount"`
+	SumOfBankAmount    string `json:"sum_of_bank_amount" db:"sum_of_bank_amount"`
+	SumOfCouponAmount  string `json:"sum_of_coupon_amount" db:"sum_of_coupon_amount"`
+	SumOfDepositAmount string `json:"sum_of_deposit_amount" db:"sum_of_deposit_amount"`
 }
 
 type Machine struct {
