@@ -1,11 +1,10 @@
-package gendocno
+package cloudprint
 
 import (
+	"net/http"
+	"github.com/acoshift/hrpc"
 	"encoding/json"
 	"fmt"
-	"net/http"
-
-	"github.com/acoshift/hrpc"
 )
 
 type errorResponse struct {
@@ -26,9 +25,9 @@ func MakeHandler(s Service) http.Handler {
 		Encoder:      responseEncoder,
 		ErrorEncoder: errorEncoder,
 	}
-	mux := http.NewServeMux()
 
-	mux.Handle("/gen", m.Handler(Gen(s)))
+	mux := http.NewServeMux()
+	mux.Handle("/print",m.Handler(CloudPrint(s)))
 	return mustLogin()(mux)
 }
 
@@ -72,31 +71,9 @@ func errorEncoder(w http.ResponseWriter, r *http.Request, err error) {
 	fmt.Println("Error Encode = ", err.Error())
 	switch err.Error() {
 	case StatusNotFound.Error():
-		status = http.StatusOK
-	case ArCodeNull.Error():
-		status = http.StatusOK
-	case NotHaveItem.Error():
-		status = http.StatusOK
-	case NotHavePayMoney.Error():
-		status = http.StatusOK
-	case NotHaveSumOfItem.Error():
-		status = http.StatusOK
-	case ItemNotHaveQty.Error():
-		status = http.StatusOK
-	case ItemNotHaveUnit.Error():
-		status = http.StatusOK
-	case MoneyOverTotalAmount.Error():
-		status = http.StatusOK
-	case MoneyLessThanTotalAmount.Error():
-		status = http.StatusOK
-	case PosNotHaveDate.Error():
-		status = http.StatusOK
-	case PosNotHaveChqData.Error():
-		status = http.StatusOK
-	case PosNotHaveCreditCardData.Error():
-		status = http.StatusOK
+		status = http.StatusNotFound
 	default:
-		status = http.StatusOK
+		status = http.StatusForbidden
 	}
 
 	encoder(w, status, &errorResponse{err.Error()})
