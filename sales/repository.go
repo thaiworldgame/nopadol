@@ -29,5 +29,7 @@ type Repository interface {
 
 	FindBankNpRepo() ([]BankModel, error)
 	FindBankBookRepo() ([]BankBookModel, error)
-	FindBankBranchRepo() ([]BankBranchModel,error)
+	FindBankBranchRepo() ([]BankBranchModel, error)
+
+	FindProductByKey(Keyword string) ([]ProductModal, error)
 }

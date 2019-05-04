@@ -3,6 +3,7 @@ package sales
 import (
 	"context"
 	"fmt"
+	"time"
 )
 
 type (
@@ -1447,6 +1448,29 @@ func FindBankBranchEndpoint(s Service) interface{} {
 		if len(resp) == 0 {
 			return &response{Response: "faild", Message: "No Data in fild"}, err
 		}
+		return &response{Response: "success", Data: resp}, nil
+	}
+}
+
+func FindProductBykeyEndpoint(s Service) interface{} {
+	type request struct {
+		Keyword string `json:"keyword"`
+	}
+	type response struct {
+		Response string         `json:"response"`
+		Message  string         `json:"message"`
+		Data     []ProductModal `json:"data"`
+	}
+	return func(ctx context.Context, req *request) (*response, error) {
+		start := time.Now()
+		resp, err := s.FindProductByKeyService(req.Keyword)
+		if err != nil {
+			return &response{Response: "faild", Message: err.Error()}, err
+		}
+		if len(resp) == 0 {
+			return &response{Response: "faild", Message: "No Data in fild"}, err
+		}
+		fmt.Println("ใช้เวลาในการ Run ทั้งสิ้น : ",time.Since(start),"วินาที");
 		return &response{Response: "success", Data: resp}, nil
 	}
 }

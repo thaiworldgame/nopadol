@@ -65,6 +65,9 @@ func MakeHandler(s Service) http.Handler {
 	mux.Handle("/find/banknp", m.Handler(FindBankNpEndpoint(s)))
 	mux.Handle("/find/bankbooknp",m.Handler(FindBankBookNpEndpoint(s)))
 	mux.Handle("/find/bankbranch",m.Handler(FindBankBranchEndpoint(s)))
+	 
+	// ค้นหาสินค้า
+	mux.Handle("/find/product/keyword",m.Handler(FindProductBykeyEndpoint(s)))
 	return mustLogin()(mux)
 
 }
