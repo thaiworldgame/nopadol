@@ -501,11 +501,11 @@ func makeShiftClose(s Service) interface{} {
 	type request struct {
 		AccessToken      string  `json:"access_token"`
 		ShiftUUID        string  `json:"shift_uuid"`
-		SumCashAmount    float64 `json:"sum_cash_amount"`
-		SumCreditAmount  float64 `json:"sum_credit_amount"`
-		SumBankAmount    float64 `json:"sum_bank_amount"`
-		SumCouponAmount  float64 `json:"sum_coupon_amount"`
-		SumDepositAmount float64 `json:"sum_deposit_amount"`
+		SumCashAmount    string `json:"sum_cash_amount"`
+		SumCreditAmount  string `json:"sum_credit_amount"`
+		SumBankAmount    string `json:"sum_bank_amount"`
+		SumCouponAmount  string `json:"sum_coupon_amount"`
+		SumDepositAmount string `json:"sum_deposit_amount"`
 	}
 	return func(ctx context.Context, req *request) (interface{}, error) {
 		fmt.Println("start endpoint shift close ..request -> ", req)
