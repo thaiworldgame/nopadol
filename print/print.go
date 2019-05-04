@@ -60,9 +60,9 @@ type EnvironmentTemplate struct {
 }
 
 type InvoiceTemplate struct {
-	company             CompanyData             `json:"company"`
-	customer            CustomerData            `json:"customer"`
-	sale                SaleData                `json:"sale"`
+	//company             CompanyData             `json:"company"`
+	//customer            CustomerData            `json:"customer"`
+	//sale                SaleData                `json:"sale"`
 	Id                  int64                   `json:"id"`
 	DocNo               string                  `json:"doc_no"`
 	TaxNo               string                  `json:"tax_no"`
@@ -123,8 +123,8 @@ type InvoiceTemplate struct {
 	CancelTime          string                  `json:"cancel_time"`
 	CancelDescId        int64                   `json:"cancel_desc_id"`
 	CancelDesc          string                  `json:"cancel_desc"`
-	Subs                []NewInvoiceItemRequest `json:"subs"`
-	RecMoney            []RecMoney              `json:"rec_money"`
-	CreditCard          []CreditCard            `json:"credit_card"`
-	Chq                 []ChqIn                 `json:"chq"`
+	//Subs                []NewInvoiceItemRequest `json:"subs"`
+	//RecMoney            []RecMoney              `json:"rec_money"`
+	//CreditCard          []CreditCard            `json:"credit_card"`
+	//Chq                 []ChqIn                 `json:"chq"`
 }

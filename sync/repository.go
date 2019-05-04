@@ -4,5 +4,6 @@ package sync
 
 type Repository interface {
 	GetNewQuotaion() (interface{}, error)
-	ConfirmTransfer(req Log) (interface{}, error)
+	GetNewSaleOrder() (interface{}, error)
+	ConfirmTransfer(req *Logs) (interface{}, error)
 }

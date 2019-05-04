@@ -159,6 +159,8 @@ type NewQuoItemModel struct {
 	PackingRate1    float64 `db:"PackingRate1"`
 	IsCancel        int64   `db:"IsCancel"`
 	LineNumber      int     `db:"LineNumber"`
+	WHCode          string  `db:"WhCode"`
+	ShelfCode       string  `db:"ShelfCode"`
 }
 
 type NewSaleModel struct {
@@ -798,7 +800,7 @@ func (repo *salesRepository) CreateQuotation(req *sales.NewQuoTemplate) (resp in
 		for _, sub := range req.Subs {
 			fmt.Println("ArId Sub = ", req.ArId)
 			fmt.Println("SaleId Sub = ", req.SaleId)
-			sqlsub := `INSERT INTO QuotationSub(quo_uuid,QuoId,ArId,SaleId,ItemId,ItemCode,BarCode,ItemName,Qty,RemainQty,Price,DiscountWord,DiscountAmount,UnitCode,ItemAmount,ItemDescription,PackingRate1,LineNumber,IsCancel) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`
+			sqlsub := `INSERT INTO QuotationSub(quo_uuid,QuoId,ArId,SaleId,ItemId,ItemCode,BarCode,ItemName,Qty,RemainQty,Price,DiscountWord,DiscountAmount,UnitCode,ItemAmount,ItemDescription,PackingRate1,LineNumber,IsCancel,WhCode,ShelfCode) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`
 			_, err := repo.db.Exec(sqlsub,
 				uuid,
 				req.Id,
@@ -818,7 +820,9 @@ func (repo *salesRepository) CreateQuotation(req *sales.NewQuoTemplate) (resp in
 				sub.ItemDescription,
 				sub.PackingRate1,
 				sub.LineNumber,
-				sub.IsCancel)
+				sub.IsCancel,
+				sub.WHCode,
+				sub.ShelfCode)
 
 			fmt.Println("QuotationSub =", sql, sub.QuoId)
 			if err != nil {
@@ -871,7 +875,7 @@ func (repo *salesRepository) CreateQuotation(req *sales.NewQuoTemplate) (resp in
 
 	for _, sub := range req.Subs {
 		sub.LineNumber = line_number
-		sqlsub := `INSERT INTO QuotationSub(QuoId,ArId,SaleId,ItemId,ItemCode,BarCode,ItemName,Qty,RemainQty,Price,DiscountWord,DiscountAmount,UnitCode,ItemAmount,ItemDescription,PackingRate1,LineNumber,IsCancel) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`
+		sqlsub := `INSERT INTO QuotationSub(QuoId,ArId,SaleId,ItemId,ItemCode,BarCode,ItemName,Qty,RemainQty,Price,DiscountWord,DiscountAmount,UnitCode,ItemAmount,ItemDescription,PackingRate1,LineNumber,IsCancel,WhCode,ShelfCode) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`
 		_, err := repo.db.Exec(sqlsub,
 			req.Id,
 			req.ArId,
@@ -890,7 +894,9 @@ func (repo *salesRepository) CreateQuotation(req *sales.NewQuoTemplate) (resp in
 			sub.ItemDescription,
 			sub.PackingRate1,
 			sub.LineNumber,
-			sub.IsCancel)
+			sub.IsCancel,
+			sub.WHCode,
+			sub.ShelfCode)
 		if err != nil {
 			return nil, err
 		}
@@ -1034,7 +1040,8 @@ func (repo *salesRepository) SearchQuoById(req *sales.SearchByIdTemplate) (resp 
 
 	subs := []NewQuoItemModel{}
 
-	sql_sub := `select a.Id,a.QuoId,a.ItemId,a.ItemCode,a.ItemName,a.Qty,a.RemainQty,a.Price,ifnull(a.DiscountWord,'') as DiscountWord,DiscountAmount,ifnull(a.UnitCode,'') as UnitCode,ifnull(a.BarCode,'') as BarCode,ifnull(a.ItemDescription,'') as ItemDescription,a.ItemAmount,a.PackingRate1,a.LineNumber,a.IsCancel from QuotationSub a  where QuoId = ? order by a.linenumber`
+	sql_sub := `select a.Id,a.QuoId,a.ItemId,a.ItemCode,a.ItemName,a.Qty,a.RemainQty,a.Price,ifnull(a.DiscountWord,'') as DiscountWord,DiscountAmount,ifnull(a.UnitCode,'') as UnitCode,ifnull(a.BarCode,'') as BarCode,ifnull(a.ItemDescription,'') as ItemDescription,a.ItemAmount,a.PackingRate1,a.LineNumber,a.IsCancel,a.WhCode,a.ShelfCode
+	from QuotationSub a  where QuoId = ? order by a.linenumber`
 	err = repo.db.Select(&subs, sql_sub, q.Id)
 	if err != nil {
 		fmt.Println("err sub= ", err.Error())
@@ -1143,7 +1150,7 @@ func (repo *salesRepository) QuotationToSaleOrder(req *sales.SearchByIdTemplate)
 
 	subs := []NewQuoItemModel{}
 
-	sql_sub := `select a.Id,a.QuoId,a.ItemId,a.ItemCode,a.ItemName,a.Qty,a.RemainQty,a.Price,ifnull(a.DiscountWord,'') as DiscountWord,DiscountAmount,ifnull(a.UnitCode,'') as UnitCode,ifnull(a.BarCode,'') as BarCode,ifnull(a.ItemDescription,'') as ItemDescription,a.ItemAmount,a.PackingRate1,a.LineNumber,a.IsCancel from QuotationSub a  where QuoId = ? order by a.linenumber`
+	sql_sub := `select a.Id,a.QuoId,a.ItemId,a.ItemCode,a.ItemName,a.Qty,a.RemainQty,a.Price,ifnull(a.DiscountWord,'') as DiscountWord,DiscountAmount,ifnull(a.UnitCode,'') as UnitCode,ifnull(a.BarCode,'') as BarCode,ifnull(a.ItemDescription,'') as ItemDescription,a.ItemAmount,a.PackingRate1,a.LineNumber,a.IsCancel,a.WhCode,a.ShelfCode from QuotationSub a  where QuoId = ? order by a.linenumber`
 	err = repo.db.Select(&subs, sql_sub, req.Id)
 	if err != nil {
 		fmt.Println("err sub= ", err.Error())
@@ -1481,6 +1488,8 @@ func map_quo_subs_template(x NewQuoItemModel) sales.NewQuoItemTemplate {
 		PackingRate1:    x.PackingRate1,
 		LineNumber:      x.LineNumber,
 		IsCancel:        x.IsCancel,
+		WHCode:          x.WHCode,
+		ShelfCode:       x.ShelfCode,
 	}
 }
 
@@ -3261,7 +3270,7 @@ func (repo *salesRepository) SearchInvoiceById(req *sales.SearchByIdTemplate) (r
 	sql_crd := `select id, ref_id, credit_card_no, credit_type, confirm_no, amount, charge_amount, ifnull(description,'') as description, bank_id, bank_branch_id,receive_date,due_date,book_id from credit_card where company_id = ? and branch_id = ? and ref_id=?`
 	err = repo.db.Select(&crds, sql_crd, i.CompanyId, i.BranchId, req.Id)
 	if err != nil {
-		fmt.Println("err sub= ", err.Error())
+		fmt.Println("err sub=1 ", err.Error())
 		return resp, err
 	}
 
@@ -3274,7 +3283,7 @@ func (repo *salesRepository) SearchInvoiceById(req *sales.SearchByIdTemplate) (r
 	sql_chq := `select id,ref_id,chq_number,bank_id,bank_branch_id,receive_date,due_date,book_id,chq_status,chq_amount,chq_balance,description from chq_in where company_id = ? and branch_id = ? and ref_id = ? `
 	err = repo.db.Select(&chqs, sql_chq, i.CompanyId, i.BranchId, i.Id)
 	if err != nil {
-		fmt.Println("err sub= ", err.Error())
+		fmt.Println("err sub=2 ", err.Error())
 		return resp, err
 	}
 
@@ -3286,7 +3295,7 @@ func (repo *salesRepository) SearchInvoiceById(req *sales.SearchByIdTemplate) (r
 	sql_bnk := `select id,ref_id,bank_account,bank_name,bank_amount,create_by,create_time from bank_transfer where company_id = ? and branch_id = ? and ref_id = ?`
 	err = repo.db.Select(&bnks, sql_bnk, i.CompanyId, i.BranchId, i.Id)
 	if err != nil {
-		fmt.Println("err sub= ", err.Error())
+		fmt.Println("err sub=3 ", err.Error())
 		return resp, err
 	}
 	for _, bnk := range bnks {
@@ -3504,32 +3513,22 @@ func (repo *salesRepository) SearchSaleByItem(req *sales.SearchByItemTemplate) (
 	} else {
 		switch {
 		case req.Page == "invoice":
-			/*sql = `select a.id, ifnull(a.doc_no,'') as doc_no, ifnull(a.doc_date,'') as doc_date, a.item_id, a.ar_id,
-			ifnull(a.bar_code,'') as bar_code, ifnull(a.item_code,'') as item_code, ifnull(a.item_name,'') as item_name,
-			a.unit_code, a.qty, a.cn_qty, a.price, a.ar_id,
-			b.id, b.name
-			from ar_invoice_sub a left join Customer b on a.ar_id = b.id
-			where b.name like concat(?) and a.item_code like concat(?)
-			order by a.id desc limit 20`*/
 
-			sql = `select a.id, ifnull(a.doc_date,'') as doc_date, ifnull(a.doc_no,'') as doc_no,
-			a.ar_id, a.ar_name,
+			sql = `select a.id, ifnull(a.doc_date,'') as doc_date, ifnull(a.doc_no,'') as doc_no,a.ar_id, a.ar_name,
 			b.unit_code, b.qty, b.price, ifnull(b.item_code,'') as item_code, b.ar_id, ifnull(b.item_name,'') as item_name,b.ar_id, ifnull(b.discount_word_sub,'') as discount_word_sub
 			from ar_invoice a left join ar_invoice_sub b on a.ar_id = b.ar_id
 			where a.ar_name like concat(?) and b.item_code like concat(?)
 			order by a.Id desc limit 20`
 			err = repo.db.Select(&d, sql, req.Name, req.ItemCode)
 		case req.Page == "quotation":
-			sql = `select a.Id, ifnull(a.DocDate,'') as DocDate, ifnull(a.DocNo,'') as DocNo, 
-			a.ArId, a.ArName,
+			sql = `select a.Id, ifnull(a.DocDate,'') as DocDate, ifnull(a.DocNo,'') as DocNo, a.ArId, a.ArName,
 			b.UnitCode, b.Qty, b.Price, ifnull(b.ItemCode,'') as ItemCode, b.ArId, ifnull(b.ItemName,'') as ItemName,b.ArId, ifnull(b.DiscountWord,'') as DiscountWord
 			from Quotation a left join QuotationSub b on a.ArId = b.ArId
 			where a.ArName like concat(?) and b.ItemCode like concat(?) 
 			order by a.Id desc limit 20`
 			err = repo.db.Select(&d, sql, req.Name, req.ItemCode)
 		case req.Page == "saleorder":
-			sql = `select a.Id, ifnull(a.DocDate,'') as DocDate, ifnull(a.DocNo,'') as DocNo, 
-			a.ArId, a.ArName,
+			sql = `select a.Id, ifnull(a.DocDate,'') as DocDate, ifnull(a.DocNo,'') as DocNo, a.ArId, a.ArName,
 			b.UnitCode, b.Qty, b.Price, ifnull(b.ItemCode,'') as ItemCode, b.ArId, ifnull(b.ItemName,'') as ItemName,b.ArId, ifnull(b.DiscountWord,'') as DiscountWord
 			from SaleOrder a left join SaleOrderSub b on a.ArId = b.ArId
 			where a.ArName like concat(?) and b.ItemCode like concat(?) 
@@ -3556,14 +3555,12 @@ func (repo *salesRepository) SearchHisByKeyword(req *sales.SearchByKeywordTempla
 	var sql string
 	d := []SearchInvModel{}
 	if req.Keyword == "" {
-		sql = `select a.id, a.doc_no,a.doc_date, a.doc_type ,a.ar_code,a.ar_name,a.sale_code,
-		a.sale_name, ifnull(a.my_description,'') as my_description,a.total_amount, a.is_cancel,a.is_confirm 
+		sql = `select a.id, a.doc_no,a.doc_date, a.doc_type ,a.ar_code,a.ar_name,a.sale_code,a.sale_name, ifnull(a.my_description,'') as my_description,a.total_amount, a.is_cancel,a.is_confirm 
 		from ar_invoice a
 		order by a.id desc limit 30`
 		err = repo.db.Select(&d, sql)
 	} else {
-		sql = `select a.id, a.doc_no,a.doc_date, a.doc_type ,a.ar_code,a.ar_name,a.sale_code,
-		a.sale_name, ifnull(a.my_description,'') as my_description,a.total_amount, a.is_cancel,a.is_confirm 
+		sql = `select a.id, a.doc_no,a.doc_date, a.doc_type ,a.ar_code,a.ar_name,a.sale_code,a.sale_name, ifnull(a.my_description,'') as my_description,a.total_amount, a.is_cancel,a.is_confirm 
 		from ar_invoice a
 		where a.doc_no like  concat(?,'%') or a.ar_code like  concat(?,'%') or a.ar_name like  concat(?,'%') 
 		order by a.id desc limit 30`
@@ -3628,15 +3625,13 @@ func (repo *salesRepository) SearchHisCustomer(req *sales.SearchHisCustomerTempl
 	d := []NewSearchHisCustomerModel{}
 	switch {
 	case req.Page == "invoice":
-		sql = `select a.id, ifnull(a.doc_date,'') as doc_date, ifnull(a.doc_no,'') as doc_no, 
-		a.ar_id, a.ar_name, a.sale_name , a.total_amount 
+		sql = `select a.id, ifnull(a.doc_date,'') as doc_date, ifnull(a.doc_no,'') as doc_no, a.ar_id, a.ar_name, a.sale_name , a.total_amount 
 		from ar_invoice a 
 		where a.ar_code like concat(?) 
 		order by a.id desc limit 20`
 		err = repo.db.Select(&d, sql, req.ArCode)
 	case req.Page == "quotation" || req.Page == "saleorder":
-		sql = `select a.Id, ifnull(a.DocDate,'') as DocDate, ifnull(a.DocNo,'') as DocNo, 
-		a.ArId, a.ArName, a.SaleName , a.TotalAmount 
+		sql = `select a.Id, ifnull(a.DocDate,'') as DocDate, ifnull(a.DocNo,'') as DocNo, a.ArId, a.ArName, a.SaleName , a.TotalAmount 
 		from SaleOrder a 
 		where a.ArCode like concat(?) 
 		order by a.Id desc limit 20`

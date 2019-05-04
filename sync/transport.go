@@ -20,13 +20,6 @@ func enableCors(w *http.ResponseWriter) {
 }
 
 func MakeHandler(s Service) http.Handler {
-	// m := hrpc.New(hrpc.Config{
-	// 	Validate:        true,
-	// 	RequestDecoder:  requestDecoder,
-	// 	ResponseEncoder: responseEncoder,
-	// 	ErrorEncoder:    errorEncoder,
-	// })
-	// mux := http.NewServeMux()
 
 	m := hrpc.Manager{
 		Validate:     true,
@@ -37,7 +30,8 @@ func MakeHandler(s Service) http.Handler {
 	mux := http.NewServeMux()
 
 	mux.Handle("/quotation/new", m.Handler(NewQuotation(s)))
-	mux.Handle("/done", m.Handler(confirmTransfer(s)))
+	mux.Handle("/saleorder/new", m.Handler(NewSaleOrder(s)))
+	mux.Handle("/done", m.Handler(ConfirmTransfer(s)))
 
 	return mustLogin()(mux)
 

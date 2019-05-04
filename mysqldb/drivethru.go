@@ -6,6 +6,7 @@ import (
 	"github.com/mrtomyum/nopadol/drivethru"
 
 	"time"
+	"strconv"
 )
 
 type drivethruRepository struct{ db *sqlx.DB }
@@ -47,7 +48,7 @@ func (d *drivethruRepository) SearchListCompany() (interface{}, error) {
 func (d *drivethruRepository) SearchListZone(access_token string) (interface{}, error) {
 	u := UserAccess{}
 	u.GetProfileByToken(d.db, access_token)
-	rs, err := d.db.Query("select id,pick_zone_code as pick_zone_id,pick_zone_name as name from zone where company_id = ? and branch_id = ? order by pick_zone_id",u.CompanyID, u.BranchID)
+	rs, err := d.db.Query("select id,pick_zone_code as pick_zone_id,pick_zone_name as name from zone where company_id = ? and branch_id = ? order by pick_zone_id", u.CompanyID, u.BranchID)
 	if err != nil {
 		fmt.Println("error query database ")
 		return nil, err
@@ -62,10 +63,10 @@ func (d *drivethruRepository) SearchListZone(access_token string) (interface{}, 
 
 	fmt.Println("mysqldb recive databranch -> ", zes)
 	return map[string]interface{}{
-			"success":   true,
-			"error":     false,
-			"message": "",
-			"pick_zone":zes,
+		"success":   true,
+		"error":     false,
+		"message":   "",
+		"pick_zone": zes,
 	}, nil
 }
 
@@ -187,7 +188,7 @@ func (d *drivethruRepository) SearchItem(keyword string) (interface{}, error) {
 	//rs := d.db.QueryRow(lccommand)
 	it := []*itemModel{}
 
-	err := d.db.Select(&it,lccommand)
+	err := d.db.Select(&it, lccommand)
 	if err != nil {
 		return nil, err
 	}
@@ -238,7 +239,11 @@ func (d *drivethruRepository) QueueEdit(req *drivethru.QueueEditRequest) (interf
 	return QueueEdit(d.db, req)
 }
 
-func (d *drivethruRepository)PickupEdit(req *drivethru.PickupEditRequest) (interface{}, error) {
+func (d *drivethruRepository) EditCustomerQueue(req *drivethru.QueueEditCustomer) (interface{}, error) {
+	return EditCustomerQueue(d.db, req)
+}
+
+func (d *drivethruRepository) PickupEdit(req *drivethru.PickupEditRequest) (interface{}, error) {
 	return PickupEdit(d.db, req)
 }
 
@@ -263,6 +268,18 @@ func (d *drivethruRepository) CancelQueue(req *drivethru.PickupCancelRequest) (i
 	return pickup.CancelQueue(d.db, req)
 }
 
+func (d *drivethruRepository) PosCancel(req *drivethru.QueueProductRequest) (interface{}, error) {
+	pickup := ListQueueModel{}
+
+	return pickup.PosCancel(d.db, req)
+}
+
+func (d *drivethruRepository) PosList(req *drivethru.AccessTokenRequest) (interface{}, error) {
+	pickup := ListQueueModel{}
+
+	return pickup.PosList(d.db, req)
+}
+
 func getBranch(db *sqlx.DB, branch_id string) string {
 	var branch_code string
 
@@ -277,49 +294,105 @@ func getBranch(db *sqlx.DB, branch_id string) string {
 }
 
 func (d *drivethruRepository) ShiftOpen(req *drivethru.ShiftOpenRequest) (resp interface{}, err error) {
-	// todo:get token user info
-	// todo:get machine info ex:posno
-	// todo : open shift by machinecode & stamp user create shift
-	// todo : return shift_UUID
-
 	uac := UserAccess{}
 	uac.GetProfileByToken(d.db, req.AccessToken)
 
 	// init shift objects
 	sh := ShiftModel{}
-	sh.docDate.Time = time.Now()
-	sh.companyID = uac.CompanyID
-	sh.branchID = uac.BranchID
-	sh.cashierID = int(uac.Id)
-	sh.changeAmount.Float64 = req.ChangeAmount
-	sh.openBy = uac.UserCode
-	sh.openTime.Time = time.Now()
-	sh.machineID = req.MachineID
-	sh.shiftUUid = GetAccessToken()
-	newShiftUID, err := sh.Open(d.db)
+	sh.DocDate = time.Now().String()
+	sh.CompanyID = uac.CompanyID
+	sh.BranchID = uac.BranchID
+	sh.CashierID = int(uac.Id)
+	sh.CashierName = uac.Name
+	sh.ChangeAmount = req.ChangeAmount
+	sh.OpenBy = uac.UserCode
+	sh.OpenTime = time.Now().String()
+	sh.MachineID = req.MachineID
+	sh.ShiftUUid = GetAccessToken()
+
+	sh.Remark = req.Remark
+
+	mc := Machine{}
+	machine_id, err := strconv.Atoi(req.MachineID)
+	mc.SearchMachineId(d.db, uac.CompanyID, uac.BranchID, machine_id)
+	fmt.Println("mc.MachineNo", mc.MachineNo)
+	sh.MachineNo = mc.MachineNo
+	sh.WhID = mc.DefWhId
+
+	resp, err = sh.Open(d.db)
 	if err != nil {
 		return "", err
 	}
-	return newShiftUID, err
+
+	//fmt.Println("shift = ", sh.ShiftUUid, sh.ChangeAmount, sh.cashierID, sh.machineID, sh.MachineNo, sh.cashierName)
+	//return newShiftUID, err
+	//sh.shiftUUid = newShiftUID
+	//return resp, nil
+	return map[string]interface{}{
+		"success": true,
+		"error":   false,
+		"message": "",
+		"shift": map[string]interface{}{
+			"shift_uuid":            sh.ShiftUUid,
+			"cashier_id":            sh.CashierID,
+			"cashier_name":          sh.CashierName,
+			"change_amount":         sh.ChangeAmount,
+			"machine_no":            sh.MachineNo,
+			"open_at":               sh.OpenTime,
+			"close_at":              "",
+			"remark":                sh.Remark,
+			"status":                sh.Status,
+			"sum_cash_amount":       0,
+			"sum_creditcard_amount": 0,
+			"sum_bank_amount":       0,
+			"sum_coupon_amount":     0,
+			"sum_deposit_amount":    0,
+		},
+	}, nil
 }
 
 func (d *drivethruRepository) ShiftClose(req *drivethru.ShiftCloseRequest) (resp interface{}, err error) {
 	uac := UserAccess{}
-	uac.GetProfileByToken(d.db, req.Token)
+	uac.GetProfileByToken(d.db, req.AccessToken)
+
+	now := time.Now()
 
 	sh := ShiftModel{}
-	sh.shiftUUid = req.ShiftUUID
-	sh.sumOfCashAmount = req.SumCashAmount
-	sh.sumOfCreditAmount = req.SumCreditAmount
-	sh.sumOfBankAmount = req.SumBankAmount
-	sh.sumOfCouponAmount = req.SumCouponAmount
-	sh.closeTime.Time = time.Now()
-	sh.closeBy = uac.UserCode
+	sh.ShiftUUid = req.ShiftUUID
+	sh.SumOfCashAmount = req.SumCashAmount
+	sh.SumOfCreditAmount = req.SumCreditAmount
+	sh.SumOfBankAmount = req.SumBankAmount
+	sh.SumOfCouponAmount = req.SumCouponAmount
+	sh.SumOfDepositAmount = req.SumDepositAmount
+	sh.CloseTime = now.String()
+	sh.CloseBy = uac.UserCode
+	sh.Status = 1
 
-	fmt.Printf("shift_uid %s", sh.shiftUUid)
+	fmt.Printf("shift_uid %s", sh.ShiftUUid)
 	err = sh.Close(d.db)
 	if err != nil {
 		return "", err
 	}
-	return "success", nil
+
+	return map[string]interface{}{
+		"success": true,
+		"error":   false,
+		"message": "",
+		"shift": map[string]interface{}{
+			"shift_uuid":            sh.ShiftUUid,
+			"cashier_id":            sh.CashierID,
+			"cashier_name":          sh.CashierName,
+			"change_amount":         sh.ChangeAmount,
+			"machine_no":            sh.MachineNo,
+			"open_at":               sh.OpenTime,
+			"close_at":              sh.CloseTime,
+			"remark":                sh.Remark,
+			"is_open":               1,
+			"sum_cash_amount":       sh.SumOfCashAmount,
+			"sum_creditcard_amount": sh.SumOfCreditAmount,
+			"sum_bank_amount":       sh.SumOfBankAmount,
+			"sum_coupon_amount":     sh.SumOfCouponAmount,
+			"sum_deposit_amount":    sh.SumOfDepositAmount,
+		},
+	}, nil
 }

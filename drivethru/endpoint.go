@@ -3,7 +3,6 @@ package drivethru
 import (
 	"fmt"
 	"context"
-	"time"
 )
 
 type (
@@ -86,6 +85,12 @@ type (
 		PlateNumber string `json:"plate_number"`
 	}
 
+	QueueEditCustomer struct {
+		AccessToken  string `json:"access_token"`
+		QueueId      int    `json:"queue_id"`
+		CustomerCode string `json:"customer_code"`
+	}
+
 	PickupEditRequest struct {
 		AccessToken string `json:"access_token"`
 		CarBrand    string `json:"carBrand"`
@@ -112,6 +117,11 @@ type (
 	QueueProductRequest struct {
 		AccessToken string `json:"access_token"`
 		QueueId     int    `json:"queue_id"`
+	}
+
+	PosRequest struct {
+		AccessToken string `json:"access_token"`
+		PosNo     int    `json:"pos_no"`
 	}
 
 	AccessTokenRequest struct {
@@ -306,7 +316,7 @@ func makeShiftOpen(s Service) interface{} {
 	return func(ctx context.Context, req *ShiftOpenRequest) (interface{}, error) {
 		fmt.Println("start endpoint shift open ....")
 
-		fmt.Println("WH = ", req.WhID)
+		fmt.Println("MachineID = ", req.MachineID)
 		//validate request data
 		if req.AccessToken == "" {
 			return nil, fmt.Errorf("access token is require..")
@@ -316,24 +326,18 @@ func makeShiftOpen(s Service) interface{} {
 			AccessToken:  req.AccessToken,
 			ChangeAmount: req.ChangeAmount,
 			MachineID:    req.MachineID,
-			CashierID:    req.CashierID,
-			Remark:       req.Remark,
-			Created:      time.Now(),
-			WhID:         req.WhID,
+			//CashierID:    req.CashierID,
+			Remark: req.Remark,
+			//WhID:   req.WhID,
 		})
-
 		if err != nil {
+			fmt.Println("err shift open =",err.Error())
 			return nil, err
 		}
 
-		return map[string]interface{}{
-			"response": map[string]interface{}{
-				"process":     "Shift Open",
-				"processDesc": "Success",
-				"isSuccess":   true,
-			},
-			"shift_uuid": resp,
-		}, nil
+		fmt.Println("req.MachineId = ",req.MachineID)
+
+		return resp, nil
 	}
 }
 
@@ -433,6 +437,18 @@ func queueEdit(s Service) interface{} {
 	}
 }
 
+func editCustomerQueue(s Service) interface{} {
+	return func(ctx context.Context, req *QueueEditCustomer) (interface{}, error) {
+		fmt.Println("start endpoint list queue edit is => ", req.QueueId)
+		resp, err := s.EditCustomerQueue(&QueueEditCustomer{QueueId: req.QueueId, CustomerCode: req.CustomerCode, AccessToken: req.AccessToken})
+		if err != nil {
+			return nil, err
+		}
+
+		return resp, nil
+	}
+}
+
 func queueStatus(s Service) interface{} {
 	return func(ctx context.Context, req *QueueStatusRequest) (interface{}, error) {
 		fmt.Println("start endpoint list queue status is => ", req.QueueId)
@@ -457,44 +473,71 @@ func billingDone(s Service) interface{} {
 	}
 }
 
+
+func posList(s Service) interface{} {
+	return func(ctx context.Context, req *AccessTokenRequest) (interface{}, error) {
+		resp, err := s.PosList(&AccessTokenRequest{AccessToken: req.AccessToken})
+		if err != nil {
+			return nil, err
+		}
+
+		return resp, nil
+	}
+}
+
+
+func posCancel(s Service) interface{} {
+	return func(ctx context.Context, req *QueueProductRequest) (interface{}, error) {
+		resp, err := s.PosCancel(&QueueProductRequest{AccessToken: req.AccessToken, QueueId:req.QueueId})
+		if err != nil {
+			return nil, err
+		}
+
+		return resp, nil
+	}
+}
+
 func makeShiftClose(s Service) interface{} {
 	type request struct {
-		Token            string  `json:"token"`
+		AccessToken      string  `json:"access_token"`
 		ShiftUUID        string  `json:"shift_uuid"`
-		SumCashAmount    float64 `json:"sum_cash_amount"`
-		SumCreditAmount  float64 `json:"sum_credit_amount"`
-		SumBankAmount    float64 `json:"sum_bank_amount"`
-		SumCouponAmount  float64 `json:"sum_coupon_amount"`
-		SumDepositAmount float64 `json:"sum_deposit_amount"`
+		SumCashAmount    string `json:"sum_cash_amount"`
+		SumCreditAmount  string `json:"sum_credit_amount"`
+		SumBankAmount    string `json:"sum_bank_amount"`
+		SumCouponAmount  string `json:"sum_coupon_amount"`
+		SumDepositAmount string `json:"sum_deposit_amount"`
 	}
 	return func(ctx context.Context, req *request) (interface{}, error) {
 		fmt.Println("start endpoint shift close ..request -> ", req)
 		//validate request data
-		if req.ShiftUUID == "" || req.Token == "" {
+
+		fmt.Println("start endpoint shift", req.AccessToken, req.ShiftUUID)
+		if req.ShiftUUID == "" || req.AccessToken == "" {
 			return nil, fmt.Errorf("shift id is empty value")
 		}
 
 		resp, err := s.ShiftClose(&ShiftCloseRequest{
-			Token:            req.Token,
+			AccessToken:      req.AccessToken,
 			ShiftUUID:        req.ShiftUUID,
 			SumCashAmount:    req.SumCashAmount,
 			SumCreditAmount:  req.SumCreditAmount,
 			SumBankAmount:    req.SumBankAmount,
 			SumCouponAmount:  req.SumCouponAmount,
 			SumDepositAmount: req.SumDepositAmount,
-			ClosedAt:         time.Now(),
 		})
 
 		if err != nil {
 			return nil, err
 		}
-		return map[string]interface{}{
-			"response": map[string]interface{}{
-				"process":     "Shift Close",
-				"processDesc": "Success",
-				"isSuccess":   true,
-			},
-			"data": resp,
-		}, nil
+		//return map[string]interface{}{
+		//	"response": map[string]interface{}{
+		//		"process":     "Shift Close",
+		//		"processDesc": "Success",
+		//		"isSuccess":   true,
+		//	},
+		//	"data": resp,
+		//}, nil
+
+		return resp, nil
 	}
 }

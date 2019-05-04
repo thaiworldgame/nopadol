@@ -128,6 +128,10 @@ func (u *userLogInModel) Userlogin(db *sqlx.DB, req *drivethru.UserLogInRequest)
 		fmt.Println(ins.RowsAffected())
 	}
 
+	shift := ShiftModel{}
+
+	shift.SearchUserShift(db, user.CompanyId, user.BranchId, uuid)
+
 	return map[string]interface{}{
 		"response": map[string]interface{}{
 			"process":     "login",
@@ -141,7 +145,8 @@ func (u *userLogInModel) Userlogin(db *sqlx.DB, req *drivethru.UserLogInRequest)
 		//"machine_id":,
 		//"shift_status":,
 		//"shilf_uuid":,
-		"user": user,
+		"user":  user,
+		"shift": shift,
 	}, nil
 }
 
@@ -234,7 +239,39 @@ func (u *userLogInModel) login(db *sqlx.DB, req *drivethru.LoginRequest) (interf
 			}
 			fmt.Println(ins.RowsAffected())
 		}
+
+		//“cashier_id”: 123,
+		//“cashier_name”:”นาย กกกกก”,
+		//“change_amount”: 3000,
+		//“shift_uuid”:”xxxxx”,
+		//“machine_no”:”11”,
+		//“open_at” : “01/03/2019”,
+		//“remark”: “”,
+		//“is_open”:0 (1=open)
+
+		//lccommand := "select id,code,name,ifnull(pwd,'') as password,ifnull(image_path,'') as image_filename,role,active_status as activesTatus,is_confirm as isConfirm,ifnull(create_by,'') as creatorCode,ifnull(create_time,'') as createdateTime,ifnull(edit_by,'') as lasteditorCode,ifnull(edit_time,'') as lasteditdateTime,ifnull(branch_code,'') as branchCode,'' as remark,ifnull(zone_id,'') as loginZone,ifnull(company_id,1) as company_id,ifnull(branch_id,1) as branch_id from user where code = ? and branch_code = ? "
+		//fmt.Println(lccommand, req.EmployeeCode, branch_code)
+		//rs := db.QueryRow(lccommand, req.EmployeeCode, branch_code)
+		//
+		//sh := ShiftModel{}
+		//err := rs.Scan(&sh.branchID, &user.Code, &user.Name, &user.Password, &user.ImageFileName, &user.Role, &user.ActiveStatus, &user.IsConfirm, &user.CreatorCode, &user.CreateDateTime, &user.LastEditorCode, &user.LastEditDateTime, &user.BranchCode, &user.Remark, &user.LoginZone, &user.CompanyId, &user.BranchId)
+		//if err != nil || user.Code == "" {
+		//	fmt.Println("error = ", err.Error())
+		//	return map[string]interface{}{
+		//		"response": map[string]interface{}{
+		//			"process":     "login",
+		//			"processDesc": "login fail",
+		//			"isSuccess":   false,
+		//		},
+		//	}, nil
+		//}
+
 	}
+
+	shift := ShiftModel{}
+
+	shift.SearchUserShift(db, user.CompanyId, user.BranchId, uuid)
+
 
 	return map[string]interface{}{
 		"response": map[string]interface{}{
@@ -247,6 +284,7 @@ func (u *userLogInModel) login(db *sqlx.DB, req *drivethru.LoginRequest) (interf
 		"pathPHPUpload":  "http://qserver.nopadol.com/drivethru/upload.php",
 		"pathFile":       "http://qserver.nopadol.com/drivethru/tmp/",
 		"user":           user,
+		"shift":          shift,
 	}, nil
 }
 

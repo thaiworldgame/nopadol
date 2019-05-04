@@ -11,6 +11,7 @@ type service struct {
 type Service interface {
 	PosDriveThruSlip(req *PosDriveThruSlipRequestTemplate) (interface{}, error)
 	PosSlip(req *PosSlipRequestTemplate) (interface{}, error)
+	//AutoPrint(req *AutoPrintRequest)(interface{}, error)
 }
 
 func (s *service) PosSlip(req *PosSlipRequestTemplate) (interface{}, error) {
@@ -28,3 +29,11 @@ func (s *service) PosDriveThruSlip(req *PosDriveThruSlipRequestTemplate) (interf
 	}
 	return resp, nil
 }
+
+//func (s *service) AutoPrint(req *AutoPrintRequest) (interface{}, error) {
+//	resp, err := s.repo.AutoPrint(req)
+//	if err != nil {
+//		return nil, err
+//	}
+//	return resp, nil
+//}

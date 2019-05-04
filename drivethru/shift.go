@@ -1,24 +1,19 @@
 package drivethru
 
-import "time"
-
 type ShiftOpenRequest struct {
-	AccessToken  string    `json:"accessToken"`
-	MachineID    int       `json:"machine_id"`
-	CashierID    int       `json:"cashier_id"`
-	ChangeAmount float64   `json:"change_amount"`
-	Remark       string    `json:"remark"`
-	Created      time.Time `json:"created"`
-	WhID         int       `json:"wh_id"`
+	AccessToken  string  `json:"access_token"`
+	MachineID    string     `json:"machine_id"`
+	ChangeAmount string `json:"change_amount"`
+	Remark       string  `json:"remark"`
+	WhID         string     `json:"wh_id"`
 }
 
 type ShiftCloseRequest struct {
-	Token            string
-	ShiftUUID        string
-	SumCashAmount    float64
-	SumCreditAmount  float64
-	SumBankAmount    float64
-	SumCouponAmount  float64
-	SumDepositAmount float64
-	ClosedAt         time.Time
+	AccessToken      string  `json:"access_token"`
+	ShiftUUID        string  `json:"shift_uuid"`
+	SumCashAmount    string `json:"sum_cash_amount"`
+	SumCreditAmount  string `json:"sum_credit_amount"`
+	SumBankAmount    string `json:"sum_bank_amount"`
+	SumCouponAmount  string `json:"sum_coupon_amount"`
+	SumDepositAmount string `json:"sum_deposit_amount"`
 }

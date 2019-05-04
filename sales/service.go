@@ -46,6 +46,7 @@ type Service interface {
 	FindBankBookNpSerivce() ([]BankBookModel, error)
 	FindBankBranchSerivce() ([]BankBranchModel, error)
 	FindProductByKeyService(Keyword string) ([]ProductModal, error)
+	FineFineDepartmentService() ([]FineDepartmentModel, error)
 }
 
 func (s *service) FindProductByKeyService(Keyword string) ([]ProductModal, error) {
@@ -55,6 +56,7 @@ func (s *service) FindProductByKeyService(Keyword string) ([]ProductModal, error
 	}
 	return resp, nil
 }
+
 func (s *service) FindBankBranchSerivce() ([]BankBranchModel, error) {
 	resp, err := s.repo.FindBankBranchRepo()
 	if err != nil {
@@ -409,6 +411,14 @@ func (s *service) SearchInvoiceByKeyword(req *SearchByKeywordTemplate) (interfac
 
 func (s *service) SearchHisCustomer(req *SearchHisCustomerTemplate) (interface{}, error) {
 	resp, err := s.repo.SearchHisCustomer(req)
+	if err != nil {
+		return nil, err
+	}
+	return resp, nil
+}
+
+func (s *service) FineFineDepartmentService() ([]FineDepartmentModel, error) {
+	resp, err := s.repo.FineDepartmentRepo()
 	if err != nil {
 		return nil, err
 	}

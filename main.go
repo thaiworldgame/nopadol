@@ -23,10 +23,12 @@ import (
 
 	//posservice "github.com/mrtomyum/nopadol/pos"
 	//posconfigservice "github.com/mrtomyum/nopadol/posconfig"
-	//printservice "github.com/mrtomyum/nopadol/print"
+	printservice "github.com/mrtomyum/nopadol/print"
+	cloudprintservice "github.com/mrtomyum/nopadol/cloudprint"
 	envservice "github.com/mrtomyum/nopadol/environment"
 	gendocnoservice "github.com/mrtomyum/nopadol/gendocno"
 	salesservice "github.com/mrtomyum/nopadol/sales"
+	dataprintservice "github.com/mrtomyum/nopadol/dataprint"
 
 	//configservice "github.com/mrtomyum/nopadol/companyconfig"
 	//pointofsaleservice "github.com/mrtomyum/nopadol/pointofsale"
@@ -39,6 +41,8 @@ import (
 	//auth "github.com/mrtomyum/nopadol/auth"
 	"github.com/mrtomyum/nopadol/auth"
 	"github.com/mrtomyum/nopadol/sync"
+	"github.com/mrtomyum/nopadol/sqldb"
+
 )
 
 var (
@@ -88,6 +92,7 @@ func ConnectMysqlNP(dbName string) (db *sqlx.DB, err error) {
 		fmt.Println("sql error =", err)
 		return nil, err
 	}
+	db.Exec("use " + dbName)
 	return db, err
 }
 
@@ -207,9 +212,15 @@ func main() {
 	//posRepo := sqldb.NewPosRepository(sql_dbc)
 	//posService := posservice.New(posRepo)
 
-	//printRepo := sqldb.NewPrintRepository(sql_dbc)
-	//printService := printservice.New(printRepo)
-	//
+	printRepo := sqldb.NewPrintRepository(sql_dbc)
+	printService := printservice.New(printRepo)
+
+	cloudprintRepo := mysqldb.NewCloudPrintRepository(mysql_np)
+	cloudprintService := cloudprintservice.New(cloudprintRepo)
+
+	dataprintRepo := mysqldb.NewDataPrintRepository(mysql_np)
+	dataprintService := dataprintservice.New(dataprintRepo)
+
 	salesRepo := mysqldb.NewSalesRepository(mysql_np)
 	salesService := salesservice.New(salesRepo)
 	//
@@ -254,7 +265,9 @@ func main() {
 	mux.Handle("/product/", http.StripPrefix("/product/v1", productservice.MakeHandler(productService)))
 	//mux.Handle("/posconfig/", http.StripPrefix("/posconfig/v1", posconfigservice.MakeHandler(posconfigService)))
 	//mux.Handle("/pos/", http.StripPrefix("/pos/v1", posservice.MakeHandler(posService)))
-	//mux.Handle("/print/", http.StripPrefix("/print/v1", printservice.MakeHandler(printService)))
+	mux.Handle("/print/", http.StripPrefix("/print/v1", printservice.MakeHandler(printService)))
+	mux.Handle("/cloudprint/", http.StripPrefix("/cloudprint/v1", cloudprintservice.MakeHandler(cloudprintService)))
+	mux.Handle("/dataprint?", http.StripPrefix("/dataprint/v1", dataprintservice.MakeHandler(dataprintService)))
 	mux.Handle("/sales/", http.StripPrefix("/sales/v1", salesservice.MakeHandler(salesService)))
 	mux.Handle("/gendocno/", http.StripPrefix("/gendocno/v1", gendocnoservice.MakeHandler(gendocnoService)))
 	mux.Handle("/env/", http.StripPrefix("/env/v1", envservice.MakeHandler(envService)))

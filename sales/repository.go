@@ -32,4 +32,5 @@ type Repository interface {
 	FindBankBranchRepo() ([]BankBranchModel, error)
 
 	FindProductByKey(Keyword string) ([]ProductModal, error)
+	FineDepartmentRepo() ([]FineDepartmentModel, error)
 }
