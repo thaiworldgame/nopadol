@@ -70,7 +70,7 @@ func (repo *envRepository) SearchProjectById(req *environment.SearchByIdTemplate
 
 	p := DepartmentModel{}
 
-	sql := `select id,code,name from Department where id = ? and active_status =1`
+	sql := `select id,code,name from Project where id = ? and active_status =1 order by code`
 	err = repo.db.Get(&p, sql, req.Id)
 	if err != nil {
 		fmt.Println("err = ", err.Error())

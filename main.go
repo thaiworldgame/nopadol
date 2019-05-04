@@ -92,6 +92,7 @@ func ConnectMysqlNP(dbName string) (db *sqlx.DB, err error) {
 		fmt.Println("sql error =", err)
 		return nil, err
 	}
+	db.Exec("use " + dbName)
 	return db, err
 }
 

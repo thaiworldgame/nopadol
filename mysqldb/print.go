@@ -1,16 +1,17 @@
 package mysqldb
 
 import (
+	"bufio"
+	"bytes"
+	"fmt"
+	"net"
+	"strconv"
+	"strings"
+	"time"
+
+	"github.com/knq/escpos"
 	"github.com/mrtomyum/nopadol/cloudprint"
 	"github.com/mrtomyum/nopadol/hw"
-	"strconv"
-	"net"
-	"fmt"
-	"bytes"
-	"strings"
-	"bufio"
-	"github.com/knq/escpos"
-	"time"
 )
 
 func printslippos(req *cloudprint.CloudPrintRequest) {

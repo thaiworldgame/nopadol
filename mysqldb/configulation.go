@@ -70,87 +70,46 @@ func (repo *configRepository) ConfigSetting(req *configuration.RequestSettingTem
 	fmt.Println("check_doc_exist", check_id_exist)
 
 	if check_id_exist == 0 {
-
 		sql := `INSERT INTO configuration(company_id, branch_id, tax_rate, logo_path, 
 			depart_id, def_sale_wh_id, def_sale_shelf_id, def_buy_wh_id, def_buy_shelf_id, 
 			def_cust_id, create_by, create_time, edit_by, edit_time)
 			values(?,?,?,?,?,?,?,?,?,?,?,?,?,?)`
 		fmt.Println("sql update = ", sql) //INSERT INTO branch(branch_name, address, telephone, fax) values(?,?,?,?)
 		//stock_status, sale_tax_type, buy_tax_type, sale_bill_type, buy_bill_type, pos_def_cust_id,tax_type, pos_def_stock, ?,?,?,?,?,?,?
-		resp, err := repo.db.Exec(sql,
-			req.CompanyId,
-			req.BranchId,
-			//req.TaxType,
-			req.TaxRate,
-			req.LogoPath,
-			req.DepartId,
-			req.DefSaleWhId,
-			req.DefSaleShelfId,
-			req.DefBuyWhId,
-			req.DefBuyShelfId,
-			//req.SrockStatus,
-			//req.SaleTaxType,
-			//req.BuyTaxType,
-			//req.SaleBillType,
-			//req.BuyBillType,
-			//req.PosDefCustId,
-			//req.PosDefStock,
-			req.DefCustId,
-			req.CreateBy,
-			req.CreateTime,
-			req.EditBy,
-			req.EditTime,
-		)
+		resp, err := repo.db.Exec(sql, req.CompanyId, req.BranchId, req.TaxRate, req.LogoPath, req.DepartId, req.DefSaleWhId,
+			req.DefSaleShelfId, req.DefBuyWhId, req.DefBuyShelfId, req.DefCustId, req.CreateBy, req.CreateTime, req.EditBy, req.EditTime) //req.TaxType,
+		//req.SrockStatus,
+		//req.SaleTaxType,
+		//req.BuyTaxType,
+		//req.SaleBillType,
+		//req.BuyBillType,
+		//req.PosDefCustId,
+		//req.PosDefStock,
 		if err != nil {
 			fmt.Println("Error = ", err.Error())
 			return nil, err
 		}
 		id, _ := resp.LastInsertId()
-
 		req.Id = id
 	} else {
-
 		sql := `Update configuration a,branch b set a.company_id=?, a.branch_id=?, a.tax_type=?, a.tax_rate=?, a.logo_path=?, 
 	a.depart_id=?, a.def_sale_wh_id=?, a.def_sale_shelf_id=?, a.def_buy_wh_id=?,a.def_buy_shelf_id=?, a.stock_status=?, a.sale_tax_type=?, 
 	a.buy_tax_type=?,a.sale_bill_type=?, a.buy_bill_type=?,a.use_address=?, a.pos_def_cust_id=?,a.pos_def_stock=?,a.def_cust_id=?, 
 	a.create_by=?, a.create_time=?, a.edit_by=?,a.edit_time =?
 	where a.id=?` //	b.branch_name=?, b.address=?, b.telephone=?, b.fax=? where a.id=? and b.id = a.branch_id
 		fmt.Println("sql update = ", sql)
-		id, err := repo.db.Exec(sql,
-			req.CompanyId,
-			req.BranchId,
-			req.TaxType,
-			req.TaxRate,
-			req.LogoPath,
-			req.DepartId,
-			req.DefSaleWhId,
-			req.DefSaleShelfId,
-			req.DefBuyWhId,
-			req.DefBuyShelfId,
-			req.SrockStatus,
-			req.SaleTaxType,
-			req.BuyTaxType,
-			req.SaleBillType,
-			req.BuyBillType,
-			req.UseAddress,
-			req.PosDefCustId,
-			req.PosDefStock,
-			req.DefCustId,
-			req.CreateBy,
-			req.CreateTime,
-			req.EditBy,
-			req.EditTime,
-			/*req.BranchName,
-			req.Address,
-			req.Telephone,
-			req.Fax,*/
-			req.Id,
-		)
+		id, err := repo.db.Exec(sql, req.CompanyId, req.BranchId, req.TaxType, req.TaxRate, req.LogoPath, req.DepartId, req.DefSaleWhId,
+			req.DefSaleShelfId, req.DefBuyWhId, req.DefBuyShelfId, req.SrockStatus, req.SaleTaxType, req.BuyTaxType, req.SaleBillType,
+			req.BuyBillType, req.UseAddress, req.PosDefCustId, req.PosDefStock, req.DefCustId, req.CreateBy, req.CreateTime, req.EditBy,
+			req.EditTime, req.Id)
+		/*req.BranchName,
+		req.Address,
+		req.Telephone,
+		req.Fax,*/
 		if err != nil {
 			fmt.Println("Error = ", err.Error())
 			return nil, err
 		}
-
 		rowAffect, err := id.RowsAffected()
 		fmt.Println("Row Affect = ", rowAffect)
 	}
