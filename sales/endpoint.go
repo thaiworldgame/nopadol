@@ -79,6 +79,8 @@ type (
 		PackingRate1    float64 `json:"packing_rate_1"`
 		IsCancel        int64   `json:"is_cancel"`
 		LineNumber      int     `json:"line_number"`
+		WHCode          string  `json:"wh_code"`
+		ShelfCode       string  `json:"shelf_code"`
 	}
 
 	NewSaleRequest struct {
@@ -589,6 +591,8 @@ func map_quo_sub_request(x NewQuoItemRequest) NewQuoItemTemplate {
 		PackingRate1:    x.PackingRate1,
 		LineNumber:      x.LineNumber,
 		IsCancel:        x.IsCancel,
+		WHCode:          x.WHCode,
+		ShelfCode:       x.ShelfCode,
 	}
 }
 

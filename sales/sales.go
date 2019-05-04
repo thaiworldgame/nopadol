@@ -105,6 +105,8 @@ type NewQuoItemTemplate struct {
 	PackingRate1    float64 `json:"packing_rate_1"`
 	LineNumber      int     `json:"line_number"`
 	IsCancel        int64   `json:"is_cancel"`
+	WHCode          string  `json:"wh_code"`
+	ShelfCode       string  `json:"shelf_code"`
 }
 
 type NewSaleTemplate struct {

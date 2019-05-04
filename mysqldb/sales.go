@@ -159,6 +159,8 @@ type NewQuoItemModel struct {
 	PackingRate1    float64 `db:"PackingRate1"`
 	IsCancel        int64   `db:"IsCancel"`
 	LineNumber      int     `db:"LineNumber"`
+	WHCode          string  `db:"WhCode"`
+	ShelfCode       string  `db:"ShelfCode"`
 }
 
 type NewSaleModel struct {
@@ -798,7 +800,7 @@ func (repo *salesRepository) CreateQuotation(req *sales.NewQuoTemplate) (resp in
 		for _, sub := range req.Subs {
 			fmt.Println("ArId Sub = ", req.ArId)
 			fmt.Println("SaleId Sub = ", req.SaleId)
-			sqlsub := `INSERT INTO QuotationSub(quo_uuid,QuoId,ArId,SaleId,ItemId,ItemCode,BarCode,ItemName,Qty,RemainQty,Price,DiscountWord,DiscountAmount,UnitCode,ItemAmount,ItemDescription,PackingRate1,LineNumber,IsCancel) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`
+			sqlsub := `INSERT INTO QuotationSub(quo_uuid,QuoId,ArId,SaleId,ItemId,ItemCode,BarCode,ItemName,Qty,RemainQty,Price,DiscountWord,DiscountAmount,UnitCode,ItemAmount,ItemDescription,PackingRate1,LineNumber,IsCancel,WhCode,ShelfCode) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`
 			_, err := repo.db.Exec(sqlsub,
 				uuid,
 				req.Id,
@@ -818,7 +820,9 @@ func (repo *salesRepository) CreateQuotation(req *sales.NewQuoTemplate) (resp in
 				sub.ItemDescription,
 				sub.PackingRate1,
 				sub.LineNumber,
-				sub.IsCancel)
+				sub.IsCancel,
+				sub.WHCode,
+				sub.ShelfCode)
 
 			fmt.Println("QuotationSub =", sql, sub.QuoId)
 			if err != nil {
@@ -871,7 +875,7 @@ func (repo *salesRepository) CreateQuotation(req *sales.NewQuoTemplate) (resp in
 
 	for _, sub := range req.Subs {
 		sub.LineNumber = line_number
-		sqlsub := `INSERT INTO QuotationSub(QuoId,ArId,SaleId,ItemId,ItemCode,BarCode,ItemName,Qty,RemainQty,Price,DiscountWord,DiscountAmount,UnitCode,ItemAmount,ItemDescription,PackingRate1,LineNumber,IsCancel) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`
+		sqlsub := `INSERT INTO QuotationSub(QuoId,ArId,SaleId,ItemId,ItemCode,BarCode,ItemName,Qty,RemainQty,Price,DiscountWord,DiscountAmount,UnitCode,ItemAmount,ItemDescription,PackingRate1,LineNumber,IsCancel,WhCode,ShelfCode) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`
 		_, err := repo.db.Exec(sqlsub,
 			req.Id,
 			req.ArId,
@@ -890,7 +894,9 @@ func (repo *salesRepository) CreateQuotation(req *sales.NewQuoTemplate) (resp in
 			sub.ItemDescription,
 			sub.PackingRate1,
 			sub.LineNumber,
-			sub.IsCancel)
+			sub.IsCancel,
+			sub.WHCode,
+			sub.ShelfCode)
 		if err != nil {
 			return nil, err
 		}
@@ -1034,7 +1040,8 @@ func (repo *salesRepository) SearchQuoById(req *sales.SearchByIdTemplate) (resp 
 
 	subs := []NewQuoItemModel{}
 
-	sql_sub := `select a.Id,a.QuoId,a.ItemId,a.ItemCode,a.ItemName,a.Qty,a.RemainQty,a.Price,ifnull(a.DiscountWord,'') as DiscountWord,DiscountAmount,ifnull(a.UnitCode,'') as UnitCode,ifnull(a.BarCode,'') as BarCode,ifnull(a.ItemDescription,'') as ItemDescription,a.ItemAmount,a.PackingRate1,a.LineNumber,a.IsCancel from QuotationSub a  where QuoId = ? order by a.linenumber`
+	sql_sub := `select a.Id,a.QuoId,a.ItemId,a.ItemCode,a.ItemName,a.Qty,a.RemainQty,a.Price,ifnull(a.DiscountWord,'') as DiscountWord,DiscountAmount,ifnull(a.UnitCode,'') as UnitCode,ifnull(a.BarCode,'') as BarCode,ifnull(a.ItemDescription,'') as ItemDescription,a.ItemAmount,a.PackingRate1,a.LineNumber,a.IsCancel,a.WhCode,a.ShelfCode
+	from QuotationSub a  where QuoId = ? order by a.linenumber`
 	err = repo.db.Select(&subs, sql_sub, q.Id)
 	if err != nil {
 		fmt.Println("err sub= ", err.Error())
@@ -1143,7 +1150,7 @@ func (repo *salesRepository) QuotationToSaleOrder(req *sales.SearchByIdTemplate)
 
 	subs := []NewQuoItemModel{}
 
-	sql_sub := `select a.Id,a.QuoId,a.ItemId,a.ItemCode,a.ItemName,a.Qty,a.RemainQty,a.Price,ifnull(a.DiscountWord,'') as DiscountWord,DiscountAmount,ifnull(a.UnitCode,'') as UnitCode,ifnull(a.BarCode,'') as BarCode,ifnull(a.ItemDescription,'') as ItemDescription,a.ItemAmount,a.PackingRate1,a.LineNumber,a.IsCancel from QuotationSub a  where QuoId = ? order by a.linenumber`
+	sql_sub := `select a.Id,a.QuoId,a.ItemId,a.ItemCode,a.ItemName,a.Qty,a.RemainQty,a.Price,ifnull(a.DiscountWord,'') as DiscountWord,DiscountAmount,ifnull(a.UnitCode,'') as UnitCode,ifnull(a.BarCode,'') as BarCode,ifnull(a.ItemDescription,'') as ItemDescription,a.ItemAmount,a.PackingRate1,a.LineNumber,a.IsCancel,a.WhCode,a.ShelfCode from QuotationSub a  where QuoId = ? order by a.linenumber`
 	err = repo.db.Select(&subs, sql_sub, req.Id)
 	if err != nil {
 		fmt.Println("err sub= ", err.Error())
@@ -1481,6 +1488,8 @@ func map_quo_subs_template(x NewQuoItemModel) sales.NewQuoItemTemplate {
 		PackingRate1:    x.PackingRate1,
 		LineNumber:      x.LineNumber,
 		IsCancel:        x.IsCancel,
+		WHCode:          x.WHCode,
+		ShelfCode:       x.ShelfCode,
 	}
 }
 
