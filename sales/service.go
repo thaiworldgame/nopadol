@@ -45,7 +45,16 @@ type Service interface {
 	FindBankNpService() ([]BankModel, error)
 	FindBankBookNpSerivce() ([]BankBookModel, error)
 	FindBankBranchSerivce() ([]BankBranchModel, error)
+	FindProductByKeyService(Keyword string) ([]ProductModal, error)
 	FineFineDepartmentService() ([]FineDepartmentModel, error)
+}
+
+func (s *service) FindProductByKeyService(Keyword string) ([]ProductModal, error) {
+	resp, err := s.repo.FindProductByKey(Keyword)
+	if err != nil {
+		return nil, err
+	}
+	return resp, nil
 }
 
 func (s *service) FindBankBranchSerivce() ([]BankBranchModel, error) {
