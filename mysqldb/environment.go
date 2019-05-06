@@ -154,3 +154,49 @@ func map_data_template(x DepartmentModel) environment.DepartmentTemplate {
 		Name: x.Name,
 	}
 }
+
+func (repo *envRepository) SearchCustContactByIdRepo(req *environment.SearchByIdTemplate) ([]environment.FindCustContactModel, error) {
+
+	Cust := []environment.FindCustContactModel{}
+	sql := `select id, ar_id, contact_code, contact_name, address, telephone, email, ifnull(line_id,'') as line_id, line_number
+	from cust_contact where id=?`
+	sqls, err := repo.db.Query(sql, req.Id)
+	if err != nil {
+		return nil, err
+	}
+	for sqls.Next() {
+		Custs := environment.FindCustContactModel{}
+		err = sqls.Scan(&Custs.Id, &Custs.ArId,
+			&Custs.ContactCode, &Custs.ContactName, &Custs.Address,
+			&Custs.Telephone, &Custs.Email, &Custs.LineId, &Custs.LineNumber)
+		if err != nil {
+			return nil, err
+		}
+		Cust = append(Cust, Custs)
+	}
+	return Cust, nil
+}
+
+func (repo *envRepository) SearchCustContactByKeywordRepo(req *environment.SearchByKeywordTemplate) ([]environment.FindCustContactModel, error) {
+
+	Cust := []environment.FindCustContactModel{}
+	sql := `select id, ar_id, contact_code, contact_name, address, telephone, email, ifnull(line_id,'') as line_id, line_number
+	from cust_contact
+	where (contact_code like concat('%',?,'%')  or contact_name like concat('%',?,'%')) order by contact_code`
+
+	sqls, err := repo.db.Query(sql, req.Keyword, req.Keyword)
+	if err != nil {
+		return nil, err
+	}
+	for sqls.Next() {
+		Custs := environment.FindCustContactModel{}
+		err = sqls.Scan(&Custs.Id, &Custs.ArId,
+			&Custs.ContactCode, &Custs.ContactName, &Custs.Address,
+			&Custs.Telephone, &Custs.Email, &Custs.LineId, &Custs.LineNumber)
+		if err != nil {
+			return nil, err
+		}
+		Cust = append(Cust, Custs)
+	}
+	return Cust, nil
+}

@@ -54,7 +54,6 @@ func SearchDepartmentByKeyword(s Service) interface{} {
 	}
 }
 
-
 //Project///////////////////////////////////////////////////////////////////////////////////
 
 func SearchProjectById(s Service) interface{} {
@@ -82,7 +81,6 @@ func SearchProjectByKeyword(s Service) interface{} {
 		}, nil
 	}
 }
-
 
 //Allocate///////////////////////////////////////////////////////////////////////////////////
 
@@ -112,3 +110,32 @@ func SearchAllocateByKeyword(s Service) interface{} {
 	}
 }
 
+func SearchCustContactById(s Service) interface{} {
+	type response struct {
+		Response string                 `json:"response"`
+		Message  string                 `json:"message"`
+		Data     []FindCustContactModel `json:"data"`
+	}
+	return func(ctx context.Context, req *SearchByIdRequest) (*response, error) {
+		resp, err := s.SearchCustContactByIdService(&SearchByIdTemplate{Id: req.Id})
+		if err != nil {
+			return &response{Response: "fail", Message: err.Error()}, err
+		}
+		return &response{Response: "success", Data: resp}, nil
+	}
+}
+
+func SearchCustContactByKeyword(s Service) interface{} {
+	type response struct {
+		Response string                 `json:"response"`
+		Message  string                 `json:"message"`
+		Data     []FindCustContactModel `json:"data"`
+	}
+	return func(ctx context.Context, req *SearchByKeywordRequest) (*response, error) {
+		resp, err := s.SearchCustContactByKeywordService(&SearchByKeywordTemplate{Keyword: req.Keyword})
+		if err != nil {
+			return &response{Response: "fail", Message: err.Error()}, err
+		}
+		return &response{Response: "success", Data: resp}, nil
+	}
+}

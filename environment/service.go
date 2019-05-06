@@ -1,6 +1,6 @@
 package environment
 
-func New(repo Repository) (Service) {
+func New(repo Repository) Service {
 	return &service{repo}
 }
 
@@ -15,6 +15,8 @@ type Service interface {
 	SearchProjectByKeyword(req *SearchByKeywordTemplate) (interface{}, error)
 	SearchAllocateById(req *SearchByIdTemplate) (interface{}, error)
 	SearchAllocateByKeyword(req *SearchByKeywordTemplate) (interface{}, error)
+	SearchCustContactByIdService(req *SearchByIdTemplate) ([]FindCustContactModel, error)
+	SearchCustContactByKeywordService(req *SearchByKeywordTemplate) ([]FindCustContactModel, error)
 }
 
 //Department
@@ -71,5 +73,21 @@ func (s *service) SearchAllocateByKeyword(req *SearchByKeywordTemplate) (interfa
 		return nil, err
 	}
 
+	return resp, nil
+}
+
+func (s *service) SearchCustContactByIdService(req *SearchByIdTemplate) ([]FindCustContactModel, error) {
+	resp, err := s.repo.SearchCustContactByIdRepo(req)
+	if err != nil {
+		return nil, err
+	}
+	return resp, nil
+}
+
+func (s *service) SearchCustContactByKeywordService(req *SearchByKeywordTemplate) ([]FindCustContactModel, error) {
+	resp, err := s.repo.SearchCustContactByKeywordRepo(req)
+	if err != nil {
+		return nil, err
+	}
 	return resp, nil
 }
