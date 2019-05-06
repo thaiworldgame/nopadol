@@ -1,10 +1,11 @@
 package mysqldb
 
 import (
-	"github.com/mrtomyum/nopadol/product"
-	"time"
-	"testing"
 	"fmt"
+	"testing"
+	"time"
+
+	"github.com/mrtomyum/nopadol/product"
 	"github.com/stretchr/testify/assert"
 )
 

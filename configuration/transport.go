@@ -84,24 +84,6 @@ func errorEncoder(w http.ResponseWriter, r *http.Request, err error) {
 		status = http.StatusOK
 	case NotHaveItem.Error():
 		status = http.StatusOK
-	case NotHavePayMoney.Error():
-		status = http.StatusOK
-	case NotHaveSumOfItem.Error():
-		status = http.StatusOK
-	case ItemNotHaveQty.Error():
-		status = http.StatusOK
-	case ItemNotHaveUnit.Error():
-		status = http.StatusOK
-	case MoneyOverTotalAmount.Error():
-		status = http.StatusOK
-	case MoneyLessThanTotalAmount.Error():
-		status = http.StatusOK
-	case PosNotHaveDate.Error():
-		status = http.StatusOK
-	case PosNotHaveChqData.Error():
-		status = http.StatusOK
-	case PosNotHaveCreditCardData.Error():
-		status = http.StatusOK
 	default:
 		status = http.StatusOK
 	}

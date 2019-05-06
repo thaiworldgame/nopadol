@@ -76,7 +76,28 @@ type BankBookModel struct {
 	BalanceAmount float64 `json:"balance_amount" db:"balance_amount"`
 	ActiveStatus  int64   `json:"active_status" db:"active_status"`
 }
-
+type ProductModal struct {
+	ItemCode    string  `json:"item_code" db:"item_code"`
+	BarCode     string  `json:"bar_code" db:"bar_code"`
+	ItemName    string  `json:"item_name" db:"item_name"`
+	PicPath1    string  `json:"pic_path_1" db:"pic_path_1"`
+	StockType   int64   `json:"stock_type" db:"stock_type"`
+	Rate1       int64   `json:"rate_1" db:"rate_1"`
+	UnitCode    string  `json:"unit_code" db:"unit_code"`
+	SalePrice1  float64 `json:"sale_price_1" db:"sale_price_1"`
+	SalePrice2  float64 `json:"sale_price_2" db:"sale_price_2"`
+	WHCode      string  `json:"wh_code" db:"wh_code"`
+	ShelfCode   string  `json:"shelf_code" db:"shelf_code"`
+	Qty         float64 `json:"qty" db:"qty"`
+	StkUnitCode string  `json:"stk_unit_code" db:"stk_unit_code"`
+	// Sub        []SubproductModal `json:"sub"`
+}
+type SubproductModal struct {
+	WHCode      string  `json:"wh_code" db:"wh_code"`
+	ShelfCode   string  `json:"shelf_code" db:"shelf_code"`
+	Qty         float64 `json:"qty" db:"qty"`
+	StkUnitCode string  `json:"stk_unit_code" db:"stk_unit_code"`
+}
 type BankBranchModel struct {
 	Id             int64  `json:"id" db:"id"`
 	CompanyId      int64  `json:"company_id" db:"company_id"`
@@ -105,6 +126,8 @@ type NewQuoItemTemplate struct {
 	PackingRate1    float64 `json:"packing_rate_1"`
 	LineNumber      int     `json:"line_number"`
 	IsCancel        int64   `json:"is_cancel"`
+	WHCode          string  `json:"wh_code"`
+	ShelfCode       string  `json:"shelf_code"`
 }
 
 type NewSaleTemplate struct {
@@ -588,4 +611,13 @@ type NewSearchHisCustomerTemplate struct {
 	NArName      string  `json:"ArName"`
 	NSaleName    string  `json:"SaleName"`
 	NTotalAmount int64   `json:"TotalAmount"`
+}
+
+type FineDepartmentModel struct {
+	Id           int64  `json:"id" db:"id"`
+	CompanyId    int64  `json:"company_id" db:"company_id"`
+	BranchId     int64  `json:"branch_id" db:"branch_id""`
+	Code         string `json:"code" db:"code	"`
+	Name         string `json:"name" db:"name"`
+	ActiveStatus int64  `json:"active_status" db:"active_status"`
 }

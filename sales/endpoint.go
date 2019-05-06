@@ -3,6 +3,7 @@ package sales
 import (
 	"context"
 	"fmt"
+	"time"
 )
 
 type (
@@ -79,6 +80,8 @@ type (
 		PackingRate1    float64 `json:"packing_rate_1"`
 		IsCancel        int64   `json:"is_cancel"`
 		LineNumber      int     `json:"line_number"`
+		WHCode          string  `json:"wh_code"`
+		ShelfCode       string  `json:"shelf_code"`
 	}
 
 	NewSaleRequest struct {
@@ -589,6 +592,8 @@ func map_quo_sub_request(x NewQuoItemRequest) NewQuoItemTemplate {
 		PackingRate1:    x.PackingRate1,
 		LineNumber:      x.LineNumber,
 		IsCancel:        x.IsCancel,
+		WHCode:          x.WHCode,
+		ShelfCode:       x.ShelfCode,
 	}
 }
 
@@ -1446,6 +1451,43 @@ func FindBankBranchEndpoint(s Service) interface{} {
 		}
 		if len(resp) == 0 {
 			return &response{Response: "faild", Message: "No Data in fild"}, err
+		}
+		return &response{Response: "success", Data: resp}, nil
+	}
+}
+
+func FindProductBykeyEndpoint(s Service) interface{} {
+	type request struct {
+		Keyword string `json:"keyword"`
+	}
+	type response struct {
+		Response string         `json:"response"`
+		Message  string         `json:"message"`
+		Data     []ProductModal `json:"data"`
+	}
+	return func(ctx context.Context, req *request) (*response, error) {
+		start := time.Now()
+		resp, err := s.FindProductByKeyService(req.Keyword)
+		if err != nil {
+			return &response{Response: "faild", Message: err.Error()}, err
+		}
+		if len(resp) == 0 {
+			return &response{Response: "faild", Message: "No Data in fild"}, err
+		}
+		fmt.Println("ใช้เวลาในการ Run ทั้งสิ้น : ", time.Since(start), "วินาที")
+		return &response{Response: "success", Data: resp}, nil
+	}
+}
+func FineDepartment(s Service) interface{} {
+	type response struct {
+		Response string                `json:"response"`
+		Message  string                `json:"message"`
+		Data     []FineDepartmentModel `json:"data"`
+	}
+	return func(ctx context.Context) (*response, error) {
+		resp, err := s.FineFineDepartmentService()
+		if err != nil {
+			return &response{Response: "fail", Message: err.Error()}, err
 		}
 		return &response{Response: "success", Data: resp}, nil
 	}
