@@ -12,9 +12,14 @@ type (
 
 	CloudPrintRequest struct {
 		FormType    string `json:"form_type"`
-		PrinterIp   string `json:"printer_ip"`
+		PrinterIp   string `json:"printer_ip"`//แสดงชื่อ เครื่องพิมพ์
 		PrinterPort string `json:"printer_port"`
 		DocType     string `json:"doc_type"`
+		//"is_print_short_form": 0,
+		//“is_print_full_form”: 0,
+		//"is_print_cash_form": 0,
+		//"is_print_credit_form": 0
+
 		Data       string `json:"data"`
 	}
 
