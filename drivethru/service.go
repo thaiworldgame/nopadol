@@ -137,6 +137,7 @@ func (s *service) PickupNew(req *NewPickupRequest) (interface{}, error) {
 		fmt.Println("error service level ", err.Error())
 		return nil, err
 	}
+
 	fmt.Println("service Pickup New data -> ", resp)
 	return resp, nil
 }

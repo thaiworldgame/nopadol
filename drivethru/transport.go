@@ -42,7 +42,7 @@ func MakeHandler(s Service) http.Handler {
 	mux.Handle("/user/search", m.Handler(makeListUser(s)))
 	mux.Handle("/branch", m.Handler(makeListCompany(s)))
 	mux.Handle("/pick_zone", m.Handler(makeListZone(s)))
-	mux.Handle("/machine", m.Handler(makeListMachine(s)))
+	mux.Handle("/machine", m.Handler(makeListMachine(s)))//ไม่ได้ใช้แล้ว ใช้ pos_list แทน
 	mux.Handle("/pickup/carbrand", m.Handler(makeSearchCarBranch(s)))
 	mux.Handle("/customer/search", m.Handler(makeSearchCustomer(s)))
 	mux.Handle("/order/customer/update",m.Handler(editCustomerQueue(s)))
@@ -60,7 +60,8 @@ func MakeHandler(s Service) http.Handler {
 	mux.Handle("/queue/product", m.Handler(queueProduct(s)))
 	mux.Handle("/billing/done", m.Handler(billingDone(s)))
 	mux.Handle("/pos/cancel", m.Handler(posCancel(s)))
-	mux.Handle("/pos/list", m.Handler(posList(s)))
+	mux.Handle("/pos/list", m.Handler(posList(s)))// รายการจุด POS
+	mux.Handle("/invoice/list", m.Handler(posList(s)))//รายการเอกสารขาย	เพื่อจะดึงมาพิมพื์ หรือยกเลิกเอกสาร
 
 	//mux.Handle("/pickup/new",m.Handler(pickupNew(s)))
 
