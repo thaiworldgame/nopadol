@@ -27,6 +27,7 @@ type ListQueueModel struct {
 	TimeCreated               string                    `json:"time_created" db:"time_created"`
 	Status                    int                       `json:"status" db:"status"`
 	IsCancel                  int                       `json:"is_cancel" db:"is_cancel"`
+	CustomerId                string                    `json:"customer_id" db:"customer_id"`
 	ArCode                    string                    `json:"ar_code" db:"ar_code"`
 	ArName                    string                    `json:"ar_name" db:"ar_name"`
 	SaleName                  string                    `json:"sale_name" db:"sale_name"`
@@ -178,7 +179,7 @@ func (q *ListQueueModel) QueueProduct(db *sqlx.DB, req *drivethru.QueueProductRe
 	que := ListQueueModel{}
 
 	fmt.Println("Q", req.QueueId)
-	lccommand := `select a.id, que_id as queue_id, car_brand, ref_number as plate_number,uuid, doc_date, number_of_item, a.create_time as time_created, status, a.is_cancel, ifnull(b.code,'') as ar_code, ifnull(b.name,'') as ar_name, ifnull(c.SaleName,'') as sale_name, ifnull(c.SaleCode,'') as sale_code, doc_no, doc_type as source, '' as receiver_name, pickup_time as pickup_datetime, total_amount, 0 as is_loaded, 0 as status_for_saleorder_current, ifnull(sum_item_amount,0) as total_before_amount, ifnull(total_amount,0) as total_after_amount, '' as otp_password, 0 as bill_type, '' as cancel_remark, '' as who_cancel, '' as sale_order from basket a left join Customer b on a.ar_id = b.id left join Sale c on a.sale_id = c.id where que_id = ? and doc_date = CURDATE() order by id`
+	lccommand := `select a.id, que_id as queue_id, car_brand, ref_number as plate_number,uuid, doc_date, number_of_item, a.create_time as time_created, status, a.is_cancel,a.ar_id as customer_id, ifnull(b.code,'') as ar_code, ifnull(b.name,'') as ar_name, ifnull(c.SaleName,'') as sale_name, ifnull(c.SaleCode,'') as sale_code, doc_no, doc_type as source, '' as receiver_name, pickup_time as pickup_datetime, total_amount, 0 as is_loaded, 0 as status_for_saleorder_current, ifnull(sum_item_amount,0) as total_before_amount, ifnull(total_amount,0) as total_after_amount, '' as otp_password, 0 as bill_type, '' as cancel_remark, '' as who_cancel, '' as sale_order from basket a left join Customer b on a.ar_id = b.id left join Sale c on a.sale_id = c.id where que_id = ? and doc_date = CURDATE() order by id`
 	err := db.Get(&que, lccommand, req.QueueId)
 	if err != nil {
 		return map[string]interface{}{
@@ -255,7 +256,7 @@ func (q *ListQueueModel) QueueDetails(db *sqlx.DB, que_id int, access_token stri
 		}, nil
 	}
 
-	lccommand := `select id, que_id as queue_id, car_brand, ref_number as plate_number,uuid, doc_date, number_of_item, create_time as time_created, status, is_cancel, '' as ar_code, '' as ar_name, '' as sale_name, '' as sale_code, doc_no, doc_type as source, '' as receiver_name, pickup_time as pickup_datetime, total_amount, 0 as is_loaded, 0 as status_for_saleorder_current, ifnull(sum_item_amount,0) as total_before_amount, ifnull(total_amount,0) as total_after_amount, '' as otp_password, 0 as bill_type, '' as cancel_remark, '' as who_cancel, '' as sale_order from basket where que_id = ? and doc_date = CURRENT_DATE order by id`
+	lccommand := `select id, que_id as queue_id, car_brand, ref_number as plate_number,uuid, doc_date, number_of_item, create_time as time_created, status, is_cancel, ar_id as customer_id, '' as ar_code, '' as ar_name, '' as sale_name, '' as sale_code, doc_no, doc_type as source, '' as receiver_name, pickup_time as pickup_datetime, total_amount, 0 as is_loaded, 0 as status_for_saleorder_current, ifnull(sum_item_amount,0) as total_before_amount, ifnull(total_amount,0) as total_after_amount, '' as otp_password, 0 as bill_type, '' as cancel_remark, '' as who_cancel, '' as sale_order from basket where que_id = ? and doc_date = CURRENT_DATE order by id`
 	err := db.Get(&q, lccommand, que_id)
 	if err != nil {
 		return map[string]interface{}{
@@ -330,6 +331,7 @@ func (p *pickupModel) PickupNew(db *sqlx.DB, req *drivethru.NewPickupRequest) (i
 	}
 
 	var doc_type int
+	var ar_id int
 
 	doc_type, _ = strconv.Atoi(req.DocType)
 
@@ -374,7 +376,16 @@ func (p *pickupModel) PickupNew(db *sqlx.DB, req *drivethru.NewPickupRequest) (i
 	config.Search(db, user.CompanyID, user.BranchID)
 
 	doc_no, err := getBasketNo(db, user.CompanyID, user.BranchID, doc_type)
-	ar_id := config.DefCustId
+
+	if req.DocType == "1" && req.CustomerId == "" {
+		ar_id = config.DefCustId
+
+	} else {
+		ar_id, err = strconv.Atoi(req.CustomerId)
+		if err != nil {
+			fmt.Println(err.Error())
+		}
+	}
 
 	fmt.Println(qId, doc_type, doc_date, doc_no, user.UserCode, uuid)
 	p.QueId = qId
@@ -947,15 +958,15 @@ func EditCustomerQueue(db *sqlx.DB, req *drivethru.QueueEditCustomer) (interface
 		}, nil
 	}
 
-	cust := CustomerModel{}
+	//cust := CustomerModel{}
 
-	ar_id, err := cust.getIdByCode(db, req.CustomerCode)
-	if err != nil {
-		fmt.Println(err.Error())
-	}
+	//ar_id, err := cust.getIdByCode(db, req.CustomerCode)
+	//if err != nil {
+	//	fmt.Println(err.Error())
+	//}
 
 	lccommand := `update basket set ar_id = ?, edit_by = ?, edit_time = ? where que_id = ? and doc_date = CURDATE()`
-	_, err = db.Exec(lccommand, ar_id, u.UserCode, now.String(), req.QueueId)
+	_, err := db.Exec(lccommand, req.CustomerId, u.UserCode, now.String(), req.QueueId)
 	if err != nil {
 		return map[string]interface{}{
 			"success": false,
@@ -968,7 +979,7 @@ func EditCustomerQueue(db *sqlx.DB, req *drivethru.QueueEditCustomer) (interface
 	que := ListQueueModel{}
 
 	fmt.Println("Q", req.QueueId)
-	lccommand4 := `select a.id, que_id as queue_id, car_brand, ref_number as plate_number,uuid, doc_date, number_of_item, a.create_time as time_created, status, a.is_cancel, ifnull(b.code,'') as ar_code, ifnull(b.name,'') as ar_name, ifnull(c.SaleName,'') as sale_name, ifnull(c.SaleCode,'') as sale_code, doc_no, doc_type as source, '' as receiver_name, pickup_time as pickup_datetime, total_amount, 0 as is_loaded, 0 as status_for_saleorder_current, ifnull(sum_item_amount,0) as total_before_amount, ifnull(total_amount,0) as total_after_amount, '' as otp_password, 0 as bill_type, '' as cancel_remark, '' as who_cancel, '' as sale_order from basket a left join Customer b on a.ar_id = b.id left join Sale c on a.sale_id = c.id where que_id = ? and doc_date = CURDATE() order by id`
+	lccommand4 := `select a.id, que_id as queue_id, car_brand, ref_number as plate_number,uuid, doc_date, number_of_item, a.create_time as time_created, status, a.is_cancel, a.ar_id as customer_id, ifnull(b.code,'') as ar_code, ifnull(b.name,'') as ar_name, ifnull(c.SaleName,'') as sale_name, ifnull(c.SaleCode,'') as sale_code, doc_no, doc_type as source, '' as receiver_name, pickup_time as pickup_datetime, total_amount, 0 as is_loaded, 0 as status_for_saleorder_current, ifnull(sum_item_amount,0) as total_before_amount, ifnull(total_amount,0) as total_after_amount, '' as otp_password, 0 as bill_type, '' as cancel_remark, '' as who_cancel, '' as sale_order from basket a left join Customer b on a.ar_id = b.id left join Sale c on a.sale_id = c.id where que_id = ? and doc_date = CURDATE() order by id`
 	err = db.Get(&que, lccommand4, req.QueueId)
 	if err != nil {
 		return map[string]interface{}{
@@ -1211,6 +1222,7 @@ func (q *ListQueueModel) BillingDone(db *sqlx.DB, req *drivethru.BillingDoneRequ
 			"total_amount":         0,
 			"invoice":              nil,
 			"is_print_short_form":  0,
+			"is_print_full_form":   0,
 			"is_print_cash_form":   0,
 			"is_print_credit_form": 0,
 		}, nil
@@ -1224,6 +1236,7 @@ func (q *ListQueueModel) BillingDone(db *sqlx.DB, req *drivethru.BillingDoneRequ
 			"total_amount":         0,
 			"invoice":              nil,
 			"is_print_short_form":  0,
+			"is_print_full_form":   0,
 			"is_print_cash_form":   0,
 			"is_print_credit_form": 0,
 		}, nil
@@ -1237,6 +1250,7 @@ func (q *ListQueueModel) BillingDone(db *sqlx.DB, req *drivethru.BillingDoneRequ
 			"total_amount":         0,
 			"invoice":              nil,
 			"is_print_short_form":  0,
+			"is_print_full_form":   0,
 			"is_print_cash_form":   0,
 			"is_print_credit_form": 0,
 		}, nil
@@ -1265,6 +1279,7 @@ func (q *ListQueueModel) BillingDone(db *sqlx.DB, req *drivethru.BillingDoneRequ
 						"remain_amount":  sum_remain,
 					},
 					"is_print_short_form":  0,
+					"is_print_full_form":   0,
 					"is_print_cash_form":   0,
 					"is_print_credit_form": 0,
 				}, nil
@@ -1290,6 +1305,7 @@ func (q *ListQueueModel) BillingDone(db *sqlx.DB, req *drivethru.BillingDoneRequ
 								"remain_amount":  sum_remain,
 							},
 							"is_print_short_form":  0,
+							"is_print_full_form":   0,
 							"is_print_cash_form":   0,
 							"is_print_credit_form": 0,
 						}, nil
@@ -1311,6 +1327,7 @@ func (q *ListQueueModel) BillingDone(db *sqlx.DB, req *drivethru.BillingDoneRequ
 								"remain_amount":  sum_remain,
 							},
 							"is_print_short_form":  0,
+							"is_print_full_form":   0,
 							"is_print_cash_form":   0,
 							"is_print_credit_form": 0,
 						}, nil
@@ -1347,6 +1364,7 @@ func (q *ListQueueModel) BillingDone(db *sqlx.DB, req *drivethru.BillingDoneRequ
 										"remain_amount":  sum_remain,
 									},
 									"is_print_short_form":  0,
+									"is_print_full_form":   0,
 									"is_print_cash_form":   0,
 									"is_print_credit_form": 0,
 								}, nil
@@ -1372,6 +1390,7 @@ func (q *ListQueueModel) BillingDone(db *sqlx.DB, req *drivethru.BillingDoneRequ
 								"remain_amount":  sum_remain,
 							},
 							"is_print_short_form":  0,
+							"is_print_full_form":   0,
 							"is_print_cash_form":   0,
 							"is_print_credit_form": 0,
 						}, nil
@@ -1412,6 +1431,7 @@ func (q *ListQueueModel) BillingDone(db *sqlx.DB, req *drivethru.BillingDoneRequ
 									"remain_amount":  sum_remain,
 								},
 								"is_print_short_form":  0,
+								"is_print_full_form":   0,
 								"is_print_cash_form":   0,
 								"is_print_credit_form": 0,
 							}, nil
@@ -1437,6 +1457,7 @@ func (q *ListQueueModel) BillingDone(db *sqlx.DB, req *drivethru.BillingDoneRequ
 								"remain_amount":  sum_remain,
 							},
 							"is_print_short_form":  0,
+							"is_print_full_form":   0,
 							"is_print_cash_form":   0,
 							"is_print_credit_form": 0,
 						}, nil
@@ -1458,6 +1479,7 @@ func (q *ListQueueModel) BillingDone(db *sqlx.DB, req *drivethru.BillingDoneRequ
 								"remain_amount":  sum_remain,
 							},
 							"is_print_short_form":  0,
+							"is_print_full_form":   0,
 							"is_print_cash_form":   0,
 							"is_print_credit_form": 0,
 						}, nil
@@ -1481,6 +1503,7 @@ func (q *ListQueueModel) BillingDone(db *sqlx.DB, req *drivethru.BillingDoneRequ
 								"remain_amount":  sum_remain,
 							},
 							"is_print_short_form":  0,
+							"is_print_full_form":   0,
 							"is_print_cash_form":   0,
 							"is_print_credit_form": 0,
 						}, nil
@@ -1520,6 +1543,7 @@ func (q *ListQueueModel) BillingDone(db *sqlx.DB, req *drivethru.BillingDoneRequ
 									"remain_amount":  sum_remain,
 								},
 								"is_print_short_form":  0,
+								"is_print_full_form":   0,
 								"is_print_cash_form":   0,
 								"is_print_credit_form": 0,
 							}, nil
@@ -1544,6 +1568,7 @@ func (q *ListQueueModel) BillingDone(db *sqlx.DB, req *drivethru.BillingDoneRequ
 								"remain_amount":  sum_remain,
 							},
 							"is_print_short_form":  0,
+							"is_print_full_form":   0,
 							"is_print_cash_form":   0,
 							"is_print_credit_form": 0,
 						}, nil
@@ -1571,6 +1596,7 @@ func (q *ListQueueModel) BillingDone(db *sqlx.DB, req *drivethru.BillingDoneRequ
 						"change_amount":  change_amount,
 					},
 					"is_print_short_form":  0,
+					"is_print_full_form":   0,
 					"is_print_cash_form":   0,
 					"is_print_credit_form": 0,
 				}, nil
@@ -1599,6 +1625,7 @@ func (q *ListQueueModel) BillingDone(db *sqlx.DB, req *drivethru.BillingDoneRequ
 						"change_amount":  change_amount,
 					},
 					"is_print_short_form":  0,
+					"is_print_full_form":   0,
 					"is_print_cash_form":   0,
 					"is_print_credit_form": 0,
 				}, nil
@@ -1629,6 +1656,7 @@ func (q *ListQueueModel) BillingDone(db *sqlx.DB, req *drivethru.BillingDoneRequ
 						"change_amount":  change_amount,
 					},
 					"is_print_short_form":  0,
+					"is_print_full_form":   0,
 					"is_print_cash_form":   0,
 					"is_print_credit_form": 0,
 				}, nil
@@ -1648,6 +1676,7 @@ func (q *ListQueueModel) BillingDone(db *sqlx.DB, req *drivethru.BillingDoneRequ
 						"change_amount":  change_amount,
 					},
 					"is_print_short_form":  0,
+					"is_print_full_form":   0,
 					"is_print_cash_form":   0,
 					"is_print_credit_form": 0,
 				}, nil
@@ -1677,6 +1706,7 @@ func (q *ListQueueModel) BillingDone(db *sqlx.DB, req *drivethru.BillingDoneRequ
 						"remain_amount":  sum_remain,
 					},
 					"is_print_short_form":  0,
+					"is_print_full_form":   0,
 					"is_print_cash_form":   0,
 					"is_print_credit_form": 0,
 				}, nil
@@ -1703,6 +1733,7 @@ func (q *ListQueueModel) BillingDone(db *sqlx.DB, req *drivethru.BillingDoneRequ
 								"remain_amount":  sum_remain,
 							},
 							"is_print_short_form":  0,
+							"is_print_full_form":   0,
 							"is_print_cash_form":   0,
 							"is_print_credit_form": 0,
 						}, nil
@@ -1724,6 +1755,7 @@ func (q *ListQueueModel) BillingDone(db *sqlx.DB, req *drivethru.BillingDoneRequ
 								"remain_amount":  sum_remain,
 							},
 							"is_print_short_form":  0,
+							"is_print_full_form":   0,
 							"is_print_cash_form":   0,
 							"is_print_credit_form": 0,
 						}, nil
@@ -1760,6 +1792,7 @@ func (q *ListQueueModel) BillingDone(db *sqlx.DB, req *drivethru.BillingDoneRequ
 										"remain_amount":  sum_remain,
 									},
 									"is_print_short_form":  0,
+									"is_print_full_form":   0,
 									"is_print_cash_form":   0,
 									"is_print_credit_form": 0,
 								}, nil
@@ -1785,6 +1818,7 @@ func (q *ListQueueModel) BillingDone(db *sqlx.DB, req *drivethru.BillingDoneRequ
 								"remain_amount":  sum_remain,
 							},
 							"is_print_short_form":  0,
+							"is_print_full_form":   0,
 							"is_print_cash_form":   0,
 							"is_print_credit_form": 0,
 						}, nil
@@ -1825,6 +1859,7 @@ func (q *ListQueueModel) BillingDone(db *sqlx.DB, req *drivethru.BillingDoneRequ
 									"remain_amount":  sum_remain,
 								},
 								"is_print_short_form":  0,
+								"is_print_full_form":   0,
 								"is_print_cash_form":   0,
 								"is_print_credit_form": 0,
 							}, nil
@@ -1850,6 +1885,7 @@ func (q *ListQueueModel) BillingDone(db *sqlx.DB, req *drivethru.BillingDoneRequ
 								"remain_amount":  sum_remain,
 							},
 							"is_print_short_form":  0,
+							"is_print_full_form":   0,
 							"is_print_cash_form":   0,
 							"is_print_credit_form": 0,
 						}, nil
@@ -1871,6 +1907,7 @@ func (q *ListQueueModel) BillingDone(db *sqlx.DB, req *drivethru.BillingDoneRequ
 								"remain_amount":  sum_remain,
 							},
 							"is_print_short_form":  0,
+							"is_print_full_form":   0,
 							"is_print_cash_form":   0,
 							"is_print_credit_form": 0,
 						}, nil
@@ -1894,6 +1931,7 @@ func (q *ListQueueModel) BillingDone(db *sqlx.DB, req *drivethru.BillingDoneRequ
 								"remain_amount":  sum_remain,
 							},
 							"is_print_short_form":  0,
+							"is_print_full_form":   0,
 							"is_print_cash_form":   0,
 							"is_print_credit_form": 0,
 						}, nil
@@ -1932,6 +1970,7 @@ func (q *ListQueueModel) BillingDone(db *sqlx.DB, req *drivethru.BillingDoneRequ
 									"remain_amount":  sum_remain,
 								},
 								"is_print_short_form":  0,
+								"is_print_full_form":   0,
 								"is_print_cash_form":   0,
 								"is_print_credit_form": 0,
 							}, nil
@@ -1956,6 +1995,7 @@ func (q *ListQueueModel) BillingDone(db *sqlx.DB, req *drivethru.BillingDoneRequ
 								"remain_amount":  sum_remain,
 							},
 							"is_print_short_form":  0,
+							"is_print_full_form":   0,
 							"is_print_cash_form":   0,
 							"is_print_credit_form": 0,
 						}, nil
@@ -1984,6 +2024,7 @@ func (q *ListQueueModel) BillingDone(db *sqlx.DB, req *drivethru.BillingDoneRequ
 						"change_amount":  change_amount,
 					},
 					"is_print_short_form":  0,
+					"is_print_full_form":   0,
 					"is_print_cash_form":   0,
 					"is_print_credit_form": 0,
 				}, nil
@@ -2012,6 +2053,7 @@ func (q *ListQueueModel) BillingDone(db *sqlx.DB, req *drivethru.BillingDoneRequ
 						"change_amount":  change_amount,
 					},
 					"is_print_short_form":  0,
+					"is_print_full_form":   0,
 					"is_print_cash_form":   0,
 					"is_print_credit_form": 0,
 				}, nil
@@ -2042,6 +2084,7 @@ func (q *ListQueueModel) BillingDone(db *sqlx.DB, req *drivethru.BillingDoneRequ
 						"change_amount":  change_amount,
 					},
 					"is_print_short_form":  0,
+					"is_print_full_form":   0,
 					"is_print_cash_form":   0,
 					"is_print_credit_form": 0,
 				}, nil
@@ -2111,6 +2154,7 @@ func (q *ListQueueModel) BillingDone(db *sqlx.DB, req *drivethru.BillingDoneRequ
 								"change_amount":  change_amount,
 							},
 							"is_print_short_form":  0,
+							"is_print_full_form":   0,
 							"is_print_cash_form":   0,
 							"is_print_credit_form": 0,
 						},
@@ -2151,6 +2195,7 @@ func (q *ListQueueModel) BillingDone(db *sqlx.DB, req *drivethru.BillingDoneRequ
 								"change_amount":  change_amount,
 							},
 							"is_print_short_form":  0,
+							"is_print_full_form":   0,
 							"is_print_cash_form":   0,
 							"is_print_credit_form": 0,
 						}, nil
@@ -2264,6 +2309,7 @@ func (q *ListQueueModel) BillingDone(db *sqlx.DB, req *drivethru.BillingDoneRequ
 			"change_amount":  change_amount,
 		},
 		"is_print_short_form":  0,
+		"is_print_full_form":   0,
 		"is_print_cash_form":   0,
 		"is_print_credit_form": 0,
 	}, nil
@@ -2374,7 +2420,7 @@ func (q *ListQueueModel) PosList(db *sqlx.DB, req *drivethru.AccessTokenRequest)
 	//}
 
 	rs, err := db.Query("select id,company_id,branch_id,machine_no,machine_code,def_wh_id,def_shelf_id" +
-		",is_open from npdl.pos_machine")
+		",is_open from npdl.pos_machine where is_open = 0 order by machine_no")
 	if err != nil {
 		fmt.Println("error query database ")
 		return nil, err
@@ -2403,7 +2449,92 @@ func (q *ListQueueModel) PosList(db *sqlx.DB, req *drivethru.AccessTokenRequest)
 		"error":   false,
 		"message": "",
 		"success": true,
-		"machine":   Mcs,
+		"machine": Mcs,
+	}, nil
+}
+
+
+
+func (q *ListQueueModel) InvoiceList(db *sqlx.DB, req *drivethru.AccessTokenRequest) (interface{}, error) {
+	que := []ListQueueModel{}
+	que_data := []ListQueueModel{}
+
+	//lccommand := `select id, que_id as queue_id, car_brand, ref_number as plate_number,uuid, doc_date, number_of_item, create_time as time_created, status, is_cancel, '' as ar_code, '' as ar_name, '' as sale_name, '' as sale_code, doc_no, doc_type as source, '' as receiver_name, pickup_time as pickup_datetime, total_amount, 0 as is_loaded, 0 as status_for_saleorder_current, ifnull(sum_item_amount,0) as total_before_amount, ifnull(total_amount,0) as total_after_amount, '' as otp_password, 0 as bill_type, '' as cancel_remark, '' as who_cancel, '' as sale_order from basket where doc_date = CURRENT_DATE order by id`
+	lccommand := `call USP_DT_SearchListQue(?, ?, ?, ?, ?, ?)`
+	err := db.Select(&que, lccommand, req.AccessToken)
+	//err := db.Select(&que, lccommand)
+	if err != nil {
+		return map[string]interface{}{
+			"error":   true,
+			"message": "Queue List Doc Error = " + err.Error(),
+			"success": false,
+			"order":   nil,
+		}, nil
+	}
+
+	for _, qid := range que {
+
+		fmt.Println("que item = ", qid.Id, qid.QueueId, qid.UUID)
+
+		lccommand := `select id, item_id, item_code, item_name ,bar_code as item_bar_code, request_qty, pick_qty as qty_before, checkout_qty as qty_after, price as item_price, unit_code as item_unit_code, pick_amount as total_price_before, checkout_amount as total_price_after, rate1, '' as sale_code, average_cost, line_number, ifnull(zone_id,'A') as pick_zone_id,is_check_out as is_check from basket_sub where basket_id = ? and que_id = ? and uuid = ? and doc_date = CURDATE() order by line_number`
+		err := db.Select(&qid.Item, lccommand, qid.Id, qid.QueueId, qid.UUID)
+		if err != nil {
+			return map[string]interface{}{
+				"error":   true,
+				"message": "Queue List item Error = " + err.Error(),
+				"success": false,
+				"order":   nil,
+			}, nil
+		}
+
+		//fmt.Println("ItemCode = ", qid.Item[0].ItemCode)
+
+		lccommand1 := `select phone_no from owner_phone where basket_id = ? and que_id = ? and uuid = ? and doc_no = ?  order by id`
+		err = db.Select(&qid.OwnerPhone, lccommand1, qid.Id, qid.QueueId, qid.UUID, qid.DocNo)
+		if err != nil {
+			return map[string]interface{}{
+				"error":   true,
+				"message": "Queue List phone Error = " + err.Error(),
+				"success": false,
+				"order":   nil,
+			}, nil
+		}
+
+		lccommand2 := `select phone_no from order_trust_phone where basket_id = ? and que_id = ? and uuid = ? and doc_no = ?  order by id`
+		err = db.Select(&qid.ReceiverPhone, lccommand2, qid.Id, qid.QueueId, qid.UUID, qid.DocNo)
+		if err != nil {
+			return map[string]interface{}{
+				"error":   true,
+				"message": "Queue List phone Error = " + err.Error(),
+				"success": false,
+				"order":   nil,
+			}, nil
+		}
+
+		if qid.Item == nil {
+			qid.Item = []QueueItem{}
+		}
+
+		if qid.OwnerPhone == nil {
+			qid.OwnerPhone = []OwnerPhoneModel{}
+		}
+
+		if qid.ReceiverPhone == nil {
+			qid.ReceiverPhone = []OwnerPhoneModel{}
+		}
+
+		if qid.StatusForSaleorderHistory == nil {
+			qid.StatusForSaleorderHistory = []QueueStatusHistoryModel{}
+		}
+
+		que_data = append(que_data, qid)
+	}
+
+	return map[string]interface{}{
+		"error":   false,
+		"message": "",
+		"success": true,
+		"machine": que_data,
 	}, nil
 }
 
