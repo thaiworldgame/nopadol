@@ -87,7 +87,7 @@ func makeNewCustomer(s Service) interface{} {
 			return nil, fmt.Errorf(err.Error())
 		}
 		return map[string]interface{}{
-			"member": resp,
+			"result": resp,
 		}, nil
 	}
 }
@@ -121,7 +121,7 @@ func makeUpdateCustomer(s Service) interface{} {
 			return nil, fmt.Errorf(err.Error())
 		}
 		return map[string]interface{}{
-			"member": resp,
+			"result": resp,
 		}, nil
 	}
 }
