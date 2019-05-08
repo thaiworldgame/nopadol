@@ -9,18 +9,24 @@ import (
 )
 
 type CustomerModel struct {
-	Id         int64     `db:"id"`
-	Code       string    `db:"code"`
-	Name       string    `db:"name"`
-	Address    string    `db:"address"`
-	Telephone  string    `db:"telephone"`
-	BillCredit int64     `db:"bill_credit"`
-	Email      string    `json:"email"`
-	CompanyID  int       `json:"company_id"`
-	CreateBy   string    `json:"create_by"`
-	CreateTime time.Time `json:"create_time"`
-	UpdateBy   string    `json:"update_by"`
-	UpdateTime time.Time `json:"update_time"`
+	Id           int64     `db:"id"`
+	Code         string    `db:"code"`
+	Name         string    `db:"name"`
+	Address      string    `db:"address"`
+	Telephone    string    `db:"telephone"`
+	BillCredit   int64     `db:"bill_credit"`
+	DebtAmount   float64   `db:"debt_amount"`
+	DebtLimit    float64   `db:"debt_limit"`
+	Email        string    `db:"email"`
+	CompanyID    int       `db:"company_id"`
+	CreateBy     string    `db:"create_by"`
+	CreateTime   time.Time `db:"create_time"`
+	UpdateBy     string    `db:"update_by"`
+	UpdateTime   time.Time `db:"update_time"`
+	Fax          string    `db:"fax"`
+	TaxNo        string    `db:"tax_no"`
+	MemberID     string    `db:"member_id"`
+	PointBalance float64   `db:"point_balance"`
 }
 
 type customerRepository struct{ db *sqlx.DB }
@@ -101,7 +107,13 @@ func (cr *customerRepository) StoreCustomer(req *customer.CustomerTemplate) (res
 		Name:       req.Name,
 		Address:    req.Address,
 		Telephone:  req.Telephone,
+		Fax:        req.Fax,
+		TaxNo:      req.TaxNo,
 		BillCredit: req.BillCredit,
+		DebtAmount: req.DebtAmount,
+		DebtLimit:  req.DebtLimit,
+		MemberID: req.MemberID,
+		PointBalance: req.PointBalance,
 		Email:      req.Email,
 		CompanyID:  req.CompanyID,
 		CreateBy:   req.CreateBy,
@@ -111,10 +123,7 @@ func (cr *customerRepository) StoreCustomer(req *customer.CustomerTemplate) (res
 	}
 	// check case insert & update  (0,1)
 	var id int64
-	//if req.Id == 0 {
-	//	id, err = cus.getIdByCode(cr.db, cus.Code)
-	//	return nil, err
-	//}
+
 
 	cus.Id = id
 	return cus.save(cr.db)
@@ -126,7 +135,7 @@ func (c *CustomerModel) getIdByCode(db *sqlx.DB, code string) (int64, error) {
 	fmt.Println(sql)
 	var curID int64
 	db.QueryRow(sql).Scan(&curID)
-	fmt.Println("current id -> ",curID)
+	fmt.Println("current id -> ", curID)
 	return curID, nil
 }
 

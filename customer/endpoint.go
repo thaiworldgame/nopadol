@@ -61,9 +61,17 @@ func makeNewCustomer(s Service) interface{} {
 		Name         string  `json:"name"`
 		BillAddress  string  `json:"bill_address"`
 		Telephone    string  `json:"telephone"`
+		Fax          string  `json:"fax"`
+		TaxNo        string  `json:"tax_no"`
+		BillCredit   float64 `json:"bill_credit"`
+		DebtAmount   float64 `json:"debt_amount"`
+		DebtLimit    float64 `json:"debt_limit"`
+		MemberID     string  `json:"member_id"`
+		PointBalance float64 `json:"point_balance"`
 		Email        string  `json:"email"`
 		CreditAmount float64 `json:"credit_amount"`
 		CompanyID    int     `json:"company_id"`
+		BranchID     int     `json:"branch_id"`
 	}
 
 	return func(ctx context.Context, req *request) (interface{}, error) {
@@ -78,9 +86,16 @@ func makeNewCustomer(s Service) interface{} {
 			Email:        req.Email,
 			CompanyID:    req.CompanyID,
 			CreateBy:     userID,
+			Fax:          req.Fax,
+			TaxNo:        req.TaxNo,
+			BillCredit:   req.BillCredit,
+			DebtAmount:   req.DebtAmount,
+			DebtLimit:    req.DebtLimit,
+			MemberID:     req.MemberID,
+			PointBalance: req.PointBalance,
 		}
 
-		fmt.Println("start endpoint store Customer with param , ",ct)
+		fmt.Println("start endpoint store Customer with param , ", ct)
 		resp, err := s.StoreCustomer(&ct)
 		if err != nil {
 			fmt.Println("endpoint error =", err.Error())

@@ -19,43 +19,10 @@ type CustomerTemplate struct {
 	CreditAmount float64 `json:"credit_amount"`
 	CompanyID    int     `json:"company_id"`
 	CreateBy     string  `json:"create_by"`
+	Fax          string  `json:"fax"`
+	TaxNo        string  `json:"tax_no"`
+	DebtAmount   float64 `json:"debt_amount"`
+	DebtLimit    float64 `json:"debt_limit"`
+	MemberID     string  `json:"member_id"`
+	PointBalance float64 `json:"point_balance"`
 }
-
-//type CusType int
-//
-//const (
-//	CONTRACTOR CusType = iota
-//	RETAILER
-//	PERSON
-//	COMPANY
-//	GOVERNMENT
-//	ACADEMY
-//)
-//
-//type Customer struct {
-//	CusType
-//	Contact *Person
-//	Name    string
-//	debit   decimal.Decimal
-//	credit  decimal.Decimal
-//}
-//
-//type Rank int
-//
-//const (
-//	A Rank = iota
-//	B
-//	C
-//	D
-//)
-//
-//// CreditScore of customer
-//type CreditScore struct {
-//	*Period
-//	*Customer
-//	Rank
-//	KI1Continous      int
-//	KI2PaymentDue     int
-//	KI3Responsibility int
-//	KI4Charactor      int
-//}
