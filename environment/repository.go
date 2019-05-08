@@ -7,4 +7,6 @@ type Repository interface {
 	SearchProjectByKeyword(req *SearchByKeywordTemplate) (interface{}, error)
 	SearchAllocateById(req *SearchByIdTemplate) (interface{}, error)
 	SearchAllocateByKeyword(req *SearchByKeywordTemplate) (interface{}, error)
+	SearchCustContactByIdRepo(req *SearchByIdTemplate) ([]FindCustContactModel, error)
+	SearchCustContactByKeywordRepo(req *SearchByKeywordTemplate) ([]FindCustContactModel, error)
 }

@@ -174,7 +174,7 @@ func (repo *salesRepository) FindBankBranchRepo() ([]sales.BankBranchModel, erro
 func (repo *salesRepository) FineDepartmentRepo() ([]sales.FineDepartmentModel, error) {
 
 	sql := `select id, company_id, branch_id, code, name, active_status
-	from Department`
+	from Department `
 
 	Cp := []sales.FineDepartmentModel{}
 	sqls, err := repo.db.Query(sql)

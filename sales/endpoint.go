@@ -59,6 +59,7 @@ type (
 		ConfirmTime         string              `json:"confirm_time"`
 		CancelBy            string              `json:"cancel_by"`
 		CancelTime          string              `json:"cancel_time"`
+		ContactId           int64               `json:"contact_id"`
 		Subs                []NewQuoItemRequest `json:"subs"`
 	}
 
@@ -136,6 +137,7 @@ type (
 		ConfirmTime         string               `json:"confirm_time"`
 		CancelBy            string               `json:"cancel_by"`
 		CancelTime          string               `json:"cancel_time"`
+		ContactId           int64                `json:"contact_id"`
 		Subs                []NewSaleItemRequest `json:"subs"`
 	}
 
@@ -513,6 +515,7 @@ func CreateQuotation(s Service) interface{} {
 			TaxAmount:           req.TaxAmount,
 			TotalAmount:         req.TotalAmount,
 			CreateBy:            req.CreateBy,
+			ContactId:           req.ContactId,
 			Subs:                q.Subs,
 		})
 		if err != nil {
@@ -571,6 +574,7 @@ func map_quo_request(x *NewQuoRequest) NewQuoTemplate {
 		TaxAmount:           x.TaxAmount,
 		TotalAmount:         x.TotalAmount,
 		CreateBy:            x.CreateBy,
+		ContactId:           x.ContactId,
 		Subs:                subs,
 	}
 }
@@ -718,6 +722,7 @@ func CreateSaleOrder(s Service) interface{} {
 			TaxAmount:           req.TaxAmount,
 			TotalAmount:         req.TotalAmount,
 			CreateBy:            req.CreateBy,
+			ContactId:           req.ContactId,
 			Subs:                so.Subs,
 		})
 		if err != nil {
@@ -762,6 +767,7 @@ func map_sale_request(x *NewSaleRequest) NewSaleTemplate {
 		TaxAmount:           x.TaxAmount,
 		TotalAmount:         x.TotalAmount,
 		CreateBy:            x.CreateBy,
+		ContactId:           x.ContactId,
 		Subs:                subs,
 	}
 }

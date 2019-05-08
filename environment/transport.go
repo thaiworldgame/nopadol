@@ -29,13 +29,18 @@ func MakeHandler(s Service) http.Handler {
 	}
 
 	mux := http.NewServeMux()
-
+	// ค้นหาแผนก
 	mux.Handle("/department/search/id", m.Handler(SearchDepartmentById(s)))
 	mux.Handle("/department/search/keyword", m.Handler(SearchDepartmentByKeyword(s)))
+	// ค้นหาโปรเจ็ค
 	mux.Handle("/project/search/id", m.Handler(SearchProjectById(s)))
 	mux.Handle("/project/search/keyword", m.Handler(SearchProjectByKeyword(s)))
+	// ค้นหาการจัดสรร
 	mux.Handle("/allocate/search/id", m.Handler(SearchAllocateById(s)))
 	mux.Handle("/allocate/search/keyword", m.Handler(SearchAllocateByKeyword(s)))
+	// ค้นหาผู้ติดต่อ
+	mux.Handle("/find/custcontact/id", m.Handler(SearchCustContactById(s)))
+	mux.Handle("/find/custcontact/keyword", m.Handler(SearchCustContactByKeyword(s)))
 
 	return mustLogin()(mux)
 }
