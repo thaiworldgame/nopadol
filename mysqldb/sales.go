@@ -121,6 +121,7 @@ type NewQuoModel struct {
 	ConfirmTime         string            `db:"ConfirmTime"`
 	CancelBy            string            `db:"CancelBy"`
 	CancelTime          string            `db:"CancelTime"`
+	ContactId           int64             `db:"ContactId"`
 	Subs                []NewQuoItemModel `db:"subs"`
 }
 
@@ -215,6 +216,7 @@ type NewSaleModel struct {
 	ConfirmTime         string             `db:"ConfirmTime"`
 	CancelBy            string             `db:"CancelBy"`
 	CancelTime          string             `db:"CancelTime"`
+	ContactId           int64              `db:"ContactId"`
 	Subs                []NewSaleItemModel `db:"subs"`
 }
 
@@ -745,7 +747,7 @@ func (repo *salesRepository) CreateQuotation(req *sales.NewQuoTemplate) (resp in
 
 		uuid = GetAccessToken()
 
-		sql := `INSERT INTO Quotation(uuid,DocNo,DocDate,BillType,ArId,ArCode,ArName,SaleId,SaleCode,SaleName,DepartId,RefNo,JobId,TaxType,TaxRate,DueDate,ExpireDate,DeliveryDate,AssertStatus,IsConditionSend,MyDescription,SumOfItemAmount,DiscountWord,DiscountAmount,AfterDiscountAmount,BeforeTaxAmount,TaxAmount,TotalAmount,NetDebtAmount,ProjectId,CreateBy,CreateTime,Validity,CreditDay,ExpireCredit,DeliveryDay,AllocateId,DocType,BranchId,CompanyId) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`
+		sql := `INSERT INTO Quotation(uuid,DocNo,DocDate,BillType,ArId,ArCode,ArName,SaleId,SaleCode,SaleName,DepartId,RefNo,JobId,TaxType,TaxRate,DueDate,ExpireDate,DeliveryDate,AssertStatus,IsConditionSend,MyDescription,SumOfItemAmount,DiscountWord,DiscountAmount,AfterDiscountAmount,BeforeTaxAmount,TaxAmount,TotalAmount,NetDebtAmount,ProjectId,CreateBy,CreateTime,Validity,CreditDay,ExpireCredit,DeliveryDay,AllocateId,DocType,BranchId,CompanyId,ContactId) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`
 		res, err := repo.db.Exec(sql,
 			uuid,
 			req.DocNo,
@@ -786,7 +788,8 @@ func (repo *salesRepository) CreateQuotation(req *sales.NewQuoTemplate) (resp in
 			req.AllocateId,
 			req.DocType,
 			req.BranchId,
-			req.CompanyId)
+			req.CompanyId,
+			req.ContactId)
 
 		fmt.Println("query=", sql, "Hello")
 		if err != nil {
@@ -850,9 +853,9 @@ func (repo *salesRepository) CreateQuotation(req *sales.NewQuoTemplate) (resp in
 		req.BeforeTaxAmount, req.TaxAmount, req.TotalAmount = config.CalcTaxItem(req.TaxType, req.TaxRate, req.AfterDiscountAmount)
 		req.NetDebtAmount = req.TotalAmount
 
-		sql := `Update Quotation set DocDate=?,BillType=?,ArId=?,ArCode=?,ArName=?,SaleId=?,SaleCode=?,SaleName=?,DepartId=?,RefNo=?,JobId=?,TaxType=?,TaxRate=?,DueDate=?,ExpireDate=?,DeliveryDate=?,AssertStatus=?,IsConditionSend=?,MyDescription=?,SumOfItemAmount=?,DiscountWord=?,DiscountAmount=?,AfterDiscountAmount=?,BeforeTaxAmount=?,TaxAmount=?,TotalAmount=?,NetDebtAmount=?,ProjectId=?,EditBy=?,EditTime=?,AllocateId=?,DocType=?,CompanyId=?,BranchId=?,Validity=?,CreditDay=?,ExpireCredit=?,DeliveryDay=? where Id=?`
+		sql := `Update Quotation set DocDate=?,BillType=?,ArId=?,ArCode=?,ArName=?,SaleId=?,SaleCode=?,SaleName=?,DepartId=?,RefNo=?,JobId=?,TaxType=?,TaxRate=?,DueDate=?,ExpireDate=?,DeliveryDate=?,AssertStatus=?,IsConditionSend=?,MyDescription=?,SumOfItemAmount=?,DiscountWord=?,DiscountAmount=?,AfterDiscountAmount=?,BeforeTaxAmount=?,TaxAmount=?,TotalAmount=?,NetDebtAmount=?,ProjectId=?,EditBy=?,EditTime=?,AllocateId=?,DocType=?,CompanyId=?,BranchId=?,Validity=?,CreditDay=?,ExpireCredit=?,DeliveryDay=?,ContactId=? where Id=?`
 		fmt.Println("sql update = ", sql)
-		id, err := repo.db.Exec(sql, req.DocDate, req.BillType, req.ArId, req.ArCode, req.ArName, req.SaleId, req.SaleCode, req.SaleName, req.DepartId, req.RefNo, req.JobId, req.TaxType, req.TaxRate, req.DueDate, req.ExpireDate, req.DeliveryDate, req.AssertStatus, req.IsConditionSend, req.MyDescription, req.SumOfItemAmount, req.DiscountWord, req.DiscountAmount, req.AfterDiscountAmount, req.BeforeTaxAmount, req.TaxAmount, req.TotalAmount, req.NetDebtAmount, req.ProjectId, req.EditBy, req.EditTime, req.AllocateId, req.DocType, req.CompanyId, req.BranchId, req.Validity, req.CreditDay, req.ExpireCredit, req.DeliveryDay, req.Id)
+		id, err := repo.db.Exec(sql, req.DocDate, req.BillType, req.ArId, req.ArCode, req.ArName, req.SaleId, req.SaleCode, req.SaleName, req.DepartId, req.RefNo, req.JobId, req.TaxType, req.TaxRate, req.DueDate, req.ExpireDate, req.DeliveryDate, req.AssertStatus, req.IsConditionSend, req.MyDescription, req.SumOfItemAmount, req.DiscountWord, req.DiscountAmount, req.AfterDiscountAmount, req.BeforeTaxAmount, req.TaxAmount, req.TotalAmount, req.NetDebtAmount, req.ProjectId, req.EditBy, req.EditTime, req.AllocateId, req.DocType, req.CompanyId, req.BranchId, req.Validity, req.CreditDay, req.ExpireCredit, req.DeliveryDay, req.ContactId, req.Id)
 		if err != nil {
 			fmt.Println("Error = ", err.Error())
 			return nil, err
@@ -1027,7 +1030,7 @@ func (repo *salesRepository) SearchQuoById(req *sales.SearchByIdTemplate) (resp 
 
 	q := NewQuoModel{}
 
-	sql := `select a.Id,a.DocNo,a.DocDate,a.DocType,a.Validity,a.BillType,a.ArId,a.ArCode,a.ArName,a.SaleId,a.SaleCode,a.SaleName,ifnull(a.DepartId,0) as DepartId,ifnull(a.RefNo,'') as RefNo,ifnull(a.JobId,'') as JobId,a.TaxType,a.IsConfirm,a.BillStatus,a.CreditDay,ifnull(a.DueDate,'') as DueDate,a.ExpireCredit,ifnull(a.ExpireDate,'') as ExpireDate,a.DeliveryDay,ifnull(a.DeliveryDate,'') as DeliveryDate,a.AssertStatus,a.IsConditionSend,ifnull(a.MyDescription,'') as MyDescription,a.SumOfItemAmount,ifnull(a.DiscountWord,'') as DiscountWord,a.DiscountAmount,a.AfterDiscountAmount,a.BeforeTaxAmount,a.TaxAmount,a.TotalAmount,a.NetDebtAmount,a.TaxRate,a.ProjectId,a.AllocateId,a.IsCancel,ifnull(a.CreateBy,'') as CreateBy,ifnull(a.CreateTime,'') as CreateTime,ifnull(a.EditBy,'') as EditBy,ifnull(a.EditTime,'') as EditTime,ifnull(a.CancelBy,'') as CancelBy,ifnull(a.CancelTime,'') as CancelTime,ifnull(b.address,'') as ArBillAddress,ifnull(b.telephone,'') as ArTelephone ,ifnull(a.ConfirmBy,'') as ConfirmBy,ifnull(a.ConfirmTime,'') as ConfirmTime 
+	sql := `select a.Id,a.DocNo,a.DocDate,a.DocType,a.Validity,a.BillType,a.ArId,a.ArCode,a.ArName,a.SaleId,a.SaleCode,a.SaleName,ifnull(a.DepartId,0) as DepartId,ifnull(a.RefNo,'') as RefNo,ifnull(a.JobId,'') as JobId,a.TaxType,a.IsConfirm,a.BillStatus,a.CreditDay,ifnull(a.DueDate,'') as DueDate,a.ExpireCredit,ifnull(a.ExpireDate,'') as ExpireDate,a.DeliveryDay,ifnull(a.DeliveryDate,'') as DeliveryDate,a.AssertStatus,a.IsConditionSend,ifnull(a.MyDescription,'') as MyDescription,a.SumOfItemAmount,ifnull(a.DiscountWord,'') as DiscountWord,a.DiscountAmount,a.AfterDiscountAmount,a.BeforeTaxAmount,a.TaxAmount,a.TotalAmount,a.NetDebtAmount,a.TaxRate,a.ProjectId,a.AllocateId,a.IsCancel,ifnull(a.CreateBy,'') as CreateBy,ifnull(a.CreateTime,'') as CreateTime,ifnull(a.EditBy,'') as EditBy,ifnull(a.EditTime,'') as EditTime,ifnull(a.CancelBy,'') as CancelBy,ifnull(a.CancelTime,'') as CancelTime,ifnull(b.address,'') as ArBillAddress,ifnull(b.telephone,'') as ArTelephone ,ifnull(a.ConfirmBy,'') as ConfirmBy,ifnull(a.ConfirmTime,'') as ConfirmTime, ifnull(a.ContactId,'') as ContactId
 	from Quotation a left join Customer b on a.ArId = b.id  
 	where a.Id = ?`
 	err = repo.db.Get(&q, sql, req.Id)
@@ -1466,6 +1469,7 @@ func map_quo_template(x NewQuoModel) sales.NewQuoTemplate {
 		IsCancel:            x.IsCancel,
 		IsConfirm:           x.IsConfirm,
 		JobId:               x.JobId,
+		ContactId:           x.ContactId,
 	}
 }
 
@@ -1593,7 +1597,7 @@ func (repo *salesRepository) CreateSaleOrder(req *sales.NewSaleTemplate) (resp i
 
 		uuid = GetAccessToken()
 
-		sql := `INSERT INTO SaleOrder(uuid,DocNo,DocDate,CompanyId,BranchId,DocType,BillType,TaxType,ArId,ArCode,ArName,SaleId,SaleCode,SaleName,DepartId,CreditDay,DueDate,DeliveryDay,DeliveryDate,TaxRate,IsConfirm,MyDescription,BillStatus,HoldingStatus,SumOfItemAmount,DiscountWord,DiscountAmount,AfterDiscountAmount,BeforeTaxAmount,TaxAmount,TotalAmount,NetDebtAmount,IsCancel,IsConditionSend,DeliveryAddressId,CarLicense,PersonReceiveTel,JobId,ProjectId,AllocateId,CreateBy,CreateTime) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`
+		sql := `INSERT INTO SaleOrder(uuid,DocNo,DocDate,CompanyId,BranchId,DocType,BillType,TaxType,ArId,ArCode,ArName,SaleId,SaleCode,SaleName,DepartId,CreditDay,DueDate,DeliveryDay,DeliveryDate,TaxRate,IsConfirm,MyDescription,BillStatus,HoldingStatus,SumOfItemAmount,DiscountWord,DiscountAmount,AfterDiscountAmount,BeforeTaxAmount,TaxAmount,TotalAmount,NetDebtAmount,IsCancel,IsConditionSend,DeliveryAddressId,CarLicense,PersonReceiveTel,JobId,ProjectId,AllocateId,CreateBy,CreateTime,ContactId) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`
 		res, err := repo.db.Exec(sql,
 			uuid,
 			req.DocNo,
@@ -1636,7 +1640,8 @@ func (repo *salesRepository) CreateSaleOrder(req *sales.NewSaleTemplate) (resp i
 			req.ProjectId,
 			req.AllocateId,
 			req.CreateBy,
-			req.CreateTime)
+			req.CreateTime,
+			req.ContactId)
 		//fmt.Println("This Value =", req.TotalAmount)
 		//fmt.Println("query=", sql, "Hello")
 		if err != nil {
@@ -1664,9 +1669,9 @@ func (repo *salesRepository) CreateSaleOrder(req *sales.NewSaleTemplate) (resp i
 
 		req.BeforeTaxAmount, req.TaxAmount, req.TotalAmount = config.CalcTaxItem(req.TaxType, req.TaxRate, req.AfterDiscountAmount)
 
-		sql := `Update SaleOrder set DocNo=?,DocDate=?,CompanyId=?,BranchId=?,DocType=?,BillType=?,TaxType=?,ArId=?,ArCode=?,ArName=?,SaleId=?,SaleCode=?,SaleName=?,DepartId=?,CreditDay=?,DueDate=?,DeliveryDay=?,DeliveryDate=?,TaxRate=?,IsConfirm=?,MyDescription=?,BillStatus=?,HoldingStatus=?,SumOfItemAmount=?,DiscountWord=?,DiscountAmount=?,AfterDiscountAmount=?,BeforeTaxAmount=?,TaxAmount=?,TotalAmount=?,NetDebtAmount=?,IsCancel=?,IsConditionSend=?,DeliveryAddressId=?,CarLicense=?,PersonReceiveTel=?,JobId=?,ProjectId=?,AllocateId=?,EditBy=?,EditTime=? where Id=?`
+		sql := `Update SaleOrder set DocNo=?,DocDate=?,CompanyId=?,BranchId=?,DocType=?,BillType=?,TaxType=?,ArId=?,ArCode=?,ArName=?,SaleId=?,SaleCode=?,SaleName=?,DepartId=?,CreditDay=?,DueDate=?,DeliveryDay=?,DeliveryDate=?,TaxRate=?,IsConfirm=?,MyDescription=?,BillStatus=?,HoldingStatus=?,SumOfItemAmount=?,DiscountWord=?,DiscountAmount=?,AfterDiscountAmount=?,BeforeTaxAmount=?,TaxAmount=?,TotalAmount=?,NetDebtAmount=?,IsCancel=?,IsConditionSend=?,DeliveryAddressId=?,CarLicense=?,PersonReceiveTel=?,JobId=?,ProjectId=?,AllocateId=?,EditBy=?,EditTime=?,ContactId=? where Id=?`
 		fmt.Println("sql update = ", sql)
-		id, err := repo.db.Exec(sql, req.DocNo, req.DocDate, req.CompanyId, req.BranchId, req.DocType, req.BillType, req.TaxType, req.ArId, req.ArCode, req.ArName, req.SaleId, req.SaleCode, req.SaleName, req.DepartId, req.CreditDay, req.DueDate, req.DeliveryDay, req.DeliveryDate, req.TaxRate, req.IsConfirm, req.MyDescription, req.BillStatus, req.HoldingStatus, req.SumOfItemAmount, req.DiscountWord, req.DiscountAmount, req.AfterDiscountAmount, req.BeforeTaxAmount, req.TaxAmount, req.TotalAmount, req.NetDebtAmount, req.IsCancel, req.IsConditionSend, req.DeliveryAddressId, req.CarLicense, req.PersonReceiveTel, req.JobId, req.ProjectId, req.AllocateId, req.EditBy, req.EditTime, req.Id)
+		id, err := repo.db.Exec(sql, req.DocNo, req.DocDate, req.CompanyId, req.BranchId, req.DocType, req.BillType, req.TaxType, req.ArId, req.ArCode, req.ArName, req.SaleId, req.SaleCode, req.SaleName, req.DepartId, req.CreditDay, req.DueDate, req.DeliveryDay, req.DeliveryDate, req.TaxRate, req.IsConfirm, req.MyDescription, req.BillStatus, req.HoldingStatus, req.SumOfItemAmount, req.DiscountWord, req.DiscountAmount, req.AfterDiscountAmount, req.BeforeTaxAmount, req.TaxAmount, req.TotalAmount, req.NetDebtAmount, req.IsCancel, req.IsConditionSend, req.DeliveryAddressId, req.CarLicense, req.PersonReceiveTel, req.JobId, req.ProjectId, req.AllocateId, req.EditBy, req.EditTime, req.ContactId, req.Id)
 		if err != nil {
 			fmt.Println("Error = ", err.Error())
 			return nil, err
@@ -1736,7 +1741,7 @@ func (repo *salesRepository) SearchSaleOrderById(req *sales.SearchByIdTemplate) 
 
 	s := NewSaleModel{}
 
-	sql := `select a.Id,a.DocNo,ifnull(a.DocDate,'') as DocDate,a.CompanyId,a.BranchId,a.DocType,a.BillType,a.TaxType,a.ArId,ifnull(a.ArCode,'') as ArCode,ifnull(a.ArName,'') as ArName,a.SaleId,ifnull(a.SaleCode,'') as SaleCode,ifnull(a.SaleName,'') as SaleName,a.DepartId,a.CreditDay,ifnull(a.DueDate,'') as DueDate,a.DeliveryDay,ifnull(a.DeliveryDate,'') as DeliveryDate,a.TaxRate,a.IsConfirm,ifnull(a.MyDescription,'') as MyDescription,a.BillStatus,a.HoldingStatus,a.SumOfItemAmount,ifnull(a.DiscountWord,'') as DiscountWord,a.DiscountAmount,a.AfterDiscountAmount,a.BeforeTaxAmount,a.TaxAmount,a.TotalAmount,a.NetDebtAmount,a.IsCancel,a.IsConditionSend,a.DeliveryAddressId,ifnull(a.CarLicense,'') as CarLicense,ifnull(a.PersonReceiveTel,'') as PersonReceiveTel,ifnull(a.JobId,'') as JobId,a.ProjectId,a.AllocateId,ifnull(a.CreateBy,'') as CreateBy,a.CreateTime,ifnull(a.EditBy,'') as EditBy,ifnull(a.EditTime,'') as EditTime, ifnull(a.CancelBy,'') as CancelBy,ifnull(a.CancelTime,'') as CancelTime, ifnull(a.ConfirmBy,'') as ConfirmBy,ifnull(a.ConfirmTime,'') as ConfirmTime,ifnull(b.address,'') as ArBillAddress,ifnull(b.telephone,'') as ArTelephone 
+	sql := `select a.Id,a.DocNo,ifnull(a.DocDate,'') as DocDate,a.CompanyId,a.BranchId,a.DocType,a.BillType,a.TaxType,a.ArId,ifnull(a.ArCode,'') as ArCode,ifnull(a.ArName,'') as ArName,a.SaleId,ifnull(a.SaleCode,'') as SaleCode,ifnull(a.SaleName,'') as SaleName,a.DepartId,a.CreditDay,ifnull(a.DueDate,'') as DueDate,a.DeliveryDay,ifnull(a.DeliveryDate,'') as DeliveryDate,a.TaxRate,a.IsConfirm,ifnull(a.MyDescription,'') as MyDescription,a.BillStatus,a.HoldingStatus,a.SumOfItemAmount,ifnull(a.DiscountWord,'') as DiscountWord,a.DiscountAmount,a.AfterDiscountAmount,a.BeforeTaxAmount,a.TaxAmount,a.TotalAmount,a.NetDebtAmount,a.IsCancel,a.IsConditionSend,a.DeliveryAddressId,ifnull(a.CarLicense,'') as CarLicense,ifnull(a.PersonReceiveTel,'') as PersonReceiveTel,ifnull(a.JobId,'') as JobId,a.ProjectId,a.AllocateId,ifnull(a.CreateBy,'') as CreateBy,a.CreateTime,ifnull(a.EditBy,'') as EditBy,ifnull(a.EditTime,'') as EditTime, ifnull(a.CancelBy,'') as CancelBy,ifnull(a.CancelTime,'') as CancelTime, ifnull(a.ConfirmBy,'') as ConfirmBy,ifnull(a.ConfirmTime,'') as ConfirmTime,ifnull(b.address,'') as ArBillAddress,ifnull(b.telephone,'') as ArTelephone, ifnull(a.ContactId,'') as ContactId
 	from SaleOrder a left join Customer b on a.ArId = b.id 
 	where a.id=?`
 	err = repo.db.Get(&s, sql, req.Id)
@@ -1854,6 +1859,7 @@ func map_saleorder_template(x NewSaleModel) sales.NewSaleTemplate {
 		TaxAmount:           x.TaxAmount,
 		TaxRate:             x.TaxRate,
 		TaxType:             x.TaxType,
+		ContactId:           x.ContactId,
 	}
 }
 

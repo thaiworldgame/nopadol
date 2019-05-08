@@ -52,6 +52,7 @@ type NewQuoTemplate struct {
 	ConfirmTime         string               `json:"confirm_time"`
 	CancelBy            string               `json:"cancel_by"`
 	CancelTime          string               `json:"cancel_time"`
+	ContactId           int64                `json:"contact_id"`
 	Subs                []NewQuoItemTemplate `json:"subs"`
 }
 
@@ -183,6 +184,7 @@ type NewSaleTemplate struct {
 	ConfirmTime         string                `json:"confirm_time"`
 	CancelBy            string                `json:"cancel_by"`
 	CancelTime          string                `json:"cancel_time"`
+	ContactId           int64                 `json:"contact_id"`
 	Subs                []NewSaleItemTemplate `json:"subs"`
 }
 
