@@ -3,6 +3,7 @@ package drivethru
 import (
 	"fmt"
 	"context"
+	"errors"
 )
 
 type (
@@ -45,6 +46,7 @@ type (
 		CarNumber   string `json:"carNumber"`
 		CarBrand    string `json:"carBrand"`
 		DocType     string `json:"doc_type"` //0 drivethru 1 pos 2 saleorder
+		CustomerId  string `json:"customer_id"`
 		AccessToken string `json:"access_token"`
 	}
 
@@ -86,9 +88,9 @@ type (
 	}
 
 	QueueEditCustomer struct {
-		AccessToken  string `json:"access_token"`
-		QueueId      int    `json:"queue_id"`
-		CustomerCode string `json:"customer_code"`
+		AccessToken string `json:"access_token"`
+		QueueId     int    `json:"queue_id"`
+		CustomerId  string `json:"customer_id"`
 	}
 
 	PickupEditRequest struct {
@@ -121,7 +123,7 @@ type (
 
 	PosRequest struct {
 		AccessToken string `json:"access_token"`
-		PosNo     int    `json:"pos_no"`
+		PosNo       int    `json:"pos_no"`
 	}
 
 	AccessTokenRequest struct {
@@ -322,6 +324,13 @@ func makeShiftOpen(s Service) interface{} {
 			return nil, fmt.Errorf("access token is require..")
 		}
 
+		switch {
+		case req.AccessToken == "":
+			return nil, errors.New("access token is require..")
+		case req.ChangeAmount == "":
+			return nil, errors.New("change amount not key")
+		}
+
 		resp, err := s.ShiftOpen(&ShiftOpenRequest{
 			AccessToken:  req.AccessToken,
 			ChangeAmount: req.ChangeAmount,
@@ -331,11 +340,11 @@ func makeShiftOpen(s Service) interface{} {
 			//WhID:   req.WhID,
 		})
 		if err != nil {
-			fmt.Println("err shift open =",err.Error())
+			fmt.Println("err shift open =", err.Error())
 			return nil, err
 		}
 
-		fmt.Println("req.MachineId = ",req.MachineID)
+		fmt.Println("req.MachineId = ", req.MachineID)
 
 		return resp, nil
 	}
@@ -343,8 +352,18 @@ func makeShiftOpen(s Service) interface{} {
 
 func pickupNew(s Service) interface{} { //API
 	return func(ctx context.Context, req *NewPickupRequest) (interface{}, error) {
+
+		switch {
+		case req.AccessToken == "":
+			return nil, errors.New("access token is require..")
+		case req.DocType == "0" && (req.CarNumber == "" || req.CarBrand == ""):
+			return nil, errors.New("car number and car brand not key")
+		case req.DocType == "1" && req.CustomerId == "":
+			return nil, errors.New("customer id not key")
+		}
+
 		fmt.Println("start endpoint pickupnew car number is => ", req.CarNumber)
-		resp, err := s.PickupNew(&NewPickupRequest{CarNumber: req.CarNumber, CarBrand: req.CarBrand, AccessToken: req.AccessToken, DocType: req.DocType})
+		resp, err := s.PickupNew(&NewPickupRequest{CarNumber: req.CarNumber, CarBrand: req.CarBrand, AccessToken: req.AccessToken, DocType: req.DocType, CustomerId:req.CustomerId})
 		if err != nil {
 			return nil, err
 		}
@@ -440,7 +459,7 @@ func queueEdit(s Service) interface{} {
 func editCustomerQueue(s Service) interface{} {
 	return func(ctx context.Context, req *QueueEditCustomer) (interface{}, error) {
 		fmt.Println("start endpoint list queue edit is => ", req.QueueId)
-		resp, err := s.EditCustomerQueue(&QueueEditCustomer{QueueId: req.QueueId, CustomerCode: req.CustomerCode, AccessToken: req.AccessToken})
+		resp, err := s.EditCustomerQueue(&QueueEditCustomer{QueueId: req.QueueId, CustomerId: req.CustomerId, AccessToken: req.AccessToken})
 		if err != nil {
 			return nil, err
 		}
@@ -473,7 +492,6 @@ func billingDone(s Service) interface{} {
 	}
 }
 
-
 func posList(s Service) interface{} {
 	return func(ctx context.Context, req *AccessTokenRequest) (interface{}, error) {
 		resp, err := s.PosList(&AccessTokenRequest{AccessToken: req.AccessToken})
@@ -485,10 +503,9 @@ func posList(s Service) interface{} {
 	}
 }
 
-
 func posCancel(s Service) interface{} {
 	return func(ctx context.Context, req *QueueProductRequest) (interface{}, error) {
-		resp, err := s.PosCancel(&QueueProductRequest{AccessToken: req.AccessToken, QueueId:req.QueueId})
+		resp, err := s.PosCancel(&QueueProductRequest{AccessToken: req.AccessToken, QueueId: req.QueueId})
 		if err != nil {
 			return nil, err
 		}
@@ -499,8 +516,8 @@ func posCancel(s Service) interface{} {
 
 func makeShiftClose(s Service) interface{} {
 	type request struct {
-		AccessToken      string  `json:"access_token"`
-		ShiftUUID        string  `json:"shift_uuid"`
+		AccessToken      string `json:"access_token"`
+		ShiftUUID        string `json:"shift_uuid"`
 		SumCashAmount    string `json:"sum_cash_amount"`
 		SumCreditAmount  string `json:"sum_credit_amount"`
 		SumBankAmount    string `json:"sum_bank_amount"`
