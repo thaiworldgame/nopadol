@@ -500,6 +500,7 @@ func CreateQuotation(s Service) interface{} {
 			SaleName:            req.SaleName,
 			TaxType:             req.TaxType,
 			TaxRate:             req.TaxRate,
+			JobId:               req.JobId,
 			RefNo:               req.RefNo,
 			DepartId:            req.DepartId,
 			DueDate:             req.DueDate,
