@@ -14,7 +14,7 @@ type CustomerTemplate struct {
 	Name         string  `json:"name"`
 	Address      string  `json:"address"`
 	Telephone    string  `json:"telephone"`
-	BillCredit   int64   `json:"bill_credit"`
+	BillCredit   float64   `json:"bill_credit"`
 	Email        string  `json:"email"`
 	CreditAmount float64 `json:"credit_amount"`
 	CompanyID    int     `json:"company_id"`
