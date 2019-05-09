@@ -125,17 +125,16 @@ func (c *CustomerModel) getIdByCode(db *sqlx.DB, code string) (int64, error) {
 	sql := "select id from Customer where code='" + code + "'"
 	fmt.Println(sql)
 	var curID int64
-	err := db.QueryRow(sql).Scan(&curID)
-	if err != nil {
-		fmt.Printf("error ,,,, %s \n", err.Error())
-		return -1, err
-	}
+	db.QueryRow(sql).Scan(&curID)
+	fmt.Println("current id -> ",curID)
 	return curID, nil
 }
 
 func (c *CustomerModel) save(db *sqlx.DB) (interface{}, error) {
 	var curID int64
 	fmt.Println("start customer.save ,  ", c)
+
+	// return -1 if not exists by code
 	curID, err := c.getIdByCode(db, c.Code)
 	if err != nil {
 		return nil, err
@@ -155,11 +154,11 @@ func (c *CustomerModel) save(db *sqlx.DB) (interface{}, error) {
 			if err != nil {
 				return nil, err
 			}
-			newID, err := rs.LastInsertId()
+			_, err = rs.LastInsertId()
 			if err != nil {
 				return nil, err
 			}
-			return newID, nil
+			return "insert success", nil
 
 		}
 	// existing customer just edit record
@@ -172,22 +171,22 @@ func (c *CustomerModel) save(db *sqlx.DB) (interface{}, error) {
 			where id = ?`
 			fmt.Println(sql)
 
-			rs, err := db.Exec(sql, c.Code, c.Name, c.Address,
+			_, err := db.Exec(sql, c.Code, c.Name, c.Address,
 				c.Telephone, c.BillCredit, 0,
 				c.CreateBy, c.CreateTime, curID)
 
 			if err != nil {
 				return nil, err
 			}
-			rowCount, err := rs.RowsAffected()
-			if err != nil {
-				return nil, err
-			}
-			return rowCount, nil
+			//_ , err := rs.RowsAffected()
+			//if err != nil {
+			//	return nil, err
+			//}
+			return "update success", nil
 		}
 	}
 
 	// update
-	return "sucess", nil
+	return "success", nil
 
 }
