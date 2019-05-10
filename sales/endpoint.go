@@ -926,7 +926,7 @@ func CreateDeposit(s Service) interface{} {
 			return nil, fmt.Errorf(err.Error())
 		}
 		return map[string]interface{}{
-			"result": "success",
+			"result": "success", //success
 			"data":   resp,
 		}, nil
 	}
