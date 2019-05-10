@@ -165,6 +165,18 @@ type (
 		DepositId string  `json:"deposit_id"`
 		Amount    float64 `json:"amount"`
 	}
+
+	ListPrinterRequest struct {
+		AccessToken string `json:"access_token"`
+		FormType    string `json:"form_type"`
+	}
+
+	PrintSubmitRequest struct {
+		AccessToken string `json:"access_token"`
+		PrinterId   string `json:"printer_id"`
+		QueueId     string `json:"queue_id"`
+		FormType    string `json:"form_type"`
+	}
 )
 
 func makeListCompany(s Service) interface{} {
@@ -363,7 +375,7 @@ func pickupNew(s Service) interface{} { //API
 		}
 
 		fmt.Println("start endpoint pickupnew car number is => ", req.CarNumber)
-		resp, err := s.PickupNew(&NewPickupRequest{CarNumber: req.CarNumber, CarBrand: req.CarBrand, AccessToken: req.AccessToken, DocType: req.DocType, CustomerId:req.CustomerId})
+		resp, err := s.PickupNew(&NewPickupRequest{CarNumber: req.CarNumber, CarBrand: req.CarBrand, AccessToken: req.AccessToken, DocType: req.DocType, CustomerId: req.CustomerId})
 		if err != nil {
 			return nil, err
 		}
@@ -484,6 +496,39 @@ func queueStatus(s Service) interface{} {
 func billingDone(s Service) interface{} {
 	return func(ctx context.Context, req *BillingDoneRequest) (interface{}, error) {
 		resp, err := s.BillingDone(&BillingDoneRequest{QueueId: req.QueueId, Confirm: req.Confirm, ArCode: req.ArCode, AccessToken: req.AccessToken, CouponCode: req.CouponCode, Cash: req.Cash, CreditCard: req.CreditCard, DepositAmount: req.DepositAmount})
+		if err != nil {
+			return nil, err
+		}
+
+		return resp, nil
+	}
+}
+
+func listInvoice(s Service) interface{} {
+	return func(ctx context.Context, req *AccessTokenRequest) (interface{}, error) {
+		resp, err := s.ListInvoice(&AccessTokenRequest{AccessToken: req.AccessToken})
+		if err != nil {
+			return nil, err
+		}
+
+		return resp, nil
+	}
+}
+
+func listPrinter(s Service) interface{} {
+	return func(ctx context.Context, req *ListPrinterRequest) (interface{}, error) {
+		resp, err := s.ListPrinter(&ListPrinterRequest{AccessToken: req.AccessToken, FormType: req.FormType})
+		if err != nil {
+			return nil, err
+		}
+
+		return resp, nil
+	}
+}
+
+func printSubmit(s Service) interface{} {
+	return func(ctx context.Context, req *PrintSubmitRequest) (interface{}, error) {
+		resp, err := s.PrintSubmit(&PrintSubmitRequest{AccessToken: req.AccessToken, PrinterId: req.PrinterId, QueueId: req.QueueId, FormType: req.FormType})
 		if err != nil {
 			return nil, err
 		}

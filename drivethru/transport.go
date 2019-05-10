@@ -61,7 +61,9 @@ func MakeHandler(s Service) http.Handler {
 	mux.Handle("/billing/done", m.Handler(billingDone(s)))
 	mux.Handle("/pos/cancel", m.Handler(posCancel(s)))
 	mux.Handle("/pos/list", m.Handler(posList(s)))// รายการจุด POS
-	mux.Handle("/invoice/list", m.Handler(posList(s)))//รายการเอกสารขาย	เพื่อจะดึงมาพิมพื์ หรือยกเลิกเอกสาร
+	mux.Handle("/list/invoice", m.Handler(listInvoice(s)))//รายการเอกสารขาย	เพื่อจะดึงมาพิมพื์ หรือยกเลิกเอกสาร
+	mux.Handle("/list/printer",m.Handler(listPrinter(s)))
+	mux.Handle("/print/submit",m.Handler(printSubmit(s)))
 
 	//mux.Handle("/pickup/new",m.Handler(pickupNew(s)))
 

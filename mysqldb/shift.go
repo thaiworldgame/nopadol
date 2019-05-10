@@ -52,7 +52,7 @@ type Machine struct {
 
 func (m *Machine) SearchMachineId(db *sqlx.DB, company_id int, branch_id int, machine_id int) {
 	fmt.Println("Search Machine UUID = ", machine_id, company_id, branch_id)
-	lccommand := " select a.id as machine_id,ifnull(machine_no,'') as machine_no,ifnull(CashierId) as cashier_id, ifnull(a.def_wh_id,0) as def_wh_id,ifnull(def_shelf_id,0) as def_shelf_id,ifnull(b.wh_code,'') as wh_code, ifnull(c.shelf_code,'') as shelf_code from  pos_machine as a inner join warehouse b on a.def_wh_id = b.id and a.company_id = b.company_id and a.branch_id = b.branch_id inner join warehouse_shelf c on a.def_shelf_id = c.id and a.company_id = c.company_id and a.branch_id = c.branch_id where a.id   = ? and a.company_id = ? and a.branch_id = ?"
+	lccommand := " select a.id as machine_id,ifnull(machine_no,'') as machine_no,ifnull(machine_code,'') as machine_code,ifnull(a.def_wh_id,0) as def_wh_id,ifnull(def_shelf_id,0) as def_shelf_id,ifnull(b.wh_code,'') as wh_code, ifnull(c.shelf_code,'') as shelf_code from  pos_machine as a inner join warehouse b on a.def_wh_id = b.id and a.company_id = b.company_id and a.branch_id = b.branch_id inner join warehouse_shelf c on a.def_shelf_id = c.id and a.company_id = c.company_id and a.branch_id = c.branch_id where a.id   = ? and a.company_id = ? and a.branch_id = ?"
 	rs := db.QueryRow(lccommand, machine_id, company_id, branch_id)
 	err := rs.Scan(&m.MachineId, &m.MachineNo, &m.MachineCode, &m.DefWhId, &m.DefShelfId, &m.WHCode, &m.ShelfCode)
 	//err := db.Get(&m, lccommand, machine_id, company_id, branch_id)

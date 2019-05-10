@@ -268,6 +268,20 @@ func (d *drivethruRepository) CancelQueue(req *drivethru.PickupCancelRequest) (i
 	return pickup.CancelQueue(d.db, req)
 }
 
+func(d *drivethruRepository) ListInvoice(req *drivethru.AccessTokenRequest) (resp interface{}, err error){
+	return nil,nil
+}
+
+func(d *drivethruRepository) ListPrinter(req *drivethru.ListPrinterRequest) (resp interface{}, err error){
+	p := ListPrint{}
+	return p.ListPrinter(d.db, req.AccessToken)
+}
+
+func (d *drivethruRepository)PrintSubmit(req *drivethru.PrintSubmitRequest) (resp interface{}, err error){
+
+	return PrintSubmit(d.db,req)
+}
+
 func (d *drivethruRepository) PosCancel(req *drivethru.QueueProductRequest) (interface{}, error) {
 	pickup := ListQueueModel{}
 
