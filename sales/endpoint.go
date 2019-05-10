@@ -500,6 +500,7 @@ func CreateQuotation(s Service) interface{} {
 			SaleName:            req.SaleName,
 			TaxType:             req.TaxType,
 			TaxRate:             req.TaxRate,
+			JobId:               req.JobId,
 			RefNo:               req.RefNo,
 			DepartId:            req.DepartId,
 			DueDate:             req.DueDate,
@@ -925,7 +926,8 @@ func CreateDeposit(s Service) interface{} {
 			return nil, fmt.Errorf(err.Error())
 		}
 		return map[string]interface{}{
-			"data": resp,
+			"result": "success", //success
+			"data":   resp,
 		}, nil
 	}
 }

@@ -572,6 +572,7 @@ type NewSearchItemTemplate struct {
 	ArName          string  `json:"ar_name"`
 	ArCode          string  `json:"ar_code"`
 	ArId            int64   `json:"ar_id"`
+	MyDescription   string  `json:"my_description"`
 	Name            string  `json:"name"`
 	NId             int64   `json:"Id"`
 	NDocNo          string  `json:"DocNo"`
@@ -586,6 +587,7 @@ type NewSearchItemTemplate struct {
 	NPrice          float64 `json:"Price"`
 	NArName         string  `json:"ArName"`
 	NDiscountWord   string  `json:"DiscountWord"`
+	NMyDescription  string  `json:"MyDescription"`
 }
 
 type SearchHisCustomerTemplate struct {

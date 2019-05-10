@@ -607,6 +607,7 @@ type NewSearchItemModel struct {
 	ArName          string  `db:"ar_name"`
 	ArCode          string  `db:"ar_code"`
 	ArId            int64   `db:"ar_id"`
+	MyDescription   string  `db:"my_description"`
 	Name            string  `db:"name"`
 	NId             int64   `db:"Id"`
 	NDocNo          string  `db:"DocNo"`
@@ -621,6 +622,7 @@ type NewSearchItemModel struct {
 	NPrice          float64 `db:"Price"`
 	NArName         string  `db:"ArName"`
 	NDiscountWord   string  `db:"DiscountWord"`
+	NMyDescription  string  `db:"MyDescription"`
 }
 type salesRepository struct{ db *sqlx.DB }
 
@@ -1597,7 +1599,7 @@ func (repo *salesRepository) CreateSaleOrder(req *sales.NewSaleTemplate) (resp i
 
 		uuid = GetAccessToken()
 
-		sql := `INSERT INTO SaleOrder(uuid,DocNo,DocDate,CompanyId,BranchId,DocType,BillType,TaxType,ArId,ArCode,ArName,SaleId,SaleCode,SaleName,DepartId,CreditDay,DueDate,DeliveryDay,DeliveryDate,TaxRate,IsConfirm,MyDescription,BillStatus,HoldingStatus,SumOfItemAmount,DiscountWord,DiscountAmount,AfterDiscountAmount,BeforeTaxAmount,TaxAmount,TotalAmount,NetDebtAmount,IsCancel,IsConditionSend,DeliveryAddressId,CarLicense,PersonReceiveTel,JobId,ProjectId,AllocateId,CreateBy,CreateTime,ContactId) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`
+		sql := `INSERT INTO SaleOrder(uuid,DocNo,DocDate,CompanyId,BranchId,DocType,BillType,TaxType,ArId,ArCode,ArName,SaleId,SaleCode,SaleName,DepartId,CreditDay,DueDate,DeliveryDay,DeliveryDate,TaxRate,IsConfirm,MyDescription,BillStatus,HoldingStatus,SumOfItemAmount,DiscountWord,DiscountAmount,AfterDiscountAmount,BeforeTaxAmount,TaxAmount,TotalAmount,NetDebtAmount,IsCancel,IsConditionSend,DeliveryAddressId,CarLicense,PersonReceiveTel,JobId,RefNo,ProjectId,AllocateId,CreateBy,CreateTime,ContactId) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`
 		res, err := repo.db.Exec(sql,
 			uuid,
 			req.DocNo,
@@ -1637,6 +1639,7 @@ func (repo *salesRepository) CreateSaleOrder(req *sales.NewSaleTemplate) (resp i
 			req.CarLicense,
 			req.PersonReceiveTel,
 			req.JobId,
+			req.RefNo,
 			req.ProjectId,
 			req.AllocateId,
 			req.CreateBy,
@@ -1669,9 +1672,9 @@ func (repo *salesRepository) CreateSaleOrder(req *sales.NewSaleTemplate) (resp i
 
 		req.BeforeTaxAmount, req.TaxAmount, req.TotalAmount = config.CalcTaxItem(req.TaxType, req.TaxRate, req.AfterDiscountAmount)
 
-		sql := `Update SaleOrder set DocNo=?,DocDate=?,CompanyId=?,BranchId=?,DocType=?,BillType=?,TaxType=?,ArId=?,ArCode=?,ArName=?,SaleId=?,SaleCode=?,SaleName=?,DepartId=?,CreditDay=?,DueDate=?,DeliveryDay=?,DeliveryDate=?,TaxRate=?,IsConfirm=?,MyDescription=?,BillStatus=?,HoldingStatus=?,SumOfItemAmount=?,DiscountWord=?,DiscountAmount=?,AfterDiscountAmount=?,BeforeTaxAmount=?,TaxAmount=?,TotalAmount=?,NetDebtAmount=?,IsCancel=?,IsConditionSend=?,DeliveryAddressId=?,CarLicense=?,PersonReceiveTel=?,JobId=?,ProjectId=?,AllocateId=?,EditBy=?,EditTime=?,ContactId=? where Id=?`
+		sql := `Update SaleOrder set DocNo=?,DocDate=?,CompanyId=?,BranchId=?,DocType=?,BillType=?,TaxType=?,ArId=?,ArCode=?,ArName=?,SaleId=?,SaleCode=?,SaleName=?,DepartId=?,CreditDay=?,DueDate=?,DeliveryDay=?,DeliveryDate=?,TaxRate=?,IsConfirm=?,MyDescription=?,BillStatus=?,HoldingStatus=?,SumOfItemAmount=?,DiscountWord=?,DiscountAmount=?,AfterDiscountAmount=?,BeforeTaxAmount=?,TaxAmount=?,TotalAmount=?,NetDebtAmount=?,IsCancel=?,IsConditionSend=?,DeliveryAddressId=?,CarLicense=?,PersonReceiveTel=?,JobId=?,RefNo=?,ProjectId=?,AllocateId=?,EditBy=?,EditTime=?,ContactId=? where Id=?`
 		fmt.Println("sql update = ", sql)
-		id, err := repo.db.Exec(sql, req.DocNo, req.DocDate, req.CompanyId, req.BranchId, req.DocType, req.BillType, req.TaxType, req.ArId, req.ArCode, req.ArName, req.SaleId, req.SaleCode, req.SaleName, req.DepartId, req.CreditDay, req.DueDate, req.DeliveryDay, req.DeliveryDate, req.TaxRate, req.IsConfirm, req.MyDescription, req.BillStatus, req.HoldingStatus, req.SumOfItemAmount, req.DiscountWord, req.DiscountAmount, req.AfterDiscountAmount, req.BeforeTaxAmount, req.TaxAmount, req.TotalAmount, req.NetDebtAmount, req.IsCancel, req.IsConditionSend, req.DeliveryAddressId, req.CarLicense, req.PersonReceiveTel, req.JobId, req.ProjectId, req.AllocateId, req.EditBy, req.EditTime, req.ContactId, req.Id)
+		id, err := repo.db.Exec(sql, req.DocNo, req.DocDate, req.CompanyId, req.BranchId, req.DocType, req.BillType, req.TaxType, req.ArId, req.ArCode, req.ArName, req.SaleId, req.SaleCode, req.SaleName, req.DepartId, req.CreditDay, req.DueDate, req.DeliveryDay, req.DeliveryDate, req.TaxRate, req.IsConfirm, req.MyDescription, req.BillStatus, req.HoldingStatus, req.SumOfItemAmount, req.DiscountWord, req.DiscountAmount, req.AfterDiscountAmount, req.BeforeTaxAmount, req.TaxAmount, req.TotalAmount, req.NetDebtAmount, req.IsCancel, req.IsConditionSend, req.DeliveryAddressId, req.CarLicense, req.PersonReceiveTel, req.JobId, req.RefNo, req.ProjectId, req.AllocateId, req.EditBy, req.EditTime, req.ContactId, req.Id)
 		if err != nil {
 			fmt.Println("Error = ", err.Error())
 			return nil, err
@@ -1741,7 +1744,7 @@ func (repo *salesRepository) SearchSaleOrderById(req *sales.SearchByIdTemplate) 
 
 	s := NewSaleModel{}
 
-	sql := `select a.Id,a.DocNo,ifnull(a.DocDate,'') as DocDate,a.CompanyId,a.BranchId,a.DocType,a.BillType,a.TaxType,a.ArId,ifnull(a.ArCode,'') as ArCode,ifnull(a.ArName,'') as ArName,a.SaleId,ifnull(a.SaleCode,'') as SaleCode,ifnull(a.SaleName,'') as SaleName,a.DepartId,a.CreditDay,ifnull(a.DueDate,'') as DueDate,a.DeliveryDay,ifnull(a.DeliveryDate,'') as DeliveryDate,a.TaxRate,a.IsConfirm,ifnull(a.MyDescription,'') as MyDescription,a.BillStatus,a.HoldingStatus,a.SumOfItemAmount,ifnull(a.DiscountWord,'') as DiscountWord,a.DiscountAmount,a.AfterDiscountAmount,a.BeforeTaxAmount,a.TaxAmount,a.TotalAmount,a.NetDebtAmount,a.IsCancel,a.IsConditionSend,a.DeliveryAddressId,ifnull(a.CarLicense,'') as CarLicense,ifnull(a.PersonReceiveTel,'') as PersonReceiveTel,ifnull(a.JobId,'') as JobId,a.ProjectId,a.AllocateId,ifnull(a.CreateBy,'') as CreateBy,a.CreateTime,ifnull(a.EditBy,'') as EditBy,ifnull(a.EditTime,'') as EditTime, ifnull(a.CancelBy,'') as CancelBy,ifnull(a.CancelTime,'') as CancelTime, ifnull(a.ConfirmBy,'') as ConfirmBy,ifnull(a.ConfirmTime,'') as ConfirmTime,ifnull(b.address,'') as ArBillAddress,ifnull(b.telephone,'') as ArTelephone, ifnull(a.ContactId,'') as ContactId
+	sql := `select a.Id,a.DocNo,ifnull(a.DocDate,'') as DocDate,a.CompanyId,a.BranchId,a.DocType,a.BillType,a.TaxType,a.ArId,ifnull(a.ArCode,'') as ArCode,ifnull(a.ArName,'') as ArName,a.SaleId,ifnull(a.SaleCode,'') as SaleCode,ifnull(a.SaleName,'') as SaleName,a.DepartId,a.CreditDay,ifnull(a.DueDate,'') as DueDate,a.DeliveryDay,ifnull(a.DeliveryDate,'') as DeliveryDate,a.TaxRate,a.IsConfirm,ifnull(a.MyDescription,'') as MyDescription,a.BillStatus,a.HoldingStatus,a.SumOfItemAmount,ifnull(a.DiscountWord,'') as DiscountWord,a.DiscountAmount,a.AfterDiscountAmount,a.BeforeTaxAmount,a.TaxAmount,a.TotalAmount,a.NetDebtAmount,a.IsCancel,a.IsConditionSend,a.DeliveryAddressId,ifnull(a.CarLicense,'') as CarLicense,ifnull(a.PersonReceiveTel,'') as PersonReceiveTel,ifnull(a.JobId,'') as JobId, ifnull(a.RefNo,'') as RefNo,a.ProjectId,a.AllocateId,ifnull(a.CreateBy,'') as CreateBy,a.CreateTime,ifnull(a.EditBy,'') as EditBy,ifnull(a.EditTime,'') as EditTime, ifnull(a.CancelBy,'') as CancelBy,ifnull(a.CancelTime,'') as CancelTime, ifnull(a.ConfirmBy,'') as ConfirmBy,ifnull(a.ConfirmTime,'') as ConfirmTime,ifnull(b.address,'') as ArBillAddress,ifnull(b.telephone,'') as ArTelephone, ifnull(a.ContactId,'') as ContactId
 	from SaleOrder a left join Customer b on a.ArId = b.id 
 	where a.id=?`
 	err = repo.db.Get(&s, sql, req.Id)
@@ -2677,10 +2680,10 @@ func (repo *salesRepository) CreateInvoice(req *sales.NewInvoiceTemplate) (inter
 		// 	,coupon_amount,sum_of_item_amount,discount_word,discount_amount,after_discount_amount,before_tax_amount
 		// 	,tax_amount,total_amount,create_by,create_time) values(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`
 
-		sql := `insert into ar_invoice(company_id,branch_id,uuid,doc_no,tax_no,bill_type,doc_date,ar_id,ar_code,ar_name,sale_id,sale_code,sale_name,credit_day,due_date,tax_type,tax_rate,my_description,so_ref_no,change_amount,sum_cash_amount,sum_credit_amount,sum_chq_amount,sum_bank_amount,sum_of_deposit,sum_on_line_amount,coupon_amount,sum_of_item_amount,discount_word,discount_amount,after_discount_amount,before_tax_amount,tax_amount,total_amount,create_by,create_time) values(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`
+		sql := `insert into ar_invoice(company_id,branch_id,uuid,doc_no,tax_no,bill_type,doc_date,ar_id,ar_code,ar_name,sale_id,sale_code,sale_name,credit_day,due_date,tax_type,tax_rate,my_description,so_ref_no,change_amount,sum_cash_amount,sum_credit_amount,sum_chq_amount,sum_bank_amount,sum_of_deposit,sum_on_line_amount,coupon_amount,sum_of_item_amount,discount_word,discount_amount,after_discount_amount,before_tax_amount,tax_amount,total_amount,create_by,create_time,job_id) values(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`
 		fmt.Println(sql)
 		//resp, err := repo.db.Exec(sql, req.CompanyId,req.BranchId,req.Uuid,req.DocNo,req.TaxNo,req.BillType,req.DocDate,req.ArId,req.ArCode,req.ArName,req.SaleId,req.SaleCode,req.SaleName,req.PosMachineId,req.PeriodId,req.CashId,req.TaxType,req.TaxRate,req.NumberOfItem,req.DepartId,req.AllocateId,req.ProjectId,req.PosStatus,req.CreditDay,req.DueDate,req.DeliveryDay,req.DeliveryDate,req.IsConfirm,req.IsConditionSend,req.MyDescription,req.SoRefNo,req.ChangeAmount,req.SumCashAmount,req.SumCreditAmount,req.SumChqAmount,req.SumBankAmount,req.SumOfDeposit,req.SumOnLineAmount,req.CouponAmount,req.SumOfItemAmount,req.DiscountWord,req.DiscountAmount,req.AfterDiscountAmount,req.BeforeTaxAmount,req.TaxAmount,req.TotalAmount,req.BillBalance,req.PayBillStatus,req.PayBillAmount,req.DeliveryStatus,req.ReceiveName,req.ReceiveTel,req.CarLicense,req.IsCancel,req.IsHold,req.IsPosted,req.IsCreditNote,req.IsDebitNote,req.GlStatus,req.JobId,req.JobNo,req.CouponNo,req.RedeemNo,req.ScgNumber,req.ScgId,req.CreateBy,req.CreateTime)
-		resp, err := repo.db.Exec(sql, req.CompanyId, req.BranchId, req.Uuid, req.DocNo, req.TaxNo, req.BillType, req.DocDate, req.ArId, req.ArCode, req.ArName, req.SaleId, req.SaleCode, req.SaleName, req.CreditDay, req.DueDate, req.TaxType, req.TaxRate, req.MyDescription, req.SoRefNo, req.ChangeAmount, req.SumCashAmount, req.SumCreditAmount, req.SumChqAmount, req.SumBankAmount, req.SumOfDeposit, req.SumOnLineAmount, req.CouponAmount, req.SumOfItemAmount, req.DiscountWord, req.DiscountAmount, req.AfterDiscountAmount, req.BeforeTaxAmount, req.TaxAmount, req.TotalAmount, req.CreateBy, req.CreateTime)
+		resp, err := repo.db.Exec(sql, req.CompanyId, req.BranchId, req.Uuid, req.DocNo, req.TaxNo, req.BillType, req.DocDate, req.ArId, req.ArCode, req.ArName, req.SaleId, req.SaleCode, req.SaleName, req.CreditDay, req.DueDate, req.TaxType, req.TaxRate, req.MyDescription, req.SoRefNo, req.ChangeAmount, req.SumCashAmount, req.SumCreditAmount, req.SumChqAmount, req.SumBankAmount, req.SumOfDeposit, req.SumOnLineAmount, req.CouponAmount, req.SumOfItemAmount, req.DiscountWord, req.DiscountAmount, req.AfterDiscountAmount, req.BeforeTaxAmount, req.TaxAmount, req.TotalAmount, req.CreateBy, req.CreateTime, req.JobId)
 		fmt.Println(resp, "เพิ่มส่วนhead")
 		if err != nil {
 			fmt.Println("error = ", err.Error())
@@ -2728,7 +2731,7 @@ func (repo *salesRepository) CreateInvoice(req *sales.NewInvoiceTemplate) (inter
 		sum_cash_amount=?,sum_credit_amount=?,sum_chq_amount=?,sum_bank_amount=?,
 		sum_of_deposit=?,sum_on_line_amount=?,coupon_amount=?,sum_of_item_amount=?,
 		discount_word=?,discount_amount=?,after_discount_amount=?,before_tax_amount=?,
-		tax_amount=?,total_amount=?,edit_by=?,edit_time=? where id = ?`
+		tax_amount=?,total_amount=?,edit_by=?,edit_time=?,job_id=? where id = ?`
 		resp, err := repo.db.Exec(sql, req.CompanyId,
 			req.BranchId, req.Uuid, req.DocNo,
 			req.TaxNo, req.BillType, req.DocDate, req.ArId, req.ArCode,
@@ -2738,7 +2741,7 @@ func (repo *salesRepository) CreateInvoice(req *sales.NewInvoiceTemplate) (inter
 			req.SumBankAmount, req.SumOfDeposit, req.SumOnLineAmount,
 			req.CouponAmount, req.SumOfItemAmount, req.DiscountWord,
 			req.DiscountAmount, req.AfterDiscountAmount, req.BeforeTaxAmount,
-			req.TaxAmount, req.TotalAmount, req.CreateBy, req.EditTime, req.Id)
+			req.TaxAmount, req.TotalAmount, req.CreateBy, req.EditTime, req.JobId, req.Id)
 
 		if err != nil {
 			fmt.Println("error = ", err.Error())
@@ -3493,6 +3496,7 @@ func map_searchitem_template(x NewSearchItemModel) sales.NewSearchItemTemplate {
 		ArCode:          x.ArCode,
 		ArId:            x.ArId,
 		Name:            x.Name,
+		MyDescription:   x.MyDescription,
 		NId:             x.NId,
 		NDocNo:          x.NDocNo,
 		NDocDate:        x.NDocDate,
@@ -3507,6 +3511,7 @@ func map_searchitem_template(x NewSearchItemModel) sales.NewSearchItemTemplate {
 		NArName:         x.NArName,
 		DiscountWord:    x.DiscountWord,
 		NDiscountWord:   x.NDiscountWord,
+		NMyDescription:  x.NMyDescription,
 	}
 
 }
@@ -3520,21 +3525,21 @@ func (repo *salesRepository) SearchSaleByItem(req *sales.SearchByItemTemplate) (
 		switch {
 		case req.Page == "invoice":
 
-			sql = `select a.id, ifnull(a.doc_date,'') as doc_date, ifnull(a.doc_no,'') as doc_no,a.ar_id, a.ar_name,
+			sql = `select a.id, ifnull(a.doc_date,'') as doc_date, ifnull(a.doc_no,'') as doc_no,a.ar_id, a.ar_name,a.my_description,
 			b.unit_code, b.qty, b.price, ifnull(b.item_code,'') as item_code, b.ar_id, ifnull(b.item_name,'') as item_name,b.ar_id, ifnull(b.discount_word_sub,'') as discount_word_sub
 			from ar_invoice a left join ar_invoice_sub b on a.ar_id = b.ar_id
 			where a.ar_name like concat(?) and b.item_code like concat(?)
 			order by a.Id desc limit 20`
 			err = repo.db.Select(&d, sql, req.Name, req.ItemCode)
 		case req.Page == "quotation":
-			sql = `select a.Id, ifnull(a.DocDate,'') as DocDate, ifnull(a.DocNo,'') as DocNo, a.ArId, a.ArName,
+			sql = `select a.Id, ifnull(a.DocDate,'') as DocDate, ifnull(a.DocNo,'') as DocNo, a.ArId, a.ArName, a.MyDescription,
 			b.UnitCode, b.Qty, b.Price, ifnull(b.ItemCode,'') as ItemCode, b.ArId, ifnull(b.ItemName,'') as ItemName,b.ArId, ifnull(b.DiscountWord,'') as DiscountWord
 			from Quotation a left join QuotationSub b on a.ArId = b.ArId
 			where a.ArName like concat(?) and b.ItemCode like concat(?) 
 			order by a.Id desc limit 20`
 			err = repo.db.Select(&d, sql, req.Name, req.ItemCode)
 		case req.Page == "saleorder":
-			sql = `select a.Id, ifnull(a.DocDate,'') as DocDate, ifnull(a.DocNo,'') as DocNo, a.ArId, a.ArName,
+			sql = `select a.Id, ifnull(a.DocDate,'') as DocDate, ifnull(a.DocNo,'') as DocNo, a.ArId, a.ArName, a.MyDescription,
 			b.UnitCode, b.Qty, b.Price, ifnull(b.ItemCode,'') as ItemCode, b.ArId, ifnull(b.ItemName,'') as ItemName,b.ArId, ifnull(b.DiscountWord,'') as DiscountWord
 			from SaleOrder a left join SaleOrderSub b on a.ArId = b.ArId
 			where a.ArName like concat(?) and b.ItemCode like concat(?) 
