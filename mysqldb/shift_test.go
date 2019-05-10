@@ -6,7 +6,8 @@ import (
 	"time"
 
 	"fmt"
-	"github.com/google/uuid"
+	//"github.com/google/uuid"
+	"github.com/satori/go.uuid"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -23,10 +24,9 @@ func Test_getShiftProfileByUUID(t *testing.T) {
 func Test_shiftOpen(t *testing.T) {
 	req := drivethru.ShiftOpenRequest{
 		AccessToken:        "bdebe48c-44e3-44f8-a2ad-5722a905f84b",
-		MachineID:    3,
-		CashierID:    1059,
-		WhID:         1,
-		ChangeAmount: 3000.00,
+		MachineID:    "3",
+		ChangeAmount: "3000.00",
+		Remark:"Test",
 	}
 	testDB, err := ConnectDB("demo")
 
@@ -35,17 +35,19 @@ func Test_shiftOpen(t *testing.T) {
 
 	// init shift objects
 	sh := ShiftModel{}
-	sh.docDate.Time = time.Now()
-	sh.companyID = uac.CompanyID
-	sh.branchID = uac.BranchID
-	sh.cashierID = req.CashierID
-	sh.changeAmount.Float64 = req.ChangeAmount
-	sh.openBy = uac.UserCode
-	sh.openTime.Time = time.Now()
-	sh.machineID = req.MachineID
-	sh.shiftUUid = uuid.New().String()
-	sh.whID = req.WhID
-	fmt.Println(sh)
+	sh.DocDate = time.Now().String()
+	sh.CompanyID = uac.CompanyID
+	sh.BranchID = uac.BranchID
+	sh.CashierID = uac.Id
+	sh.ChangeAmount = req.ChangeAmount
+	sh.OpenBy = uac.UserCode
+	sh.OpenTime = time.Now().String()
+	sh.MachineID = req.MachineID
+	shiftUUid , err := uuid.NewV4()
+	if err != nil {
+		fmt.Printf("Get UUID Error = ", err)
+	}
+	sh.ShiftUUid = shiftUUid.String()
 	shiftUUID, err := sh.Open(testDB)
 	fmt.Println(shiftUUID)
 	assert.Nil(t, err)
@@ -55,29 +57,29 @@ func Test_shiftOpen(t *testing.T) {
 func Test_shiftClose(t *testing.T) {
 
 	req := drivethru.ShiftCloseRequest{
-		Token:            "bdebe48c-44e3-44f8-a2ad-5722a905f84b",
+		AccessToken:            "bdebe48c-44e3-44f8-a2ad-5722a905f84b",
 		ShiftUUID:        "c745673a-d282-4c62-9ae8-dedfd9643754",
-		SumCashAmount:    100,
-		SumCreditAmount:  2000,
-		SumBankAmount:    0,
-		SumCouponAmount:  20,
-		SumDepositAmount: 0,
+		SumCashAmount:    "100",
+		SumCreditAmount:  "2000",
+		SumBankAmount:    "0",
+		SumCouponAmount:  "20",
+		SumDepositAmount: "0",
 	}
 	testDB, err := ConnectDB("demo")
 	uac := UserAccess{}
-	uac.GetProfileByToken(testDB, req.Token)
+	uac.GetProfileByToken(testDB, req.AccessToken)
 
 	// init shift objects
 
 	sh := ShiftModel{}
-	sh.closeBy = uac.UserCode
-	sh.closeTime.Time = time.Now()
-	sh.shiftUUid = req.ShiftUUID
-	sh.sumOfCashAmount = req.SumCashAmount
-	sh.sumOfCreditAmount = req.SumCreditAmount
-	sh.sumOfCouponAmount = req.SumCouponAmount
-	sh.sumOfBankAmount = req.SumBankAmount
-	sh.sumOfDepositAmount = req.SumDepositAmount
+	sh.CloseBy = uac.UserCode
+	sh.CloseTime = time.Now().String()
+	sh.ShiftUUid = req.ShiftUUID
+	sh.SumOfCashAmount = req.SumCashAmount
+	sh.SumOfCreditAmount = req.SumCreditAmount
+	sh.SumOfCouponAmount = req.SumCouponAmount
+	sh.SumOfBankAmount = req.SumBankAmount
+	sh.SumOfDepositAmount = req.SumDepositAmount
 
 	fmt.Println(sh)
 	err = sh.Close(testDB)

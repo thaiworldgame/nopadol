@@ -32,6 +32,9 @@ type Service interface {
 	QueueStatus(req *QueueStatusRequest) (interface{}, error)
 	QueueProduct(req *QueueProductRequest) (interface{}, error)
 	BillingDone(req *BillingDoneRequest) (interface{}, error)
+	ListInvoice(req *AccessTokenRequest) (interface{}, error)
+	ListPrinter(req *ListPrinterRequest) (interface{}, error)
+	PrintSubmit(req *PrintSubmitRequest) (interface{}, error)
 	PosList(req *AccessTokenRequest) (interface{}, error)
 	PosCancel(req *QueueProductRequest) (interface{}, error)
 
@@ -239,6 +242,36 @@ func (s *service) BillingDone(req *BillingDoneRequest) (interface{}, error) {
 		return nil, err
 	}
 	fmt.Println("service List Billing data -> ", resp)
+	return resp, nil
+}
+
+func (s *service) ListInvoice(req *AccessTokenRequest) (interface{}, error) {
+	resp, err := s.repo.ListInvoice(req)
+	if err != nil {
+		fmt.Println("error service level ", err.Error())
+		return nil, err
+	}
+	fmt.Println("service List Invoice data -> ", resp)
+	return resp, nil
+}
+
+func (s *service) ListPrinter(req *ListPrinterRequest) (interface{}, error) {
+	resp, err := s.repo.ListPrinter(req)
+	if err != nil {
+		fmt.Println("error service level ", err.Error())
+		return nil, err
+	}
+	fmt.Println("service List Invoice data -> ", resp)
+	return resp, nil
+}
+
+func (s *service) PrintSubmit(req *PrintSubmitRequest) (interface{}, error) {
+	resp, err := s.repo.PrintSubmit(req)
+	if err != nil {
+		fmt.Println("error service level ", err.Error())
+		return nil, err
+	}
+	fmt.Println("service List Invoice data -> ", resp)
 	return resp, nil
 }
 

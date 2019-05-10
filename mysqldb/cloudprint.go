@@ -4,6 +4,9 @@ import (
 	"github.com/jmoiron/sqlx"
 	"github.com/mrtomyum/nopadol/cloudprint"
 	"fmt"
+	"github.com/mrtomyum/nopadol/drivethru"
+	"strconv"
+	"encoding/json"
 )
 
 type cloudprintRepository struct{ db *sqlx.DB }
@@ -12,15 +15,88 @@ func NewCloudPrintRepository(db *sqlx.DB) cloudprint.Repository {
 	return &cloudprintRepository{db}
 }
 
-func (repo *cloudprintRepository) CloudPrint(req *cloudprint.CloudPrintRequest) (resp interface{}, err error) {
-	fmt.Println("Docno = ",req.FormType)
+type ListPrint struct {
+	PrinterId   string `json:"printer_id" db:"printer_id"`
+	PrinterName string `json:"printer_name" db:"printer_name"`
+}
 
-	switch req.FormType  {
-	case "slip":
+func (p *ListPrint) ListPrinter(db *sqlx.DB, access_token string) (resp interface{}, err error) {
+	user := UserAccess{}
+	user.GetProfileByToken(db, access_token)
+	printer := []*ListPrint{}
+
+	fmt.Println("Company = ", user.CompanyID)
+
+	lccommand := `select name as printer_name,concat(ip_address,':',port) as printer_id from printer where active_status = 1 and company_id = ? and branch_id = ? order by ip_address`
+	err = db.Select(&printer, lccommand, user.CompanyID, user.BranchID)
+	if err != nil {
+		return map[string]interface{}{
+			"error":   true,
+			"message": "List Printer Error = " + err.Error(),
+			"success": false,
+			"printer": nil,
+		}, nil
+	}
+
+	return map[string]interface{}{
+		"error":   false,
+		"message": "",
+		"success": true,
+		"printer": printer,
+	}, nil
+}
+
+func PrintSubmit(db *sqlx.DB, req *drivethru.PrintSubmitRequest) (resp interface{}, err error) {
+	user := UserAccess{}
+	user.GetProfileByToken(db, req.AccessToken)
+	que_id, err := strconv.Atoi(req.QueueId)
+
+	queue := ListQueueModel{}
+
+	request := drivethru.QueueProductRequest{AccessToken: req.AccessToken, QueueId: que_id}
+
+	q, err := queue.QueueData(db, &request)
+
+	fmt.Println("queue = ", q)
+
+	var str []byte
+
+	if str, err = json.Marshal(q); err != nil {
+		fmt.Println("error marshal : ", err)
+	}
+
+	str1 := string(str)
+
+	fmt.Println("string json = ", str1)
+
+	module := "INV"
+	doc_type := "ArInvoice"
+
+	lccommand := `insert into print_queue(company_id,branch_id,module,doc_type,form_type,printer_id,inserted_time,data) value(?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP ,?)`
+	_, err = db.Exec(lccommand, user.CompanyID, user.BranchID, module, doc_type, req.FormType, req.PrinterId, str1)
+	if err != nil {
+		fmt.Println("error = ", err.Error())
+	}
+
+	return map[string]interface{}{
+		"error":   false,
+		"message": "",
+		"success": true,
+		"data": q,
+	}, nil
+}
+
+func (repo *cloudprintRepository) CloudPrint(req *cloudprint.CloudPrintRequest) (resp interface{}, err error) {
+	fmt.Println("Docno = ", req.FormType)
+
+	switch req.FormType {
+	case "short_form":
 		printslippos(req)
-	case "cashbill":
+	case "full_form":
+		printslippos(req)
+	case "cash_bill":
 		cashbill(req)
-	case "creditbill":
+	case "credit_bill":
 		creditbill(req)
 	}
 
@@ -148,4 +224,3 @@ func (repo *cloudprintRepository) CloudPrint(req *cloudprint.CloudPrintRequest) 
 
 	return req.Data, nil
 }
-
